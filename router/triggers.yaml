@@ -6,6 +6,8 @@ priority:
   - showdar-debug
   - showdar-ship
   - showdar-review
+  - showdar-quality
+  - showdar-requirements
   - showdar-upgrade
   - showdar-design
   - showdar-plan
@@ -18,3 +20,5 @@ rules:
   - if the task is read-only do not route into implementation or shipping actions
   - one flagship skill should normally own the current phase; transition only when its stop condition is met
   - local Git commit, staging, branch, merge, rebase, conflict, cleanup, and explicit push intent routes to showdar-git
+  - product or business input, missing requirements, business rules, user stories, use cases, acceptance criteria, and requirement readiness route to showdar-requirements
+  - QA scenarios, risk-based coverage, regression scope, compatibility matrices, exploratory checks, and bug-report quality route to showdar-quality

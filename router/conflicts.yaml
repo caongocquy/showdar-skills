@@ -8,5 +8,10 @@ rules:
   - showdar-git owns local Git operations; showdar-review owns code/diff review, showdar-debug owns source failures, and showdar-recover owns interrupted implementation recovery
   - showdar-git does not imply push, GitHub, CI/CD, deployment, or release execution
   - showdar-plan does not invent product requirements to simplify architecture
+  - showdar-requirements owns what behavior is required or unresolved; showdar-plan owns how engineering will implement an agreed requirement
+  - showdar-requirements uses current repository behavior as evidence but does not replace showdar-understand's system discovery
+  - showdar-quality owns QA scenarios, risks, coverage, and acceptance confidence; showdar-test owns automated test-level selection and implementation
+  - showdar-quality reviews verification scope, not code defects (showdar-review) or overall delivery readiness (showdar-ship)
+  - showdar-requirements and showdar-quality do not invent stakeholder decisions or claim execution evidence that was not observed
   - showdar-design preserves authoritative existing design tokens and product constraints
   - explicit user instructions override automatic routing while safety and repository constraints remain in force

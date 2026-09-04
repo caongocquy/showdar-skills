@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "skill": "showdar-quality",
+  "datasets": [
+    {
+      "file": "data/quality-patterns.csv",
+      "idField": "id",
+      "requiredColumns": ["id", "category", "question", "evidence", "boundary", "risk", "tags", "reference", "stack"],
+      "searchableFields": ["category", "question", "evidence", "boundary", "risk", "tags"],
+      "filterFields": ["category", "stack"],
+      "reference": "references/qa-guide.md"
+    }
+  ]
+}

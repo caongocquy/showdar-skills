@@ -44,15 +44,15 @@ try {
   await writeFile(path.join(userSkill, 'SKILL.md'), 'user-owned\n');
 
   const init = run(process.execPath, [cli, 'init', '--ai', 'all', '--profile', 'full'], { cwd: project });
-  if (!/Skills: 11/.test(init)) throw new Error(`unexpected init output: ${init}`);
+  if (!/Skills: 13/.test(init)) throw new Error(`unexpected init output: ${init}`);
 
   const roots = ['.agents/skills', '.opencode/skills', '.claude/skills'];
-  const skillIds = ['showdar-understand','showdar-plan','showdar-design','showdar-build','showdar-debug','showdar-test','showdar-review','showdar-upgrade','showdar-ship','showdar-recover','showdar-git'];
+  const skillIds = ['showdar-understand','showdar-plan','showdar-design','showdar-build','showdar-debug','showdar-test','showdar-review','showdar-upgrade','showdar-ship','showdar-recover','showdar-git','showdar-requirements','showdar-quality'];
   for (const skillRoot of roots) {
     for (const id of skillIds) await mustExist(path.join(project, skillRoot, id, 'SKILL.md'));
   }
   const commands = await readdir(path.join(project, '.opencode', 'commands', 'showdar'));
-  if (commands.filter((name) => name.endsWith('.md')).length !== 12) throw new Error(`expected 12 OpenCode commands, got ${commands.length}`);
+  if (commands.filter((name) => name.endsWith('.md')).length !== 14) throw new Error(`expected 14 OpenCode commands, got ${commands.length}`);
 
   // Prove installed skills are self-contained: their helper imports must work outside the source package.
   const searchOut = run(process.execPath, [path.join(project, '.agents/skills/showdar-design/scripts/search.mjs'), '--query', 'wedding editorial elegant', '--domain', 'products', '--limit', '1'], { cwd: project });
@@ -88,7 +88,7 @@ try {
   const doctor = run(process.execPath, [cli, 'doctor'], { cwd: project });
   if (!/Health: OK/.test(doctor)) throw new Error(`doctor is not healthy: ${doctor}`);
   const status = run(process.execPath, [cli, 'status'], { cwd: project });
-  if (!/AI: all/.test(status) || !/Skills: 11/.test(status)) throw new Error(`unexpected status: ${status}`);
+  if (!/AI: all/.test(status) || !/Skills: 13/.test(status)) throw new Error(`unexpected status: ${status}`);
 
   run(process.execPath, [cli, 'remove'], { cwd: project });
   await mustNotExist(path.join(project, '.showdar.json'));

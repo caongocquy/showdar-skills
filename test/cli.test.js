@@ -27,6 +27,8 @@ test('showdar list prints V0.2 profiles and flagship skills', async () => {
   assert.match(result.stdout, /Profiles:/);
   assert.match(result.stdout, /showdar-debug/);
   assert.match(result.stdout, /showdar-git/);
+  assert.match(result.stdout, /showdar-requirements/);
+  assert.match(result.stdout, /showdar-quality/);
   assert.doesNotMatch(result.stdout, /showdar-systematic-debugging/);
 });
 
@@ -47,9 +49,9 @@ test('showdar accepts legacy profile aliases and writes canonical profile metada
   const project = await mkdtemp(path.join(tmpdir(), 'showdar-cli-profile-alias-'));
   const result = await run(['init', '--profile', 'mobile', '--ai', 'codex'], project);
   assert.equal(result.code, 0, result.stderr);
-  assert.match(result.stderr, /profile "mobile" is deprecated; use "full"/i);
+  assert.match(result.stderr, /profile "mobile" is deprecated; use "developer"/i);
   const manifest = JSON.parse(await readFile(path.join(project, '.showdar.json'), 'utf8'));
-  assert.equal(manifest.profile, 'full');
+  assert.equal(manifest.profile, 'developer');
   await access(path.join(project, '.agents/skills/showdar-ship/SKILL.md'));
 });
 
@@ -87,7 +89,7 @@ test('showdar command help exposes scope, target, and profile behavior', async (
     assert.match(result.stdout, expected);
   }
   const initHelp = await run(['init', '--help']);
-  assert.match(initHelp.stdout, /Deprecated aliases: mobile -> full, web -> full/);
+  assert.match(initHelp.stdout, /Deprecated aliases: mobile -> developer, web -> developer/);
 });
 
 test('showdar rejects legacy --agent target syntax', async () => {
