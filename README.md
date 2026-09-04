@@ -21,20 +21,29 @@ Showdar Skills is one package containing ten deep flagship skills for understand
 
 ## Install the CLI
 
-From this repository during development:
+This repository is the source package. To use the current checkout during
+development, install that checkout as the `showdar` CLI:
 
 ```bash
 npm install -g .
 ```
 
-Then initialize a project:
+This installs the CLI globally from the current checkout. For a one-off local
+invocation, use `node /path/to/showdar-skills/bin/showdar.js ...` instead; the
+skills are still installed into the target project where the command runs.
+
+Then enter the target project and install the native skills there:
 
 ```bash
 cd /path/to/project
 showdar init --ai codex --profile mobile
+showdar status
+showdar doctor
 ```
 
-AI target controls **where** skills are installed; profile controls **which** skills are installed.
+`showdar init` defaults to `--ai universal --profile full`. The AI target
+controls **where** skills are installed; the profile controls **which** skills
+are installed.
 
 ```bash
 showdar init --ai codex      --profile full
@@ -54,21 +63,34 @@ universal -> .agents/skills/
 all       -> all four destinations
 ```
 
-Showdar stores only ownership/install metadata in `.showdar.json`. There is no `.showdar/skills` runtime directory.
+The target project receives native skill files and, for OpenCode, native
+project commands. Showdar stores ownership/install metadata in the target
+project's `.showdar.json`; there is no `.showdar/skills` runtime directory.
+
+To refresh skills after changing this source checkout, reinstall the CLI and
+run `showdar init` again with the desired target/profile. Initialization is
+idempotent and refreshes Showdar-owned files; there is no separate
+`showdar update` command.
 
 ## Use it
 
-Natural intent routing is the default. The installer adds a small managed routing block to `AGENTS.md`, and each skill has a specific native name/description for agent discovery.
+Natural intent routing is the default. The installer adds a small managed
+routing block to `AGENTS.md`, and each skill has a specific native
+name/description for agent discovery.
 
-Codex can invoke a skill directly:
+Codex discovers the installed native project skills. Ask naturally, or invoke a
+specific skill with its native name:
 
 ```text
-$showdar-debug
-$showdar-design
-$showdar-ship
+$showdar-debug login crashes after token refresh
+$showdar-plan split this migration into safe steps
+$showdar-review review the current changes for auth risks
+$showdar-ship verify this change is ready for handoff
 ```
 
-OpenCode also gets native project commands:
+OpenCode can use native skill discovery and, when initialized with `--ai
+opencode` or `--ai all`, gets project commands under
+`.opencode/commands/showdar/`:
 
 ```text
 /showdar/debug login crashes after token refresh
@@ -76,6 +98,8 @@ OpenCode also gets native project commands:
 /showdar/review current changes
 /showdar/ship ios
 ```
+
+These `/showdar/...` commands are OpenCode commands, not Codex commands.
 
 ## Design intelligence
 
@@ -110,11 +134,13 @@ The same pattern is used across the suite where it adds value: debug has failure
 
 ## Profiles
 
-- `minimal` — core engineering loop without design/upgrade/ship
-- `web` — all ten skills
-- `backend` — all except design
-- `mobile` — all ten skills
-- `full` — all ten skills
+| Profile | Installed skills |
+| --- | --- |
+| `minimal` | 7 core skills: understand, plan, build, debug, test, review, recover |
+| `web` | All 10 flagship skills |
+| `backend` | 9 skills: all except design |
+| `mobile` | All 10 flagship skills |
+| `full` | All 10 flagship skills |
 
 ## CLI
 
@@ -129,7 +155,11 @@ showdar remove
 
 `showdar doctor` checks the project install against hashes in `.showdar.json` and reports drift. `showdar remove` removes only Showdar-owned skill/command paths and its managed `AGENTS.md` block; unrelated agent skills and user rules are preserved.
 
-`showdar validate` is the repository quality gate. It rejects shallow skills, missing required workflow sections, placeholder content, broken local references/imports, malformed structured data, and invalid catalog/profile/router/command relationships.
+`showdar validate` validates the installed Showdar package itself. It rejects
+shallow skills, missing required workflow sections, placeholder content, broken
+local references/imports, malformed structured data, and invalid
+catalog/profile/router/command relationships; it does not validate the target
+application. `showdar list` prints the available profiles and skills.
 
 ## Skill quality contract
 
@@ -152,9 +182,11 @@ The detailed knowledge belongs in `references/`, `data/`, `stacks/`, `scripts/`,
 
 ```bash
 npm test
-node bin/showdar.js validate
-npm pack --dry-run
+npm run validate
+npm run eval
+npm run check
 npm run smoke
+npm pack --dry-run
 ```
 
 The project intentionally stays dependency-light and uses Node.js built-ins for the CLI, validator, search engine, installer, and tests.

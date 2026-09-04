@@ -7,7 +7,7 @@ export const SKILLS = [
   { id: 'showdar-test', domain: 'test', description: 'Choose and implement the right unit, integration, end-to-end, and regression coverage for a change.' },
   { id: 'showdar-review', domain: 'review', description: 'Perform high-signal code review focused on correctness, security, architecture, performance, and tests.' },
   { id: 'showdar-upgrade', domain: 'upgrade', description: 'Upgrade dependencies, frameworks, and platforms safely with compatibility analysis and rollback planning.' },
-  { id: 'showdar-ship', domain: 'ship', description: 'Establish release readiness, platform-specific shipping checks, rollback preparation, and post-release proof.' },
+  { id: 'showdar-ship', domain: 'ship', description: 'Verify delivery readiness and platform-specific release checks; explicit release execution is opt-in.' },
   { id: 'showdar-recover', domain: 'recover', description: 'Reconstruct interrupted work from repository evidence and choose the safest next action without guessing.' },
 ];
 
