@@ -16,9 +16,11 @@ const EXPECTED_SKILLS = [
   'showdar-git',
   'showdar-requirements',
   'showdar-quality',
+  'showdar-security',
+  'showdar-ops',
 ];
 
-test('catalog contains exactly thirteen first-class skills', () => {
+test('catalog contains exactly fifteen first-class skills', () => {
   assert.deepEqual(SKILLS.map((skill) => skill.id), EXPECTED_SKILLS);
   assert.ok(SKILLS.every((skill) => skill.description?.length >= 30));
 });
@@ -48,16 +50,20 @@ test('legacy mobile and web profiles resolve to the developer profile', () => {
 test('profiles represent role-oriented skill bundles', () => {
   assert.deepEqual(Object.keys(PROFILES), ['minimal', 'developer', 'backend', 'qa', 'product', 'full']);
   assert.equal(PROFILES.minimal.length, 8);
-  assert.equal(PROFILES.developer.length, 11);
-  assert.equal(PROFILES.backend.length, 12);
+  assert.equal(PROFILES.developer.length, 12);
+  assert.equal(PROFILES.backend.length, 14);
   assert.equal(PROFILES.qa.length, 9);
   assert.equal(PROFILES.product.length, 6);
-  assert.equal(PROFILES.full.length, 13);
+  assert.equal(PROFILES.full.length, 15);
   for (const profile of ['minimal', 'developer', 'backend', 'qa', 'full']) {
     assert.ok(PROFILES[profile].includes('showdar-git'));
   }
   assert.ok(PROFILES.backend.includes('showdar-requirements'));
   assert.ok(PROFILES.backend.includes('showdar-quality'));
+  assert.ok(PROFILES.developer.includes('showdar-security'));
+  assert.ok(PROFILES.backend.includes('showdar-security'));
+  assert.ok(PROFILES.backend.includes('showdar-ops'));
+  assert.ok(!PROFILES.developer.includes('showdar-ops'));
   assert.deepEqual(PROFILES.qa, [
     'showdar-understand', 'showdar-requirements', 'showdar-quality', 'showdar-test',
     'showdar-debug', 'showdar-review', 'showdar-ship', 'showdar-recover', 'showdar-git',

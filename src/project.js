@@ -55,13 +55,15 @@ function managedBlock(skillIds) {
     ['implement or refactor production code', 'showdar-build'],
     ['debug bug, crash, regression, build or performance failure', 'showdar-debug'],
     ['test strategy, regression, integration, E2E', 'showdar-test'],
-    ['review changes, pull request, security, architecture, performance', 'showdar-review'],
+    ['review changes, pull request, correctness, maintainability, architecture, performance', 'showdar-review'],
     ['upgrade dependency, framework, platform, migration', 'showdar-upgrade'],
-    ['release, deploy, publish, App Store, Play Store, rollback', 'showdar-ship'],
+    ['release readiness, handoff, package verification, rollback assessment', 'showdar-ship'],
     ['recover interrupted session or partial implementation', 'showdar-recover'],
     ['commit, stage, merge, rebase, conflict, or push local Git work', 'showdar-git'],
     ['analyze product requirements, business rules, ambiguity, or acceptance criteria', 'showdar-requirements'],
     ['plan QA scenarios, regression scope, risk coverage, or bug evidence', 'showdar-quality'],
+    ['threat model, security posture, authz, secrets, attack surface, or data exposure', 'showdar-security'],
+    ['CI/CD, containers, environment config, deployment, observability, or rollback operations', 'showdar-ops'],
   ].filter(([, id]) => skillIds.includes(id));
   const lines = routes.map(([intent, skill]) => `- ${intent} -> \`${skill}\``).join('\n');
   return `${START}\n## Showdar Skills routing\n\nUse the smallest Showdar skill that fully matches the current task. Do not load unrelated Showdar skills.\n\n${lines}\n\nFor debugging, gather evidence before modifying code. For shipping or destructive operations, require explicit user approval and fresh verification. Never print or commit secrets.\n${END}`;

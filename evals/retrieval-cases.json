@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "description": "Offline semantic retrieval benchmark for the thirteen first-class Showdar skills.",
+  "description": "Offline semantic retrieval benchmark for the fifteen first-class Showdar skills.",
   "cases": [
     {
       "id": "understand-monorepo-workspace",
@@ -871,6 +871,86 @@
       "query": "payment QA scenarios retry idempotency data integrity concurrency not automated implementation",
       "filters": { "category": "data" },
       "expected": { "topK": 5, "categoriesAny": ["data"], "tagsAny": ["data integrity concurrency"], "filtersMatch": true }
+    },
+    {
+      "id": "security-threat-model-auth-boundaries",
+      "skill": "showdar-security",
+      "dataset": "data/security-patterns.csv",
+      "query": "threat model authentication trust boundaries attack surface assets",
+      "filters": { "category": "threat-model" },
+      "expected": { "topK": 5, "categoriesAny": ["threat-model"], "tagsAny": ["attack surface", "trust boundaries"], "filtersMatch": true }
+    },
+    {
+      "id": "security-authz-vs-review",
+      "skill": "showdar-security",
+      "dataset": "data/security-patterns.csv",
+      "query": "review auth changes for authorization IDOR BOLA API data access",
+      "filters": { "category": "authorization" },
+      "expected": { "topK": 5, "categoriesAny": ["authorization"], "tagsAny": ["IDOR BOLA"], "filtersMatch": true }
+    },
+    {
+      "id": "security-secret-redaction",
+      "skill": "showdar-security",
+      "dataset": "data/security-patterns.csv",
+      "query": "identify secrets credential exposure sensitive logging redact values and rotation",
+      "filters": { "category": "secrets" },
+      "expected": { "topK": 5, "categoriesAny": ["secrets"], "tagsAny": ["redaction"], "filtersMatch": true }
+    },
+    {
+      "id": "security-mobile-deep-link",
+      "skill": "showdar-security",
+      "dataset": "data/security-patterns.csv",
+      "query": "review React Native mobile deep link WebView local storage biometric permissions",
+      "filters": { "category": "mobile", "stack": "react-native" },
+      "expected": { "topK": 5, "categoriesAny": ["mobile"], "tagsAny": ["mobile deep link"], "stacksAny": ["react-native"], "filtersMatch": true }
+    },
+    {
+      "id": "security-input-injection-boundaries",
+      "skill": "showdar-security",
+      "dataset": "data/security-patterns.csv",
+      "query": "input validation injection SSRF XSS CSRF path and output encoding",
+      "filters": { "category": "input" },
+      "expected": { "topK": 5, "categoriesAny": ["input"], "tagsAny": ["SSRF"], "filtersMatch": true }
+    },
+    {
+      "id": "ops-existing-ci-read-only",
+      "skill": "showdar-ops",
+      "dataset": "data/ops-patterns.csv",
+      "query": "inspect existing CI pipeline runner permissions caches artifacts read-only",
+      "filters": { "category": "ci" },
+      "expected": { "topK": 5, "categoriesAny": ["ci"], "tagsAny": ["existing pipeline read-only"], "filtersMatch": true }
+    },
+    {
+      "id": "ops-deploy-vs-ship",
+      "skill": "showdar-ops",
+      "dataset": "data/ops-patterns.csv",
+      "query": "deploy this backend service to staging with explicit execution target",
+      "filters": { "category": "execution" },
+      "expected": { "topK": 5, "categoriesAny": ["execution"], "tagsAny": ["deploy staging"], "filtersMatch": true }
+    },
+    {
+      "id": "ops-docker-vs-build",
+      "skill": "showdar-ops",
+      "dataset": "data/ops-patterns.csv",
+      "query": "create Docker setup compose container health check for backend service",
+      "filters": { "category": "container", "stack": "docker" },
+      "expected": { "topK": 5, "categoriesAny": ["container"], "tagsAny": ["Docker", "compose"], "stacksAny": ["docker"], "filtersMatch": true }
+    },
+    {
+      "id": "ops-rollback-migration",
+      "skill": "showdar-ops",
+      "dataset": "data/ops-patterns.csv",
+      "query": "plan rollback for migration with zero downtime health and recovery",
+      "filters": { "category": "rollback" },
+      "expected": { "topK": 5, "categoriesAny": ["rollback"], "tagsAny": ["rollback", "migration"], "filtersMatch": true }
+    },
+    {
+      "id": "ops-vs-git-boundary",
+      "skill": "showdar-ops",
+      "dataset": "data/ops-patterns.csv",
+      "query": "change deployment config versus commit local Git workflow explicit remote target",
+      "filters": { "category": "safety" },
+      "expected": { "topK": 5, "categoriesAny": ["safety"], "tagsAny": ["local Git boundary"], "filtersMatch": true }
     }
   ]
 }

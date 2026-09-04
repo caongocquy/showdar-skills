@@ -12,6 +12,8 @@ export const SKILLS = [
   { id: 'showdar-git', domain: 'git', description: 'Complete local Git workflows safely while preserving unrelated work and requiring explicit intent for remote mutations.' },
   { id: 'showdar-requirements', domain: 'requirements', description: 'Turn product and business input into explicit, testable requirements while exposing assumptions, gaps, conflicts, and decisions.' },
   { id: 'showdar-quality', domain: 'quality', description: 'Plan QA/QC verification with risk-based scenarios, coverage, compatibility matrices, regression scope, and evidence-backed bug reports.' },
+  { id: 'showdar-security', domain: 'security', description: 'Analyze security posture, threats, trust boundaries, auth, secrets, data exposure, and practical remediation using evidence.' },
+  { id: 'showdar-ops', domain: 'ops', description: 'Handle operational engineering across CI/CD, containers, environments, deployment, observability, rollback, and explicit execution.' },
 ];
 
 export const AI_TARGETS = ['codex', 'opencode', 'claude', 'universal', 'all'];
@@ -20,8 +22,8 @@ const ids = (...values) => values;
 
 export const PROFILES = {
   minimal: ids('showdar-understand', 'showdar-plan', 'showdar-build', 'showdar-debug', 'showdar-test', 'showdar-review', 'showdar-recover', 'showdar-git'),
-  developer: ids('showdar-understand', 'showdar-plan', 'showdar-design', 'showdar-build', 'showdar-debug', 'showdar-test', 'showdar-review', 'showdar-upgrade', 'showdar-ship', 'showdar-recover', 'showdar-git'),
-  backend: ids('showdar-understand', 'showdar-plan', 'showdar-build', 'showdar-debug', 'showdar-test', 'showdar-review', 'showdar-upgrade', 'showdar-ship', 'showdar-recover', 'showdar-git', 'showdar-requirements', 'showdar-quality'),
+  developer: ids('showdar-understand', 'showdar-plan', 'showdar-design', 'showdar-build', 'showdar-debug', 'showdar-test', 'showdar-review', 'showdar-upgrade', 'showdar-ship', 'showdar-recover', 'showdar-git', 'showdar-security'),
+  backend: ids('showdar-understand', 'showdar-plan', 'showdar-build', 'showdar-debug', 'showdar-test', 'showdar-review', 'showdar-upgrade', 'showdar-ship', 'showdar-recover', 'showdar-git', 'showdar-requirements', 'showdar-quality', 'showdar-security', 'showdar-ops'),
   qa: ids('showdar-understand', 'showdar-requirements', 'showdar-quality', 'showdar-test', 'showdar-debug', 'showdar-review', 'showdar-ship', 'showdar-recover', 'showdar-git'),
   product: ids('showdar-understand', 'showdar-requirements', 'showdar-plan', 'showdar-design', 'showdar-quality', 'showdar-review'),
   full: SKILLS.map((skill) => skill.id),

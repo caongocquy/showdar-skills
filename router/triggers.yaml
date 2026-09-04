@@ -4,6 +4,8 @@ priority:
   - safety-and-repository-instructions
   - showdar-recover
   - showdar-debug
+  - showdar-security
+  - showdar-ops
   - showdar-ship
   - showdar-review
   - showdar-quality
@@ -22,3 +24,5 @@ rules:
   - local Git commit, staging, branch, merge, rebase, conflict, cleanup, and explicit push intent routes to showdar-git
   - product or business input, missing requirements, business rules, user stories, use cases, acceptance criteria, and requirement readiness route to showdar-requirements
   - QA scenarios, risk-based coverage, regression scope, compatibility matrices, exploratory checks, and bug-report quality route to showdar-quality
+  - explicit security, authz, secrets, exposure, attack-surface, threat, or exploitability intent routes to showdar-security before general review
+  - operational CI/CD, container, environment, deployment, observability, rollback, or runtime intent routes to showdar-ops; release readiness remains showdar-ship and Git-only work remains showdar-git

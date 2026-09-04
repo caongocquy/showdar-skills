@@ -13,5 +13,11 @@ rules:
   - showdar-quality owns QA scenarios, risks, coverage, and acceptance confidence; showdar-test owns automated test-level selection and implementation
   - showdar-quality reviews verification scope, not code defects (showdar-review) or overall delivery readiness (showdar-ship)
   - showdar-requirements and showdar-quality do not invent stakeholder decisions or claim execution evidence that was not observed
+  - explicit security intent wins over showdar-review: showdar-security owns posture, threats, authz, secrets, exposure, attack surface, and exploitability; showdar-review owns general correctness, maintainability, architecture, performance, and tests
+  - showdar-debug owns the root cause of observed failures; showdar-security owns security risk even when no failure is observed; showdar-test owns automated test implementation; showdar-quality owns QA/QC planning
+  - showdar-ship verifies delivery or release readiness and does not create CI/deployment infrastructure by default; showdar-ops owns operational implementation and execution
+  - showdar-ops may inspect CI, containers, environments, deployments, observability, and rollback read-only; local config changes require an explicit request, and remote or production mutation requires explicit target/action intent and authorization
+  - showdar-ops never infers deploy, publish, production mutation, secret changes, resource deletion, CI creation, or release automation from ship, ready, release, fix CI, or prepare deploy alone
+  - showdar-build owns application feature implementation; showdar-ops owns operational configuration and runtime workflows; showdar-git owns local Git workflow and does not imply operational execution
   - showdar-design preserves authoritative existing design tokens and product constraints
   - explicit user instructions override automatic routing while safety and repository constraints remain in force
