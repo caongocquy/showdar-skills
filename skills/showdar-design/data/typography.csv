@@ -1,0 +1,13 @@
+id,use_case,heading_direction,body_direction,mono_use,scale,line_height,notes,reference
+developer-tool,Developer Tool,compact grotesk or system sans,system sans,code; ids; metrics,1.125-1.25 modular,1.35 headings; 1.5 body,prioritize scan speed and alignment,references/visual-hierarchy.md
+editorial,Editorial,high-contrast serif or distinctive display,neutral sans,rare,1.25-1.333 modular,0.95 display; 1.6 body,let type carry identity instead of decoration,references/anti-ai-ui.md
+mobile-utility,Mobile Utility,platform or system sans,platform or system sans,technical values only,1.125 modular,1.25 headings; 1.45 body,respect Dynamic Type or equivalent scaling,references/accessibility.md
+dashboard,Dashboard,neutral sans semibold,neutral sans,tabular numbers,1.125 modular,1.2 headings; 1.4 body,align comparable metrics and units,references/visual-hierarchy.md
+fintech,Fintech,restrained sans,high-legibility sans,account ids; reference codes,1.125-1.2 modular,1.25 headings; 1.5 body,money values need predictable weight and numeric alignment,references/accessibility.md
+wedding,Wedding,editorial serif or display,quiet humanist sans,avoid,1.333 modular,0.95 display; 1.65 body,use fewer sizes; avoid script body fonts,references/anti-ai-ui.md
+healthcare,Healthcare,friendly humanist sans,high-legibility sans,avoid,1.2 modular,1.25 headings; 1.55 body,avoid condensed faces and light body weights,references/accessibility.md
+marketing,Marketing,distinct display or strong grotesk,neutral sans,optional proof metrics,1.25 modular,1.05 display; 1.55 body,use type hierarchy instead of repeated cards,references/visual-hierarchy.md
+documentation,Documentation,neutral sans or readable grotesk,high-legibility sans,code blocks only,1.2 modular,1.25 headings; 1.65 body,prioritize long-form reading and code contrast,references/layout.md
+data-operations,Data Operations,compact neutral sans,compact neutral sans,tabular figures; IDs,1.125 modular,1.2 headings; 1.4 body,make units and precision obvious,references/visual-hierarchy.md
+premium-commerce,Premium Commerce,distinctive display,quiet sans,product codes only,1.25-1.333 modular,1.05 display; 1.6 body,let product imagery carry richness,references/anti-ai-ui.md
+accessible-default,Accessible Default,legible sans,legible sans,only technical tokens,1.2 modular,1.25 headings; 1.55 body,avoid thin weights and all-caps body labels,references/accessibility.md

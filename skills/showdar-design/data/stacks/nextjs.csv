@@ -1,0 +1,9 @@
+id,category,stack,guideline,do,dont,severity,tags,reference
+next-boundaries,boundaries,nextjs,choose server and client boundary intentionally,keep client components narrow when browser state is needed,mark entire route tree use client,high,server client,references/architecture.md
+next-data,data,nextjs,co-locate data fetching with ownership and cache semantics,define freshness and revalidation deliberately,assume cache behavior from framework version,high,cache data,references/interaction.md
+next-images,media,nextjs,use optimized responsive image behavior,provide dimensions sizes and meaningful alt text,ship huge unoptimized hero images,medium,images performance,references/accessibility.md
+next-routing,routing,nextjs,model route loading and error states explicitly,use route-level loading and error when meaningful,duplicate spinner logic in every component,medium,routing states,references/interaction.md
+next-client-cost,performance,nextjs,watch JavaScript shipped to client,prefer server rendering for static or data presentation,import heavy client libraries for decoration,high,bundle performance,references/visual-hierarchy.md
+next-metadata,content,nextjs,treat title description and social metadata as product surface,generate metadata from route content,use generic metadata on every page,low,metadata,references/visual-hierarchy.md
+next-forms,forms,nextjs,keep server action or API validation authoritative,show pending and field errors near control,trust client-only validation,high,forms validation,references/accessibility.md
+next-streaming,loading,nextjs,stream only when partial content is useful,keep skeleton geometry aligned with final content,add streaming to hide slow ownership,medium,streaming loading,references/interaction.md

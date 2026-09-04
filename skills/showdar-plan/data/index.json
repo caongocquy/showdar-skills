@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "skill": "showdar-plan",
+  "datasets": [
+    {
+      "file": "data/planning-checklists.csv",
+      "idField": "id",
+      "requiredColumns": ["id", "category", "question", "decision", "evidence", "risk", "tags", "reference", "stack"],
+      "searchableFields": ["category", "question", "decision", "evidence", "risk", "tags"],
+      "filterFields": ["category", "stack"],
+      "reference": "references/requirements.md"
+    }
+  ]
+}

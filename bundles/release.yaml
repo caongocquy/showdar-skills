@@ -1,0 +1,4 @@
+version: 2
+name: release
+skills: [showdar-review, showdar-ship]
+flow: "pre-release review -> readiness -> approved execution -> post-deploy verification"

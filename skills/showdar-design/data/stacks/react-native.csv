@@ -1,0 +1,9 @@
+id,category,stack,guideline,do,dont,severity,tags,reference
+rn-lists,lists,react-native,use virtualized lists for long or dynamic collections,stable keys and measured item strategy,render long datasets in ScrollView,high,virtualized list,references/interaction.md
+rn-touch,touch,react-native,make hit targets ergonomic,use Pressable and hitSlop appropriately,tiny icon-only touch area,high,touch targets,references/accessibility.md
+rn-navigation,navigation,react-native,keep params small and serializable,pass identifiers and read owning state,pass large mutable objects between screens,medium,navigation params,references/architecture.md
+rn-js-thread,performance,react-native,protect JS thread from heavy synchronous work,move parsing or computation off hot interaction path,parse large JSON during gesture or scroll,high,js thread,references/interaction.md
+rn-images,media,react-native,control decode size and cache behavior,request resolution appropriate for display,use full-resolution images in list cells,high,image performance,references/interaction.md
+rn-accessibility,accessibility,react-native,set role label and state for custom controls,test screen reader focus order,use visual-only touchables,high,accessibility,references/accessibility.md
+rn-keyboard,forms,react-native,design forms around keyboard and safe areas,keep focused field and action visible,fixed bottom CTA hidden by keyboard,high,keyboard safe-area,references/responsive.md
+rn-lifecycle,lifecycle,react-native,unbind subscriptions and cancel screen-owned work,make focus and navigation ownership explicit,set state after unmount,high,lifecycle,references/interaction.md

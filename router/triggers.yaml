@@ -1,0 +1,19 @@
+version: 2
+priority:
+  - explicit-user-skill
+  - safety-and-repository-instructions
+  - showdar-recover
+  - showdar-debug
+  - showdar-ship
+  - showdar-review
+  - showdar-upgrade
+  - showdar-design
+  - showdar-plan
+  - showdar-understand
+  - showdar-test
+  - showdar-build
+rules:
+  - if root cause is unknown prefer showdar-debug over showdar-build
+  - if requirements or change surface are unresolved prefer showdar-plan over showdar-build
+  - if the task is read-only do not route into implementation or shipping actions
+  - one flagship skill should normally own the current phase; transition only when its stop condition is met

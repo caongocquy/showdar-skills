@@ -1,0 +1,17 @@
+{
+  "name": "showdar-skills",
+  "version": "0.2.0",
+  "description": "Opinionated, practical engineering playbooks for coding agents.",
+  "type": "module",
+  "bin": { "showdar": "./bin/showdar.js" },
+  "scripts": {
+    "test": "node --test",
+    "validate": "node bin/showdar.js validate",
+    "check": "npm test && npm run validate && npm pack --dry-run",
+    "smoke": "node scripts/package-smoke.mjs"
+  },
+  "engines": { "node": ">=20" },
+  "files": ["bin", "src", "skills", "commands", "router", "bundles", "profiles", "engine", "scripts", "docs", "README.md", "LICENSE"],
+  "keywords": ["agent-skills", "codex", "opencode", "claude-code", "developer-tools", "workflow", "ui-ux", "debugging"],
+  "license": "MIT"
+}

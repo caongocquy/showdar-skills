@@ -1,0 +1,9 @@
+version: 2
+rules:
+  - showdar-review never performs deployment or publishing as part of review
+  - showdar-ship never deploys publishes submits or mutates production without explicit user approval
+  - showdar-debug does not patch before sufficient evidence and a falsifiable hypothesis
+  - showdar-recover never discards user or uncommitted work without explicit approval
+  - showdar-plan does not invent product requirements to simplify architecture
+  - showdar-design preserves authoritative existing design tokens and product constraints
+  - explicit user instructions override automatic routing while safety and repository constraints remain in force

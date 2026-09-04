@@ -1,0 +1,13 @@
+id,style,traits,best_for,avoid,keywords,reference
+quiet-technical,Quiet Technical,neutral surfaces; mono accents; dense hierarchy,developer tools; admin; AI tools,decorative gradients; giant radii,technical restrained dense monospace,references/anti-ai-ui.md
+editorial-minimal,Editorial Minimal,large type; asymmetric rhythm; strong whitespace,portfolio; wedding; premium landing,card grids; excessive badges,editorial elegant minimal typographic,references/visual-hierarchy.md
+soft-utility,Soft Utility,subtle surfaces; rounded controls; warm neutral tone,consumer utilities; health; education,toy shadows; low contrast,soft calm utility rounded,references/layout.md
+data-dense,Data Dense,compact spacing; aligned numbers; restrained color,finance; analytics; operations,oversized tiles; visual noise,dense data dashboard compact,references/visual-hierarchy.md
+native-mobile,Native Mobile,platform conventions; clear hierarchy; thumb-friendly controls,mobile apps,hover-dependent UI; tiny targets,mobile native touch ergonomic,references/responsive.md
+high-contrast-editorial,High Contrast Editorial,bold type; black/white base; one accent,creative sites; launches,many accents; weak hierarchy,bold editorial contrast,references/anti-ai-ui.md
+warm-organic,Warm Organic,earthy palette; tactile imagery; soft typography,food; wellness; events,tech neon; clinical grids,organic warm tactile,references/anti-ai-ui.md
+glass-accent,Glass Accent,limited translucency over a strong base,media; premium experiences,glass on every surface; poor contrast,glass translucent premium,references/accessibility.md
+monochrome-pro,Monochrome Pro,grayscale structure; one semantic accent,B2B; developer; productivity,rainbow status color,professional monochrome restrained,references/anti-ai-ui.md
+playful-geometric,Playful Geometric,simple shapes; bright accents; expressive illustration,education; youth products,enterprise finance; critical workflows,playful geometric colorful,references/interaction.md
+neo-brutalist,Neo Brutalist,hard edges; explicit borders; high contrast; deliberate raw type,launches; creative tools; editorial campaigns,random roughness; inaccessible contrast,brutalist bold border,references/anti-ai-ui.md
+quiet-luxury,Quiet Luxury,restrained contrast; generous rhythm; material detail,premium commerce; event; hospitality,thin unreadable type; ornament everywhere,luxury restrained premium,references/visual-hierarchy.md

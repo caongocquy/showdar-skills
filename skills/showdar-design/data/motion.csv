@@ -1,0 +1,13 @@
+id,pattern,duration_ms,easing,use,avoid,reduced_motion,tags,reference,stack
+tap-feedback,Tap feedback,80-140,ease-out,pressed state and button confirmation,scale below 0.94; springy critical actions,retain color or opacity feedback,tap feedback interaction,references/interaction.md,*
+panel-enter,Panel enter,180-260,"cubic-bezier(.2,.8,.2,1)",drawer inspector sheet,large bounce or 500ms plus,fade or instant with focus preserved,panel transition,references/interaction.md,*
+section-reveal,Section reveal,220-360,ease-out,editorial landing content,animating every card independently,disable translation; preserve visibility,editorial reveal,references/anti-ai-ui.md,*
+list-change,List item change,140-220,ease-in-out,reorder or state update,layout thrash; long stagger,instant layout change,list feedback,references/interaction.md,*
+modal,Modal,160-240,ease-out,dialog and confirmation,dramatic zoom from center,fade with focus order,modal transition,references/accessibility.md,*
+navigation,Navigation,180-300,platform appropriate,mobile route transition,custom gesture-conflicting animation,use platform transition or instant,navigation motion,references/interaction.md,react-native
+loading-skeleton,Loading skeleton,900-1400,linear,content placeholder shimmer,high contrast flashing,static skeleton with no movement,loading motion,references/accessibility.md,*
+success-feedback,Success feedback,180-320,ease-out,small confirmation,confetti for routine actions,static icon and text,success feedback,references/interaction.md,*
+drag-reorder,Drag reorder,120-220,ease-out,show pickup and drop position,decorative path animation,clear position and final order,drag interaction,references/interaction.md,react
+tooltip,Tooltip,100-160,ease-out,explain unfamiliar control,tooltip for required content,show immediately on focus,tooltip accessibility,references/accessibility.md,*
+progress,Progress,200-400,ease-in-out,show meaningful progress,indeterminate animation for known progress,static percentage or step label,progress feedback,references/interaction.md,*
+page-shift,Page shift,180-280,ease-out,maintain spatial continuity when panel changes,move unrelated content,instant stable layout,page continuity,references/layout.md,*

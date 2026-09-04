@@ -1,0 +1,9 @@
+id,category,stack,guideline,do,dont,severity,tags,reference
+tailwind-tokens,system,html-tailwind,define semantic tokens before utility composition,use CSS variables for theme roles,scatter arbitrary colors across markup,high,design tokens,references/visual-hierarchy.md
+tailwind-semantics,accessibility,html-tailwind,use native HTML semantics and focus styles,pair utility classes with button input label roles,style divs into controls,high,semantic html,references/accessibility.md
+tailwind-responsive,responsive,html-tailwind,design breakpoint changes as priority and reflow,use container queries or purposeful breakpoints,shrink every column proportionally,high,responsive,references/responsive.md
+tailwind-states,interaction,html-tailwind,style complete interaction states,define hover focus active disabled and invalid,ship default-only controls,high,interaction states,references/interaction.md
+tailwind-content,layout,html-tailwind,let real content determine min and max sizes,test long labels and localization,hardcode one screenshot width,medium,content sizing,references/layout.md
+tailwind-dark,dark-mode,html-tailwind,treat dark theme as semantic surface remapping,verify contrast and elevation,simply invert colors,medium,dark mode,references/accessibility.md
+tailwind-motion,motion,html-tailwind,use transition for continuity or feedback,respect prefers-reduced-motion,animate every utility class,medium,css motion,references/interaction.md
+tailwind-components,maintainability,html-tailwind,extract components around repeated behavior not class count,keep variants named and local,create mega component for all variants,medium,component boundaries,references/anti-ai-ui.md

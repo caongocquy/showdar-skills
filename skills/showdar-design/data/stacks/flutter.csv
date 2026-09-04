@@ -1,0 +1,9 @@
+id,category,stack,guideline,do,dont,severity,tags,reference
+flutter-rebuilds,rebuilds,flutter,keep rebuild scope proportional to changing state,use selectors buildWhen or listenables where measured,rebuild entire screen for one field,medium,rebuild performance,references/interaction.md
+flutter-lists,lists,flutter,use lazy builders for long collections,ListView.builder or SliverList for dynamic content,Column with hundreds of children,high,lazy list,references/interaction.md
+flutter-async,async,flutter,check lifecycle before using context after awaits,guard mounted and context validity,navigate or show snackbar after dispose,high,async lifecycle,references/interaction.md
+flutter-layout,layout,flutter,use constraints deliberately,prefer flexible layout over fixed device dimensions,hardcoded screen widths,high,constraints,references/responsive.md
+flutter-state,state,flutter,keep source of truth unambiguous,separate ephemeral widget state from domain state,duplicate state across widget and bloc,high,state ownership,references/interaction.md
+flutter-accessibility,accessibility,flutter,provide Semantics where custom visuals hide meaning,test text scaling and semantics order,fixed-height text that clips,high,semantics text-scale,references/accessibility.md
+flutter-disposal,lifecycle,flutter,dispose controllers streams and focus resources at owner,use StatefulWidget dispose or provider ownership,leaked controller listeners,high,resource lifecycle,references/interaction.md
+flutter-platform,platform,flutter,treat platform channels as typed boundaries,handle platform error and unavailable capability,assume every platform method exists,high,platform channel,references/architecture.md

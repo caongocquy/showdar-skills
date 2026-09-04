@@ -1,0 +1,16 @@
+id,area,rule,why,check,severity,tags,reference,stack
+contrast,Contrast,body text and controls meet applicable WCAG contrast expectations,low contrast blocks reading and action,check normal disabled hover focus and visited states,high,contrast wcag,references/accessibility.md,*
+focus,Focus,keyboard-focusable elements have a visible focus indicator,keyboard users must track position,tab through critical flow and verify focus never disappears,high,focus keyboard,references/accessibility.md,*
+touch-target,Touch target,primary mobile controls have about 44x44pt or dp-equivalent hit area,small targets increase error rate,inspect hit area not only icon size,high,touch mobile,references/accessibility.md,react-native
+labels,Labels,icon-only controls expose an accessible name,screen readers cannot infer decorative glyph intent,inspect accessibility tree and localized label,high,labels semantics,references/accessibility.md,*
+semantics,Semantics,use native semantic roles before custom div or canvas behavior,native semantics improve assistive technology support,inspect rendered role name and state,high,semantics roles,references/accessibility.md,react
+motion,Motion,respect reduced-motion preferences,motion can cause discomfort and disorientation,enable reduced motion and repeat critical flow,medium,reduced motion,references/accessibility.md,*
+errors,Errors,validation errors explain what happened and how to recover,color-only error state is insufficient,submit invalid form with keyboard and screen reader,high,form errors,references/accessibility.md,*
+dynamic-type,Dynamic type,mobile layout survives larger text settings,fixed-height labels clip and hide information,test large accessibility font sizes,high,text scaling,references/accessibility.md,swiftui
+color-semantics,Color semantics,do not encode state only by red or green,color vision differences hide meaning,check labels icons or patterns accompany color,medium,color state,references/accessibility.md,*
+reading-order,Reading order,visual and semantic order match,mismatched order makes interfaces confusing,navigate headings and focus sequentially,high,reading order,references/accessibility.md,*
+keyboard,Keyboard,focused input and submit action remain visible above software keyboard,occluded controls block task completion,open keyboard on narrow viewport and submit,high,keyboard form,references/accessibility.md,react-native
+reflow,Reflow,content reflows at zoom or narrow width without loss,overflow forces users to guess or scroll sideways,check 200 percent zoom and narrow viewport,high,reflow responsive,references/responsive.md,*
+status,Status,dynamic updates are announced or otherwise discoverable,async success and errors can be missed,trigger update and inspect live region or semantics,high,live status,references/accessibility.md,*
+pointer-alternative,Pointer alternative,drag or hover behavior has keyboard and touch alternative,pointer-only actions exclude users,complete action without hover or drag,high,input modality,references/interaction.md,*
+forms,Form,labels instructions autocomplete and errors are associated with controls,ambiguous forms increase input errors,inspect label relationship and field order,high,forms input,references/accessibility.md,*

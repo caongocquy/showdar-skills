@@ -1,0 +1,39 @@
+version: 2
+principles:
+  - select the smallest sufficient flagship skill
+  - evidence before edits for unknown failures
+  - preserve user changes and repository instructions
+  - prefer bounded coherent changes over broad cleanup
+  - require fresh verification before completion claims
+  - require explicit approval before production-impacting actions
+routes:
+  understand:
+    triggers: ["understand repo", "architecture", "trace flow", "dependency", "impact analysis", "where should this live"]
+    skill: showdar-understand
+  plan:
+    triggers: ["plan feature", "implementation plan", "scope", "break down", "architecture approach"]
+    skill: showdar-plan
+  design:
+    triggers: ["design UI", "redesign", "UX", "responsive", "visual polish", "accessibility", "design system"]
+    skill: showdar-design
+  build:
+    triggers: ["implement", "build feature", "refactor", "minimal patch"]
+    skill: showdar-build
+  debug:
+    triggers: ["bug", "crash", "regression", "wrong behavior", "build failure", "jank", "memory leak", "intermittent"]
+    skill: showdar-debug
+  test:
+    triggers: ["test strategy", "regression test", "integration test", "E2E", "test coverage"]
+    skill: showdar-test
+  review:
+    triggers: ["review", "PR review", "code review", "security review", "performance review"]
+    skill: showdar-review
+  upgrade:
+    triggers: ["upgrade dependency", "framework upgrade", "runtime upgrade", "migration", "breaking change"]
+    skill: showdar-upgrade
+  ship:
+    triggers: ["release", "deploy", "ship", "TestFlight", "App Store", "Play Store", "production"]
+    skill: showdar-ship
+  recover:
+    triggers: ["resume", "recover task", "session stopped", "continue partial work", "conflict recovery"]
+    skill: showdar-recover

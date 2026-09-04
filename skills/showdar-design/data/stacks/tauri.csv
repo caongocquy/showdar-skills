@@ -1,0 +1,9 @@
+id,category,stack,guideline,do,dont,severity,tags,reference
+tauri-ipc,security,tauri,treat commands as a typed trust boundary,validate command input and return safe errors,trust arbitrary frontend payloads,high,ipc validation,references/security.md
+tauri-capabilities,security,tauri,grant least capability to each window,review capability files with feature changes,enable broad filesystem or shell access,critical,capabilities permissions,references/security.md
+tauri-state,state,tauri,keep authoritative state on the owning side,serialize small DTOs across IPC,share mutable frontend Rust state implicitly,high,state boundary,references/architecture.md
+tauri-events,async,tauri,scope listeners and remove them with window lifetime,track event owner and cancellation,register listeners on every render,high,event lifecycle,references/interaction.md
+tauri-performance,performance,tauri,avoid moving large payloads across IPC,query or stream bounded data,send full database or file contents repeatedly,medium,ipc performance,references/interaction.md
+tauri-window,interaction,tauri,make window state and keyboard behavior deliberate,restore focus and size safely,assume browser defaults cover desktop,medium,desktop window,references/layout.md
+tauri-update,release,tauri,verify updater signatures and compatibility before rollout,retain prior artifact and rollback path,ship unsigned or untested update,critical,updater release,references/release-readiness.md
+tauri-platform,platform,tauri,verify OS-specific paths separately,build and smoke test each target,assume macOS behavior equals Windows or Linux,high,desktop platform,references/interaction.md

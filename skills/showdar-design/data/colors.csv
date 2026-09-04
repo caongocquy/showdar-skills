@@ -1,0 +1,13 @@
+id,context,primary,secondary,accent,background,surface,text,muted,border,success,warning,danger,notes,reference
+developer-tool,Developer Tool,#111827,#374151,#2563EB,#0B1020,#111827,#F9FAFB,#9CA3AF,#273244,#22C55E,#F59E0B,#EF4444,dark technical base; accent only for actions and selection,references/accessibility.md
+fintech-light,Fintech Light,#0F172A,#334155,#0F766E,#F8FAFC,#FFFFFF,#0F172A,#64748B,#E2E8F0,#15803D,#B45309,#B91C1C,trust-first; reserve red and green for financial semantics,references/accessibility.md
+wedding-editorial,Wedding Editorial,#2C2A2A,#766B66,#9A6B5B,#FBF8F4,#FFFDFC,#2C2A2A,#81756F,#E8DED7,#4F7A5A,#A56B2A,#A64747,warm neutral editorial; avoid saturated UI colors,references/anti-ai-ui.md
+healthcare-calm,Healthcare Calm,#164E63,#0E7490,#0891B2,#F0FDFA,#FFFFFF,#134E4A,#64748B,#CCFBF1,#15803D,#B45309,#B91C1C,calm cyan teal with readable text,references/accessibility.md
+ecommerce-premium,E-commerce Premium,#18181B,#52525B,#A16207,#FAFAFA,#FFFFFF,#18181B,#71717A,#E4E4E7,#15803D,#B45309,#B91C1C,neutral product-first palette with restrained gold,references/visual-hierarchy.md
+education,Education,#1E3A8A,#2563EB,#F59E0B,#F8FAFC,#FFFFFF,#172554,#64748B,#DBEAFE,#16A34A,#D97706,#DC2626,friendly but structured; content remains dominant,references/accessibility.md
+ai-neutral,AI Assistant,#171717,#404040,#2563EB,#0A0A0A,#171717,#FAFAFA,#A3A3A3,#2F2F2F,#22C55E,#F59E0B,#EF4444,neutral credible base; no purple-by-default decoration,references/anti-ai-ui.md
+portfolio-cream,Portfolio,#111111,#525252,#D97706,#F5F3EE,#FFFEFA,#111111,#737373,#DDD8CF,#2E7D32,#A16207,#B91C1C,editorial cream base with one signature accent,references/visual-hierarchy.md
+admin-blue,Admin Blue,#172554,#334155,#2563EB,#F8FAFC,#FFFFFF,#0F172A,#64748B,#CBD5E1,#15803D,#B45309,#B91C1C,semantic colors stay distinct from selection blue,references/accessibility.md
+content-warm,Content Warm,#292524,#57534E,#C2410C,#FFF7ED,#FFFFFF,#292524,#78716C,#E7E5E4,#3F6212,#A16207,#B91C1C,warm reading surface with controlled emphasis,references/layout.md
+dark-surface,Dark Surface,#E5E7EB,#9CA3AF,#60A5FA,#030712,#111827,#F9FAFB,#9CA3AF,#374151,#4ADE80,#FBBF24,#F87171,verify contrast for muted text and disabled controls,references/accessibility.md
+event-sage,Event Sage,#243B35,#52675D,#B7795B,#F8F6F1,#FFFEFA,#24312D,#738078,#E0DED6,#3F6B4F,#A86D2E,#A84A4A,occasion-led palette with low saturation,references/anti-ai-ui.md

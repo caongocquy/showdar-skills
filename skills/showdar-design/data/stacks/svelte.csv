@@ -1,0 +1,9 @@
+id,category,stack,guideline,do,dont,severity,tags,reference
+svelte-state,state,svelte,keep reactive source of truth explicit,derive values rather than duplicate them,mutate unrelated module state from components,high,state ownership,references/architecture.md
+svelte-effects,effects,svelte,use effects for external synchronization,clean up subscriptions and timers,derive render values in effects,high,effect lifecycle,references/interaction.md
+svelte-actions,interaction,svelte,keep DOM actions focused and disposable,return destroy and update behavior,hide business policy in reusable action,medium,actions,references/architecture.md
+svelte-a11y,accessibility,svelte,use semantic elements and compiler warnings as baseline,verify name focus and keyboard behavior,suppress warnings without behavior proof,high,semantics,references/accessibility.md
+svelte-lists,lists,svelte,key each blocks by stable domain identity,virtualize large collections when needed,use index key for mutable data,high,lists,references/interaction.md
+svelte-async,async,svelte,represent pending error and success explicitly,abort stale requests or compare request version,let late promise overwrite state,high,async race,references/interaction.md
+svelte-layout,responsive,svelte,let content and CSS layout handle reflow,use CSS media/container queries,branch on viewport in business logic,medium,responsive,references/responsive.md
+svelte-boundary,architecture,svelte,keep server and client data boundaries visible,validate actions on server,trust browser action as authorization,high,server boundary,references/security.md

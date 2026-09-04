@@ -1,0 +1,3 @@
+# Hypothesis-driven debugging
+
+A hypothesis must predict an observable result: “if H is true, changing X should change Y while Z stays constant.” Rank hypotheses by existing evidence, impact, and cheapness of falsification. Capture reproduction, environment, timestamp, input class, request/state IDs, and expected versus actual result. Change one variable per experiment when practical; use controlled barriers for races. Once evidence contradicts a hypothesis, discard it instead of patching around it. A root cause is confirmed when removing or changing the causal boundary restores the invariant and the regression proof fails without the fix.

@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "skill": "showdar-build",
+  "datasets": [
+    {
+      "file": "data/change-smells.csv",
+      "idField": "id",
+      "requiredColumns": ["id", "category", "pattern", "signal", "risk", "preferred_response", "verification", "tags", "reference", "stack"],
+      "searchableFields": ["category", "pattern", "signal", "risk", "preferred_response", "verification", "tags"],
+      "filterFields": ["category", "stack"],
+      "reference": "references/minimal-change.md"
+    }
+  ]
+}

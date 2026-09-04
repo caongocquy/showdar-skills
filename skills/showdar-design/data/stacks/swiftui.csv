@@ -1,0 +1,9 @@
+id,category,stack,guideline,do,dont,severity,tags,reference
+swiftui-state,state,swiftui,use the narrowest state ownership wrapper,choose State Binding Observable based on ownership,duplicate model state in multiple wrappers,high,state ownership,references/architecture.md
+swiftui-identity,lists,swiftui,keep list identity stable,use domain identifiers,generate random UUID during render,high,list identity,references/interaction.md
+swiftui-navigation,navigation,swiftui,model navigation state intentionally,keep destinations data-driven where appropriate,scatter imperative navigation effects,medium,navigation,references/layout.md
+swiftui-layout,layout,swiftui,respect Dynamic Type and safe areas,let content drive size before fixed frames,fixed frames clip accessibility text,high,dynamic type,references/accessibility.md
+swiftui-performance,performance,swiftui,keep expensive work out of body,precompute or cache heavy transformations,parse or decode inside body,high,body performance,references/interaction.md
+swiftui-accessibility,accessibility,swiftui,use labels values hints and native controls,combine semantics intentionally,image-only actions without labels,high,semantics,references/accessibility.md
+swiftui-async,async,swiftui,scope tasks to view lifetime and cancellation,check task cancellation before side effects,unowned async task updates view,high,task cancellation,references/interaction.md
+swiftui-forms,forms,swiftui,use native controls with explicit validation,bind errors and focus state to fields,hide error in alert only,medium,forms,references/accessibility.md

@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "skill": "showdar-upgrade",
+  "datasets": [
+    {
+      "file": "data/compatibility-checklist.csv",
+      "idField": "id",
+      "requiredColumns": ["id", "category", "surface", "inspect", "common_breakage", "mitigation", "verification", "rollback", "tags", "reference", "stack"],
+      "searchableFields": ["category", "surface", "inspect", "common_breakage", "mitigation", "verification", "rollback", "tags"],
+      "filterFields": ["category", "stack"],
+      "reference": "references/compatibility.md"
+    }
+  ]
+}

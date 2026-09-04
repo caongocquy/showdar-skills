@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "skill": "showdar-understand",
+  "datasets": [
+    {
+      "file": "data/architecture-signals.csv",
+      "idField": "id",
+      "requiredColumns": ["id", "category", "signal", "evidence", "interpretation", "confidence", "tags", "reference", "stack"],
+      "searchableFields": ["category", "signal", "evidence", "interpretation", "tags"],
+      "filterFields": ["category", "confidence", "stack"],
+      "reference": "references/architecture-signals.md"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "skill": "showdar-ship",
+  "datasets": [
+    {
+      "file": "data/release-checks.csv",
+      "idField": "id",
+      "requiredColumns": ["id", "target", "category", "check", "critical", "evidence", "owner", "rollback_or_followup", "tags", "reference", "stack"],
+      "searchableFields": ["target", "category", "check", "evidence", "owner", "rollback_or_followup", "tags"],
+      "filterFields": ["target", "category", "critical", "stack"],
+      "reference": "references/release-readiness.md"
+    }
+  ]
+}

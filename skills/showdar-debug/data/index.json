@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "skill": "showdar-debug",
+  "datasets": [
+    {
+      "file": "data/failure-patterns.csv",
+      "idField": "id",
+      "requiredColumns": ["id", "category", "symptom", "signals", "likely_causes", "evidence_to_collect", "experiments", "common_wrong_fix", "verification", "severity", "tags", "reference", "stack"],
+      "searchableFields": ["category", "symptom", "signals", "likely_causes", "evidence_to_collect", "experiments", "common_wrong_fix", "verification", "tags"],
+      "filterFields": ["category", "severity", "stack"],
+      "reference": "references/hypothesis-driven-debugging.md"
+    }
+  ]
+}

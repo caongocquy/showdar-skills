@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "skill": "showdar-review",
+  "datasets": [
+    {
+      "file": "data/review-patterns.csv",
+      "idField": "id",
+      "requiredColumns": ["id", "category", "pattern", "risk", "evidence", "good", "bad", "severity", "false_positive_notes", "tags", "reference", "stack"],
+      "searchableFields": ["category", "pattern", "risk", "evidence", "good", "bad", "false_positive_notes", "tags"],
+      "filterFields": ["category", "severity", "stack"],
+      "reference": "references/correctness.md"
+    }
+  ]
+}

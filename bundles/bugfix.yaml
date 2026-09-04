@@ -1,0 +1,4 @@
+version: 2
+name: bugfix
+skills: [showdar-understand, showdar-debug, showdar-test, showdar-review]
+flow: "understand only as needed -> debug root cause -> regression proof -> review changed behavior"

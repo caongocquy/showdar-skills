@@ -1,0 +1,4 @@
+version: 2
+name: design
+skills: [showdar-design, showdar-build, showdar-test, showdar-review]
+flow: "design direction/system -> stack implementation -> UI verification -> review"

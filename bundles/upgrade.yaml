@@ -1,0 +1,4 @@
+version: 2
+name: upgrade
+skills: [showdar-understand, showdar-upgrade, showdar-test, showdar-review, showdar-ship]
+flow: "inventory -> compatibility/migration -> verify -> review -> release readiness"

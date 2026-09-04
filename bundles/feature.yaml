@@ -1,0 +1,4 @@
+version: 2
+name: feature
+skills: [showdar-understand, showdar-plan, showdar-build, showdar-test, showdar-review]
+flow: "understand -> plan -> build -> test -> review"

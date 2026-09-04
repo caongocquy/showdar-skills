@@ -1,0 +1,9 @@
+id,category,stack,guideline,do,dont,severity,tags,reference
+vue-state,state,vue,keep source of truth explicit,derive computed state from one owner,mirror props through watchers,high,state ownership,references/architecture.md
+vue-reactivity,performance,vue,understand reactive identity before optimizing,use computed and shallow boundaries where measured,deep reactive objects for everything,medium,reactivity,references/interaction.md
+vue-forms,forms,vue,keep validation and submission ownership explicit,show field and form errors with labels,validate only on submit with no field context,high,forms validation,references/accessibility.md
+vue-components,components,vue,compose around stable responsibilities,keep slots and props clear,component with unrelated modes,medium,composition,references/architecture.md
+vue-accessibility,accessibility,vue,use semantic elements and focus management,forward labels and keyboard behavior,custom clickable containers,high,semantics,references/accessibility.md
+vue-lists,lists,vue,use stable keys and virtualize large collections,track by domain identity,use array index for mutable rows,high,lists,references/interaction.md
+vue-async,async,vue,abort or ignore stale async work,bind loading error and cancellation state,let late promise overwrite newer state,high,async race,references/interaction.md
+vue-routing,routing,vue,make route and data loading states explicit,restore focus and document title,hide route failure behind spinner,medium,routing,references/layout.md

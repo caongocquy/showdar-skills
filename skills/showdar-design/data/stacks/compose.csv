@@ -1,0 +1,9 @@
+id,category,stack,guideline,do,dont,severity,tags,reference
+compose-state,state,compose,hoist state to the lowest common owner,pass state and events down,mutable duplicated state across composables,high,state hoisting,references/interaction.md
+compose-recomposition,performance,compose,keep inputs stable and work out of composition,use remember or derivedStateOf only when semantics fit,premature remember everywhere,medium,recomposition,references/interaction.md
+compose-lists,lists,compose,use LazyColumn or LazyRow for long content,provide stable keys for mutable items,Column for unbounded lists,high,lazy list,references/interaction.md
+compose-effects,effects,compose,use effect APIs according to lifecycle semantics,keep keys accurate,launching work directly during composition,high,effects lifecycle,references/interaction.md
+compose-semantics,accessibility,compose,provide semantics for custom controls,use content descriptions and roles intentionally,decorative semantics polluting tree,high,semantics,references/accessibility.md
+compose-adaptive,layout,compose,design with window size and insets,use adaptive layout instead of device-name checks,phone tablet branching by model,medium,adaptive layout,references/responsive.md
+compose-stability,performance,compose,avoid unstable collections crossing recomposition,use immutable or stable models where measured,optimizing annotations without evidence,medium,stability,references/interaction.md
+compose-navigation,navigation,compose,model navigation state from destination data,keep routes serializable and state-restorable,scattered imperative navigation,medium,navigation,references/layout.md

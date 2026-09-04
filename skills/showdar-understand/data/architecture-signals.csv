@@ -1,0 +1,28 @@
+id,category,signal,evidence,interpretation,confidence,tags,reference,stack
+topology-workspace,topology,workspace manifest,pnpm-workspace.yaml; package.json workspaces; melos.yaml,packages have explicit ownership boundaries,high,topology monorepo ownership,references/architecture-signals.md,*
+topology-apps-packages,topology,apps and packages directories,package manifests below apps or packages,possible multi-runtime graph; verify package scripts,medium,topology packages apps,references/repository-analysis.md,*
+topology-generated,topology,generated/vendor directory,codegen output or vendored source markers,inspect generation owner before editing,medium,topology generated ownership,references/repository-analysis.md,*
+monorepo-task-runner,monorepo,task runner config,turbo.json; nx.json; moon.yml; lage.config.js,build and test commands may be graph-aware,high,monorepo task runner,references/dependency-analysis.md,*
+monorepo-local-package,monorepo,workspace dependency,workspace protocol or local package reference,source change can affect multiple consumers,high,monorepo dependency graph,references/dependency-analysis.md,*
+monorepo-boundary,monorepo,package exports,package.json exports or public barrel,public surface is narrower than filesystem,high,monorepo public API,references/architecture-signals.md,*
+entrypoint-web,entrypoint,web entrypoint,app router; pages; main.tsx; index.html,web runtime starts from route or root mount,high,entrypoint frontend,references/repository-analysis.md,react
+entrypoint-next,entrypoint,Next route entry,app or pages directory plus next script,server and client entrypoints coexist,high,entrypoint server client,references/repository-analysis.md,nextjs
+entrypoint-node,entrypoint,Node process entrypoint,bin field; main; start script; src/server.ts,process lifecycle and shutdown owner is here,high,entrypoint backend,references/repository-analysis.md,node
+entrypoint-fastify,entrypoint,Fastify registration,fastify() call and listen() boundary,plugins/routes/hooks form request lifecycle,high,entrypoint http,references/repository-analysis.md,fastify
+entrypoint-nest,entrypoint,Nest bootstrap,NestFactory.create and module graph,module metadata controls provider and route ownership,high,entrypoint dependency injection,references/repository-analysis.md,nestjs
+entrypoint-mobile,mobile,mobile app root,App.tsx; main.dart; SceneDelegate; MainActivity,platform lifecycle begins outside feature folders,high,entrypoint mobile,references/repository-analysis.md,react-native
+entrypoint-desktop,desktop,desktop host entry,src-tauri/src/main.rs; electron main process,frontend and host lifecycles are separate,high,entrypoint desktop,references/repository-analysis.md,tauri
+dependency-direction,dependency,import direction,feature imports shared policy but shared does not import feature,observed direction supports ownership boundary,high,dependency direction,references/architecture-signals.md,*
+dependency-inversion,dependency,injection seam,constructor parameters; provider bindings; get_it registrations,policy can be tested without concrete infrastructure,medium,dependency injection seam,references/dependency-analysis.md,*
+dependency-cycle,dependency,cyclic imports,dependency graph shows A -> B -> A,change surface and initialization order are coupled,high,dependency cycle,references/dependency-analysis.md,*
+dependency-runtime,dependency,runtime dependency,imported package is used in shipped path,upgrade affects behavior and artifact,high,dependency runtime,references/dependency-analysis.md,*
+dependency-build,dependency,build-only dependency,compiler plugin; bundler; codegen tool,upgrade affects build without runtime import,medium,dependency build tooling,references/dependency-analysis.md,*
+dependency-native,dependency,native dependency,Podfile; Package.swift; Gradle; Maven; plugin registration,shared source change may require platform builds,high,dependency native,references/dependency-analysis.md,ios
+package-manager-lock,tooling,lockfile,package-lock.json; yarn.lock; pnpm-lock.yaml; pubspec.lock,resolved versions are evidence; manifest alone is insufficient,high,tooling lockfile,references/dependency-analysis.md,package-manager
+build-script,build,build script,package scripts; Makefile; justfile; Fastlane; Gradle task,verification must use repository-owned command,high,build verification,references/repository-analysis.md,*
+build-config,build,build configuration,tsconfig; vite; webpack; metro; Xcode scheme,configuration can move behavior across environments,high,build configuration,references/repository-analysis.md,typescript
+ci-workflow,ci,CI workflow,.github/workflows; .gitlab-ci.yml; Buildkite config,remote verification may differ from local environment,high,ci environment,references/repository-analysis.md,ci
+ci-gate,ci,required status check,branch protection or CI job dependency,completion requires the named gate rather than a local substitute,medium,ci gate,references/repository-analysis.md,ci
+backend-boundary,backend,persistence or queue adapter,db client; migration folder; queue producer,request and worker lifecycles need separate tracing,high,backend persistence queue,references/dependency-analysis.md,node
+mobile-native-boundary,mobile,native bridge,TurboModule; MethodChannel; JNI; Swift/Kotlin bridge,shared UI behavior crosses platform-owned lifecycle,high,mobile native bridge,references/architecture-signals.md,react-native
+desktop-native-boundary,desktop,desktop IPC command,invoke handler; preload bridge; Tauri command,capability and serialization boundaries need explicit review,high,desktop ipc,references/architecture-signals.md,electron

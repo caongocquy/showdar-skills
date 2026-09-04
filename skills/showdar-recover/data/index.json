@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "skill": "showdar-recover",
+  "datasets": [
+    {
+      "file": "data/recovery-signals.csv",
+      "idField": "id",
+      "requiredColumns": ["id", "category", "signal", "meaning", "confidence", "action", "evidence", "stop_condition", "tags", "reference", "stack"],
+      "searchableFields": ["category", "signal", "meaning", "action", "evidence", "stop_condition", "tags"],
+      "filterFields": ["category", "confidence", "stack"],
+      "reference": "references/interrupted-session.md"
+    }
+  ]
+}

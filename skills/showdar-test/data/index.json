@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "skill": "showdar-test",
+  "datasets": [
+    {
+      "file": "data/test-strategy.csv",
+      "idField": "id",
+      "requiredColumns": ["id", "category", "preferred_level", "when", "reason", "example", "anti_pattern", "verification", "tags", "reference", "stack"],
+      "searchableFields": ["category", "preferred_level", "when", "reason", "example", "anti_pattern", "verification", "tags"],
+      "filterFields": ["category", "preferred_level", "stack"],
+      "reference": "references/unit.md"
+    }
+  ]
+}

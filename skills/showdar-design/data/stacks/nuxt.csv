@@ -1,0 +1,9 @@
+id,category,stack,guideline,do,dont,severity,tags,reference
+nuxt-rendering,boundaries,nuxt,choose server client and island boundaries intentionally,keep browser-only code in client boundary,read browser APIs during server render,high,ssr client,references/architecture.md
+nuxt-data,data,nuxt,define fetch ownership and freshness,use keyed data and explicit invalidation,duplicate fetch in page and component,high,data cache,references/interaction.md
+nuxt-routing,routing,nuxt,model route middleware and error states,keep auth policy server authoritative,guard only in client navigation,high,routing auth,references/security.md
+nuxt-seo,content,nuxt,derive metadata from route content,set canonical and social metadata deliberately,copy generic title to every route,medium,seo metadata,references/visual-hierarchy.md
+nuxt-hydration,rendering,nuxt,keep initial server and client output deterministic,defer time random and browser-only values,hide hydration warnings,high,hydration,references/interaction.md
+nuxt-images,media,nuxt,serve responsive images with intrinsic dimensions,provide alt and loading intent,ship unbounded original images,medium,image performance,references/accessibility.md
+nuxt-server,security,nuxt,validate server routes independently of UI,constrain input and secret access,trust client middleware as authorization,high,server security,references/security.md
+nuxt-error,errors,nuxt,make route and server error recovery visible,provide retry or safe navigation,render empty page for all failures,high,error recovery,references/interaction.md

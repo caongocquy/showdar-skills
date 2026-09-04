@@ -1,0 +1,9 @@
+id,category,stack,guideline,do,dont,severity,tags,reference
+react-state,state,react,prefer composition and clear state ownership,keep derived UI state derived,mirror props into state,high,state ownership,references/architecture.md
+react-rendering,performance,react,stabilize expensive subtree boundaries only after profiling,use memoization for measured churn,wrap every component in memo,medium,memoization,references/interaction.md
+react-forms,forms,react,keep validation ownership explicit,use schema or form library only when complexity justifies it,scatter per-field side effects,medium,forms validation,references/accessibility.md
+react-semantics,accessibility,react,use semantic HTML first,button means button and label controls,clickable div with manual keyboard patches,high,semantic html,references/accessibility.md
+react-effects,effects,react,use effects to synchronize external systems,keep pure derivation out of effects,effect chains that compute render state,high,effect ownership,references/interaction.md
+react-keys,lists,react,use stable domain keys,keys survive reorder and filter,array index key for mutable list,high,stable keys,references/interaction.md
+react-context,architecture,react,keep context scope aligned to consumers,split high-churn context when measured,put all app state in one provider,medium,context state,references/architecture.md
+react-errors,errors,react,provide error boundary where UI subtree can recover,show retry or safe fallback with cause context,blank screen or catch everything globally,high,error boundary,references/interaction.md
