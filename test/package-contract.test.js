@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { access, cp, mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -8,6 +9,7 @@ import { fileURLToPath } from 'node:url';
 import { classifyNpmViewResult } from '../scripts/check-published-version.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const packageVersion = JSON.parse(readFileSync(path.join(root, 'package.json'), 'utf8')).version;
 
 function packManifest(cwd, destination) {
   const result = spawnSync('npm', ['pack', '--dry-run', '--json', '--pack-destination', destination], {
@@ -62,13 +64,13 @@ test('committed AGENTS instructions do not depend on ignored docs', async () => 
 
 test('release version guard accepts matching tags and rejects mismatches', () => {
   const guard = path.join(root, 'scripts', 'check-release-version.mjs');
-  const matching = spawnSync(process.execPath, [guard, 'v0.2.0'], { cwd: root, encoding: 'utf8' });
+  const matching = spawnSync(process.execPath, [guard, `v${packageVersion}`], { cwd: root, encoding: 'utf8' });
   assert.equal(matching.status, 0, matching.stderr);
-  assert.match(matching.stdout, /matches package version 0\.2\.0/);
+  assert.match(matching.stdout, new RegExp(`matches package version ${packageVersion.replaceAll('.', '\\.')}`));
 
   const mismatched = spawnSync(process.execPath, [guard, 'v9.9.9'], { cwd: root, encoding: 'utf8' });
   assert.notEqual(mismatched.status, 0);
-  assert.match(mismatched.stderr, /does not match package version 0\.2\.0/);
+  assert.match(mismatched.stderr, new RegExp(`does not match package version ${packageVersion.replaceAll('.', '\\.')}`));
 });
 
 test('published version guard distinguishes missing versions from registry failures', () => {
