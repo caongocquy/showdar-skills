@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, mkdir, writeFile } from 'node:fs/promises';
+import { cp, mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { validateSkillDirectory } from '../src/validate.js';
+import { validateRepository, validateSkillDirectory } from '../src/validate.js';
 
 const REQUIRED = [
   'Purpose', 'When to use', 'When not to use', 'Inputs and assumptions',
@@ -137,4 +137,21 @@ test('validator rejects malformed dataset metadata', async () => {
   assert.ok(result.errors.some((error) => error.includes('requiredColumns contains duplicates')));
   assert.ok(result.errors.some((error) => error.includes('searchableFields must be an array')));
   assert.ok(result.errors.some((error) => error.includes('filterFields contains duplicates')));
+});
+
+test('validator rejects drift in a vendored runtime detector', async () => {
+  const sourceRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
+  const tempRoot = await mkdtemp(path.join(tmpdir(), 'showdar-runtime-validate-'));
+  const packageRoot = path.join(tempRoot, 'package');
+  try {
+    await cp(sourceRoot, packageRoot, {
+      recursive: true,
+      filter: (source) => !source.includes(`${path.sep}.git${path.sep}`) && !source.includes(`${path.sep}node_modules${path.sep}`) && !source.endsWith('.tgz'),
+    });
+    await writeFile(path.join(packageRoot, 'skills/showdar-debug/scripts/lib/detect-stack.mjs'), 'export function detectStacks() { return []; }\n');
+    const result = await validateRepository(packageRoot);
+    assert.ok(result.errors.some((error) => error.includes('vendored runtime detector drift')));
+  } finally {
+    await rm(tempRoot, { recursive: true, force: true });
+  }
 });

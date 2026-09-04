@@ -2,6 +2,7 @@ import { access, readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { SKILLS, PROFILES } from './catalog.js';
+import { CANONICAL_RUNTIME_FILE, VENDORED_RUNTIME_FILES } from './runtime.js';
 import { parseCsv } from '../engine/csv.mjs';
 
 export const STACK_IDS = new Set([
@@ -230,6 +231,23 @@ export async function validateRepository(packageRoot) {
     const result = await validateSkillDirectory(dir);
     for (const error of result.errors) errors.push(`${skill.id}: ${error}`);
     warnings.push(...result.warnings.map((warning) => `${skill.id}: ${warning}`));
+  }
+
+  let canonicalRuntime;
+  try {
+    canonicalRuntime = await readFile(path.join(packageRoot, CANONICAL_RUNTIME_FILE));
+  } catch (error) {
+    errors.push(`missing canonical runtime detector: ${CANONICAL_RUNTIME_FILE} (${error.message})`);
+  }
+  if (canonicalRuntime) {
+    for (const relative of VENDORED_RUNTIME_FILES) {
+      try {
+        const vendoredRuntime = await readFile(path.join(packageRoot, relative));
+        if (!vendoredRuntime.equals(canonicalRuntime)) errors.push(`vendored runtime detector drift: ${relative} differs from ${CANONICAL_RUNTIME_FILE}`);
+      } catch (error) {
+        errors.push(`missing vendored runtime detector: ${relative} (${error.message})`);
+      }
+    }
   }
 
   if (await exists(skillsRoot)) {

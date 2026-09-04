@@ -3,7 +3,7 @@ import { access, mkdtemp, mkdir, readFile, readdir, rm, writeFile } from 'node:f
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const sandbox = await mkdtemp(path.join(tmpdir(), 'showdar-package-smoke-'));
@@ -63,6 +63,27 @@ try {
   if (!/"root"/.test(understandOut) || !/"signals"/.test(understandOut)) throw new Error('installed understand script returned incomplete JSON');
   const shipOut = run(process.execPath, [path.join(project, '.opencode/skills/showdar-ship/scripts/release-check.mjs'), project], { cwd: project });
   if (!/"checks"/.test(shipOut) || !/"note"/.test(shipOut)) throw new Error('installed ship script returned incomplete JSON');
+
+  const detectorFixture = path.join(sandbox, 'detector-fixture');
+  await mkdir(path.join(detectorFixture, 'Client.xcodeproj'), { recursive: true });
+  await mkdir(path.join(detectorFixture, '.github', 'workflows'), { recursive: true });
+  await writeFile(path.join(detectorFixture, 'pnpm-lock.yaml'), 'lockfileVersion: 9\n');
+  await writeFile(path.join(detectorFixture, 'pnpm-workspace.yaml'), 'packages:\n  - packages/*\n');
+  await writeFile(path.join(detectorFixture, 'package.json'), JSON.stringify({
+    packageManager: 'pnpm@9.12.0', workspaces: ['packages/*'], dependencies: {
+      '@fastify/core': '^10.0.0', electron: '^32.0.0', expo: '^51.0.0', react: '^18.0.0', tailwindcss: '^3.0.0',
+    },
+  }));
+  const expectedStacks = ['ci', 'electron', 'expo', 'fastify', 'html-tailwind', 'ios', 'node', 'package-manager', 'react', 'workspace'];
+  const detectorPaths = [
+    path.join(installed, 'engine/detect-stack.mjs'),
+    ...['debug', 'plan', 'ship', 'understand', 'upgrade'].map((id) => path.join(project, `.codex/skills/showdar-${id}/scripts/lib/detect-stack.mjs`)),
+  ];
+  for (const detectorPath of detectorPaths) {
+    const detector = await import(pathToFileURL(detectorPath).href);
+    const stacks = await detector.detectStacks(detectorFixture);
+    if (JSON.stringify(stacks) !== JSON.stringify(expectedStacks)) throw new Error(`detector drift at ${detectorPath}: ${JSON.stringify(stacks)}`);
+  }
 
   const doctor = run(process.execPath, [cli, 'doctor'], { cwd: project });
   if (!/Health: OK/.test(doctor)) throw new Error(`doctor is not healthy: ${doctor}`);
