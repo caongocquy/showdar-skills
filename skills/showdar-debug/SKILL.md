@@ -103,12 +103,15 @@ description: Debug crashes, regressions, build failures, races, networking, memo
 
 ## Stack detection
 
+- React: `stacks/react.md` for render, state, effect, and external-system boundaries.
 - React Native: `stacks/react-native.md` for JS/UI/native boundaries, lists, images, navigation.
 - Flutter: `stacks/flutter.md` for Dart async, rebuild/layout, raster/UI thread, platform channels.
 - Node: `stacks/node.md` for event-loop, promise/resource/stream/process boundaries.
 - Next.js: `stacks/nextjs.md` for server/client/cache/hydration/build/runtime boundaries.
 - iOS: `stacks/ios.md` for crash/build/signing/lifecycle differences.
 - Android: `stacks/android.md` for Logcat/Gradle/variant/lifecycle/R8 differences.
+- Tauri: `stacks/tauri.md` for Rust commands, webview IPC, capabilities, and bundle/runtime boundaries.
+- Docker: `stacks/docker.md` for image, container, network, volume, and architecture boundaries.
 
 ## Failure modes
 
