@@ -12,7 +12,7 @@
     "smoke": "node scripts/package-smoke.mjs"
   },
   "engines": { "node": ">=20" },
-  "files": ["bin", "src", "skills", "commands", "router", "bundles", "profiles", "engine", "scripts", "docs", "README.md", "LICENSE"],
+  "files": ["bin", "src", "skills", "commands", "router", "bundles", "profiles", "engine", "scripts", "README.md", "LICENSE"],
   "keywords": ["agent-skills", "codex", "opencode", "claude-code", "developer-tools", "workflow", "ui-ux", "debugging"],
   "license": "MIT"
 }
