@@ -4,11 +4,6 @@ This repository is **Showdar Skills**.
 
 ## Local project guidance
 
-@docs/plan/showdar-skills-plan.md
-@docs/specs/showdar-skills-spec.md
-
-Before making changes:
-
 - Follow only the currently requested migration phase.
 - Do not start a later phase unless explicitly requested.
 - Preserve existing behavior unless the current task explicitly changes it.
@@ -16,7 +11,10 @@ Before making changes:
 
 ## Git workflow
 
-@docs/git-workflow.md
+- `main` is the stable/release branch.
+- `develop` is the integration branch.
+- Start normal work from the latest `develop` on a task branch.
+- Use prefixes such as `feature/`, `fix/`, `chore/`, `docs/`, `test/`, and `release/`.
 
 Before modifying any tracked file:
 
@@ -25,7 +23,7 @@ Before modifying any tracked file:
 - Follow the Git workflow rules and create the appropriate task branch first.
 - Confirm the task branch is active before making changes.
 
-When a task/phase is complete, follow the documented phase completion workflow before starting the next task.
+When a task/phase is complete, verify it before starting the next task.
 
 Never implement normal work directly on `main` or `develop`.
 
