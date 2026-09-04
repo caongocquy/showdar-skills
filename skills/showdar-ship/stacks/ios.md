@@ -1,4 +1,7 @@
-# iOS shipping
+# iOS delivery verification
+
+Verify the archive and installable artifact locally by default. TestFlight,
+App Store, signing-service, and rollout actions are separate explicit scopes.
 
 ## Identity and signing
 
@@ -8,9 +11,16 @@ Record the bundle identifier, marketing version, build number, release scheme/co
 
 Check privacy manifests, permission usage descriptions, SDK-required declarations, URL schemes, and tracking disclosures for every native dependency. Archive with release settings, retain the matching dSYM/BCSymbolMaps and exported IPA metadata, and verify bitcode/symbol expectations for the current toolchain. Do not treat a successful archive as proof that launch, permissions, deep links, push, or background behavior works on a device.
 
-## Distribution and rollout
+## Distribution readiness (explicit execution only)
 
-Run archive validation and install the exact build on a clean device/TestFlight path. Smoke first launch, upgrade from the previous version, login, critical native capabilities, push/deep links, offline/reconnect, background/foreground, and crash reporting. Use TestFlight groups or phased App Store rollout when risk warrants it; define an observation window and trigger. iOS rollback is constrained after users migrate local data or the store review/distribution process advances, so keep the previous signed artifact and record recovery options.
+Run archive validation and install the exact build on a clean simulator/device
+when available. Smoke first launch, upgrade from the previous version, login,
+critical native capabilities, push/deep links, offline/reconnect,
+background/foreground, and crash reporting. TestFlight groups, App Store
+rollout, and external observation are execution-only checks; use them only when
+explicitly requested. iOS rollback is constrained after users migrate local
+data or distribution advances, so record recovery assumptions without
+submitting or changing store state.
 
 ## Wrong turns and caveats
 
@@ -18,4 +28,7 @@ Do not reuse a development profile, increment only the marketing version, or cop
 
 ## Verification
 
-Run the repository tests plus `xcodebuild archive`/export and validation for the affected scheme, inspect signing/entitlements, verify dSYM UUIDs, install the exported artifact, and record TestFlight/store status without exposing credentials.
+Run repository tests plus `xcodebuild archive`/export and validation for the
+affected scheme, inspect signing/entitlements, verify dSYM UUIDs, and install
+the exported artifact. Record TestFlight/store status only for an explicit
+external-verification request, without exposing credentials.

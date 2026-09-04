@@ -1,4 +1,8 @@
-# Web/static web shipping
+# Web/static web delivery verification
+
+Use this as a local readiness checklist by default. Do not publish the artifact
+or change hosting/CDN configuration unless the request explicitly asks for that
+execution.
 
 ## Choose the delivery model
 
@@ -8,9 +12,15 @@ Identify whether the artifact is static HTML/assets, a Node server, or an edge r
 
 Run the production build from a clean dependency install and inspect the output for source maps, routes, asset URLs, redirects, headers, and accidental secret values. Classify every environment variable as build-time public configuration or runtime private configuration. Verify base URL, trailing-slash, locale, image/font handling, CSP, and cache headers against the target CDN; a successful local preview does not prove the deployed path works.
 
-## Release and smoke
+## Artifact and local smoke
 
-Publish the immutable artifact, record its digest/version, then check the deployed URL directly. Smoke the homepage, authenticated/critical route, 404/error path, asset loading, redirect/HTTPS behavior, and API origin if present. Check CDN invalidation or cache freshness only for assets/routes that changed. Read `references/release-readiness.md` and `references/post-deploy.md` for shared evidence and observation requirements.
+Inspect the immutable artifact and record its digest/version for handoff; do
+not publish it by default. Smoke a local production preview or equivalent:
+homepage, authenticated/critical route, 404/error path, assets,
+redirect/HTTPS behavior, and API origin if present. Check CDN invalidation or
+cache freshness only when the task explicitly concerns delivery execution. Use
+`references/release-readiness.md` for local evidence; use
+`references/post-deploy.md` only for explicit external verification.
 
 ## Wrong turns and edge cases
 
@@ -18,4 +28,8 @@ Do not call a static upload “healthy” because files exist, bake secrets into
 
 ## Verification
 
-Run the repository's test/typecheck/build commands, inspect the actual artifact, and smoke the deployed URL from a clean browser/session. Record which provider, DNS, CDN, analytics, and monitoring checks were unavailable rather than inferring them from build success.
+Run the repository's test/typecheck/build commands, inspect the actual artifact,
+and smoke the local production preview from a clean browser/session. A
+deployed URL is not required for ordinary readiness. Record provider, DNS, CDN,
+analytics, and monitoring checks as external/unverified unless explicitly
+requested.

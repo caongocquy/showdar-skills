@@ -1,167 +1,234 @@
 ---
 name: showdar-ship
-description: Prepare and verify web, backend, mobile, Docker, and desktop releases with explicit readiness evidence, rollback, secret safety, and post-deploy checks.
+description: Use when assessing whether a requested change is ready for handoff, merge, publish, or an explicitly requested release/deployment verification.
 ---
 
 # Showdar Ship
 
 ## Purpose
 
-- Determine whether a change is actually ready to release.
-- Apply platform-specific release/deploy checks without conflating upload success with product health.
-- Protect secrets, migrations, signing, versioning, observability, and rollback.
-- Require fresh verification evidence before claiming readiness.
-- Read `references/release-readiness.md` and `references/rollback.md` for every nontrivial release.
+`showdar-ship` is a delivery-verification skill. Its normal job is to decide
+whether the requested change is safe to hand off, merge, package, publish, or
+release, using fresh local evidence and repository-defined checks.
+
+It may inspect existing release, deployment, and CI configuration as evidence.
+It does not create or modify that infrastructure in its normal verification
+mode. A readiness report is not an instruction to deploy.
 
 ## When to use
 
-- Preparing or reviewing a web/backend/mobile/desktop release.
-- Creating a release checklist or deployment runbook.
-- Validating iOS TestFlight/App Store or Android Play release prerequisites.
-- Checking Docker/backend rollout and post-deploy smoke behavior.
-- Assessing whether a release can be rolled back safely.
+- Verifying a completed change before handoff or merge.
+- Assessing release readiness for a web, backend, mobile, Docker, or desktop artifact.
+- Checking package/export/type/build metadata before a requested handoff.
+- Reviewing existing release or CI configuration for canonical commands and gaps.
+- Verifying an explicitly requested deployment, store submission, or release execution.
 
 ## When not to use
 
-- Routine local implementation before release readiness matters.
-- Designing deployment infrastructure from scratch unless the user explicitly asks for that architecture.
-- Do not automatically deploy/publish/upload to production without explicit user authorization.
-- Do not expose or request secret values when presence/reference is sufficient.
+- Routine implementation, debugging, code review, or test-strategy work.
+- Creating CI/CD, deployment, release, secrets, or environment infrastructure.
+- Treating “ship”, “release checklist”, or “is this ready?” as permission to deploy or publish.
+- Requiring a deployed endpoint when local artifact and repository checks answer the request.
 
 ## Inputs and assumptions
 
-- Target environment/platform and intended release artifact/version.
-- Repository build/test commands and release configuration.
-- Deployment/store credentials are managed externally; this skill should not print them.
-- Migration/feature-flag/rollback plan when stateful changes are involved.
-- Use `scripts/detect-targets.mjs` and `scripts/release-check.mjs` for read-only preflight signals.
+- The requested outcome and whether it explicitly names release/deployment execution.
+- Current Git/worktree state and the exact change or artifact under review.
+- Repository-owned test, typecheck, lint, build, package, and smoke commands.
+- Existing release/CI configuration may be inspected read-only to discover commands.
+- Secret, signing, store, deployment, and production access remains external; never request values.
+- `scripts/detect-targets.mjs` and `scripts/release-check.mjs` provide read-only preflight signals.
 
 ## Non-negotiable rules
 
-- No release-ready claim without fresh tests/build/target checks appropriate to the change.
-- Never print, commit, embed, or copy secret values into artifacts or logs.
-- Production deployment, publishing, destructive migration, credential rotation, and store submission require explicit user approval.
-- A successful build/upload is not post-deploy verification.
-- Version/build identifiers must be deliberate and consistent with target policy.
-- Migrations must be ordered relative to application rollout and rollback compatibility.
-- Preserve symbol/mapping artifacts needed to diagnose release crashes.
-- Define rollback trigger and mechanism before high-risk rollout.
+- Default mode is delivery verification, not deployment execution.
+- No readiness claim without fresh checks appropriate to the requested change.
+- Ordinary Ship verification does not require CI/CD, a hosted provider, or a deployed endpoint.
+- Existing CI is read-only by default: inspect it for commands or inconsistencies, but do not modify it.
+- A deployed endpoint is not required for ordinary ship verification. Report external checks as unavailable when they are outside the request.
+- Never print, commit, embed, or copy secret values into artifacts, logs, or reports.
+- Publishing, deploying, tagging, pushing, store submission, production mutation, and destructive migration require explicit user intent and any separate approval required by repository policy.
+- Keep release-specific metadata, symbols, mappings, migration compatibility, and rollback evidence when they are relevant to the requested artifact.
+
+## Hard scope boundary
+
+Unless the current user/task explicitly requests deployment or release execution,
+`showdar-ship` MUST NOT:
+
+- create or modify `.github/workflows/**`;
+- create GitHub Actions, CI/CD pipelines, or release automation;
+- configure deployment providers, coverage/SaaS CI services, branch protection, or environment/secrets infrastructure;
+- add Docker solely for CI or deployment;
+- deploy anything, publish packages/apps, or change production infrastructure.
+
+`.github/workflows/**` is outside normal Ship mutation scope even when an
+existing workflow is failing. An explicit CI/CD task must be routed and scoped
+as that task before any CI change is proposed.
+
+## Explicit intent gate
+
+Words such as “ship”, “release-ready”, “prepare a checklist”, “handoff”, or
+“verify” select verification mode. Execution mode is activated only when the
+request explicitly names an action, target, and release/deployment context,
+such as “deploy this service to staging”, “publish this package”, “submit this
+build to TestFlight”, or “create the GitHub Actions workflow”.
+
+Only when explicit deployment or release-execution intent exists may the skill
+prepare execution-specific commands or load `references/post-deploy.md`,
+`references/rollback.md`, or rollout guidance. Even then, describe the command
+and its risk before running it, and stop for any required approval.
+
+## Existing CI is read-only
+
+If `.github/workflows/**`, `.gitlab-ci.yml`, `Jenkinsfile`, or another CI file
+already exists:
+
+Inspect existing CI configuration without modifying it.
+
+- read it to discover canonical test/build/package commands and target assumptions;
+- compare it with local scripts and report drift, missing coverage, or failures;
+- do not edit, add, delete, enable, or “repair” the CI file in ordinary Ship mode;
+- do not infer that CI must exist, must pass, or must be recreated for local readiness.
 
 ## Workflow
 
-### Phase 1 — detect target and artifact
-- Identify web/backend/Docker/iOS/Android/desktop targets.
-- Identify version/build number, environment, release configuration, artifact format, and distribution channel.
+### Phase 1 — classify request and scope
 
-### Phase 2 — common readiness
-- Confirm repository state, tests/static analysis, production/release build, environment variable names, feature flags, changelog/version if required.
-- Review `references/secrets.md` and ensure no secret values are surfaced.
-- Review migrations with `references/migrations.md`.
+- Read the exact request and classify it as verification or explicit execution.
+- Record the target artifact/platform only when relevant.
+- If intent is ambiguous, stay in verification mode and report the missing decision.
 
-### Phase 3 — platform-specific checklist
-- Web -> `stacks/web.md`.
-- Next.js -> `stacks/nextjs.md` plus the applicable web/runtime checks.
-- Backend -> `stacks/node-backend.md`.
+### Phase 2 — inspect repository state
+
+- Run `git status`, inspect the requested diff, and confirm the active branch.
+- Identify repository-owned scripts from `package.json`, Makefiles, task runners, and existing CI configuration without changing them.
+- Use read-only target detection when platform selection is unclear.
+
+### Phase 3 — run local readiness checks
+
+Run the smallest relevant set of existing commands:
+
+- focused tests and the repository test command;
+- typecheck, analyzer, and lint when configured;
+- production/release build or package/export validation when the artifact is in scope;
+- install, smoke, API, or native checks that can run locally;
+- version, build number, changelog, package exports, and generated-file checks when relevant.
+
+Do not add a workflow, hosted service, deployed endpoint, or production secret
+just to obtain one of these checks.
+
+### Phase 4 — inspect platform guidance
+
+- Web/static web -> `stacks/web.md`.
+- Next.js -> `stacks/nextjs.md` plus applicable web checks.
+- Node backend -> `stacks/node-backend.md`.
 - Docker -> `stacks/docker.md`.
 - iOS -> `stacks/ios.md`.
 - Android -> `stacks/android.md`.
 - Tauri/desktop -> `stacks/tauri.md`.
+- Container orchestration -> `stacks/orchestration.md` only when the request explicitly concerns that execution surface.
 
-### Phase 4 — rollback and rollout
-- Record previous known-good version/artifact/config.
-- Confirm schema/config compatibility with rollback.
-- Define staged/canary/store-track strategy when risk warrants it.
-- Define explicit rollback trigger.
+Keep platform checks focused on evidence that can be gathered locally. Store,
+provider, deployed-service, and production-observability checks are external
+unless the request explicitly asks for their verification.
 
-### Phase 5 — execute only with approval
-- Run release/deploy/publish commands only when the user clearly authorized the action and required credentials are available via safe tooling.
-- Do not infer approval from asking for a checklist.
+### Phase 5 — optional explicit execution branch
 
-### Phase 6 — post-deploy verification
-- Confirm deployed version/artifact.
-- Verify health/readiness and critical user/API flows.
-- Inspect logs/error rate/monitoring where tools are available.
-- Confirm store/distribution processing state for mobile/desktop where observable.
-- Use `references/post-deploy.md` for closeout.
+When the explicit intent gate is satisfied, identify the exact command, target,
+credentials boundary, irreversible effects, rollout/rollback constraints, and
+post-execution evidence before acting. Load the execution references only for
+that branch. Do not convert a checklist request into execution permission.
+
+### Phase 6 — readiness report
+
+Report passed, failed, blocked, and unverified checks. Distinguish local proof
+from external proof. State whether execution was requested and whether any
+execution occurred. Do not call a change ready merely because a workflow is
+green or an upload command succeeded.
 
 ## Decision points
 
-- Stateful DB change? Prefer backward-compatible expand/migrate/contract for rolling deployments.
-- Mobile native/signing capability change? Archive/release build and store validation are mandatory evidence.
-- High-risk backend? Require readiness/health plus staged rollout and rollback trigger.
-- Static web only? Focus on build artifact, env/public config, asset paths, cache headers, and critical routes.
-- Desktop updater? Verify signing/notarization and update path on a clean install.
-- Missing production observability access? Report post-deploy checks that remain manual/unverified.
+- Ordinary code/package change? Verify local scope, tests, static checks, build, and exports; no endpoint or CI change is needed.
+- Existing CI found? Inspect commands and report drift; keep it unchanged.
+- Static web? Inspect generated files, routes, asset paths, and cache intent; do not publish an artifact by default.
+- Backend or Docker? Verify local startup, health/readiness behavior, config names, migrations, and graceful shutdown where reproducible.
+- Mobile/native artifact? Verify identifiers, signing metadata, permissions, symbols, and installable output when available; store submission is separate.
+- Stateful change? Assess backward compatibility and rollback safety; do not run production data mutation without explicit approval.
+- Explicit deployment/release execution? Add target-specific external checks only after the intent gate is satisfied.
 
 ## Stack detection
 
-- Detect stack/targets before choosing checks.
-- Web stack details do not replace backend checks when a full-stack repo deploys both.
-- React Native/Flutter apps require native iOS/Android release checks even when shared code is unchanged if the release artifact is rebuilt.
-- Tauri/Electron-style desktop releases have signing/update concerns separate from frontend build.
-- Container orchestration adds readiness, replica, rollout, secret-reference, and rollback checks; read `stacks/orchestration.md`.
-- Electron packages main/preload/renderer and update/signing surfaces separately; read `stacks/electron.md`.
-- Docker is an artifact/runtime layer; still verify the service behavior inside it.
+- Detect targets before choosing local checks, but do not turn detected CI or deployment files into a mutation request.
+- Web and backend checks remain separate when a repository contains both.
+- React Native and Flutter release artifacts may need native iOS/Android checks even when shared code changed only once.
+- Tauri/Electron signing and updater surfaces are distinct from frontend build verification.
+- Docker is an artifact/runtime layer; orchestration execution is a separate, explicit scope.
+- Existing CI detection is evidence collection only.
 
 ## Failure modes
 
-- “CI green” used as readiness without checking actual target artifact/config.
-- Upload to store/provider treated as successful release.
-- Secrets printed during troubleshooting.
-- Database migration applied before compatible app version exists.
-- Rollback impossible because new schema/minimum client requirement was not considered.
-- iOS dSYM or Android mapping artifact discarded.
-- Production build differs from local/test environment in runtime/env assumptions.
+- “CI green” treated as proof that the requested local artifact or diff is ready.
+- A checklist request interpreted as deploy, publish, tag, or workflow creation permission.
+- A local readiness task blocked because no deployed endpoint exists.
+- Existing workflow edited to make a local test pass.
+- Upload or package command treated as proof of user-visible health.
+- Secrets printed while proving configuration presence.
+- Migration, signing, symbol, mapping, or package metadata omitted from the evidence.
+- Production behavior guessed from a development server or preview configuration.
 
 ## Stop conditions
 
-- Stop when the requested outcome is outside this skill and hand off to the more appropriate workflow.
-- Stop before destructive, irreversible, production, credential, publishing, or deployment actions unless the user explicitly approved them.
-- Stop when required evidence is unavailable and proceeding would require guessing about behavior, ownership, or safety.
-- Stop when a repository instruction conflicts with this playbook; repository/user instructions win.
-- Stop before any unapproved deploy/publish/destructive step.
-- Stop after release only when target version and critical post-release behavior have fresh evidence or remaining checks are explicitly listed as unavailable.
+- Stop before creating or modifying CI/CD, deployment, release, provider, secret, environment, branch-protection, or production infrastructure unless explicitly requested.
+- Stop before deploy, publish, tag, push, store submission, destructive migration, credential operation, or production mutation without explicit intent and required approval.
+- Stop when the request is ordinary verification but the next proposed action would change external state.
+- Stop when required local evidence is unavailable; report it as blocked or unverified instead of inventing a hosted check.
+- Stop when repository instructions conflict with this playbook; user and repository instructions win.
 
 ## Escalation conditions
 
-- Ask for explicit approval immediately before production deploy/store submission/destructive migration if not already clear.
-- Escalate missing rollback for irreversible data/platform changes.
-- Escalate signing/provisioning/credential issues without requesting secrets in chat.
-- Escalate store/provider policy decisions that cannot be inferred from repository state.
+- Ask for the target and explicit action when execution intent is unclear.
+- Escalate signing, store, provider, production, irreversible data, and credential decisions without requesting secret values.
+- Escalate CI changes as a separate task; do not smuggle them into Ship readiness work.
+- Escalate missing rollback or observability evidence when the user explicitly requests deployment/release execution.
 
 ## Verification
 
-- Run fresh relevant test/static/build commands and read exit/results.
-- Validate the real release artifact/target, not only debug/dev mode.
-- Verify version/build metadata and platform-specific signing/configuration.
-- Verify migration status/order where applicable.
-- After release, verify deployed version, health, and critical smoke flow.
-- Record unverified external/store/observability items explicitly.
+- Run fresh relevant local test, typecheck/analyzer, lint, build, package, export, install, and smoke commands.
+- Inspect `git status` and the requested diff for scope and generated artifacts.
+- Confirm package exports, public types, version/build metadata, and changelog only when relevant.
+- Read existing CI/release configuration without modifying it.
+- Record external endpoint, store, provider, deployment, and observability checks as unverified unless explicitly requested and actually observed.
+- For explicit execution, record the exact target, artifact/version, command status, and post-execution evidence separately.
 
 ## Output contract
 
-- **Target and version/artifact**.
-- **Readiness evidence** — commands/checks freshly completed.
-- **Platform checklist** — pass/fail/unverified.
-- **Migration/secret/config status** without secret values.
-- **Rollback plan and trigger**.
-- **Execution status** — not executed / executed with approval.
-- **Post-deploy verification** and remaining observation gaps.
+- **Intent and scope** — verification or explicitly requested execution.
+- **Target/artifact** — only the platform and version relevant to the request.
+- **Local evidence** — commands and exact results.
+- **Existing CI/release inspection** — read-only findings, if any.
+- **Readiness** — ready, not ready, blocked, or unverified with reasons.
+- **External checks** — clearly separated from local proof; not required for ordinary Ship verification.
+- **Execution status** — not requested / not performed / performed with explicit authorization.
+- **Next decision** — the smallest user decision needed, if any.
 
 ## Anti-patterns
 
-- Auto-deploy because user said “ship checklist”.
-- Printing environment values to prove config exists.
-- Generic “deploy succeeded” with no version/health/smoke proof.
-- Skipping release build because unit tests passed.
-- No rollback trigger.
-- Applying destructive schema changes in the same opaque step as application rollout.
+- Creating `.github/workflows/**` because a normal change needs verification.
+- Adding CI/CD, a hosted coverage service, Docker, deployment config, or secrets infrastructure to complete a checklist.
+- Auto-deploying because the user said “ship”.
+- Requiring a production URL for local readiness.
+- Editing existing CI when the task is only implementation, testing, review, or release-readiness assessment.
+- Printing environment, signing, store, or deployment secrets.
+- Claiming “deployed”, “published”, or “healthy” without observing the corresponding external state.
 
 ## Example
 
-User request: “Prepare iOS release.”
-- Check tests/typecheck, release archive, bundle ID, version/build, signing/provisioning, entitlements, privacy/permissions, push/deep links, dSYM, store validation.
-- State readiness and any missing external checks.
-- Do not upload to TestFlight until user explicitly authorizes submission.
-- After authorized upload, verify processing/install/launch and critical flow.
-- See `examples/release-report.md`.
+User request: “Ship the current fix and tell me if it is ready.”
+
+- Stay in verification mode: inspect the diff, run repository tests/typecheck/lint/build, inspect package or release metadata when relevant, and report readiness.
+- Read an existing workflow only to find the canonical command if useful; do not create or modify CI.
+- Do not require a deployed endpoint and do not deploy or publish.
+
+User request: “Deploy this backend to staging and verify the deployed health endpoint.”
+
+- Use the explicit execution branch, name the target and artifact, present the command/risk boundary, obtain required approval, then use `references/post-deploy.md` for the requested external verification.

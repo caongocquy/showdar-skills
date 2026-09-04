@@ -1,4 +1,7 @@
-# Android shipping
+# Android delivery verification
+
+Verify the signed release artifact locally by default. Play Console upload,
+track changes, and staged rollout require explicit release-execution intent.
 
 ## Identity, SDK, and signing
 
@@ -8,9 +11,15 @@ Record `applicationId`, `versionCode`, `versionName`, min/target/compile SDK, re
 
 Prefer the signed AAB for Play distribution and inspect generated APKs/splits for ABI, resource, and permission behavior. Run R8/ProGuard in the release path and retain the exact mapping file, native symbols, build ID, and artifact digest; a release crash without matching mapping cannot be diagnosed reliably. Validate version code monotonicity and any signing-key/Play App Signing constraint before upload.
 
-## Play rollout and recovery
+## Distribution readiness (explicit execution only)
 
-Upload to an internal/closed track first when possible, then use staged production rollout with an explicit observation window, crash/ANR threshold, install/update check, and stop trigger. Smoke clean install, upgrade install, process death/restore, permissions, deep links/push, offline/reconnect, and release-only code paths. Android rollback is limited by monotonic version codes, already-installed clients, data/schema changes, and Play track state; keep the previous signed artifact and document forward-fix or halt options.
+Smoke clean install, upgrade install, process death/restore, permissions,
+deep links/push, offline/reconnect, and release-only code paths locally. Play
+Console upload, internal/closed tracks, staged rollout, and external crash/ANR
+observation are execution-only checks. Android rollback is limited by
+monotonic version codes, installed clients, data/schema changes, and track
+state; record forward-fix or halt options without changing Play state by
+default.
 
 ## Wrong turns and caveats
 
@@ -18,4 +27,7 @@ Do not test only a debug APK, disable R8 to make a release pass, or assume emula
 
 ## Verification
 
-Run tests and the release bundle task, inspect manifest/resources and signing, upload/validate the AAB in the intended track, install generated artifacts with `adb`, and preserve mapping/native symbols for the exact shipped build.
+Run tests and the release bundle task, inspect manifest/resources and signing,
+install generated artifacts with `adb`, and preserve mapping/native symbols for
+the candidate build. Upload/validate the AAB in a track only when explicitly
+requested.

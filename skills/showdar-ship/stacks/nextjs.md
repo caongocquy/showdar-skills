@@ -1,4 +1,7 @@
-# Next.js shipping
+# Next.js delivery verification
+
+Default to local build and runtime verification. Do not deploy or change
+provider configuration unless the task explicitly requests deployment.
 
 ## Choose the runtime
 
@@ -8,10 +11,20 @@ Record Next.js version, router, Node version, output mode, hosting target, and w
 
 Classify public `NEXT_PUBLIC_*` values and server-only variables. Public values are commonly embedded during build, so changing them after deployment may require rebuilding; server variables must exist in the runtime environment. Inspect route output, middleware/runtime assignments, image/font assets, base path, redirects/headers, and source-map/secret exposure. For App Router, verify server/client boundaries, server actions, and cache/revalidation behavior in the production build.
 
-## Release and smoke
+## Artifact and local smoke
 
-Run the repository's tests, typecheck/lint, and `next build`; start the production artifact with `next start` or the provider-equivalent command. Smoke direct load and client navigation for critical routes, auth/session, API/route handlers, image assets, error/404 paths, and cache invalidation. Check health/readiness, logs, CDN behavior, and the deployed commit/version using `references/post-deploy.md`.
+Run the repository's tests, typecheck/lint, and `next build`; start the
+production artifact with `next start` when possible. Smoke direct load and
+client navigation for critical routes, auth/session, API/route handlers, image
+assets, error/404 paths, and local cache behavior. Check deployed health,
+logs, CDN behavior, or deployed commit/version only through the explicit
+deployment-verification gate in `references/post-deploy.md`.
 
 ## Wrong turns and caveats
 
-Do not deploy a development server, assume preview environment variables match production, or add `dynamic`/`no-store` merely to force a passing build. React/Next cache APIs, bundlers, edge support, and provider output rules are version-sensitive; verify migration/release notes and retain the previous artifact plus its referenced static assets for rollback.
+Do not use a development server as release evidence, assume preview environment
+variables match another environment, or add `dynamic`/`no-store` merely to
+force a passing build. React/Next cache APIs, bundlers, edge support, and
+provider output rules are version-sensitive; verify migration/release notes
+when relevant and record prior-artifact rollback assumptions without changing
+provider state.

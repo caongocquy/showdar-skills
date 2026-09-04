@@ -1,7 +1,8 @@
 version: 2
 rules:
   - showdar-review never performs deployment or publishing as part of review
-  - showdar-ship never deploys publishes submits or mutates production without explicit user approval
+  - showdar-ship verifies delivery readiness by default and never creates or modifies CI/deployment/release infrastructure without explicit task intent
+  - showdar-ship never deploys publishes submits tags pushes or mutates production without explicit user intent and required approval
   - showdar-debug does not patch before sufficient evidence and a falsifiable hypothesis
   - showdar-recover never discards user or uncommitted work without explicit approval
   - showdar-plan does not invent product requirements to simplify architecture
