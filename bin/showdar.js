@@ -49,6 +49,10 @@ async function main() {
   const version = await packageVersion();
 
   if (command === 'help' || command === '--help' || command === '-h') return printHelp(version);
+  if (command === '--version' || command === '-V') {
+    console.log(version);
+    return;
+  }
   if (args.includes('--help') || args.includes('-h')) return printHelp(version, command);
 
   const scope = ['init', 'status', 'doctor', 'remove'].includes(command) ? scopeAfter(args) : null;
@@ -83,6 +87,10 @@ async function main() {
       ? await initGlobal({ homeRoot: homedir(), packageRoot, profile, ai, skillIds, commandNames, packageVersion: version })
       : await initProject({ projectRoot, packageRoot, profile, ai, skillIds, commandNames, packageVersion: version });
     console.log(`Showdar Skills installed.\nScope: ${scope}\nProfile: ${profile}\nAI: ${ai}\nTargets: ${result.targets.join(', ')}\nSkills: ${result.skills}\nOpenCode commands: ${result.commands}`);
+    if (scope === 'project') {
+      console.log(`Requested: ${result.requestedSkills}\nInstalled in project: ${result.installedSkills}\nSatisfied by global: ${result.satisfiedByGlobal}\nSkipped duplicate copies: ${result.skippedDuplicates}`);
+    }
+    for (const warning of result.warnings ?? []) console.log(`warning: ${warning}`);
     if (scope === 'global') console.log(`Manifest: ${globalManifestPath()}`);
     if (result.targets.includes('codex')) console.log('Codex: invoke skills directly with $showdar-<name> or let native skill discovery route by description.');
     if (result.targets.includes('opencode')) console.log('OpenCode: use native skill discovery or /showdar/<command>.');
@@ -97,7 +105,9 @@ async function main() {
       return;
     }
     console.log(`Showdar Skills\nScope: ${result.scope}\nProfile: ${result.profile}\nAI: ${result.ai}\nTargets: ${result.targets.join(', ')}\nSkills: ${result.skills}\nCommands: ${result.commands}\nHealth: ${result.healthy ? 'OK' : 'BROKEN'}`);
+    if (scope === 'project') console.log(`Requested: ${result.requestedSkills}\nInstalled in project: ${result.installedSkills}\nSatisfied by global: ${result.satisfiedByGlobal}`);
     for (const issue of result.issues) console.log(`- ${issue}`);
+    for (const warning of result.warnings ?? []) console.log(`warning: ${warning}`);
     if (command === 'doctor' && !result.healthy) process.exitCode = 1;
     return;
   }

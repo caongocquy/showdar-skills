@@ -86,3 +86,27 @@ test('published version guard distinguishes missing versions from registry failu
     /npm view failed/,
   );
 });
+
+test('publish workflow separates npm publishing and GitHub Release permissions safely', async () => {
+  const workflow = await readFile(path.join(root, '.github/workflows/publish.yml'), 'utf8');
+  assert.match(workflow, /^permissions:\n  contents: read/m);
+  assert.doesNotMatch(workflow.slice(0, workflow.indexOf('jobs:')), /id-token: write/);
+  assert.match(workflow, /  publish:\n    runs-on: ubuntu-latest\n    permissions:\n      contents: read\n      id-token: write/m);
+  assert.match(workflow, /  release:\n    needs: publish/m);
+
+  const publish = workflow.match(/  publish:\n([\s\S]*?)\n  release:/)?.[1] ?? '';
+  const release = workflow.match(/  release:\n([\s\S]*)$/)?.[1] ?? '';
+  assert.doesNotMatch(publish, /contents: write/);
+  assert.match(release, /permissions:\n      contents: write/);
+  assert.doesNotMatch(release, /id-token: write/);
+  assert.match(release, /GH_TOKEN:\s*\$\{\{ github\.token \}\}/);
+  assert.match(release, /GITHUB_REF_NAME/);
+  assert.match(release, /--verify-tag/);
+  assert.match(release, /--generate-notes/);
+  assert.match(release, /--latest/);
+  assert.match(release, /releases\/tags/);
+  assert.match(release, /HTTP 404/);
+  assert.match(release, /already exists|exists/i);
+  assert.doesNotMatch(release, /0\.2\.1/);
+  assert.doesNotMatch(workflow, /NPM_TOKEN|NODE_AUTH_TOKEN/);
+});

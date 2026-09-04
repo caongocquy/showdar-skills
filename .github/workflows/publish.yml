@@ -7,11 +7,13 @@ on:
 
 permissions:
   contents: read
-  id-token: write
 
 jobs:
   publish:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - name: Check out release
         uses: actions/checkout@v7
@@ -52,3 +54,32 @@ jobs:
       - name: Publish with npm provenance
         if: steps.published.outputs.publish == 'true'
         run: npm publish --provenance
+
+  release:
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Ensure GitHub Release exists
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          response=$(gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${GITHUB_REF_NAME}" 2>&1)
+          status=$?
+          set -e
+          if [ "$status" -eq 0 ]; then
+            echo "GitHub Release ${GITHUB_REF_NAME} already exists; leaving it unchanged."
+            exit 0
+          fi
+          if ! printf '%s\n' "$response" | grep -Eiq 'HTTP 404|status code 404'; then
+            printf '%s\n' "$response" >&2
+            exit "$status"
+          fi
+          gh release create "$GITHUB_REF_NAME" \
+            --repo "$GITHUB_REPOSITORY" \
+            --verify-tag \
+            --title "Showdar Skills $GITHUB_REF_NAME" \
+            --generate-notes \
+            --latest

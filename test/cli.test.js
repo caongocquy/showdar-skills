@@ -10,9 +10,9 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '..');
 const bin = path.join(root, 'bin', 'showdar.js');
 
-function run(args, cwd = root) {
+function run(args, cwd = root, extraEnv = {}) {
   return new Promise((resolve) => {
-    const child = spawn(process.execPath, [bin, ...args], { cwd });
+    const child = spawn(process.execPath, [bin, ...args], { cwd, env: { ...process.env, ...extraEnv } });
     let stdout = '';
     let stderr = '';
     child.stdout.on('data', (d) => { stdout += d; });
@@ -32,6 +32,15 @@ test('showdar list prints V0.2 profiles and flagship skills', async () => {
   assert.match(result.stdout, /showdar-security/);
   assert.match(result.stdout, /showdar-ops/);
   assert.doesNotMatch(result.stdout, /showdar-systematic-debugging/);
+});
+
+test('showdar prints the package version for --version and -V', async () => {
+  const expected = JSON.parse(await readFile(path.join(root, 'package.json'), 'utf8')).version;
+  for (const flag of ['--version', '-V']) {
+    const result = await run([flag]);
+    assert.equal(result.code, 0, result.stderr);
+    assert.equal(result.stdout.trim(), expected);
+  }
 });
 
 test('showdar init uses --ai and native destination', async () => {
@@ -55,6 +64,17 @@ test('showdar accepts legacy profile aliases and writes canonical profile metada
   const manifest = JSON.parse(await readFile(path.join(project, '.showdar.json'), 'utf8'));
   assert.equal(manifest.profile, 'developer');
   await access(path.join(project, '.agents/skills/showdar-ship/SKILL.md'));
+});
+
+test('project init reports global skills outside the requested profile', async () => {
+  const home = await mkdtemp(path.join(tmpdir(), 'showdar-cli-global-home-'));
+  const project = await mkdtemp(path.join(tmpdir(), 'showdar-cli-global-project-'));
+  const env = { HOME: home };
+  const globalInit = await run(['init', '--scope', 'global', '--profile', 'full', '--ai', 'codex'], project, env);
+  assert.equal(globalInit.code, 0, globalInit.stderr);
+  const projectInit = await run(['init', '--profile', 'developer', '--ai', 'codex'], project, env);
+  assert.equal(projectInit.code, 0, projectInit.stderr);
+  assert.match(projectInit.stdout, /Global Showdar installation exposes skills outside project profile "developer"/);
 });
 
 test('status, doctor, and remove read manifests with legacy profile names', async () => {

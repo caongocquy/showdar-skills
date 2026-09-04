@@ -5,6 +5,9 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { initGlobal, initProject, inspectGlobal, inspectProject, removeGlobal, removeProject } from '../src/project.js';
 import { globalCommandRootFor, globalSkillRootFor, resolveTargets, skillRootFor } from '../src/adapters.js';
+import { resolveProfile } from '../src/catalog.js';
+
+const packageRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 
 async function fixture() {
   const base = await mkdtemp(path.join(tmpdir(), 'showdar-v02-'));
@@ -193,4 +196,132 @@ test('project and global ownership manifests do not collide and removal is scope
   await assert.rejects(access(path.join(homeRoot, '.agents/skills/showdar-debug')));
   await assert.rejects(access(path.join(homeRoot, '.showdar/global.json')));
   assert.equal((await inspectProject(projectRoot)).healthy, true);
+});
+
+test('project init deduplicates globally owned skills and preserves the requested profile', async () => {
+  const base = await mkdtemp(path.join(tmpdir(), 'showdar-cross-scope-'));
+  const homeRoot = path.join(base, 'home');
+  const projectRoot = path.join(base, 'project');
+  await mkdir(projectRoot, { recursive: true });
+  await initGlobal({ homeRoot, packageRoot, profile: 'minimal', ai: 'codex', skillIds: resolveProfile('minimal'), packageVersion: '0.2.1' });
+
+  const result = await initProject({ projectRoot, homeRoot, packageRoot, profile: 'developer', ai: 'codex', skillIds: resolveProfile('developer'), packageVersion: '0.2.1' });
+  assert.equal(result.requestedSkills, 12);
+  assert.equal(result.installedSkills, 4);
+  assert.equal(result.satisfiedByGlobal, 8);
+  assert.equal(result.skippedDuplicates, 8);
+
+  const manifest = JSON.parse(await readFile(path.join(projectRoot, '.showdar.json'), 'utf8'));
+  assert.deepEqual(manifest.skills, resolveProfile('developer'));
+  assert.equal(manifest.satisfiedByGlobal.length, 8);
+  assert.equal(manifest.files.filter(({ path: file }) => file.startsWith('.agents/skills/')).length, 4);
+  await assert.rejects(access(path.join(projectRoot, '.agents/skills/showdar-understand')));
+  await access(path.join(projectRoot, '.agents/skills/showdar-security/SKILL.md'));
+  const status = await inspectProject(projectRoot, { homeRoot });
+  assert.equal(status.healthy, true);
+  assert.equal(status.skills, 12);
+  assert.equal(status.satisfiedByGlobal, 8);
+
+  const repeat = await initProject({ projectRoot, homeRoot, packageRoot, profile: 'developer', ai: 'codex', skillIds: resolveProfile('developer'), packageVersion: '0.2.1' });
+  assert.equal(repeat.installedSkills, 4);
+  assert.equal(repeat.satisfiedByGlobal, 8);
+  assert.equal(repeat.skippedDuplicates, 8);
+});
+
+test('project removal preserves globally satisfied Showdar skills', async () => {
+  const base = await mkdtemp(path.join(tmpdir(), 'showdar-cross-scope-remove-'));
+  const homeRoot = path.join(base, 'home');
+  const projectRoot = path.join(base, 'project');
+  await mkdir(projectRoot, { recursive: true });
+  await initGlobal({ homeRoot, packageRoot, profile: 'minimal', ai: 'codex', skillIds: resolveProfile('minimal'), packageVersion: '0.2.1' });
+  await initProject({ projectRoot, homeRoot, packageRoot, profile: 'developer', ai: 'codex', skillIds: resolveProfile('developer'), packageVersion: '0.2.1' });
+
+  await removeProject(projectRoot);
+  await access(path.join(homeRoot, '.agents/skills/showdar-debug/SKILL.md'));
+  await assert.rejects(access(path.join(projectRoot, '.agents/skills/showdar-security')));
+});
+
+test('project doctor reports missing global satisfaction after global removal', async () => {
+  const base = await mkdtemp(path.join(tmpdir(), 'showdar-cross-scope-missing-'));
+  const homeRoot = path.join(base, 'home');
+  const projectRoot = path.join(base, 'project');
+  await mkdir(projectRoot, { recursive: true });
+  await initGlobal({ homeRoot, packageRoot, profile: 'minimal', ai: 'codex', skillIds: resolveProfile('minimal'), packageVersion: '0.2.1' });
+  await initProject({ projectRoot, homeRoot, packageRoot, profile: 'developer', ai: 'codex', skillIds: resolveProfile('developer'), packageVersion: '0.2.1' });
+  await removeGlobal({ homeRoot });
+
+  const status = await inspectProject(projectRoot, { homeRoot });
+  assert.equal(status.healthy, false);
+  assert.ok(status.issues.some((issue) => /global.*showdar-understand|globally satisfied.*missing/i.test(issue)));
+});
+
+test('project doctor reports duplicate Showdar-owned project and global skills without deleting them', async () => {
+  const base = await mkdtemp(path.join(tmpdir(), 'showdar-cross-scope-duplicate-'));
+  const homeRoot = path.join(base, 'home');
+  const projectRoot = path.join(base, 'project');
+  await mkdir(projectRoot, { recursive: true });
+  await initProject({ projectRoot, packageRoot, profile: 'minimal', ai: 'codex', skillIds: resolveProfile('minimal'), packageVersion: '0.2.1' });
+  await initGlobal({ homeRoot, packageRoot, profile: 'minimal', ai: 'codex', skillIds: resolveProfile('minimal'), packageVersion: '0.2.1' });
+
+  const status = await inspectProject(projectRoot, { homeRoot });
+  assert.equal(status.healthy, true);
+  assert.ok(status.warnings.some((warning) => /Duplicate Showdar skill discovery[\s\S]*showdar-debug/i.test(warning)));
+  await access(path.join(projectRoot, '.agents/skills/showdar-debug/SKILL.md'));
+  await access(path.join(homeRoot, '.agents/skills/showdar-debug/SKILL.md'));
+});
+
+test('project init preserves foreign same-name skills and rejects overwrite', async () => {
+  const base = await mkdtemp(path.join(tmpdir(), 'showdar-cross-scope-foreign-'));
+  const homeRoot = path.join(base, 'home');
+  const projectRoot = path.join(base, 'project');
+  const target = path.join(projectRoot, '.agents/skills/showdar-debug');
+  await mkdir(target, { recursive: true });
+  await writeFile(path.join(target, 'SKILL.md'), 'user-owned');
+  await assert.rejects(
+    initProject({ projectRoot, homeRoot, packageRoot, profile: 'minimal', ai: 'codex', skillIds: resolveProfile('minimal'), packageVersion: '0.2.1' }),
+    /Refusing to overwrite existing non-Showdar-managed skill/,
+  );
+  assert.equal(await readFile(path.join(target, 'SKILL.md'), 'utf8'), 'user-owned');
+});
+
+test('project status warns when global Showdar exposes skills outside its profile', async () => {
+  const base = await mkdtemp(path.join(tmpdir(), 'showdar-cross-scope-extra-'));
+  const homeRoot = path.join(base, 'home');
+  const projectRoot = path.join(base, 'project');
+  await mkdir(projectRoot, { recursive: true });
+  await initGlobal({ homeRoot, packageRoot, profile: 'full', ai: 'codex', skillIds: resolveProfile('full'), packageVersion: '0.2.1' });
+  await initProject({ projectRoot, homeRoot, packageRoot, profile: 'developer', ai: 'codex', skillIds: resolveProfile('developer'), packageVersion: '0.2.1' });
+
+  const status = await inspectProject(projectRoot, { homeRoot });
+  assert.equal(status.healthy, true);
+  assert.ok(status.warnings.some((warning) => /outside project profile.*developer/i.test(warning)));
+});
+
+test('changing a project profile removes only stale project-owned skills', async () => {
+  const base = await mkdtemp(path.join(tmpdir(), 'showdar-cross-scope-profile-'));
+  const homeRoot = path.join(base, 'home');
+  const projectRoot = path.join(base, 'project');
+  await mkdir(projectRoot, { recursive: true });
+  await initProject({ projectRoot, homeRoot, packageRoot, profile: 'full', ai: 'codex', skillIds: resolveProfile('full'), packageVersion: '0.2.1' });
+  await initGlobal({ homeRoot, packageRoot, profile: 'minimal', ai: 'codex', skillIds: resolveProfile('minimal'), packageVersion: '0.2.1' });
+
+  await initProject({ projectRoot, homeRoot, packageRoot, profile: 'developer', ai: 'codex', skillIds: resolveProfile('developer'), packageVersion: '0.2.1' });
+  await access(path.join(projectRoot, '.agents/skills/showdar-debug/SKILL.md'));
+  await assert.rejects(access(path.join(projectRoot, '.agents/skills/showdar-ops')));
+  await access(path.join(homeRoot, '.agents/skills/showdar-debug/SKILL.md'));
+});
+
+test('project init deduplicates shared .agents paths in --ai all mode', async () => {
+  const base = await mkdtemp(path.join(tmpdir(), 'showdar-cross-scope-all-'));
+  const homeRoot = path.join(base, 'home');
+  const projectRoot = path.join(base, 'project');
+  await mkdir(projectRoot, { recursive: true });
+  await initGlobal({ homeRoot, packageRoot, profile: 'minimal', ai: 'codex', skillIds: resolveProfile('minimal'), packageVersion: '0.2.1' });
+  const result = await initProject({ projectRoot, homeRoot, packageRoot, profile: 'developer', ai: 'all', skillIds: resolveProfile('developer'), commandNames: ['debug', 'security'], packageVersion: '0.2.1' });
+
+  assert.equal(result.satisfiedByGlobal, 8);
+  assert.equal(result.skippedDuplicates, 8);
+  await assert.rejects(access(path.join(projectRoot, '.agents/skills/showdar-understand')));
+  await access(path.join(projectRoot, '.opencode/skills/showdar-understand/SKILL.md'));
+  await access(path.join(projectRoot, '.claude/skills/showdar-understand/SKILL.md'));
 });
