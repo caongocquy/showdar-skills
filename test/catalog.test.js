@@ -1,6 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { AI_TARGETS, PROFILE_ALIASES, PROFILES, SKILLS, canonicalProfile, resolveProfile } from '../src/catalog.js';
+
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 const EXPECTED_SKILLS = [
   'showdar-understand',
@@ -23,6 +28,17 @@ const EXPECTED_SKILLS = [
 test('catalog contains exactly fifteen first-class skills', () => {
   assert.deepEqual(SKILLS.map((skill) => skill.id), EXPECTED_SKILLS);
   assert.ok(SKILLS.every((skill) => skill.description?.length >= 30));
+});
+
+test('discovery descriptions are trigger-only and synchronized with native metadata', async () => {
+  for (const skill of SKILLS) {
+    const text = await readFile(path.join(repoRoot, 'skills', skill.id, 'SKILL.md'), 'utf8');
+    const native = text.match(/^description:\s*(.+)$/m)?.[1];
+    assert.ok(native, `${skill.id} should have a native discovery description`);
+    assert.match(native, /^Use when /, `${skill.id} should describe a trigger, not a workflow`);
+    assert.equal(skill.description, native, `${skill.id} catalog/native descriptions drifted`);
+  }
+  assert.doesNotMatch(SKILLS.find(({ id }) => id === 'showdar-review').description, /\bsecurity\b/i);
 });
 
 test('skill ids are unique and showdar-prefixed', () => {

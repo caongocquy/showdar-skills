@@ -1,6 +1,6 @@
 ---
 name: showdar-security
-description: Analyze security posture, threats, trust boundaries, auth, secrets, data exposure, and practical remediation using evidence.
+description: Use when assessing threat models, attack surfaces, trust boundaries, auth/authz, secrets, exposure, or exploitability.
 ---
 
 # Showdar Security

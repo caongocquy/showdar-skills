@@ -1,6 +1,6 @@
 ---
 name: showdar-design
-description: Create, implement, review, and polish product UI using searchable local design knowledge, stack-specific rules, accessibility, and anti-generic visual guidance.
+description: Use when product UI needs design direction, UX decisions, responsive layout, accessibility, or visual polish.
 ---
 
 # Showdar Design

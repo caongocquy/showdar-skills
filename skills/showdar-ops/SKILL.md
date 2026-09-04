@@ -1,6 +1,6 @@
 ---
 name: showdar-ops
-description: Handle operational engineering across CI/CD, containers, environments, deployment, observability, rollback, and explicit execution.
+description: Use when inspecting or changing CI/CD, containers, environments, deployment, observability, rollback, or runtime operations.
 ---
 
 # Showdar Ops

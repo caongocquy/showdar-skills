@@ -1,6 +1,6 @@
 ---
 name: showdar-understand
-description: Analyze an unfamiliar repository from executable evidence and produce a bounded architecture map before any implementation work.
+description: Use when mapping an unfamiliar repository, architecture, dependencies, or impact before deciding what to change.
 ---
 
 # Showdar Understand

@@ -951,6 +951,110 @@
       "query": "change deployment config versus commit local Git workflow explicit remote target",
       "filters": { "category": "safety" },
       "expected": { "topK": 5, "categoriesAny": ["safety"], "tagsAny": ["local Git boundary"], "filtersMatch": true }
+    },
+    {
+      "id": "overlap-understand-permission-flow",
+      "skill": "showdar-understand",
+      "dataset": "data/architecture-signals.csv",
+      "query": "understand how this repository currently handles permissions and native boundaries",
+      "filters": { "category": "mobile" },
+      "expected": { "topK": 5, "categoriesAny": ["mobile"], "tagsAny": ["mobile native bridge"], "filtersMatch": true }
+    },
+    {
+      "id": "overlap-requirements-permission-flow",
+      "skill": "showdar-requirements",
+      "dataset": "data/requirements-patterns.csv",
+      "query": "what requirements are missing from this permission flow",
+      "filters": { "category": "ambiguity" },
+      "expected": { "topK": 5, "categoriesAny": ["ambiguity"], "tagsAny": ["ambiguity missing decision"], "filtersMatch": true }
+    },
+    {
+      "id": "overlap-plan-permission-states",
+      "skill": "showdar-plan",
+      "dataset": "data/planning-checklists.csv",
+      "query": "plan how to implement the missing permission states and negative behavior",
+      "filters": { "category": "verification" },
+      "expected": { "topK": 5, "categoriesAny": ["verification"], "tagsAny": ["negative path"], "filtersMatch": true }
+    },
+    {
+      "id": "overlap-build-permission-change",
+      "skill": "showdar-build",
+      "dataset": "data/change-smells.csv",
+      "query": "implement the permission change in native configuration",
+      "filters": { "category": "native" },
+      "expected": { "topK": 5, "categoriesAny": ["native"], "tagsAny": ["native configuration"], "filtersMatch": true }
+    },
+    {
+      "id": "overlap-quality-permission-denial",
+      "skill": "showdar-quality",
+      "dataset": "data/quality-patterns.csv",
+      "query": "create QA scenarios for permission denial",
+      "filters": { "category": "platform", "stack": "react-native" },
+      "expected": { "topK": 5, "categoriesAny": ["platform"], "tagsAny": ["permissions lifecycle"], "stacksAny": ["react-native"], "filtersMatch": true }
+    },
+    {
+      "id": "overlap-test-permission-denial",
+      "skill": "showdar-test",
+      "dataset": "data/test-strategy.csv",
+      "query": "add automated tests for permission denial",
+      "filters": { "category": "e2e" },
+      "expected": { "topK": 5, "categoriesAny": ["e2e"], "tagsAny": ["native journey"], "filtersMatch": true }
+    },
+    {
+      "id": "overlap-security-auth-diff",
+      "skill": "showdar-security",
+      "dataset": "data/security-patterns.csv",
+      "query": "review this auth diff for vulnerabilities authorization IDOR BOLA",
+      "filters": { "category": "authorization" },
+      "expected": { "topK": 5, "categoriesAny": ["authorization"], "tagsAny": ["IDOR BOLA"], "filtersMatch": true }
+    },
+    {
+      "id": "overlap-review-maintainability-diff",
+      "skill": "showdar-review",
+      "dataset": "data/review-patterns.csv",
+      "query": "review this diff for maintainability issues and unnecessary abstraction",
+      "filters": { "category": "architecture" },
+      "expected": { "topK": 5, "categoriesAny": ["architecture"], "tagsAny": ["abstraction"], "filtersMatch": true }
+    },
+    {
+      "id": "overlap-ship-release-readiness",
+      "skill": "showdar-ship",
+      "dataset": "data/release-checks.csv",
+      "query": "is this ready to release and hand off with a verified artifact",
+      "filters": { "category": "build" },
+      "expected": { "topK": 5, "categoriesAny": ["build"], "filtersMatch": true }
+    },
+    {
+      "id": "overlap-ops-staging-deploy",
+      "skill": "showdar-ops",
+      "dataset": "data/ops-patterns.csv",
+      "query": "deploy this release to staging",
+      "filters": { "category": "execution" },
+      "expected": { "topK": 5, "categoriesAny": ["execution"], "tagsAny": ["deploy staging"], "filtersMatch": true }
+    },
+    {
+      "id": "overlap-git-commit-merge",
+      "skill": "showdar-git",
+      "dataset": "data/git-workflows.csv",
+      "query": "commit and merge this branch",
+      "filters": { "category": "merge" },
+      "expected": { "topK": 5, "categoriesAny": ["merge"], "tagsAny": ["merge", "branch"], "filtersMatch": true }
+    },
+    {
+      "id": "overlap-git-interrupted-rebase",
+      "skill": "showdar-git",
+      "dataset": "data/git-workflows.csv",
+      "query": "recover an interrupted rebase",
+      "filters": { "category": "conflict" },
+      "expected": { "topK": 5, "categoriesAny": ["conflict"], "tagsAny": ["rebase"], "filtersMatch": true }
+    },
+    {
+      "id": "overlap-recover-interrupted-work",
+      "skill": "showdar-recover",
+      "dataset": "data/recovery-signals.csv",
+      "query": "recover interrupted implementation work",
+      "filters": { "category": "source" },
+      "expected": { "topK": 5, "categoriesAny": ["source"], "filtersMatch": true }
     }
   ]
 }

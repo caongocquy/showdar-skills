@@ -1,6 +1,6 @@
 ---
 name: showdar-build
-description: Implement a requested change as the smallest coherent patch that fits existing architecture, contracts, error handling, and stack conventions.
+description: Use when implementing or refactoring an agreed application change within existing architecture and contracts.
 ---
 
 # Showdar Build

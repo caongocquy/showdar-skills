@@ -1,6 +1,6 @@
 ---
-description: Perform evidence-backed P0-P3 code review with Showdar
+description: Review code for general correctness, architecture, performance, maintainability, and tests
 ---
-Load and follow `showdar-review`. Prioritize correctness, security, architecture, performance, and tests; omit speculative or formatter-owned findings.
+Load and follow `showdar-review`. Focus on general correctness, architecture, performance, maintainability, and tests; use `showdar-security` for security-specific threats, auth, secrets, exposure, or exploitability.
 
 Request: $ARGUMENTS

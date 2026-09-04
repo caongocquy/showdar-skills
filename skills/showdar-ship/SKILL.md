@@ -1,6 +1,6 @@
 ---
 name: showdar-ship
-description: Use when assessing whether a requested change is ready for handoff, merge, publish, or an explicitly requested release/deployment verification.
+description: Use when checking whether a change, artifact, or release is ready for handoff or external release.
 ---
 
 # Showdar Ship

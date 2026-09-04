@@ -1,6 +1,6 @@
 ---
 name: showdar-review
-description: Perform evidence-backed high-signal code review using P0–P3 severity and prioritizing correctness, security, architecture, performance, maintainability, and tests.
+description: Use when reviewing code or diffs for general correctness, architecture, performance, maintainability, or tests.
 ---
 
 # Showdar Review

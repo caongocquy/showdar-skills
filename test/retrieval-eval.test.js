@@ -100,7 +100,7 @@ test('evaluation serialization is deterministic for identical input', () => {
 
 test('flagship suite loads every skill and evaluates deterministically', async () => {
   const suite = await loadEvalSuite(suiteFile);
-  assert.equal(suite.cases.length, 123);
+  assert.equal(suite.cases.length, 136);
   assert.deepEqual([...new Set(suite.cases.map((caseDef) => caseDef.skill))].sort(), [
     'showdar-build',
     'showdar-debug',

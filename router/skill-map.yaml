@@ -35,7 +35,7 @@ routes:
     triggers: ["release readiness", "ready to release", "ship", "handoff", "package verification"]
     skill: showdar-ship
   recover:
-    triggers: ["resume", "recover task", "session stopped", "continue partial work", "conflict recovery"]
+    triggers: ["resume interrupted implementation", "recover partial work", "session stopped", "continue partial work", "missing context"]
     skill: showdar-recover
   git:
     triggers: ["commit", "stage only task files", "merge branch", "rebase branch", "cherry-pick commit", "git conflict", "push branch", "clean merged branches", "finish git workflow"]
