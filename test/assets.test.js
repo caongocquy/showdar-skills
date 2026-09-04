@@ -22,6 +22,8 @@ const commandMap = {
   git: 'showdar-git',
   requirements: 'showdar-requirements',
   quality: 'showdar-quality',
+  security: 'showdar-security',
+  ops: 'showdar-ops',
 };
 
 const legacyIds = [
@@ -56,6 +58,8 @@ test('OpenCode workflow commands map to flagship skills and accept arguments', a
   assert.match(skillCommand, /showdar-ship/);
   assert.match(skillCommand, /showdar-requirements/);
   assert.match(skillCommand, /showdar-quality/);
+  assert.match(skillCommand, /showdar-security/);
+  assert.match(skillCommand, /showdar-ops/);
 });
 
 test('profiles on disk match catalog profiles', async () => {

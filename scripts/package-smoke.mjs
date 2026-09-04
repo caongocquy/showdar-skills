@@ -44,15 +44,15 @@ try {
   await writeFile(path.join(userSkill, 'SKILL.md'), 'user-owned\n');
 
   const init = run(process.execPath, [cli, 'init', '--ai', 'all', '--profile', 'full'], { cwd: project });
-  if (!/Skills: 13/.test(init)) throw new Error(`unexpected init output: ${init}`);
+  if (!/Skills: 15/.test(init)) throw new Error(`unexpected init output: ${init}`);
 
   const roots = ['.agents/skills', '.opencode/skills', '.claude/skills'];
-  const skillIds = ['showdar-understand','showdar-plan','showdar-design','showdar-build','showdar-debug','showdar-test','showdar-review','showdar-upgrade','showdar-ship','showdar-recover','showdar-git','showdar-requirements','showdar-quality'];
+  const skillIds = ['showdar-understand','showdar-plan','showdar-design','showdar-build','showdar-debug','showdar-test','showdar-review','showdar-upgrade','showdar-ship','showdar-recover','showdar-git','showdar-requirements','showdar-quality','showdar-security','showdar-ops'];
   for (const skillRoot of roots) {
     for (const id of skillIds) await mustExist(path.join(project, skillRoot, id, 'SKILL.md'));
   }
   const commands = await readdir(path.join(project, '.opencode', 'commands', 'showdar'));
-  if (commands.filter((name) => name.endsWith('.md')).length !== 14) throw new Error(`expected 14 OpenCode commands, got ${commands.length}`);
+  if (commands.filter((name) => name.endsWith('.md')).length !== 16) throw new Error(`expected 16 OpenCode commands, got ${commands.length}`);
 
   // Prove installed skills are self-contained: their helper imports must work outside the source package.
   const searchOut = run(process.execPath, [path.join(project, '.agents/skills/showdar-design/scripts/search.mjs'), '--query', 'wedding editorial elegant', '--domain', 'products', '--limit', '1'], { cwd: project });
@@ -63,6 +63,10 @@ try {
   if (!/"root"/.test(understandOut) || !/"signals"/.test(understandOut)) throw new Error('installed understand script returned incomplete JSON');
   const shipOut = run(process.execPath, [path.join(project, '.opencode/skills/showdar-ship/scripts/release-check.mjs'), project], { cwd: project });
   if (!/"checks"/.test(shipOut) || !/"note"/.test(shipOut)) throw new Error('installed ship script returned incomplete JSON');
+  const securityOut = run(process.execPath, [path.join(project, '.agents/skills/showdar-security/scripts/inspect-security-surface.mjs'), project], { cwd: project });
+  if (!/"securitySensitiveFiles"/.test(securityOut) || !/"envFiles"/.test(securityOut)) throw new Error('installed security surface script returned incomplete JSON');
+  const opsOut = run(process.execPath, [path.join(project, '.opencode/skills/showdar-ops/scripts/inspect-ops-state.mjs'), project], { cwd: project });
+  if (!/"ciFiles"/.test(opsOut) || !/"packageScripts"/.test(opsOut)) throw new Error('installed ops state script returned incomplete JSON');
 
   const detectorFixture = path.join(sandbox, 'detector-fixture');
   await mkdir(path.join(detectorFixture, 'Client.xcodeproj'), { recursive: true });
@@ -88,7 +92,7 @@ try {
   const doctor = run(process.execPath, [cli, 'doctor'], { cwd: project });
   if (!/Health: OK/.test(doctor)) throw new Error(`doctor is not healthy: ${doctor}`);
   const status = run(process.execPath, [cli, 'status'], { cwd: project });
-  if (!/AI: all/.test(status) || !/Skills: 13/.test(status)) throw new Error(`unexpected status: ${status}`);
+  if (!/AI: all/.test(status) || !/Skills: 15/.test(status)) throw new Error(`unexpected status: ${status}`);
 
   run(process.execPath, [cli, 'remove'], { cwd: project });
   await mustNotExist(path.join(project, '.showdar.json'));

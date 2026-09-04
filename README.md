@@ -2,7 +2,7 @@
 
 **Opinionated, practical engineering playbooks for coding agents.**
 
-Showdar Skills is one package containing 13 first-class skills for software-team workflows. They cover engineering, product requirements, QA/QC, delivery verification, and safe local Git work. Each skill is more than a prompt: it can include references, searchable structured knowledge, stack-specific guidance, deterministic read-only helper scripts, and examples.
+Showdar Skills is one package containing 15 first-class skills for software-team workflows. They cover engineering, analysis, QA/QC, security, operations, delivery verification, and safe local Git work. Each skill is more than a prompt: it can include references, searchable structured knowledge, stack-specific guidance, deterministic read-only helper scripts, and examples.
 
 ## Flagship skills
 
@@ -21,11 +21,13 @@ Showdar Skills is one package containing 13 first-class skills for software-team
 | `showdar-git` | Complete local Git workflows while preserving unrelated work |
 | `showdar-requirements` | Turn product/business input into explicit, testable requirements and acceptance criteria |
 | `showdar-quality` | Plan QA/QC verification, risk-based coverage, regression scope, and test scenarios |
+| `showdar-security` | Security analysis, threat modeling, auth/authz, data, secrets, and attack-surface risk review |
+| `showdar-ops` | Operational engineering for CI/CD, containers, deployment, observability, and rollback with explicit mutation boundaries |
 
-The suite is grouped by capability: the 11 engineering skills cover repository
-work, `showdar-requirements` covers product/BA analysis, and `showdar-quality`
-covers QA/QC planning. Requirements are not an implementation plan; quality
-planning is not automated test implementation.
+The suite is grouped by capability: Engineering, Analysis, Quality, Security,
+and Operations. `showdar-ship` verifies delivery readiness; `showdar-ops`
+performs operational work only when explicitly requested. Requirements are not
+an implementation plan; quality planning is not automated test implementation.
 
 ## Install from source
 
@@ -158,6 +160,9 @@ $showdar-git commit only the current task changes
 $showdar-git merge this branch into develop but do not push
 $showdar-requirements review this ticket for missing business rules
 $showdar-quality create regression scenarios for this release
+$showdar-security threat model this auth flow
+$showdar-ops inspect the current deployment setup
+$showdar-ops deploy this service to staging
 ```
 
 `showdar-git` handles local Git workflow only. It does not imply GitHub,
@@ -174,6 +179,8 @@ opencode` or `--ai all`, gets project commands under
 /showdar/review current changes
 /showdar/ship ios
 /showdar/git commit only the current task changes
+/showdar/security threat model this auth flow
+/showdar/ops inspect the current deployment setup
 ```
 
 These `/showdar/...` commands are OpenCode commands, not Codex commands.
@@ -214,11 +221,11 @@ The same pattern is used across the suite where it adds value: debug has failure
 | Profile | Installed skills |
 | --- | --- |
 | `minimal` | 8 core engineering skills: understand, plan, build, debug, test, review, recover, git |
-| `developer` | 11 general engineering skills, excluding product/QA role skills |
-| `backend` | 12 backend engineering plus requirements and quality skills |
+| `developer` | 12 general engineering skills plus security |
+| `backend` | 14 backend engineering plus requirements, quality, security, and ops skills |
 | `qa` | 9 skills focused on requirements, QA, testing, debugging, review, ship, recovery, and Git |
 | `product` | 6 skills focused on repository context, requirements, planning, design, quality, and review |
-| `full` | All 13 skills |
+| `full` | All 15 skills |
 
 Profiles select skill bundles, not different stack asset sets. New usage should
 choose `minimal`, `developer`, `backend`, `qa`, `product`, or `full`. The

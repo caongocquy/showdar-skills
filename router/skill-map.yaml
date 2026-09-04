@@ -26,13 +26,13 @@ routes:
     triggers: ["test strategy", "regression test", "integration test", "E2E", "test coverage"]
     skill: showdar-test
   review:
-    triggers: ["review", "PR review", "code review", "security review", "performance review"]
+    triggers: ["review", "PR review", "code review", "maintainability review", "performance review"]
     skill: showdar-review
   upgrade:
     triggers: ["upgrade dependency", "framework upgrade", "runtime upgrade", "migration", "breaking change"]
     skill: showdar-upgrade
   ship:
-    triggers: ["release", "deploy", "ship", "TestFlight", "App Store", "Play Store", "production"]
+    triggers: ["release readiness", "ready to release", "ship", "handoff", "package verification"]
     skill: showdar-ship
   recover:
     triggers: ["resume", "recover task", "session stopped", "continue partial work", "conflict recovery"]
@@ -46,3 +46,9 @@ routes:
   quality:
     triggers: ["QA scenarios", "test scenarios", "regression scope", "risk-based testing", "quality plan", "compatibility matrix", "bug report"]
     skill: showdar-quality
+  security:
+    triggers: ["threat model", "security review", "security risk", "authz", "authorization", "secrets", "attack surface", "data exposure", "vulnerability", "exploitability"]
+    skill: showdar-security
+  ops:
+    triggers: ["CI/CD", "GitHub Actions", "Docker", "container", "deployment", "deploy", "observability", "rollback", "runtime operations", "staging"]
+    skill: showdar-ops

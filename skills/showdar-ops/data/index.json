@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "skill": "showdar-ops",
+  "datasets": [
+    {
+      "file": "data/ops-patterns.csv",
+      "idField": "id",
+      "requiredColumns": ["id", "category", "prompt", "evidence", "output", "risk", "tags", "reference", "stack"],
+      "searchableFields": ["category", "prompt", "evidence", "output", "risk", "tags"],
+      "filterFields": ["category", "stack"],
+      "reference": "references/deployment.md"
+    }
+  ]
+}
