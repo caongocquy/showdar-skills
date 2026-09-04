@@ -60,6 +60,7 @@ description: Prepare and verify web, backend, mobile, Docker, and desktop releas
 
 ### Phase 3 — platform-specific checklist
 - Web -> `stacks/web.md`.
+- Next.js -> `stacks/nextjs.md` plus the applicable web/runtime checks.
 - Backend -> `stacks/node-backend.md`.
 - Docker -> `stacks/docker.md`.
 - iOS -> `stacks/ios.md`.
