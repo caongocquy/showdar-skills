@@ -77,7 +77,7 @@ try {
   const expectedStacks = ['ci', 'electron', 'expo', 'fastify', 'html-tailwind', 'ios', 'node', 'package-manager', 'react', 'workspace'];
   const detectorPaths = [
     path.join(installed, 'engine/detect-stack.mjs'),
-    ...['debug', 'plan', 'ship', 'understand', 'upgrade'].map((id) => path.join(project, `.codex/skills/showdar-${id}/scripts/lib/detect-stack.mjs`)),
+    ...['debug', 'plan', 'ship', 'understand', 'upgrade'].map((id) => path.join(project, `.agents/skills/showdar-${id}/scripts/lib/detect-stack.mjs`)),
   ];
   for (const detectorPath of detectorPaths) {
     const detector = await import(pathToFileURL(detectorPath).href);
@@ -88,7 +88,7 @@ try {
   const doctor = run(process.execPath, [cli, 'doctor'], { cwd: project });
   if (!/Health: OK/.test(doctor)) throw new Error(`doctor is not healthy: ${doctor}`);
   const status = run(process.execPath, [cli, 'status'], { cwd: project });
-  if (!/AI: all/.test(status) || !/Skills: 10/.test(status)) throw new Error(`unexpected status: ${status}`);
+  if (!/AI: all/.test(status) || !/Skills: 11/.test(status)) throw new Error(`unexpected status: ${status}`);
 
   run(process.execPath, [cli, 'remove'], { cwd: project });
   await mustNotExist(path.join(project, '.showdar.json'));

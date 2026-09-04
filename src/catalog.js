@@ -17,16 +17,31 @@ const ids = (...values) => values;
 
 export const PROFILES = {
   minimal: ids('showdar-understand', 'showdar-plan', 'showdar-build', 'showdar-debug', 'showdar-test', 'showdar-review', 'showdar-recover'),
-  web: ids('showdar-understand', 'showdar-plan', 'showdar-design', 'showdar-build', 'showdar-debug', 'showdar-test', 'showdar-review', 'showdar-upgrade', 'showdar-ship', 'showdar-recover'),
   backend: ids('showdar-understand', 'showdar-plan', 'showdar-build', 'showdar-debug', 'showdar-test', 'showdar-review', 'showdar-upgrade', 'showdar-ship', 'showdar-recover'),
-  mobile: ids('showdar-understand', 'showdar-plan', 'showdar-design', 'showdar-build', 'showdar-debug', 'showdar-test', 'showdar-review', 'showdar-upgrade', 'showdar-ship', 'showdar-recover'),
   full: SKILLS.map((skill) => skill.id),
 };
 
+export const PROFILE_ALIASES = {
+  mobile: 'full',
+  web: 'full',
+};
+
+function profileName(profile) {
+  return PROFILE_ALIASES[profile] ?? profile;
+}
+
+export function canonicalProfile(profile) {
+  const canonical = profileName(profile);
+  if (!PROFILES[canonical]) throw new Error(`Unknown profile "${profile}". Expected one of: ${[...Object.keys(PROFILES), ...Object.keys(PROFILE_ALIASES)].join(', ')}`);
+  return canonical;
+}
+
+export function isDeprecatedProfile(profile) {
+  return Object.hasOwn(PROFILE_ALIASES, profile);
+}
+
 export function resolveProfile(profile) {
-  const resolved = PROFILES[profile];
-  if (!resolved) throw new Error(`Unknown profile "${profile}". Expected one of: ${Object.keys(PROFILES).join(', ')}`);
-  return [...resolved];
+  return [...PROFILES[canonicalProfile(profile)]];
 }
 
 export function getSkill(id) {
