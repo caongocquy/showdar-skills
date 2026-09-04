@@ -1,7 +1,7 @@
 {
   "name": "showdar-skills",
   "version": "0.2.0",
-  "description": "Opinionated, practical engineering playbooks for coding agents.",
+  "description": "Production-grade software engineering lifecycle skills for coding agents.",
   "type": "module",
   "bin": { "showdar": "./bin/showdar.js" },
   "scripts": {
@@ -10,10 +10,19 @@
     "sync:runtime": "node scripts/sync-runtime.mjs",
     "eval": "node scripts/retrieval-eval.mjs",
     "check": "npm test && npm run validate && npm pack --dry-run",
-    "smoke": "node scripts/package-smoke.mjs"
+    "smoke": "node scripts/package-smoke.mjs",
+    "release:check": "node scripts/check-release-version.mjs"
   },
   "engines": { "node": ">=20" },
-  "files": ["bin", "src", "skills", "commands", "router", "bundles", "profiles", "engine", "scripts", "README.md", "LICENSE"],
-  "keywords": ["agent-skills", "codex", "opencode", "claude-code", "developer-tools", "workflow", "ui-ux", "debugging"],
-  "license": "MIT"
+  "files": ["bin", "src", "skills", "commands", "router", "bundles", "profiles", "engine", "README.md", "LICENSE"],
+  "keywords": ["agent-skills", "coding-agents", "codex", "opencode", "claude-code", "software-engineering", "developer-tools", "requirements", "qa", "security", "devops", "workflow"],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/caongocquy/showdar-skills.git"
+  },
+  "homepage": "https://github.com/caongocquy/showdar-skills#readme",
+  "bugs": {
+    "url": "https://github.com/caongocquy/showdar-skills/issues"
+  }
 }

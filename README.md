@@ -1,295 +1,321 @@
 # Showdar Skills
 
-**Opinionated, practical engineering playbooks for coding agents.**
+[![Node >=20](https://img.shields.io/badge/node-%3E%3D20-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![MIT License](https://img.shields.io/badge/license-MIT-blue?logo=opensourceinitiative&logoColor=white)](./LICENSE)
+[![15 skills](https://img.shields.io/badge/skills-15-6f42c1)](#skill-catalog)
 
-Showdar Skills is one package containing 15 first-class skills for software-team workflows. They cover engineering, analysis, QA/QC, security, operations, delivery verification, and safe local Git work. Each skill is more than a prompt: it can include references, searchable structured knowledge, stack-specific guidance, deterministic read-only helper scripts, and examples.
+Production-grade software engineering skills for coding agents. Showdar covers
+requirements, planning, design, implementation, debugging, QA, security,
+operations, release readiness, and Git workflows with lightweight intent
+routing and progressive knowledge loading.
 
-## Flagship skills
+> npm publication: prepared for the first release; `showdar-skills@0.2.0` is
+> not published yet.
 
-| Skill | Purpose |
-| --- | --- |
-| `showdar-understand` | Map an unfamiliar repository from executable evidence |
-| `showdar-plan` | Turn requirements into bounded, executable plans |
-| `showdar-design` | Design/implement/review/polish UI with searchable design intelligence |
-| `showdar-build` | Implement the smallest coherent production change |
-| `showdar-debug` | Evidence-first root-cause debugging |
-| `showdar-test` | Choose and implement the lowest effective test level |
-| `showdar-review` | High-signal P0–P3 code review |
-| `showdar-upgrade` | Safe dependency/framework/platform upgrades |
-| `showdar-ship` | Delivery verification and release-readiness assessment; explicit release execution is opt-in |
-| `showdar-recover` | Recover interrupted or partial work safely |
-| `showdar-git` | Complete local Git workflows while preserving unrelated work |
-| `showdar-requirements` | Turn product/business input into explicit, testable requirements and acceptance criteria |
-| `showdar-quality` | Plan QA/QC verification, risk-based coverage, regression scope, and test scenarios |
-| `showdar-security` | Security analysis, threat modeling, auth/authz, data, secrets, and attack-surface risk review |
-| `showdar-ops` | Operational engineering for CI/CD, containers, deployment, observability, and rollback with explicit mutation boundaries |
+## Quick start
 
-The suite is grouped by capability: Engineering, Analysis, Quality, Security,
-and Operations. `showdar-ship` verifies delivery readiness; `showdar-ops`
-performs operational work only when explicitly requested. Requirements are not
-an implementation plan; quality planning is not automated test implementation.
-
-## Install from source
-
-Showdar Skills is not currently published to the npm registry. This repository
-is the source package; install the current checkout as the `showdar` CLI:
+After the first npm publication, install the CLI globally and add project
+skills explicitly:
 
 ```bash
+npm install -g showdar-skills
+cd my-project
+showdar init --ai codex --profile developer
+showdar doctor
+```
+
+The current source-install alternative is:
+
+```bash
+git clone https://github.com/caongocquy/showdar-skills.git
+cd showdar-skills
 npm install -g .
 ```
 
-This installs only the CLI globally from the current checkout. It does not
-globally enable skills. For a one-off local invocation, use
-`node /path/to/showdar-skills/bin/showdar.js ...` instead.
+CLI installation and skill installation are separate. Installing the CLI
+globally does not install skills globally; `showdar init` controls the project
+or user scope where skills are copied.
 
-The CLI and the skills have separate scopes:
+## Why Showdar?
 
-- The installed CLI reads the package assets from this checkout.
-- `showdar init` copies skills into the selected target scope.
-- Project scope is the default and writes into the current target project.
-- Global scope writes into the current user's verified native skill directories.
+- 15 focused skills for the software lifecycle, instead of one oversized prompt.
+- Native discovery for Codex, OpenCode, and Claude Code.
+- Evidence-first workflows with bounded safety and verification contracts.
+- Searchable data, references, scripts, stack guidance, and examples loaded only
+  when the selected task needs them.
 
-Then enter the target project and install the native skills there:
+## How it works
+
+```text
+User request
+     |
+     v
+Lightweight discovery metadata
+     |
+     v
+Selected Showdar skill
+     |
+     v
+SKILL.md
+     |
+     +--> data/
+     +--> references/
+     +--> scripts/
+     +--> examples/
+          only when needed
+```
+
+The 15 skills are not eagerly loaded as full prompts. Lightweight descriptions
+help the agent choose a skill, then that skill loads its workflow and deeper
+knowledge progressively.
+
+## Supported agents and destinations
+
+| Agent target | Project scope | Global scope |
+| --- | --- | --- |
+| Codex | `.agents/skills/` | `~/.agents/skills/` |
+| Universal | `.agents/skills/` | `~/.agents/skills/` |
+| OpenCode | `.opencode/skills/` + `.opencode/commands/showdar/` | `~/.config/opencode/skills/` + `~/.config/opencode/commands/showdar/` |
+| Claude Code | `.claude/skills/` | `~/.claude/skills/` |
+
+Codex and Universal intentionally share `.agents/skills/`; `--ai all` avoids
+duplicating that physical destination. OpenCode receives both skills and
+native `/showdar/...` command files.
+
+### Project and global installation
+
+Project scope is the default and writes to the current project:
 
 ```bash
-cd /path/to/project
-showdar init --ai codex --profile full
+cd my-project
+showdar init --scope project --ai codex --profile developer
 showdar status
 showdar doctor
 ```
 
-`showdar init` defaults to `--scope project --ai universal --profile full`.
-The scope controls **which installation boundary** is written, the AI target
-controls **which native agent destination** is used, and the profile controls
-**which skills** are installed.
+Global scope does not require a Git repository:
 
 ```bash
-showdar init --scope project --ai codex      --profile full
-showdar init --scope project --ai opencode   --profile full
-showdar init --scope project --ai claude     --profile backend
-showdar init --scope project --ai universal  --profile minimal
-showdar init --scope project --ai all        --profile full
-```
-
-Native destinations:
-
-```text
-codex     -> .agents/skills/
-opencode  -> .opencode/skills/ + .opencode/commands/showdar/
-claude    -> .claude/skills/
-universal -> .agents/skills/
-all       -> the three unique project skill destinations above
-```
-
-Codex and universal intentionally share `.agents/skills/`; `--ai all`
-deduplicates that physical destination.
-
-The target project receives native skill files and, for OpenCode, native
-project commands. Project installation also updates the managed routing block
-in `AGENTS.md`. Showdar stores project ownership metadata in the target
-project's `.showdar.json`; there is no `.showdar/skills` runtime directory.
-
-### Global installation
-
-Global scope does not require a Git repository and does not write a project's
-`.showdar.json` or `AGENTS.md`:
-
-```bash
-showdar init --scope global --ai codex --profile full
+showdar init --scope global --ai codex --profile developer
 showdar status --scope global
 showdar doctor --scope global
 ```
 
-Verified native global destinations are:
-
-```text
-codex     -> ~/.agents/skills/
-opencode  -> ~/.config/opencode/skills/ + ~/.config/opencode/commands/showdar/
-claude    -> ~/.claude/skills/
-universal -> ~/.agents/skills/
-all       -> the three unique global skill destinations above
-```
-
-Global ownership is stored separately at `~/.showdar/global.json`. It records
-only Showdar-managed paths, so `status`, `doctor`, refresh, and `remove` can
-operate without touching unrelated user skills. Use `--ai all` only when all
-four native targets are wanted.
-
-When the same skill exists in both scopes, Showdar keeps both ownership
-records but does not override native agent precedence. OpenCode gives the
-project `.opencode/skills` source higher precedence than its global source;
-Claude Code documents personal `~/.claude/skills` as higher precedence than
-project `.claude/skills`. Avoid installing the same skill in both scopes when
-the target agent's precedence is not the one you need.
-
-To refresh skills after changing this source checkout, reinstall the CLI and
-run `showdar init` again with the same scope, target, and profile. Initialization
-is idempotent and refreshes Showdar-owned files. There is no separate
-`showdar update` command.
-
-```bash
-# From the source checkout
-npm install -g .
-
-# In a project
-showdar init --scope project --ai codex --profile full
-
-# From any directory for the user installation
-showdar init --scope global --ai codex --profile full
-```
-
-Remove only Showdar-owned files with `showdar remove` in project scope or
-`showdar remove --scope global` for the user installation.
-
-## Use it
-
-Natural intent routing is the default for installed native skills. Project
-initialization adds a small managed routing block to `AGENTS.md`; global
-initialization does not modify project files. Each skill has a specific native
-name/description for agent discovery. Showdar uses lightweight metadata for
-discovery; the selected skill then loads its workflow and supporting knowledge
-progressively.
-
-Codex discovers the installed native skills. Ask naturally, or invoke a
-specific skill with its native name:
-
-```text
-$showdar-debug login crashes after token refresh
-$showdar-plan split this migration into safe steps
-$showdar-security review the current changes for auth risks
-$showdar-ship verify this change is ready for handoff
-$showdar-git commit only the current task changes
-$showdar-git merge this branch into develop but do not push
-$showdar-requirements review this ticket for missing business rules
-$showdar-quality create regression scenarios for this release
-$showdar-security threat model this auth flow
-$showdar-ops inspect the current deployment setup
-$showdar-ops deploy this service to staging
-```
-
-`showdar-git` handles local Git workflow only. It does not imply GitHub,
-GitHub Actions, CI/CD, deployment, publishing, or release automation; remote
-mutations require explicit intent.
-
-OpenCode can use native skill discovery and, when initialized with `--ai
-opencode` or `--ai all`, gets project commands under
-`.opencode/commands/showdar/`:
-
-```text
-/showdar/debug login crashes after token refresh
-/showdar/design polish the settings screen
-/showdar/review current changes
-/showdar/ship ios
-/showdar/git commit only the current task changes
-/showdar/security threat model this auth flow
-/showdar/ops inspect the current deployment setup
-```
-
-These `/showdar/...` commands are OpenCode commands, not Codex commands.
-
-## Design intelligence
-
-`showdar-design` follows a progressive-disclosure model similar to strong knowledge-backed skills: orchestration stays in `SKILL.md`, while structured knowledge and stack rules are queried only when useful.
-
-```text
-skills/showdar-design/
-├── SKILL.md
-├── data/
-│   ├── products.csv
-│   ├── styles.csv
-│   ├── colors.csv
-│   ├── typography.csv
-│   ├── motion.csv
-│   ├── accessibility.csv
-│   ├── components.csv
-│   ├── ui-patterns.csv
-│   └── stacks/
-├── references/
-├── scripts/
-└── examples/
-```
-
-Example local search from inside the installed skill:
-
-```bash
-node scripts/search.mjs --query "wedding editorial elegant" --domain products
-node scripts/search.mjs --query "long list performance" --stack react-native
-```
-
-The same pattern is used across the suite where it adds value: debug has failure patterns and context collection, test has a strategy matrix and tool detection, review has severity/risk references, upgrade has compatibility checks, ship has platform release playbooks, and recover has read-only state inspection.
+Global CLI installation is not global skill installation. Project ownership is
+stored in `.showdar.json`; global ownership is stored in `~/.showdar/global.json`.
+Only Showdar-owned paths are refreshed or removed.
 
 ## Profiles
 
-| Profile | Installed skills |
+Choose a role-specific profile for more precise discovery, or use `full` when
+all capabilities are useful. `full` exposes all 15 skills but still does not
+eagerly load all skill bodies.
+
+| Profile | Skills |
+| --- | ---: |
+| `minimal` | 8 |
+| `developer` | 12 |
+| `backend` | 14 |
+| `qa` | 9 |
+| `product` | 6 |
+| `full` | 15 |
+
+Legacy aliases remain compatible:
+
+```text
+mobile -> developer
+web    -> developer
+```
+
+New manifests store the canonical `developer` profile.
+
+## Skill catalog
+
+All 15 entries remain first-class Showdar skills.
+
+### Analysis and planning
+
+| Skill | Use when |
 | --- | --- |
-| `minimal` | 8 core engineering skills: understand, plan, build, debug, test, review, recover, git |
-| `developer` | 12 general engineering skills plus security |
-| `backend` | 14 backend engineering plus requirements, quality, security, and ops skills |
-| `qa` | 9 skills focused on requirements, QA, testing, debugging, review, ship, recovery, and Git |
-| `product` | 6 skills focused on repository context, requirements, planning, design, quality, and review |
-| `full` | All 15 skills |
+| `showdar-understand` | Mapping an unfamiliar repository, architecture, dependencies, or impact before deciding what to change. |
+| `showdar-requirements` | Product or business input needs explicit behavior, rules, acceptance criteria, assumptions, or open decisions. |
+| `showdar-plan` | Agreed behavior needs a bounded implementation plan, change surface, task order, risks, or verification steps. |
 
-Profiles select skill bundles, not different stack asset sets. New usage should
-choose `minimal`, `developer`, `backend`, `qa`, `product`, or `full`. The
-deprecated `web` and `mobile` aliases remain accepted for compatibility and
-resolve to `developer`; new manifests store the canonical `developer` profile.
+### Engineering
 
-## CLI
+| Skill | Use when |
+| --- | --- |
+| `showdar-design` | Product UI needs design direction, UX decisions, responsive layout, accessibility, or visual polish. |
+| `showdar-build` | Implementing or refactoring an agreed application change within existing architecture and contracts. |
+| `showdar-debug` | Observed behavior fails through crashes, regressions, build failures, races, networking, memory, or performance issues. |
+| `showdar-upgrade` | Upgrading dependencies, frameworks, runtimes, or native platforms where compatibility or rollback risk matters. |
+
+### Quality
+
+| Skill | Use when |
+| --- | --- |
+| `showdar-test` | Choosing or implementing automated tests for behavior, regressions, integration, E2E, or coverage. |
+| `showdar-quality` | Planning QA/QC scenarios, risk coverage, regression scope, compatibility checks, or bug-report evidence. |
+| `showdar-review` | Reviewing code or diffs for general correctness, architecture, performance, maintainability, or tests. |
+
+### Security and operations
+
+| Skill | Use when |
+| --- | --- |
+| `showdar-security` | Assessing threat models, attack surfaces, trust boundaries, auth/authz, secrets, exposure, or exploitability. |
+| `showdar-ops` | Inspecting or changing CI/CD, containers, environments, deployment, observability, rollback, or runtime operations. |
+
+### Delivery and recovery
+
+| Skill | Use when |
+| --- | --- |
+| `showdar-ship` | Checking whether a change, artifact, or release is ready for handoff or external release. |
+| `showdar-recover` | Interrupted or partial engineering work must be reconstructed from repository evidence before continuing. |
+| `showdar-git` | Performing local Git inspection, staging, commits, branch integration, conflicts, cleanup, or explicitly requested remote Git actions. |
+
+## Typical software workflow
+
+```text
+Requirements
+    |
+    v
+Plan
+    |
+    +--> Design
+    |
+    v
+Build
+    |
+    +--> Debug
+    +--> Test
+    |
+    v
+Quality
+    |
+    v
+Review / Security
+    |
+    v
+Ship readiness
+    |
+    +--> Ops
+    |
+    v
+Git completion
+```
+
+This is a composition guide, not a mandatory sequence. Choose the skill that
+matches the current intent.
+
+## Usage examples
+
+Codex discovers installed native skills from natural requests or explicit names:
+
+```text
+$showdar-requirements review this ticket for missing rules
+$showdar-plan plan the implementation
+$showdar-debug find the root cause of this crash
+$showdar-quality create regression scenarios
+$showdar-security threat model this auth flow
+$showdar-ops inspect the deployment setup
+$showdar-git commit only the current task changes
+```
+
+OpenCode uses native commands when initialized with `--ai opencode` or
+`--ai all`:
+
+```text
+/showdar/requirements review this ticket for missing rules
+/showdar/debug find the root cause of this crash
+/showdar/security threat model this auth flow
+/showdar/ops inspect the deployment setup
+/showdar/git commit only the current task changes
+```
+
+## Safety boundaries
+
+- `showdar-ship` verifies readiness; it does not automatically deploy or create
+  CI/CD.
+- `showdar-ops` performs operational work when requested. Remote or production
+  mutation requires explicit intent, target, and authorization.
+- `showdar-git` preserves unrelated work and does not imply push, force-push, or
+  destructive cleanup.
+- `showdar-security` performs defensive, evidence-based analysis and never
+  exposes secret values.
+- `showdar-requirements` records assumptions and open decisions instead of
+  inventing stakeholder or business choices.
+
+## CLI reference
 
 ```bash
 showdar init [--scope <project|global>] --ai <target> --profile <profile>
+showdar list
 showdar status [--scope <project|global>]
 showdar doctor [--scope <project|global>]
 showdar validate
-showdar list
 showdar remove [--scope <project|global>]
 ```
 
-`showdar doctor` checks the selected installation against hashes in
-`.showdar.json` (project) or `~/.showdar/global.json` (global) and reports
-drift. `showdar remove` removes only Showdar-owned skill/command paths; project
-scope also removes its managed `AGENTS.md` block. Unrelated agent skills and
-user rules are preserved.
+`--ai` accepts `codex`, `opencode`, `claude`, `universal`, or `all`.
+`--scope` defaults to `project`; `--profile` accepts the six canonical profiles
+and the `mobile`/`web` aliases. Run `showdar --help` or a command's `--help`
+for the current options.
 
-`showdar validate` validates the installed Showdar package itself. It rejects
-shallow skills, missing required workflow sections, placeholder content, broken
-local references/imports, malformed structured data, and invalid
-catalog/profile/router/command relationships; it does not validate the target
-application. `showdar list` prints the available profiles and skills.
+`showdar validate` validates the installed Showdar package, not the target
+application. `showdar doctor` checks managed files against ownership hashes;
+`showdar remove` removes only those managed paths and preserves unrelated files.
 
-## Skill quality contract
+## Refreshing skills
 
-Every flagship `SKILL.md` includes:
+There is no separate `showdar update` command. Reinstall the CLI, then rerun
+`showdar init` with the same scope, target, and profile:
 
-- purpose and trigger/non-trigger rules
-- inputs and assumptions
-- non-negotiable constraints
-- phased workflow and decision points
-- stack detection/adaptation
-- failure, stop, and escalation conditions
-- verification requirements
-- output contract
-- anti-patterns
-- a concrete example
+```bash
+# Future npm install
+npm install -g showdar-skills@latest
 
-The detailed knowledge belongs in `references/`, `data/`, `stacks/`, `scripts/`, and `examples/` so agents load only what the current task needs.
+# Source development
+npm install -g .
+
+showdar init --scope project --ai codex --profile developer
+```
+
+Initialization is idempotent and refreshes Showdar-owned files. Use
+`showdar remove` for project scope or `showdar remove --scope global` for the
+user installation.
+
+## Maintainer release notes
+
+The first release is manual because the package does not exist on npm yet:
+
+```bash
+npm pack
+npm publish ./showdar-skills-0.2.0.tgz
+```
+
+After the package exists, configure npm Trusted Publishing for the
+`caongocquy/showdar-skills` GitHub Actions workflow named `publish.yml`. The
+workflow runs only for `v*` tags, verifies the tag/package version, uses OIDC
+with provenance, and contains no npm token. It skips an already-published
+version and fails on registry errors other than a real E404. Trusted
+Publishing is not configured yet. The repository's `RELEASING.md` contains
+the maintainer runbook.
 
 ## Development
 
 ```bash
 npm test
 npm run validate
-npm run eval
 npm run check
 npm run smoke
+npm run eval
 npm pack --dry-run
 ```
 
-The project intentionally stays dependency-light and uses Node.js built-ins for the CLI, validator, search engine, installer, and tests.
-
-## Safety boundary
-
-Showdar skills may inspect release/deployment guidance, but normal Ship usage is delivery verification: it does not create CI/CD or deployment infrastructure, require a deployed endpoint, or grant approval to deploy. Production deploys, publishing/store submissions, destructive migrations, credential operations, and other irreversible actions require explicit user intent and authorization. Skills must never print or commit secret values.
+Showdar stays dependency-light and uses Node.js built-ins for its CLI,
+validator, search engine, installer, and tests. Supporting knowledge remains
+in each skill's `data/`, `references/`, `scripts/`, `stacks/`, and `examples/`
+directories so the selected workflow can load it progressively.
 
 ## License
 
