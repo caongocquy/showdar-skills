@@ -1,0 +1,758 @@
+{
+  "schemaVersion": 1,
+  "description": "Offline semantic retrieval benchmark for the ten flagship Showdar skills.",
+  "cases": [
+    {
+      "id": "understand-monorepo-workspace",
+      "skill": "showdar-understand",
+      "dataset": "data/architecture-signals.csv",
+      "query": "monorepo workspace packages apps",
+      "expected": { "topK": 5, "categoriesAny": ["topology"], "tagsAny": ["topology packages apps"] }
+    },
+    {
+      "id": "understand-task-runner",
+      "skill": "showdar-understand",
+      "dataset": "data/architecture-signals.csv",
+      "query": "monorepo task runner configuration",
+      "expected": { "topK": 5, "categoriesAny": ["monorepo"], "tagsAny": ["monorepo task runner"] }
+    },
+    {
+      "id": "understand-package-manager-lockfile",
+      "skill": "showdar-understand",
+      "dataset": "data/architecture-signals.csv",
+      "query": "package manager lockfile integrity",
+      "filters": { "stack": "package-manager" },
+      "expected": { "topK": 5, "categoriesAny": ["tooling"], "tagsAny": ["tooling lockfile"], "stacksAny": ["package-manager"], "filtersMatch": true }
+    },
+    {
+      "id": "understand-node-entrypoint",
+      "skill": "showdar-understand",
+      "dataset": "data/architecture-signals.csv",
+      "query": "Node process backend entrypoint",
+      "filters": { "stack": "node" },
+      "expected": { "topK": 5, "categoriesAny": ["entrypoint"], "tagsAny": ["entrypoint backend"], "stacksAny": ["node"], "filtersMatch": true }
+    },
+    {
+      "id": "understand-ci-status-check",
+      "skill": "showdar-understand",
+      "dataset": "data/architecture-signals.csv",
+      "query": "CI workflow required status check",
+      "filters": { "stack": "ci" },
+      "expected": { "topK": 5, "categoriesAny": ["ci"], "tagsAny": ["ci gate"], "stacksAny": ["ci"], "filtersMatch": true }
+    },
+    {
+      "id": "understand-react-native-bridge",
+      "skill": "showdar-understand",
+      "dataset": "data/architecture-signals.csv",
+      "query": "React Native native bridge boundary",
+      "filters": { "stack": "react-native" },
+      "expected": { "topK": 5, "categoriesAny": ["mobile"], "tagsAny": ["mobile native bridge"], "stacksAny": ["react-native"], "filtersMatch": true }
+    },
+    {
+      "id": "understand-tauri-ipc",
+      "skill": "showdar-understand",
+      "dataset": "data/architecture-signals.csv",
+      "query": "Tauri desktop IPC command",
+      "filters": { "stack": "tauri" },
+      "expected": { "topK": 5, "categoriesAny": ["desktop"], "tagsAny": ["entrypoint desktop"], "stacksAny": ["tauri"], "filtersMatch": true }
+    },
+
+    {
+      "id": "plan-risky-database-migration",
+      "skill": "showdar-plan",
+      "dataset": "data/planning-checklists.csv",
+      "query": "risky database migration old and new versions",
+      "filters": { "stack": "node" },
+      "expected": { "topK": 5, "categoriesAny": ["rollout"], "tagsAny": ["migration compatibility"], "stacksAny": ["node"], "filtersMatch": true }
+    },
+    {
+      "id": "plan-api-backwards-compatibility",
+      "skill": "showdar-plan",
+      "dataset": "data/planning-checklists.csv",
+      "query": "API backwards compatibility old clients",
+      "expected": { "topK": 5, "categoriesAny": ["compatibility"], "tagsAny": ["backwards compatibility"] }
+    },
+    {
+      "id": "plan-feature-flag-rollout",
+      "skill": "showdar-plan",
+      "dataset": "data/planning-checklists.csv",
+      "query": "feature flag rollout default owner",
+      "expected": { "topK": 5, "categoriesAny": ["rollout"], "tagsAny": ["feature flag"] }
+    },
+    {
+      "id": "plan-smallest-change-surface",
+      "skill": "showdar-plan",
+      "dataset": "data/planning-checklists.csv",
+      "query": "smallest coherent change surface",
+      "expected": { "topK": 5, "categoriesAny": ["scope"], "tagsAny": ["change surface"] }
+    },
+    {
+      "id": "plan-observable-acceptance",
+      "skill": "showdar-plan",
+      "dataset": "data/planning-checklists.csv",
+      "query": "observable outcome proves success",
+      "expected": { "topK": 5, "categoriesAny": ["requirements"], "tagsAny": ["goal acceptance"] }
+    },
+    {
+      "id": "plan-negative-path",
+      "skill": "showdar-plan",
+      "dataset": "data/planning-checklists.csv",
+      "query": "negative path fail safely",
+      "expected": { "topK": 5, "categoriesAny": ["verification"], "tagsAny": ["negative path"] }
+    },
+    {
+      "id": "plan-react-native-surface",
+      "skill": "showdar-plan",
+      "dataset": "data/planning-checklists.csv",
+      "query": "React Native native files and build",
+      "filters": { "stack": "react-native" },
+      "expected": { "topK": 5, "categoriesAny": ["platform"], "tagsAny": ["native surface"], "stacksAny": ["react-native"], "filtersMatch": true }
+    },
+
+    {
+      "id": "design-fintech-mobile-dashboard",
+      "skill": "showdar-design",
+      "dataset": "data/products.csv",
+      "query": "fintech mobile dashboard money trust",
+      "expected": { "topK": 5, "productsAny": ["Fintech App"], "tagsAny": ["fintech banking trust"] }
+    },
+    {
+      "id": "design-editorial-wedding-invitation",
+      "skill": "showdar-design",
+      "dataset": "data/products.csv",
+      "query": "editorial wedding invitation event story RSVP",
+      "expected": { "topK": 5, "productsAny": ["Wedding Invitation"], "tagsAny": ["wedding event editorial"] }
+    },
+    {
+      "id": "design-dense-developer-dashboard",
+      "skill": "showdar-design",
+      "dataset": "data/products.csv",
+      "query": "dense developer dashboard technical precise actions",
+      "expected": { "topK": 5, "productsAny": ["Developer Tool"], "tagsAny": ["developer tools dense technical"] }
+    },
+    {
+      "id": "design-saas-responsive-metrics",
+      "skill": "showdar-design",
+      "dataset": "data/products.csv",
+      "query": "SaaS responsive dashboard B2B metrics",
+      "expected": { "topK": 5, "productsAny": ["SaaS Dashboard"], "tagsAny": ["saas dashboard b2b metrics"] }
+    },
+    {
+      "id": "design-mobile-utility-interruption",
+      "skill": "showdar-design",
+      "dataset": "data/products.csv",
+      "query": "mobile utility native recover from interruption",
+      "expected": { "topK": 5, "productsAny": ["Mobile Utility"], "tagsAny": ["mobile utility native"] }
+    },
+    {
+      "id": "design-master-detail-context",
+      "skill": "showdar-design",
+      "dataset": "data/ui-patterns.csv",
+      "query": "dense developer workspace persistent context master detail",
+      "expected": { "topK": 5, "patternsAny": ["Master-detail"], "tagsAny": ["desktop context"] }
+    },
+    {
+      "id": "design-accessible-command-palette",
+      "skill": "showdar-design",
+      "dataset": "data/ui-patterns.csv",
+      "query": "keyboard productivity command palette accessible developer tool",
+      "filters": { "stack": "react" },
+      "expected": { "topK": 5, "patternsAny": ["Command palette"], "tagsAny": ["keyboard productivity"], "stacksAny": ["react"], "filtersMatch": true }
+    },
+    {
+      "id": "design-error-recovery-state",
+      "skill": "showdar-design",
+      "dataset": "data/ui-patterns.csv",
+      "query": "request data load fails error recovery",
+      "expected": { "topK": 5, "patternsAny": ["Error recovery"], "tagsAny": ["error recovery"] }
+    },
+    {
+      "id": "design-responsive-priority",
+      "skill": "showdar-design",
+      "dataset": "data/ui-patterns.csv",
+      "query": "responsive layout narrow width desktop information",
+      "expected": { "topK": 5, "patternsAny": ["Responsive priority"], "tagsAny": ["responsive layout"] }
+    },
+    {
+      "id": "design-checkout-validation-stepper",
+      "skill": "showdar-design",
+      "dataset": "data/ui-patterns.csv",
+      "query": "checkout stepper purchase validation boundaries",
+      "expected": { "topK": 5, "patternsAny": ["Checkout stepper"], "tagsAny": ["checkout flow"] }
+    },
+    {
+      "id": "design-accessible-signup-errors",
+      "skill": "showdar-design",
+      "dataset": "data/accessibility.csv",
+      "query": "accessible signup form labels errors",
+      "expected": { "topK": 5, "fieldsAny": { "area": ["form"] }, "tagsAny": ["forms input"] }
+    },
+    {
+      "id": "design-mobile-text-scaling",
+      "skill": "showdar-design",
+      "dataset": "data/accessibility.csv",
+      "query": "mobile text scaling readable interface",
+      "expected": { "topK": 5, "tagsAny": ["text scaling"] }
+    },
+    {
+      "id": "design-react-native-virtualized-list",
+      "skill": "showdar-design",
+      "dataset": "data/stacks/react-native.csv",
+      "query": "React Native long virtualized list scroll",
+      "filters": { "stack": "react-native" },
+      "expected": { "topK": 5, "categoriesAny": ["lists"], "tagsAny": ["virtualized list"], "stacksAny": ["react-native"], "filtersMatch": true }
+    },
+    {
+      "id": "design-flutter-card-list",
+      "skill": "showdar-design",
+      "dataset": "data/stacks/flutter.csv",
+      "query": "Flutter card list lazy builders",
+      "filters": { "stack": "flutter" },
+      "expected": { "topK": 5, "categoriesAny": ["lists"], "tagsAny": ["lazy list"], "stacksAny": ["flutter"], "filtersMatch": true }
+    },
+
+    {
+      "id": "build-smallest-coherent-owner",
+      "skill": "showdar-build",
+      "dataset": "data/change-smells.csv",
+      "query": "smallest coherent change existing owner",
+      "expected": { "topK": 5, "categoriesAny": ["boundaries"], "tagsAny": ["ownership duplication"] }
+    },
+    {
+      "id": "build-async-error-boundary",
+      "skill": "showdar-build",
+      "dataset": "data/change-smells.csv",
+      "query": "unobserved async work error owner",
+      "filters": { "stack": "node" },
+      "expected": { "topK": 5, "categoriesAny": ["async"], "tagsAny": ["async ownership"], "stacksAny": ["node"], "filtersMatch": true }
+    },
+    {
+      "id": "build-cache-ownership",
+      "skill": "showdar-build",
+      "dataset": "data/change-smells.csv",
+      "query": "cache invalidation owner updated source stale read",
+      "expected": { "topK": 5, "categoriesAny": ["caching"], "tagsAny": ["cache invalidation"] }
+    },
+    {
+      "id": "build-type-safe-api-contract",
+      "skill": "showdar-build",
+      "dataset": "data/change-smells.csv",
+      "query": "external payload type validation API contract",
+      "filters": { "stack": "typescript" },
+      "expected": { "topK": 5, "categoriesAny": ["type-safety"], "tagsAny": ["type safety"], "stacksAny": ["typescript"], "filtersMatch": true }
+    },
+    {
+      "id": "build-react-native-native-config",
+      "skill": "showdar-build",
+      "dataset": "data/change-smells.csv",
+      "query": "native project config target build evidence",
+      "filters": { "stack": "react-native" },
+      "expected": { "topK": 5, "categoriesAny": ["native"], "tagsAny": ["native configuration"], "stacksAny": ["react-native"], "filtersMatch": true }
+    },
+    {
+      "id": "build-atomic-database-writes",
+      "skill": "showdar-build",
+      "dataset": "data/change-smells.csv",
+      "query": "related database writes atomic rollback",
+      "filters": { "stack": "node" },
+      "expected": { "topK": 5, "categoriesAny": ["data"], "tagsAny": ["transaction"], "stacksAny": ["node"], "filtersMatch": true }
+    },
+
+    {
+      "id": "debug-rn-flashlist-scroll-jank",
+      "skill": "showdar-debug",
+      "dataset": "data/failure-patterns.csv",
+      "query": "React Native FlashList scroll janks",
+      "expected": { "topK": 5, "categoriesAny": ["rendering"], "tagsAny": ["render performance"] }
+    },
+    {
+      "id": "debug-rn-hermes-native-crash",
+      "skill": "showdar-debug",
+      "dataset": "data/failure-patterns.csv",
+      "query": "Hermes release native crash symbolicated device",
+      "filters": { "stack": "ios" },
+      "expected": { "topK": 5, "categoriesAny": ["native"], "tagsAny": ["native crash"], "stacksAny": ["ios"], "filtersMatch": true }
+    },
+    {
+      "id": "debug-flutter-lifecycle-rebuild",
+      "skill": "showdar-debug",
+      "dataset": "data/failure-patterns.csv",
+      "query": "Flutter duplicate event handling every visit",
+      "filters": { "stack": "flutter" },
+      "expected": { "topK": 5, "categoriesAny": ["lifecycle"], "tagsAny": ["lifecycle subscription"], "stacksAny": ["flutter"], "filtersMatch": true }
+    },
+    {
+      "id": "debug-flutter-image-cache-jank",
+      "skill": "showdar-debug",
+      "dataset": "data/failure-patterns.csv",
+      "query": "Flutter image cache grows with usage",
+      "expected": { "topK": 5, "categoriesAny": ["memory"], "tagsAny": ["memory cache"] }
+    },
+    {
+      "id": "debug-async-last-write-race",
+      "skill": "showdar-debug",
+      "dataset": "data/failure-patterns.csv",
+      "query": "older request overwrites newer result ordering",
+      "filters": { "stack": "react" },
+      "expected": { "topK": 5, "categoriesAny": ["race"], "tagsAny": ["race ordering"], "stacksAny": ["react"], "filtersMatch": true }
+    },
+    {
+      "id": "debug-stale-cache",
+      "skill": "showdar-debug",
+      "dataset": "data/failure-patterns.csv",
+      "query": "updated source hidden by cached read invalidation",
+      "filters": { "stack": "react" },
+      "expected": { "topK": 5, "categoriesAny": ["caching"], "tagsAny": ["cache invalidation"], "stacksAny": ["react"], "filtersMatch": true }
+    },
+    {
+      "id": "debug-node-network-timeout",
+      "skill": "showdar-debug",
+      "dataset": "data/failure-patterns.csv",
+      "query": "Node request hangs timeout cancellation",
+      "filters": { "stack": "node" },
+      "expected": { "topK": 5, "categoriesAny": ["async"], "tagsAny": ["async timeout"], "stacksAny": ["node"], "filtersMatch": true }
+    },
+    {
+      "id": "debug-ci-only-failure",
+      "skill": "showdar-debug",
+      "dataset": "data/failure-patterns.csv",
+      "query": "CI local passes clean checkout tool version",
+      "filters": { "stack": "ci" },
+      "expected": { "topK": 5, "categoriesAny": ["ci"], "tagsAny": ["ci environment"], "stacksAny": ["ci"], "filtersMatch": true }
+    },
+    {
+      "id": "debug-docker-env-port",
+      "skill": "showdar-debug",
+      "dataset": "data/failure-patterns.csv",
+      "query": "Docker container environment port configuration",
+      "expected": { "topK": 5, "categoriesAny": ["environment"], "tagsAny": ["configuration environment"], "stacksAny": ["docker"] }
+    },
+    {
+      "id": "debug-tauri-ipc-permission",
+      "skill": "showdar-debug",
+      "dataset": "data/failure-patterns.csv",
+      "query": "Tauri IPC command permission failure",
+      "expected": { "topK": 5, "stacksAny": ["tauri"] }
+    },
+    {
+      "id": "debug-node-event-loop-blocking",
+      "skill": "showdar-debug",
+      "dataset": "data/failure-patterns.csv",
+      "query": "Node synchronous computation freezes event loop",
+      "filters": { "stack": "node" },
+      "expected": { "topK": 5, "categoriesAny": ["cpu"], "tagsAny": ["cpu event loop"], "stacksAny": ["node"], "filtersMatch": true }
+    },
+    {
+      "id": "debug-react-render-loop",
+      "skill": "showdar-debug",
+      "dataset": "data/failure-patterns.csv",
+      "query": "React render effect state loop typing jank",
+      "filters": { "stack": "react" },
+      "expected": { "topK": 5, "categoriesAny": ["rendering"], "tagsAny": ["render performance"], "stacksAny": ["react"], "filtersMatch": true }
+    },
+    {
+      "id": "debug-next-hydration-mismatch",
+      "skill": "showdar-debug",
+      "dataset": "data/failure-patterns.csv",
+      "query": "Next server client hydration markup mismatch",
+      "filters": { "stack": "nextjs" },
+      "expected": { "topK": 5, "categoriesAny": ["rendering"], "tagsAny": ["hydration mismatch"], "stacksAny": ["nextjs"], "filtersMatch": true }
+    },
+    {
+      "id": "debug-android-release-r8",
+      "skill": "showdar-debug",
+      "dataset": "data/failure-patterns.csv",
+      "query": "Android Logcat release R8 mapping variant",
+      "expected": { "topK": 5, "categoriesAny": ["build"], "tagsAny": ["build toolchain"], "stacksAny": ["android"] }
+    },
+    {
+      "id": "debug-ios-symbolicated-crash",
+      "skill": "showdar-debug",
+      "dataset": "data/failure-patterns.csv",
+      "query": "iOS device symbolicated native crash",
+      "filters": { "stack": "ios" },
+      "expected": { "topK": 5, "categoriesAny": ["native"], "tagsAny": ["native crash"], "stacksAny": ["ios"], "filtersMatch": true }
+    },
+
+    {
+      "id": "review-auth-authorization",
+      "skill": "showdar-review",
+      "dataset": "data/review-patterns.csv",
+      "query": "auth API authorization only client",
+      "filters": { "stack": "node" },
+      "expected": { "topK": 5, "categoriesAny": ["security"], "tagsAny": ["authorization"], "stacksAny": ["node"], "filtersMatch": true }
+    },
+    {
+      "id": "review-unvalidated-input",
+      "skill": "showdar-review",
+      "dataset": "data/review-patterns.csv",
+      "query": "unvalidated trust input injection",
+      "filters": { "stack": "node" },
+      "expected": { "topK": 5, "categoriesAny": ["security"], "tagsAny": ["input validation"], "stacksAny": ["node"], "filtersMatch": true }
+    },
+    {
+      "id": "review-race-retry-idempotency",
+      "skill": "showdar-review",
+      "dataset": "data/review-patterns.csv",
+      "query": "race condition retry repeats effect idempotency",
+      "expected": { "topK": 5, "categoriesAny": ["concurrency"], "tagsAny": ["idempotency"] }
+    },
+    {
+      "id": "review-architecture-boundary-leak",
+      "skill": "showdar-review",
+      "dataset": "data/review-patterns.csv",
+      "query": "architecture policy wrong owner boundary",
+      "expected": { "topK": 5, "categoriesAny": ["architecture"], "tagsAny": ["ownership"] }
+    },
+    {
+      "id": "review-react-rerender-performance",
+      "skill": "showdar-review",
+      "dataset": "data/review-patterns.csv",
+      "query": "React rerender performance regression broad state",
+      "filters": { "stack": "react" },
+      "expected": { "topK": 5, "categoriesAny": ["performance"], "tagsAny": ["render churn"], "stacksAny": ["react"], "filtersMatch": true }
+    },
+    {
+      "id": "review-missing-error-handling",
+      "skill": "showdar-review",
+      "dataset": "data/review-patterns.csv",
+      "query": "missing error handling loses error state",
+      "expected": { "topK": 5, "categoriesAny": ["correctness"], "tagsAny": ["error state"] }
+    },
+    {
+      "id": "review-unsafe-transaction-mutation",
+      "skill": "showdar-review",
+      "dataset": "data/review-patterns.csv",
+      "query": "unsafe data mutation related writes not atomic",
+      "filters": { "stack": "node" },
+      "expected": { "topK": 5, "categoriesAny": ["data integrity"], "tagsAny": ["transaction"], "stacksAny": ["node"], "filtersMatch": true }
+    },
+    {
+      "id": "review-mobile-accessibility",
+      "skill": "showdar-review",
+      "dataset": "data/review-patterns.csv",
+      "query": "mobile custom control lacks accessibility semantics",
+      "filters": { "stack": "react-native" },
+      "expected": { "topK": 5, "categoriesAny": ["mobile"], "tagsAny": ["accessibility"], "stacksAny": ["react-native"], "filtersMatch": true }
+    },
+    {
+      "id": "review-weak-mock-coverage",
+      "skill": "showdar-review",
+      "dataset": "data/review-patterns.csv",
+      "query": "weak test coverage mock only behavior proof",
+      "expected": { "topK": 5, "categoriesAny": ["testing"], "tagsAny": ["mocks"] }
+    },
+    {
+      "id": "review-flaky-playwright-e2e",
+      "skill": "showdar-review",
+      "dataset": "data/review-patterns.csv",
+      "query": "flaky Playwright E2E sleep retry",
+      "filters": { "stack": "playwright" },
+      "expected": { "topK": 5, "categoriesAny": ["testing"], "tagsAny": ["flaky"], "stacksAny": ["playwright"], "filtersMatch": true }
+    },
+    {
+      "id": "review-node-event-loop",
+      "skill": "showdar-review",
+      "dataset": "data/review-patterns.csv",
+      "query": "Node synchronous heavy work event loop",
+      "filters": { "stack": "node" },
+      "expected": { "topK": 5, "categoriesAny": ["performance"], "tagsAny": ["event loop"], "stacksAny": ["node"], "filtersMatch": true }
+    },
+    {
+      "id": "review-react-native-memory-lifecycle",
+      "skill": "showdar-review",
+      "dataset": "data/review-patterns.csv",
+      "query": "React Native memory resource retained lifecycle",
+      "filters": { "stack": "react-native" },
+      "expected": { "topK": 5, "categoriesAny": ["performance"], "tagsAny": ["memory"], "stacksAny": ["react-native"], "filtersMatch": true }
+    },
+
+    {
+      "id": "ship-ios-testflight-smoke",
+      "skill": "showdar-ship",
+      "dataset": "data/release-checks.csv",
+      "query": "iOS TestFlight install launch critical flow",
+      "filters": { "stack": "ios" },
+      "expected": { "topK": 5, "categoriesAny": ["smoke"], "tagsAny": ["ios smoke"], "stacksAny": ["ios"], "filtersMatch": true }
+    },
+    {
+      "id": "ship-ios-provisioning-signing",
+      "skill": "showdar-ship",
+      "dataset": "data/release-checks.csv",
+      "query": "iOS provisioning signing entitlements archive",
+      "filters": { "stack": "ios" },
+      "expected": { "topK": 5, "categoriesAny": ["signing"], "tagsAny": ["ios signing"], "stacksAny": ["ios"], "filtersMatch": true }
+    },
+    {
+      "id": "ship-android-aab-r8-symbols",
+      "skill": "showdar-ship",
+      "dataset": "data/release-checks.csv",
+      "query": "Android AAB R8 mapping native symbols",
+      "filters": { "stack": "android" },
+      "expected": { "topK": 5, "categoriesAny": ["diagnostics"], "tagsAny": ["android symbols"], "stacksAny": ["android"], "filtersMatch": true }
+    },
+    {
+      "id": "ship-next-runtime-environment",
+      "skill": "showdar-ship",
+      "dataset": "data/release-checks.csv",
+      "query": "Next.js runtime environment critical routes",
+      "filters": { "stack": "nextjs" },
+      "expected": { "topK": 5, "categoriesAny": ["smoke"], "tagsAny": ["web smoke"], "stacksAny": ["nextjs"], "filtersMatch": true }
+    },
+    {
+      "id": "ship-backend-database-migration",
+      "skill": "showdar-ship",
+      "dataset": "data/release-checks.csv",
+      "query": "backend database migration old new app compatibility",
+      "filters": { "stack": "node" },
+      "expected": { "topK": 5, "categoriesAny": ["data"], "tagsAny": ["backend migration"], "stacksAny": ["node"], "filtersMatch": true }
+    },
+    {
+      "id": "ship-backend-readiness-rollback",
+      "skill": "showdar-ship",
+      "dataset": "data/release-checks.csv",
+      "query": "backend readiness health rollback previous release",
+      "filters": { "stack": "node" },
+      "expected": { "topK": 5, "categoriesAny": ["health"], "tagsAny": ["backend health"], "stacksAny": ["node"], "filtersMatch": true }
+    },
+    {
+      "id": "ship-docker-health-check",
+      "skill": "showdar-ship",
+      "dataset": "data/release-checks.csv",
+      "query": "Docker container health check expected entrypoint",
+      "filters": { "stack": "docker" },
+      "expected": { "topK": 5, "categoriesAny": ["smoke"], "tagsAny": ["docker runtime"], "stacksAny": ["docker"], "filtersMatch": true }
+    },
+    {
+      "id": "ship-tauri-notarization-updater",
+      "skill": "showdar-ship",
+      "dataset": "data/release-checks.csv",
+      "query": "Tauri notarization signing updater path",
+      "filters": { "stack": "tauri" },
+      "expected": { "topK": 5, "categoriesAny": ["signing"], "tagsAny": ["tauri signing"], "stacksAny": ["tauri"], "filtersMatch": true }
+    },
+    {
+      "id": "ship-static-web-artifact",
+      "skill": "showdar-ship",
+      "dataset": "data/release-checks.csv",
+      "query": "static web production build artifact",
+      "expected": { "topK": 5, "categoriesAny": ["build"], "tagsAny": ["web build"] }
+    },
+    {
+      "id": "ship-backend-graceful-shutdown",
+      "skill": "showdar-ship",
+      "dataset": "data/release-checks.csv",
+      "query": "Node backend graceful shutdown drains work",
+      "filters": { "stack": "node" },
+      "expected": { "topK": 5, "categoriesAny": ["reliability"], "tagsAny": ["graceful shutdown"], "stacksAny": ["node"], "filtersMatch": true }
+    },
+
+    {
+      "id": "test-unit-vs-integration",
+      "skill": "showdar-test",
+      "dataset": "data/test-strategy.csv",
+      "query": "unit pure deterministic policy invariant",
+      "expected": { "topK": 5, "categoriesAny": ["unit"], "tagsAny": ["unit invariant"] }
+    },
+    {
+      "id": "test-critical-e2e-journey",
+      "skill": "showdar-test",
+      "dataset": "data/test-strategy.csv",
+      "query": "Playwright critical user journey",
+      "filters": { "stack": "playwright" },
+      "expected": { "topK": 5, "categoriesAny": ["e2e"], "tagsAny": ["critical journey"], "stacksAny": ["playwright"], "filtersMatch": true }
+    },
+    {
+      "id": "test-regression-proof",
+      "skill": "showdar-test",
+      "dataset": "data/test-strategy.csv",
+      "query": "regression test known production defect proof",
+      "expected": { "topK": 5, "categoriesAny": ["regression"], "tagsAny": ["regression proof"] }
+    },
+    {
+      "id": "test-mock-boundary",
+      "skill": "showdar-test",
+      "dataset": "data/test-strategy.csv",
+      "query": "mock unavailable external service boundary",
+      "expected": { "topK": 5, "categoriesAny": ["mocking"], "tagsAny": ["mocking boundary"] }
+    },
+    {
+      "id": "test-flaky-e2e-timing",
+      "skill": "showdar-test",
+      "dataset": "data/test-strategy.csv",
+      "query": "flaky E2E timing async",
+      "filters": { "stack": "playwright" },
+      "expected": { "topK": 5, "categoriesAny": ["flaky"], "tagsAny": ["flaky timing"], "stacksAny": ["playwright"], "filtersMatch": true }
+    },
+    {
+      "id": "test-react-native-detox",
+      "skill": "showdar-test",
+      "dataset": "data/test-strategy.csv",
+      "query": "React Native Detox native mobile journey",
+      "filters": { "stack": "detox" },
+      "expected": { "topK": 5, "categoriesAny": ["e2e"], "tagsAny": ["native journey"], "stacksAny": ["detox"], "filtersMatch": true }
+    },
+    {
+      "id": "test-flutter-integration-boundary",
+      "skill": "showdar-test",
+      "dataset": "data/test-strategy.csv",
+      "query": "Flutter integration test real platform boundary",
+      "expected": { "topK": 5, "categoriesAny": ["integration"], "preferredLevelsAny": ["integration"] }
+    },
+
+    {
+      "id": "upgrade-react-framework",
+      "skill": "showdar-upgrade",
+      "dataset": "data/compatibility-checklist.csv",
+      "query": "React framework migration deprecated lifecycle API",
+      "filters": { "stack": "react" },
+      "expected": { "topK": 5, "categoriesAny": ["framework"], "tagsAny": ["react migration"], "stacksAny": ["react"], "filtersMatch": true }
+    },
+    {
+      "id": "upgrade-nextjs-boundaries",
+      "skill": "showdar-upgrade",
+      "dataset": "data/compatibility-checklist.csv",
+      "query": "Next.js server client routing cache migration",
+      "filters": { "stack": "nextjs" },
+      "expected": { "topK": 5, "categoriesAny": ["framework"], "tagsAny": ["next migration"], "stacksAny": ["nextjs"], "filtersMatch": true }
+    },
+    {
+      "id": "upgrade-react-native-tuple",
+      "skill": "showdar-upgrade",
+      "dataset": "data/compatibility-checklist.csv",
+      "query": "React Native Hermes Metro Android iOS architecture",
+      "filters": { "stack": "react-native" },
+      "expected": { "topK": 5, "categoriesAny": ["framework"], "tagsAny": ["rn migration"], "stacksAny": ["react-native"], "filtersMatch": true }
+    },
+    {
+      "id": "upgrade-expo-sdk",
+      "skill": "showdar-upgrade",
+      "dataset": "data/compatibility-checklist.csv",
+      "query": "Expo SDK React Native config plugin prebuild",
+      "filters": { "stack": "expo" },
+      "expected": { "topK": 5, "categoriesAny": ["framework"], "tagsAny": ["expo migration"], "stacksAny": ["expo"], "filtersMatch": true }
+    },
+    {
+      "id": "upgrade-flutter-dart",
+      "skill": "showdar-upgrade",
+      "dataset": "data/compatibility-checklist.csv",
+      "query": "Flutter Dart SDK plugin migration",
+      "filters": { "stack": "flutter" },
+      "expected": { "topK": 5, "categoriesAny": ["framework"], "tagsAny": ["flutter migration"], "stacksAny": ["flutter"], "filtersMatch": true }
+    },
+    {
+      "id": "upgrade-gradle-android",
+      "skill": "showdar-upgrade",
+      "dataset": "data/compatibility-checklist.csv",
+      "query": "Gradle AGP JDK Android compile target",
+      "filters": { "stack": "gradle" },
+      "expected": { "topK": 5, "categoriesAny": ["native"], "tagsAny": ["android gradle"], "stacksAny": ["gradle"], "filtersMatch": true }
+    },
+    {
+      "id": "upgrade-cocoapods-spm",
+      "skill": "showdar-upgrade",
+      "dataset": "data/compatibility-checklist.csv",
+      "query": "CocoaPods Swift Package Manager lockfile deployment target",
+      "filters": { "stack": "cocoapods" },
+      "expected": { "topK": 5, "categoriesAny": ["native"], "tagsAny": ["native ios"], "stacksAny": ["cocoapods"], "filtersMatch": true }
+    },
+    {
+      "id": "upgrade-tauri-rust",
+      "skill": "showdar-upgrade",
+      "dataset": "data/compatibility-checklist.csv",
+      "query": "Tauri Rust crate capability updater",
+      "filters": { "stack": "tauri" },
+      "expected": { "topK": 5, "categoriesAny": ["native"], "tagsAny": ["tauri rust"], "stacksAny": ["tauri"], "filtersMatch": true }
+    },
+    {
+      "id": "upgrade-node-runtime",
+      "skill": "showdar-upgrade",
+      "dataset": "data/compatibility-checklist.csv",
+      "query": "Node runtime ESM CJS native addon OpenSSL",
+      "filters": { "stack": "node" },
+      "expected": { "topK": 5, "categoriesAny": ["runtime"], "tagsAny": ["runtime upgrade"], "stacksAny": ["node"], "filtersMatch": true }
+    },
+    {
+      "id": "upgrade-lockfile-rollback",
+      "skill": "showdar-upgrade",
+      "dataset": "data/compatibility-checklist.csv",
+      "query": "lockfile rollback previous compatible graph",
+      "filters": { "stack": "package-manager" },
+      "expected": { "topK": 5, "categoriesAny": ["lockfile"], "tagsAny": ["lockfile"], "stacksAny": ["package-manager"], "filtersMatch": true }
+    },
+
+    {
+      "id": "recover-interrupted-agent",
+      "skill": "showdar-recover",
+      "dataset": "data/recovery-signals.csv",
+      "query": "interrupted agent session context recovery",
+      "expected": { "topK": 5, "categoriesAny": ["session"], "tagsAny": ["context recovery"] }
+    },
+    {
+      "id": "recover-dirty-unrelated-tree",
+      "skill": "showdar-recover",
+      "dataset": "data/recovery-signals.csv",
+      "query": "dirty tree unrelated file ownership",
+      "expected": { "topK": 5, "categoriesAny": ["git"], "tagsAny": ["ownership"] }
+    },
+    {
+      "id": "recover-partial-refactor",
+      "skill": "showdar-recover",
+      "dataset": "data/recovery-signals.csv",
+      "query": "partial refactor broken imports types",
+      "filters": { "stack": "typescript" },
+      "expected": { "topK": 5, "categoriesAny": ["source"], "tagsAny": ["refactor recovery"], "stacksAny": ["typescript"], "filtersMatch": true }
+    },
+    {
+      "id": "recover-failed-migration",
+      "skill": "showdar-recover",
+      "dataset": "data/recovery-signals.csv",
+      "query": "database migration applied partially",
+      "filters": { "stack": "node" },
+      "expected": { "topK": 5, "categoriesAny": ["data"], "tagsAny": ["migration recovery"], "stacksAny": ["node"], "filtersMatch": true }
+    },
+    {
+      "id": "recover-unknown-agent-changes",
+      "skill": "showdar-recover",
+      "dataset": "data/recovery-signals.csv",
+      "query": "unknown prior agent changes no attribution",
+      "expected": { "topK": 5, "categoriesAny": ["ownership"], "tagsAny": ["unknown changes"] }
+    },
+    {
+      "id": "recover-no-match-noise",
+      "skill": "showdar-recover",
+      "dataset": "data/recovery-signals.csv",
+      "query": "quantum submarine zeppelin",
+      "expected": { "empty": true }
+    },
+
+    {
+      "id": "debug-no-match-noise",
+      "skill": "showdar-debug",
+      "dataset": "data/failure-patterns.csv",
+      "query": "quantum submarine zeppelin",
+      "expected": { "empty": true }
+    },
+    {
+      "id": "design-no-match-noise",
+      "skill": "showdar-design",
+      "dataset": "data/products.csv",
+      "query": "quantum submarine compiler",
+      "expected": { "empty": true }
+    },
+    {
+      "id": "ship-no-match-noise",
+      "skill": "showdar-ship",
+      "dataset": "data/release-checks.csv",
+      "query": "quantum submarine compiler",
+      "expected": { "empty": true }
+    },
+    {
+      "id": "test-no-match-noise",
+      "skill": "showdar-test",
+      "dataset": "data/test-strategy.csv",
+      "query": "quantum submarine compiler",
+      "expected": { "empty": true }
+    }
+  ]
+}
