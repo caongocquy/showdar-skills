@@ -26,6 +26,7 @@ test('showdar list prints V0.2 profiles and flagship skills', async () => {
   assert.equal(result.code, 0, result.stderr);
   assert.match(result.stdout, /Profiles:/);
   assert.match(result.stdout, /showdar-debug/);
+  assert.match(result.stdout, /showdar-git/);
   assert.doesNotMatch(result.stdout, /showdar-systematic-debugging/);
 });
 

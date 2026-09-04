@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "skill": "showdar-git",
+  "datasets": [
+    {
+      "file": "data/git-workflows.csv",
+      "idField": "id",
+      "requiredColumns": ["id", "category", "summary", "evidence", "approach", "avoid", "tags", "reference", "stack"],
+      "searchableFields": ["category", "summary", "evidence", "approach", "avoid", "tags"],
+      "filterFields": ["category", "stack"],
+      "reference": "references/operation-safety.md"
+    }
+  ]
+}

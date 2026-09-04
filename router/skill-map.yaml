@@ -37,3 +37,6 @@ routes:
   recover:
     triggers: ["resume", "recover task", "session stopped", "continue partial work", "conflict recovery"]
     skill: showdar-recover
+  git:
+    triggers: ["commit", "stage only task files", "merge branch", "rebase branch", "cherry-pick commit", "git conflict", "push branch", "clean merged branches", "finish git workflow"]
+    skill: showdar-git

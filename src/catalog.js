@@ -9,6 +9,7 @@ export const SKILLS = [
   { id: 'showdar-upgrade', domain: 'upgrade', description: 'Upgrade dependencies, frameworks, and platforms safely with compatibility analysis and rollback planning.' },
   { id: 'showdar-ship', domain: 'ship', description: 'Verify delivery readiness and platform-specific release checks; explicit release execution is opt-in.' },
   { id: 'showdar-recover', domain: 'recover', description: 'Reconstruct interrupted work from repository evidence and choose the safest next action without guessing.' },
+  { id: 'showdar-git', domain: 'git', description: 'Complete local Git workflows safely while preserving unrelated work and requiring explicit intent for remote mutations.' },
 ];
 
 export const AI_TARGETS = ['codex', 'opencode', 'claude', 'universal', 'all'];
@@ -16,8 +17,8 @@ export const AI_TARGETS = ['codex', 'opencode', 'claude', 'universal', 'all'];
 const ids = (...values) => values;
 
 export const PROFILES = {
-  minimal: ids('showdar-understand', 'showdar-plan', 'showdar-build', 'showdar-debug', 'showdar-test', 'showdar-review', 'showdar-recover'),
-  backend: ids('showdar-understand', 'showdar-plan', 'showdar-build', 'showdar-debug', 'showdar-test', 'showdar-review', 'showdar-upgrade', 'showdar-ship', 'showdar-recover'),
+  minimal: ids('showdar-understand', 'showdar-plan', 'showdar-build', 'showdar-debug', 'showdar-test', 'showdar-review', 'showdar-recover', 'showdar-git'),
+  backend: ids('showdar-understand', 'showdar-plan', 'showdar-build', 'showdar-debug', 'showdar-test', 'showdar-review', 'showdar-upgrade', 'showdar-ship', 'showdar-recover', 'showdar-git'),
   full: SKILLS.map((skill) => skill.id),
 };
 

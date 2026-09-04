@@ -2,7 +2,7 @@
 
 **Opinionated, practical engineering playbooks for coding agents.**
 
-Showdar Skills is one package containing ten deep flagship skills for understanding, planning, designing, building, debugging, testing, reviewing, upgrading, shipping, and recovering software work. Each skill is more than a prompt: it can include references, searchable structured knowledge, stack-specific guidance, deterministic read-only helper scripts, and examples.
+Showdar Skills is one package containing eleven deep flagship skills for understanding, planning, designing, building, debugging, testing, reviewing, upgrading, shipping, recovering, and completing local Git workflows. Each skill is more than a prompt: it can include references, searchable structured knowledge, stack-specific guidance, deterministic read-only helper scripts, and examples.
 
 ## Flagship skills
 
@@ -18,6 +18,7 @@ Showdar Skills is one package containing ten deep flagship skills for understand
 | `showdar-upgrade` | Safe dependency/framework/platform upgrades |
 | `showdar-ship` | Delivery verification and release-readiness assessment; explicit release execution is opt-in |
 | `showdar-recover` | Recover interrupted or partial work safely |
+| `showdar-git` | Complete local Git workflows while preserving unrelated work |
 
 ## Install from source
 
@@ -146,7 +147,13 @@ $showdar-debug login crashes after token refresh
 $showdar-plan split this migration into safe steps
 $showdar-review review the current changes for auth risks
 $showdar-ship verify this change is ready for handoff
+$showdar-git commit only the current task changes
+$showdar-git merge this branch into develop but do not push
 ```
+
+`showdar-git` handles local Git workflow only. It does not imply GitHub,
+GitHub Actions, CI/CD, deployment, publishing, or release automation; remote
+mutations require explicit intent.
 
 OpenCode can use native skill discovery and, when initialized with `--ai
 opencode` or `--ai all`, gets project commands under
@@ -157,6 +164,7 @@ opencode` or `--ai all`, gets project commands under
 /showdar/design polish the settings screen
 /showdar/review current changes
 /showdar/ship ios
+/showdar/git commit only the current task changes
 ```
 
 These `/showdar/...` commands are OpenCode commands, not Codex commands.
@@ -196,9 +204,9 @@ The same pattern is used across the suite where it adds value: debug has failure
 
 | Profile | Installed skills |
 | --- | --- |
-| `minimal` | 7 core skills: understand, plan, build, debug, test, review, recover, git |
-| `backend` | 9 skills: all except design |
-| `full` | All 10 flagship skills |
+| `minimal` | 8 core skills: understand, plan, build, debug, test, review, recover, git |
+| `backend` | 10 skills: all except design |
+| `full` | All 11 flagship skills |
 
 Profiles select skill bundles, not different stack asset sets. New usage should
 choose `minimal`, `backend`, or `full`. The deprecated `web` and `mobile`

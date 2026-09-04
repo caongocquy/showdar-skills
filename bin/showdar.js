@@ -8,7 +8,7 @@ import { globalManifestPath, initGlobal, initProject, inspectGlobal, inspectProj
 import { validateRepository } from '../src/validate.js';
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const COMMANDS = ['understand', 'plan', 'design', 'build', 'debug', 'test', 'review', 'upgrade', 'ship', 'recover', 'skill'];
+const COMMANDS = ['understand', 'plan', 'design', 'build', 'debug', 'test', 'review', 'upgrade', 'ship', 'recover', 'git', 'skill'];
 const SCOPES = ['project', 'global'];
 
 function valueAfter(args, flag, fallback) {

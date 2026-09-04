@@ -13,9 +13,10 @@ const EXPECTED_SKILLS = [
   'showdar-upgrade',
   'showdar-ship',
   'showdar-recover',
+  'showdar-git',
 ];
 
-test('catalog contains exactly the ten flagship skills', () => {
+test('catalog contains exactly the eleven flagship skills', () => {
   assert.deepEqual(SKILLS.map((skill) => skill.id), EXPECTED_SKILLS);
   assert.ok(SKILLS.every((skill) => skill.description?.length >= 30));
 });
@@ -46,9 +47,9 @@ test('profiles represent distinct skill bundles', () => {
   assert.deepEqual(Object.keys(PROFILES), ['minimal', 'backend', 'full']);
   assert.ok(PROFILES.minimal.length < PROFILES.backend.length);
   assert.ok(PROFILES.backend.length < PROFILES.full.length);
-  assert.ok(PROFILES.minimal.includes('showdar-debug'));
-  assert.ok(PROFILES.backend.includes('showdar-debug'));
-  assert.ok(PROFILES.full.includes('showdar-debug'));
+  assert.ok(PROFILES.minimal.includes('showdar-git'));
+  assert.ok(PROFILES.backend.includes('showdar-git'));
+  assert.ok(PROFILES.full.includes('showdar-git'));
 });
 
 test('every profile references known skills without duplicates', () => {

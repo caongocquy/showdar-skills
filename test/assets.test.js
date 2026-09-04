@@ -19,6 +19,7 @@ const commandMap = {
   upgrade: 'showdar-upgrade',
   ship: 'showdar-ship',
   recover: 'showdar-recover',
+  git: 'showdar-git',
 };
 
 const legacyIds = [

@@ -44,18 +44,18 @@ try {
   await writeFile(path.join(userSkill, 'SKILL.md'), 'user-owned\n');
 
   const init = run(process.execPath, [cli, 'init', '--ai', 'all', '--profile', 'full'], { cwd: project });
-  if (!/Skills: 10/.test(init)) throw new Error(`unexpected init output: ${init}`);
+  if (!/Skills: 11/.test(init)) throw new Error(`unexpected init output: ${init}`);
 
-  const roots = ['.codex/skills', '.opencode/skills', '.claude/skills', '.agents/skills'];
-  const skillIds = ['showdar-understand','showdar-plan','showdar-design','showdar-build','showdar-debug','showdar-test','showdar-review','showdar-upgrade','showdar-ship','showdar-recover'];
+  const roots = ['.agents/skills', '.opencode/skills', '.claude/skills'];
+  const skillIds = ['showdar-understand','showdar-plan','showdar-design','showdar-build','showdar-debug','showdar-test','showdar-review','showdar-upgrade','showdar-ship','showdar-recover','showdar-git'];
   for (const skillRoot of roots) {
     for (const id of skillIds) await mustExist(path.join(project, skillRoot, id, 'SKILL.md'));
   }
   const commands = await readdir(path.join(project, '.opencode', 'commands', 'showdar'));
-  if (commands.filter((name) => name.endsWith('.md')).length !== 11) throw new Error(`expected 11 OpenCode commands, got ${commands.length}`);
+  if (commands.filter((name) => name.endsWith('.md')).length !== 12) throw new Error(`expected 12 OpenCode commands, got ${commands.length}`);
 
   // Prove installed skills are self-contained: their helper imports must work outside the source package.
-  const searchOut = run(process.execPath, [path.join(project, '.codex/skills/showdar-design/scripts/search.mjs'), '--query', 'wedding editorial elegant', '--domain', 'products', '--limit', '1'], { cwd: project });
+  const searchOut = run(process.execPath, [path.join(project, '.agents/skills/showdar-design/scripts/search.mjs'), '--query', 'wedding editorial elegant', '--domain', 'products', '--limit', '1'], { cwd: project });
   if (!/Wedding Invitation/.test(searchOut)) throw new Error('installed design search did not return expected knowledge');
   const debugOut = run(process.execPath, [path.join(project, '.agents/skills/showdar-debug/scripts/collect-context.mjs'), project], { cwd: project });
   if (!/"cwd"/.test(debugOut) || !/"stacks"/.test(debugOut)) throw new Error('installed debug context script returned incomplete JSON');
