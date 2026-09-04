@@ -1,0 +1,54 @@
+name: Publish
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out release
+        uses: actions/checkout@v7
+
+      - name: Set up Node 24
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+
+      - name: Verify Node and npm
+        run: |
+          node --version
+          npm --version
+          node -e "const [major, minor, patch] = process.versions.node.split('.').map(Number); if (major < 22 || (major === 22 && minor < 14)) throw new Error('Trusted publishing requires Node >=22.14.0');"
+          npm_version=$(npm --version)
+          node -e "const [major, minor, patch] = process.argv[1].split('.').map(Number); if (major < 11 || (major === 11 && minor < 5) || (major === 11 && minor === 5 && patch < 1)) throw new Error('Trusted publishing requires npm >=11.5.1');" "$npm_version"
+
+      - name: Install dependencies
+        run: npm install --ignore-scripts --no-audit --no-fund --package-lock=false
+
+      - name: Verify release tag
+        run: npm run release:check -- "$GITHUB_REF_NAME"
+
+      - name: Run release checks
+        run: npm run check
+
+      - name: Run package smoke test
+        run: npm run smoke
+
+      - name: Run retrieval evaluation
+        run: npm run eval
+
+      - name: Check whether package version is already published
+        id: published
+        run: node scripts/check-published-version.mjs
+
+      - name: Publish with npm provenance
+        if: steps.published.outputs.publish == 'true'
+        run: npm publish --provenance
