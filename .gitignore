@@ -1,5 +1,43 @@
+# Dependencies
 node_modules/
+
+# Package artifacts
 *.tgz
-.DS_Store
+*.tar.gz
+
+# Test and build output
 coverage/
+dist/
+build/
+.cache/
+.tmp/
+tmp/
+
+# Local runtime state
+.showdar.json
+.showdar/
+
+# Local secrets and environment files
+.env
+.env.*
+!.env.example
+
+# Logs and crash dumps
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.pid
+
+# Operating system and editor files
+.DS_Store
+.AppleDouble
+.LSOverride
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Local planning documents are intentionally not part of the published repo.
 docs/
