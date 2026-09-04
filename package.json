@@ -8,6 +8,7 @@
     "test": "node --test",
     "validate": "node bin/showdar.js validate",
     "sync:runtime": "node scripts/sync-runtime.mjs",
+    "eval": "node scripts/retrieval-eval.mjs",
     "check": "npm test && npm run validate && npm pack --dry-run",
     "smoke": "node scripts/package-smoke.mjs"
   },
