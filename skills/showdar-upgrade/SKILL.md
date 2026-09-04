@@ -88,6 +88,7 @@ description: Upgrade dependencies, frameworks, runtimes, and native platforms th
 
 ## Stack detection
 
+- React: `stacks/react.md` for React/React DOM, renderer, peer, and API migration surfaces.
 - React Native: `stacks/react-native.md`.
 - Flutter: `stacks/flutter.md`.
 - Next.js: `stacks/nextjs.md`.

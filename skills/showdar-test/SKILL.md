@@ -90,9 +90,14 @@ description: Select and implement the lowest effective test level that proves be
 
 - Vitest: read `stacks/vitest.md`.
 - Jest: read `stacks/jest.md`.
+- React Testing Library: read `stacks/react-testing-library.md`.
+- React Native testing: read `stacks/react-native-testing.md`.
 - Flutter: read `stacks/flutter-test.md`.
+- Flutter `integration_test`: read `stacks/integration-test.md`.
 - Playwright: read `stacks/playwright.md`.
 - Detox: read `stacks/detox.md`.
+- XCTest: read `stacks/xctest.md`.
+- Android testing: read `stacks/android-testing.md`.
 - Unsupported tools follow the same behavior-first rules and repository-specific commands.
 
 ## Failure modes
