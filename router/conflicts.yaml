@@ -21,3 +21,30 @@ rules:
   - showdar-build owns application feature implementation; showdar-ops owns operational configuration and runtime workflows; showdar-git owns local Git workflow and does not imply operational execution
   - showdar-design preserves authoritative existing design tokens and product constraints
   - explicit user instructions override automatic routing while safety and repository constraints remain in force
+overlap_matrix:
+  - pair: showdar-understand vs showdar-requirements
+    boundary: understand maps observed system behavior; requirements defines behavior that should exist or remains undecided
+  - pair: showdar-requirements vs showdar-plan
+    boundary: requirements establishes the product contract; plan chooses the engineering approach for an agreed contract
+  - pair: showdar-plan vs showdar-build
+    boundary: plan describes bounded implementation work; build performs the approved application change
+  - pair: showdar-design vs showdar-build
+    boundary: design decides product UI direction and experience; build implements the agreed UI change
+  - pair: showdar-debug vs showdar-recover
+    boundary: debug explains an observed failure; recover reconstructs interrupted work and its safest continuation
+  - pair: showdar-test vs showdar-quality
+    boundary: quality plans risk and verification scope; test implements automated proof at the appropriate test level
+  - pair: showdar-review vs showdar-security
+    boundary: review checks general code quality; security assesses security posture, threats, and exploitability
+  - pair: showdar-review vs showdar-ship
+    boundary: review evaluates change quality; ship evaluates delivery readiness and handoff evidence
+  - pair: showdar-ship vs showdar-ops
+    boundary: ship verifies readiness; ops changes or executes operational and deployment workflows
+  - pair: showdar-git vs showdar-ops
+    boundary: git handles repository history and local Git actions; ops handles runtime, deployment, and operational state
+  - pair: showdar-git vs showdar-recover
+    boundary: git performs an explicit Git operation; recover reconstructs interrupted work before choosing the next action
+  - pair: showdar-quality vs showdar-ship
+    boundary: quality plans scenario coverage and confidence; ship decides whether release or handoff evidence is sufficient
+  - pair: showdar-upgrade vs showdar-build
+    boundary: upgrade changes dependency or platform compatibility; build changes application behavior within the supported stack

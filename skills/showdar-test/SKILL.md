@@ -1,6 +1,6 @@
 ---
 name: showdar-test
-description: Select and implement the lowest effective test level that proves behavior, reproduces regressions, and avoids fragile mock-heavy coverage.
+description: Use when choosing or implementing automated tests for behavior, regressions, integration, E2E, or coverage.
 ---
 
 # Showdar Test

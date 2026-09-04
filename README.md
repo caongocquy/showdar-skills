@@ -146,7 +146,9 @@ Remove only Showdar-owned files with `showdar remove` in project scope or
 Natural intent routing is the default for installed native skills. Project
 initialization adds a small managed routing block to `AGENTS.md`; global
 initialization does not modify project files. Each skill has a specific native
-name/description for agent discovery.
+name/description for agent discovery. Showdar uses lightweight metadata for
+discovery; the selected skill then loads its workflow and supporting knowledge
+progressively.
 
 Codex discovers the installed native skills. Ask naturally, or invoke a
 specific skill with its native name:
@@ -154,7 +156,7 @@ specific skill with its native name:
 ```text
 $showdar-debug login crashes after token refresh
 $showdar-plan split this migration into safe steps
-$showdar-review review the current changes for auth risks
+$showdar-security review the current changes for auth risks
 $showdar-ship verify this change is ready for handoff
 $showdar-git commit only the current task changes
 $showdar-git merge this branch into develop but do not push

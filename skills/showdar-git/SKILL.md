@@ -1,6 +1,6 @@
 ---
 name: showdar-git
-description: Use when a repository task needs safe local Git inspection, selective staging, commits, branch integration, conflict handling, cleanup, or explicitly requested push and pull operations.
+description: Use when performing local Git inspection, staging, commits, branch integration, conflicts, cleanup, or explicitly requested remote Git actions.
 ---
 
 # Showdar Git

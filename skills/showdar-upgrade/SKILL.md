@@ -1,6 +1,6 @@
 ---
 name: showdar-upgrade
-description: Upgrade dependencies, frameworks, runtimes, and native platforms through compatibility analysis, breaking-change search, staged migration, rollback, and fresh verification.
+description: Use when upgrading dependencies, frameworks, runtimes, or native platforms and compatibility or rollback risk matters.
 ---
 
 # Showdar Upgrade

@@ -1,6 +1,6 @@
 ---
 name: showdar-recover
-description: Reconstruct interrupted agent or engineering work from durable repository evidence, classify partial state, and choose the safest next action without guessing.
+description: Use when interrupted or partial engineering work must be reconstructed from repository evidence before continuing.
 ---
 
 # Showdar Recover

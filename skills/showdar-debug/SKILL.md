@@ -1,6 +1,6 @@
 ---
 name: showdar-debug
-description: Debug crashes, regressions, build failures, races, networking, memory, and performance issues through evidence-first hypotheses and controlled experiments.
+description: Use when observed behavior fails through crashes, regressions, build failures, races, networking, memory, or performance issues.
 ---
 
 # Showdar Debug

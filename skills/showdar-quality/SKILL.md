@@ -1,6 +1,6 @@
 ---
 name: showdar-quality
-description: Plan QA/QC verification with risk-based scenarios, coverage, compatibility matrices, regression scope, and evidence-backed bug reports.
+description: Use when planning QA/QC scenarios, risk coverage, regression scope, compatibility checks, or bug-report evidence.
 ---
 
 # Showdar Quality

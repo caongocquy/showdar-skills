@@ -1,6 +1,6 @@
 ---
 name: showdar-requirements
-description: Turn product and business input into explicit, testable requirements while exposing assumptions, gaps, conflicts, and decisions.
+description: Use when product or business input needs explicit behavior, rules, acceptance criteria, assumptions, or open decisions.
 ---
 
 # Showdar Requirements

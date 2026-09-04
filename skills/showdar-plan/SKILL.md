@@ -1,6 +1,6 @@
 ---
 name: showdar-plan
-description: Convert a requirement into a bounded implementation plan with explicit change surface, risks, task ordering, and verification evidence.
+description: Use when agreed behavior needs a bounded implementation plan, change surface, task order, risks, or verification steps.
 ---
 
 # Showdar Plan

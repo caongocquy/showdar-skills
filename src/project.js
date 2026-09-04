@@ -49,21 +49,21 @@ async function writeJsonAtomic(target, value) {
 
 function managedBlock(skillIds) {
   const routes = [
-    ['understand repository, architecture, dependencies, impact', 'showdar-understand'],
-    ['plan feature, requirement, scope, implementation', 'showdar-plan'],
-    ['design UI, UX, responsive layout, visual polish, accessibility', 'showdar-design'],
-    ['implement or refactor production code', 'showdar-build'],
-    ['debug bug, crash, regression, build or performance failure', 'showdar-debug'],
-    ['test strategy, regression, integration, E2E', 'showdar-test'],
-    ['review changes, pull request, correctness, maintainability, architecture, performance', 'showdar-review'],
-    ['upgrade dependency, framework, platform, migration', 'showdar-upgrade'],
-    ['release readiness, handoff, package verification, rollback assessment', 'showdar-ship'],
-    ['recover interrupted session or partial implementation', 'showdar-recover'],
-    ['commit, stage, merge, rebase, conflict, or push local Git work', 'showdar-git'],
-    ['analyze product requirements, business rules, ambiguity, or acceptance criteria', 'showdar-requirements'],
-    ['plan QA scenarios, regression scope, risk coverage, or bug evidence', 'showdar-quality'],
-    ['threat model, security posture, authz, secrets, attack surface, or data exposure', 'showdar-security'],
-    ['CI/CD, containers, environment config, deployment, observability, or rollback operations', 'showdar-ops'],
+    ['map repository architecture, dependencies, or impact', 'showdar-understand'],
+    ['plan implementation of agreed behavior and scope', 'showdar-plan'],
+    ['design product UI, UX, responsive layout, accessibility, or visual polish', 'showdar-design'],
+    ['implement or refactor an agreed application change', 'showdar-build'],
+    ['debug an observed bug, crash, regression, build, or performance failure', 'showdar-debug'],
+    ['choose or implement automated tests and coverage', 'showdar-test'],
+    ['review code or diffs for general correctness, architecture, performance, maintainability, or tests', 'showdar-review'],
+    ['upgrade dependencies, frameworks, runtimes, or platforms', 'showdar-upgrade'],
+    ['check release, artifact, or handoff readiness', 'showdar-ship'],
+    ['recover interrupted or partial engineering work', 'showdar-recover'],
+    ['perform local Git inspection, staging, commit, merge, rebase, or conflict work', 'showdar-git'],
+    ['define product behavior, business rules, ambiguity, or acceptance criteria', 'showdar-requirements'],
+    ['plan QA scenarios, risk coverage, regression, compatibility, or bug evidence', 'showdar-quality'],
+    ['assess threats, attack surface, trust boundaries, auth, secrets, exposure, or exploitability', 'showdar-security'],
+    ['inspect or change CI/CD, containers, environments, deployment, observability, rollback, or runtime operations', 'showdar-ops'],
   ].filter(([, id]) => skillIds.includes(id));
   const lines = routes.map(([intent, skill]) => `- ${intent} -> \`${skill}\``).join('\n');
   return `${START}\n## Showdar Skills routing\n\nUse the smallest Showdar skill that fully matches the current task. Do not load unrelated Showdar skills.\n\n${lines}\n\nFor debugging, gather evidence before modifying code. For shipping or destructive operations, require explicit user approval and fresh verification. Never print or commit secrets.\n${END}`;
