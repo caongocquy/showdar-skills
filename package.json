@@ -1,6 +1,6 @@
 {
   "name": "showdar-skills",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Production-grade software engineering lifecycle skills for coding agents.",
   "type": "module",
   "bin": { "showdar": "./bin/showdar.js" },
