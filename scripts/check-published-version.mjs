@@ -8,7 +8,8 @@ export function classifyNpmViewResult(result) {
   if (result.status === 0) return 'published';
 
   const output = `${result.stdout}\n${result.stderr}`;
-  if (/\bE404\b/.test(output) && /404 Not Found|status code 404/i.test(output)) return 'missing';
+  const missingResponse = /404 Not Found|status code 404|No match found for version/i.test(output);
+  if (/\bE404\b/.test(output) && missingResponse) return 'missing';
 
   const error = new Error(`npm view failed:\n${output}`);
   error.exitCode = result.status ?? 1;

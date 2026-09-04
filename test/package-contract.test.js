@@ -76,6 +76,11 @@ test('release version guard accepts matching tags and rejects mismatches', () =>
 test('published version guard distinguishes missing versions from registry failures', () => {
   assert.equal(classifyNpmViewResult({ status: 0, stdout: '"0.2.0"', stderr: '' }), 'published');
   assert.equal(classifyNpmViewResult({ status: 1, stdout: '', stderr: 'npm error code E404\nnpm error 404 Not Found' }), 'missing');
+  assert.equal(classifyNpmViewResult({
+    status: 1,
+    stdout: '{"code":"E404","summary":"No match found for version 0.2.1"}',
+    stderr: 'npm error code E404\nnpm error 404 No match found for version 0.2.1',
+  }), 'missing');
   assert.throws(
     () => classifyNpmViewResult({ status: 1, stdout: '', stderr: 'npm error code E401\nnpm error 401 Unauthorized' }),
     /npm view failed/,
