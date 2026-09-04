@@ -2,7 +2,7 @@
 
 **Opinionated, practical engineering playbooks for coding agents.**
 
-Showdar Skills is one package containing eleven deep flagship skills for understanding, planning, designing, building, debugging, testing, reviewing, upgrading, shipping, recovering, and completing local Git workflows. Each skill is more than a prompt: it can include references, searchable structured knowledge, stack-specific guidance, deterministic read-only helper scripts, and examples.
+Showdar Skills is one package containing 13 first-class skills for software-team workflows. They cover engineering, product requirements, QA/QC, delivery verification, and safe local Git work. Each skill is more than a prompt: it can include references, searchable structured knowledge, stack-specific guidance, deterministic read-only helper scripts, and examples.
 
 ## Flagship skills
 
@@ -19,6 +19,13 @@ Showdar Skills is one package containing eleven deep flagship skills for underst
 | `showdar-ship` | Delivery verification and release-readiness assessment; explicit release execution is opt-in |
 | `showdar-recover` | Recover interrupted or partial work safely |
 | `showdar-git` | Complete local Git workflows while preserving unrelated work |
+| `showdar-requirements` | Turn product/business input into explicit, testable requirements and acceptance criteria |
+| `showdar-quality` | Plan QA/QC verification, risk-based coverage, regression scope, and test scenarios |
+
+The suite is grouped by capability: the 11 engineering skills cover repository
+work, `showdar-requirements` covers product/BA analysis, and `showdar-quality`
+covers QA/QC planning. Requirements are not an implementation plan; quality
+planning is not automated test implementation.
 
 ## Install from source
 
@@ -149,6 +156,8 @@ $showdar-review review the current changes for auth risks
 $showdar-ship verify this change is ready for handoff
 $showdar-git commit only the current task changes
 $showdar-git merge this branch into develop but do not push
+$showdar-requirements review this ticket for missing business rules
+$showdar-quality create regression scenarios for this release
 ```
 
 `showdar-git` handles local Git workflow only. It does not imply GitHub,
@@ -204,14 +213,17 @@ The same pattern is used across the suite where it adds value: debug has failure
 
 | Profile | Installed skills |
 | --- | --- |
-| `minimal` | 8 core skills: understand, plan, build, debug, test, review, recover, git |
-| `backend` | 10 skills: all except design |
-| `full` | All 11 flagship skills |
+| `minimal` | 8 core engineering skills: understand, plan, build, debug, test, review, recover, git |
+| `developer` | 11 general engineering skills, excluding product/QA role skills |
+| `backend` | 12 backend engineering plus requirements and quality skills |
+| `qa` | 9 skills focused on requirements, QA, testing, debugging, review, ship, recovery, and Git |
+| `product` | 6 skills focused on repository context, requirements, planning, design, quality, and review |
+| `full` | All 13 skills |
 
 Profiles select skill bundles, not different stack asset sets. New usage should
-choose `minimal`, `backend`, or `full`. The deprecated `web` and `mobile`
-aliases remain accepted for compatibility and resolve to `full`; new manifests
-store the canonical `full` profile.
+choose `minimal`, `developer`, `backend`, `qa`, `product`, or `full`. The
+deprecated `web` and `mobile` aliases remain accepted for compatibility and
+resolve to `developer`; new manifests store the canonical `developer` profile.
 
 ## CLI
 

@@ -14,9 +14,11 @@ const EXPECTED_SKILLS = [
   'showdar-ship',
   'showdar-recover',
   'showdar-git',
+  'showdar-requirements',
+  'showdar-quality',
 ];
 
-test('catalog contains exactly the eleven flagship skills', () => {
+test('catalog contains exactly thirteen first-class skills', () => {
   assert.deepEqual(SKILLS.map((skill) => skill.id), EXPECTED_SKILLS);
   assert.ok(SKILLS.every((skill) => skill.description?.length >= 30));
 });
@@ -35,21 +37,35 @@ test('full profile resolves every skill exactly once', () => {
   assert.deepEqual(resolveProfile('full'), EXPECTED_SKILLS);
 });
 
-test('legacy mobile and web profiles resolve to canonical full', () => {
-  assert.deepEqual(PROFILE_ALIASES, { mobile: 'full', web: 'full' });
-  assert.equal(canonicalProfile('mobile'), 'full');
-  assert.equal(canonicalProfile('web'), 'full');
-  assert.deepEqual(resolveProfile('mobile'), EXPECTED_SKILLS);
-  assert.deepEqual(resolveProfile('web'), EXPECTED_SKILLS);
+test('legacy mobile and web profiles resolve to the developer profile', () => {
+  assert.deepEqual(PROFILE_ALIASES, { mobile: 'developer', web: 'developer' });
+  assert.equal(canonicalProfile('mobile'), 'developer');
+  assert.equal(canonicalProfile('web'), 'developer');
+  assert.deepEqual(resolveProfile('mobile'), resolveProfile('developer'));
+  assert.deepEqual(resolveProfile('web'), resolveProfile('developer'));
 });
 
-test('profiles represent distinct skill bundles', () => {
-  assert.deepEqual(Object.keys(PROFILES), ['minimal', 'backend', 'full']);
-  assert.ok(PROFILES.minimal.length < PROFILES.backend.length);
-  assert.ok(PROFILES.backend.length < PROFILES.full.length);
-  assert.ok(PROFILES.minimal.includes('showdar-git'));
-  assert.ok(PROFILES.backend.includes('showdar-git'));
-  assert.ok(PROFILES.full.includes('showdar-git'));
+test('profiles represent role-oriented skill bundles', () => {
+  assert.deepEqual(Object.keys(PROFILES), ['minimal', 'developer', 'backend', 'qa', 'product', 'full']);
+  assert.equal(PROFILES.minimal.length, 8);
+  assert.equal(PROFILES.developer.length, 11);
+  assert.equal(PROFILES.backend.length, 12);
+  assert.equal(PROFILES.qa.length, 9);
+  assert.equal(PROFILES.product.length, 6);
+  assert.equal(PROFILES.full.length, 13);
+  for (const profile of ['minimal', 'developer', 'backend', 'qa', 'full']) {
+    assert.ok(PROFILES[profile].includes('showdar-git'));
+  }
+  assert.ok(PROFILES.backend.includes('showdar-requirements'));
+  assert.ok(PROFILES.backend.includes('showdar-quality'));
+  assert.deepEqual(PROFILES.qa, [
+    'showdar-understand', 'showdar-requirements', 'showdar-quality', 'showdar-test',
+    'showdar-debug', 'showdar-review', 'showdar-ship', 'showdar-recover', 'showdar-git',
+  ]);
+  assert.deepEqual(PROFILES.product, [
+    'showdar-understand', 'showdar-requirements', 'showdar-plan', 'showdar-design',
+    'showdar-quality', 'showdar-review',
+  ]);
 });
 
 test('every profile references known skills without duplicates', () => {

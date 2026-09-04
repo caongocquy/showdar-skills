@@ -40,3 +40,9 @@ routes:
   git:
     triggers: ["commit", "stage only task files", "merge branch", "rebase branch", "cherry-pick commit", "git conflict", "push branch", "clean merged branches", "finish git workflow"]
     skill: showdar-git
+  requirements:
+    triggers: ["requirements", "business rules", "acceptance criteria", "user stories", "use cases", "requirement matrix", "missing requirement", "ambiguity"]
+    skill: showdar-requirements
+  quality:
+    triggers: ["QA scenarios", "test scenarios", "regression scope", "risk-based testing", "quality plan", "compatibility matrix", "bug report"]
+    skill: showdar-quality

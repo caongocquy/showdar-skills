@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "description": "Offline semantic retrieval benchmark for the eleven flagship Showdar skills.",
+  "description": "Offline semantic retrieval benchmark for the thirteen first-class Showdar skills.",
   "cases": [
     {
       "id": "understand-monorepo-workspace",
@@ -793,6 +793,84 @@
       "dataset": "data/test-strategy.csv",
       "query": "quantum submarine compiler",
       "expected": { "empty": true }
+    },
+    {
+      "id": "requirements-ticket-acceptance-criteria",
+      "skill": "showdar-requirements",
+      "dataset": "data/requirements-patterns.csv",
+      "query": "turn this ticket into testable acceptance criteria Given When Then",
+      "filters": { "category": "acceptance" },
+      "expected": { "topK": 5, "categoriesAny": ["acceptance"], "tagsAny": ["acceptance criteria"], "filtersMatch": true }
+    },
+    {
+      "id": "requirements-transfer-business-rules",
+      "skill": "showdar-requirements",
+      "dataset": "data/requirements-patterns.csv",
+      "query": "review money transfer flow for business rules permissions amount and state",
+      "filters": { "category": "business-rule" },
+      "expected": { "topK": 5, "categoriesAny": ["business-rule"], "tagsAny": ["business rules"], "filtersMatch": true }
+    },
+    {
+      "id": "requirements-missing-ambiguity",
+      "skill": "showdar-requirements",
+      "dataset": "data/requirements-patterns.csv",
+      "query": "what is missing or ambiguous in this requirement actor error behavior and threshold",
+      "expected": { "topK": 5, "categoriesAny": ["ambiguity"], "tagsAny": ["ambiguity missing decision"] }
+    },
+    {
+      "id": "requirements-mobile-edge-flows",
+      "skill": "showdar-requirements",
+      "dataset": "data/requirements-patterns.csv",
+      "query": "React Native mobile permissions lifecycle deep link offline edge cases",
+      "filters": { "stack": "react-native" },
+      "expected": { "topK": 5, "categoriesAny": ["platform"], "tagsAny": ["mobile permissions lifecycle offline"], "stacksAny": ["react-native"], "filtersMatch": true }
+    },
+    {
+      "id": "requirements-readiness-matrix",
+      "skill": "showdar-requirements",
+      "dataset": "data/requirements-patterns.csv",
+      "query": "requirement matrix traceability actors states dependencies implementation readiness",
+      "expected": { "topK": 5, "categoriesAny": ["state", "functional", "non-functional"], "tagsAny": ["state transitions", "functional requirement", "NFR"] }
+    },
+    {
+      "id": "quality-otp-scenarios",
+      "skill": "showdar-quality",
+      "dataset": "data/quality-patterns.csv",
+      "query": "create QA test scenarios for OTP login invalid expired resend and duplicate submit",
+      "filters": { "category": "scenario" },
+      "expected": { "topK": 5, "categoriesAny": ["scenario"], "tagsAny": ["scenario coverage boundary"], "filtersMatch": true }
+    },
+    {
+      "id": "quality-release-regression-scope",
+      "skill": "showdar-quality",
+      "dataset": "data/quality-patterns.csv",
+      "query": "what regression scope must QA test for this release high risk targeted optional",
+      "filters": { "category": "regression" },
+      "expected": { "topK": 5, "categoriesAny": ["regression"], "tagsAny": ["risk regression scope"], "filtersMatch": true }
+    },
+    {
+      "id": "quality-mobile-platform-matrix",
+      "skill": "showdar-quality",
+      "dataset": "data/quality-patterns.csv",
+      "query": "React Native Android iOS device OS permission lifecycle compatibility test matrix",
+      "filters": { "category": "compatibility", "stack": "react-native" },
+      "expected": { "topK": 5, "categoriesAny": ["compatibility"], "tagsAny": ["device browser platform matrix"], "stacksAny": ["react-native"], "filtersMatch": true }
+    },
+    {
+      "id": "quality-bug-reproduction-report",
+      "skill": "showdar-quality",
+      "dataset": "data/quality-patterns.csv",
+      "query": "write bug reproduction report with environment steps actual expected evidence repro rate",
+      "filters": { "category": "bug-report" },
+      "expected": { "topK": 5, "categoriesAny": ["bug-report"], "tagsAny": ["bug reproduction evidence"], "filtersMatch": true }
+    },
+    {
+      "id": "quality-payment-vs-automation",
+      "skill": "showdar-quality",
+      "dataset": "data/quality-patterns.csv",
+      "query": "payment QA scenarios retry idempotency data integrity concurrency not automated implementation",
+      "filters": { "category": "data" },
+      "expected": { "topK": 5, "categoriesAny": ["data"], "tagsAny": ["data integrity concurrency"], "filtersMatch": true }
     }
   ]
 }
