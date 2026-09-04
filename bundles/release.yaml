@@ -1,4 +1,4 @@
 version: 2
 name: release
 skills: [showdar-review, showdar-ship]
-flow: "pre-release review -> readiness -> approved execution -> post-deploy verification"
+flow: "pre-release review -> delivery verification -> handoff decision -> optional explicitly requested release execution"

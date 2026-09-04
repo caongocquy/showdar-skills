@@ -1,17 +1,25 @@
-# Example release report
+# Example delivery-readiness report
 
-Target: iOS production candidate `2.4.0 (318)`.
+Intent: verify whether the iOS candidate is ready for handoff; no store
+submission or deployment was requested.
 
-Evidence: focused tests, typecheck, archive, signing, entitlements, version, and
-build-number checks passed. The release checklist also confirms privacy strings,
-push environment, deep-link association, and crash reporting configuration.
+Target: iOS candidate `2.4.0 (318)`.
 
-Unverified locally: App Store/TestFlight processing and production push delivery.
-Do not report those as passed; assign them to the release owner.
+Local evidence: focused tests, typecheck, archive, signing, entitlements,
+version/build-number, privacy strings, push/deep-link configuration, dSYM
+identity, and clean-device smoke passed.
 
-Rollout: release to the internal group first, then staged production rollout.
-Rollback: keep the previous App Store build available and retain the server
-feature flag that disables the new response path without a client update.
+Existing CI: inspected the workflow to confirm its canonical test command;
+unchanged because CI modification was outside scope.
 
-Post-release proof: install, launch, login, push-token registration, deep link,
-offline resume, and the critical transaction flow. Record timestamps and owners.
+External/unverified: App Store/TestFlight processing, production push delivery,
+provider monitoring, and rollout state. These are not required for this local
+readiness decision and must not be reported as passed.
+
+Readiness: ready for the requested handoff, subject to the release owner's
+separate decision about any later submission or deployment.
+
+If the user explicitly requests TestFlight submission or deployment
+verification, record the target, artifact, authorized command, processing
+result, install/launch smoke, observation owner, and recovery trigger
+separately. Use `references/post-deploy.md` only for that explicit scope.

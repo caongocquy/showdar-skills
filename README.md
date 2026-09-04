@@ -16,7 +16,7 @@ Showdar Skills is one package containing ten deep flagship skills for understand
 | `showdar-test` | Choose and implement the lowest effective test level |
 | `showdar-review` | High-signal P0–P3 code review |
 | `showdar-upgrade` | Safe dependency/framework/platform upgrades |
-| `showdar-ship` | Release readiness, rollout, rollback, and post-release proof |
+| `showdar-ship` | Delivery verification and release-readiness assessment; explicit release execution is opt-in |
 | `showdar-recover` | Recover interrupted or partial work safely |
 
 ## Install the CLI
@@ -161,7 +161,7 @@ The project intentionally stays dependency-light and uses Node.js built-ins for 
 
 ## Safety boundary
 
-Showdar skills may prepare release/deployment guidance, but they do not grant approval to deploy. Production deploys, publishing/store submissions, destructive migrations, credential operations, and other irreversible actions require explicit user authorization. Skills must never print or commit secret values.
+Showdar skills may inspect release/deployment guidance, but normal Ship usage is delivery verification: it does not create CI/CD or deployment infrastructure, require a deployed endpoint, or grant approval to deploy. Production deploys, publishing/store submissions, destructive migrations, credential operations, and other irreversible actions require explicit user intent and authorization. Skills must never print or commit secret values.
 
 ## License
 
