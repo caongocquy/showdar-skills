@@ -17,3 +17,4 @@ rules:
   - if requirements or change surface are unresolved prefer showdar-plan over showdar-build
   - if the task is read-only do not route into implementation or shipping actions
   - one flagship skill should normally own the current phase; transition only when its stop condition is met
+  - local Git commit, staging, branch, merge, rebase, conflict, cleanup, and explicit push intent routes to showdar-git

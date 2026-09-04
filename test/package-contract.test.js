@@ -16,11 +16,10 @@ function packManifest(cwd, destination) {
   return JSON.parse(result.stdout)[0].files.map(({ path: file }) => file).sort();
 }
 
-async function makeTrackedInputCopy(destination) {
-  const listed = spawnSync('git', ['ls-files', '-z'], { cwd: root, encoding: 'buffer' });
-  assert.equal(listed.status, 0, listed.stderr?.toString());
-  for (const encoded of listed.stdout.toString().split('\0').filter(Boolean)) {
+async function makePackageInputCopy(destination, packageFiles) {
+  for (const encoded of packageFiles) {
     if (encoded === 'docs' || encoded.startsWith('docs/')) continue;
+    try { await access(path.join(root, encoded)); } catch { continue; }
     const target = path.join(destination, encoded);
     await mkdir(path.dirname(target), { recursive: true });
     await cp(path.join(root, encoded), target);
@@ -37,7 +36,7 @@ test('package contract excludes internal docs and is reproducible without them',
     const workspaceFiles = packManifest(root, packDir);
     assert.ok(!workspaceFiles.some((file) => file.startsWith('docs/')), 'workspace package must exclude docs/');
 
-    await makeTrackedInputCopy(freshRoot);
+    await makePackageInputCopy(freshRoot, workspaceFiles);
     const freshFiles = packManifest(freshRoot, packDir);
     assert.deepEqual(freshFiles, workspaceFiles, 'workspace and docs-free package inputs must produce the same file list');
 

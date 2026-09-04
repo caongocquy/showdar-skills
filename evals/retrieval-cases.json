@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "description": "Offline semantic retrieval benchmark for the ten flagship Showdar skills.",
+  "description": "Offline semantic retrieval benchmark for the eleven flagship Showdar skills.",
   "cases": [
     {
       "id": "understand-monorepo-workspace",
@@ -724,6 +724,46 @@
       "dataset": "data/recovery-signals.csv",
       "query": "quantum submarine zeppelin",
       "expected": { "empty": true }
+    },
+
+    {
+      "id": "git-selective-staging",
+      "skill": "showdar-git",
+      "dataset": "data/git-workflows.csv",
+      "query": "commit only current task changes in a mixed working tree",
+      "expected": { "topK": 5, "categoriesAny": ["staging"], "tagsAny": ["selective staging"] }
+    },
+    {
+      "id": "git-merge-develop-no-push",
+      "skill": "showdar-git",
+      "dataset": "data/git-workflows.csv",
+      "query": "merge feature branch into develop but do not push",
+      "filters": { "category": "merge" },
+      "expected": { "topK": 5, "categoriesAny": ["merge"], "tagsAny": ["develop"], "filtersMatch": true }
+    },
+    {
+      "id": "git-rebase-conflict",
+      "skill": "showdar-git",
+      "dataset": "data/git-workflows.csv",
+      "query": "rebase onto develop and resolve conflict without choosing ours blindly",
+      "filters": { "category": "conflict" },
+      "expected": { "topK": 5, "categoriesAny": ["conflict"], "tagsAny": ["merge base"], "filtersMatch": true }
+    },
+    {
+      "id": "git-explicit-push",
+      "skill": "showdar-git",
+      "dataset": "data/git-workflows.csv",
+      "query": "push completed branch only after explicit user request and checks",
+      "filters": { "category": "remote" },
+      "expected": { "topK": 5, "categoriesAny": ["remote"], "tagsAny": ["explicit intent"], "filtersMatch": true }
+    },
+    {
+      "id": "git-safe-branch-cleanup",
+      "skill": "showdar-git",
+      "dataset": "data/git-workflows.csv",
+      "query": "clean up local branches already merged into develop safely",
+      "filters": { "category": "cleanup" },
+      "expected": { "topK": 5, "categoriesAny": ["cleanup"], "tagsAny": ["merged branch"], "filtersMatch": true }
     },
 
     {

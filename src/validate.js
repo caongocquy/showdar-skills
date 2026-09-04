@@ -287,7 +287,7 @@ export async function validateRepository(packageRoot) {
   const commandMap = {
     understand: 'showdar-understand', plan: 'showdar-plan', design: 'showdar-design', build: 'showdar-build',
     debug: 'showdar-debug', test: 'showdar-test', review: 'showdar-review', upgrade: 'showdar-upgrade',
-    ship: 'showdar-ship', recover: 'showdar-recover',
+    ship: 'showdar-ship', recover: 'showdar-recover', git: 'showdar-git',
   };
   for (const [command, skill] of Object.entries(commandMap)) {
     const relative = `commands/opencode/showdar/${command}.md`;

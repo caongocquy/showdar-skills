@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { AI_TARGETS, PROFILES, SKILLS, resolveProfile } from '../src/catalog.js';
+import { AI_TARGETS, PROFILE_ALIASES, PROFILES, SKILLS, canonicalProfile, resolveProfile } from '../src/catalog.js';
 
 const EXPECTED_SKILLS = [
   'showdar-understand',
@@ -13,9 +13,10 @@ const EXPECTED_SKILLS = [
   'showdar-upgrade',
   'showdar-ship',
   'showdar-recover',
+  'showdar-git',
 ];
 
-test('catalog contains exactly the ten flagship skills', () => {
+test('catalog contains exactly the eleven flagship skills', () => {
   assert.deepEqual(SKILLS.map((skill) => skill.id), EXPECTED_SKILLS);
   assert.ok(SKILLS.every((skill) => skill.description?.length >= 30));
 });
@@ -32,6 +33,23 @@ test('supported AI targets include native and universal modes', () => {
 
 test('full profile resolves every skill exactly once', () => {
   assert.deepEqual(resolveProfile('full'), EXPECTED_SKILLS);
+});
+
+test('legacy mobile and web profiles resolve to canonical full', () => {
+  assert.deepEqual(PROFILE_ALIASES, { mobile: 'full', web: 'full' });
+  assert.equal(canonicalProfile('mobile'), 'full');
+  assert.equal(canonicalProfile('web'), 'full');
+  assert.deepEqual(resolveProfile('mobile'), EXPECTED_SKILLS);
+  assert.deepEqual(resolveProfile('web'), EXPECTED_SKILLS);
+});
+
+test('profiles represent distinct skill bundles', () => {
+  assert.deepEqual(Object.keys(PROFILES), ['minimal', 'backend', 'full']);
+  assert.ok(PROFILES.minimal.length < PROFILES.backend.length);
+  assert.ok(PROFILES.backend.length < PROFILES.full.length);
+  assert.ok(PROFILES.minimal.includes('showdar-git'));
+  assert.ok(PROFILES.backend.includes('showdar-git'));
+  assert.ok(PROFILES.full.includes('showdar-git'));
 });
 
 test('every profile references known skills without duplicates', () => {

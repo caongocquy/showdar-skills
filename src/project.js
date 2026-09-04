@@ -1,11 +1,16 @@
 import { access, cp, mkdir, readFile, readdir, rename, rm, stat, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
+import { homedir } from 'node:os';
 import path from 'node:path';
-import { opencodeCommandRoot, resolveTargets, skillRootFor } from './adapters.js';
+import { globalCommandRootFor, globalSkillRootFor, NATIVE_TARGETS, opencodeCommandRoot, resolveTargets, skillRootFor } from './adapters.js';
 
-const MANIFEST = '.showdar.json';
+const PROJECT_MANIFEST = '.showdar.json';
 const START = '<!-- showdar-skills:start -->';
 const END = '<!-- showdar-skills:end -->';
+
+export function globalManifestPath(homeRoot = homedir()) {
+  return path.join(homeRoot, '.showdar', 'global.json');
+}
 
 async function exists(target) {
   try { await access(target); return true; } catch { return false; }
@@ -30,11 +35,10 @@ async function hashTree(target) {
   return h.digest('hex');
 }
 
-async function readManifest(projectRoot) {
-  const target = path.join(projectRoot, MANIFEST);
-  if (!(await exists(target))) return null;
-  try { return JSON.parse(await readFile(target, 'utf8')); }
-  catch (error) { throw new Error(`Invalid ${MANIFEST}: ${error.message}`); }
+async function readManifest(manifestPath) {
+  if (!(await exists(manifestPath))) return null;
+  try { return JSON.parse(await readFile(manifestPath, 'utf8')); }
+  catch (error) { throw new Error(`Invalid Showdar manifest: ${error.message}`); }
 }
 
 async function writeJsonAtomic(target, value) {
@@ -55,6 +59,7 @@ function managedBlock(skillIds) {
     ['upgrade dependency, framework, platform, migration', 'showdar-upgrade'],
     ['release, deploy, publish, App Store, Play Store, rollback', 'showdar-ship'],
     ['recover interrupted session or partial implementation', 'showdar-recover'],
+    ['commit, stage, merge, rebase, conflict, or push local Git work', 'showdar-git'],
   ].filter(([, id]) => skillIds.includes(id));
   const lines = routes.map(([intent, skill]) => `- ${intent} -> \`${skill}\``).join('\n');
   return `${START}\n## Showdar Skills routing\n\nUse the smallest Showdar skill that fully matches the current task. Do not load unrelated Showdar skills.\n\n${lines}\n\nFor debugging, gather evidence before modifying code. For shipping or destructive operations, require explicit user approval and fresh verification. Never print or commit secrets.\n${END}`;
@@ -91,8 +96,21 @@ function ownedPathSet(manifest) {
   return new Set((manifest?.files ?? []).map((entry) => entry.path));
 }
 
-async function copyOwned({ projectRoot, source, destination, priorOwned, newFiles }) {
-  const relative = path.relative(projectRoot, destination).replaceAll(path.sep, '/');
+function safeOwnedPath(baseRoot, relative, allowedRoots = []) {
+  if (typeof relative !== 'string' || !relative) return null;
+  const roots = [baseRoot, ...allowedRoots].map((root) => path.resolve(root));
+  const target = path.resolve(relative.startsWith(path.sep) ? relative : path.join(roots[0], relative));
+  if (!roots.some((root) => target === root || target.startsWith(`${root}${path.sep}`))) return null;
+  return target;
+}
+
+function manifestPathFor(baseRoot, destination) {
+  const relative = path.relative(baseRoot, destination);
+  return relative.replaceAll(path.sep, '/');
+}
+
+async function copyOwned({ baseRoot, source, destination, priorOwned, newFiles }) {
+  const relative = manifestPathFor(baseRoot, destination);
   if ((await exists(destination)) && !priorOwned.has(relative)) {
     throw new Error(`Refusing to overwrite existing non-Showdar-managed skill or command: ${destination}`);
   }
@@ -102,46 +120,51 @@ async function copyOwned({ projectRoot, source, destination, priorOwned, newFile
   newFiles.push({ path: relative, hash: await hashTree(destination) });
 }
 
-export async function initProject({ projectRoot, packageRoot, profile, ai, skillIds, commandNames = [], packageVersion = '0.2.0' }) {
-  await mkdir(projectRoot, { recursive: true });
+async function initInstallation({ baseRoot, manifestPath, agentsRoot, packageRoot, profile, ai, skillIds, commandNames = [], packageVersion = '0.2.0', scope, skillRootForTarget, commandRoot, managedRoots = [] }) {
+  await mkdir(baseRoot, { recursive: true });
   const targets = resolveTargets(ai);
-  const prior = await readManifest(projectRoot);
+  const prior = await readManifest(manifestPath);
   const priorOwned = ownedPathSet(prior);
   const desiredPaths = new Set();
 
+  const skillRoots = new Map();
   for (const target of targets) {
-    const root = skillRootFor(target, projectRoot);
-    for (const skillId of skillIds) desiredPaths.add(path.relative(projectRoot, path.join(root, skillId)).replaceAll(path.sep, '/'));
+    const root = skillRootForTarget(target);
+    skillRoots.set(path.resolve(root), root);
+  }
+  for (const root of skillRoots.values()) {
+    for (const skillId of skillIds) desiredPaths.add(manifestPathFor(baseRoot, path.join(root, skillId)));
   }
   if (targets.includes('opencode')) {
-    for (const name of commandNames) desiredPaths.add(path.relative(projectRoot, path.join(opencodeCommandRoot(projectRoot), `${name}.md`)).replaceAll(path.sep, '/'));
+    for (const name of commandNames) desiredPaths.add(manifestPathFor(baseRoot, path.join(commandRoot(), `${name}.md`)));
   }
 
   for (const entry of prior?.files ?? []) {
-    if (!desiredPaths.has(entry.path)) await rm(path.join(projectRoot, entry.path), { recursive: true, force: true });
+    const target = safeOwnedPath(baseRoot, entry.path, managedRoots);
+    if (target && !desiredPaths.has(entry.path)) await rm(target, { recursive: true, force: true });
   }
 
   const files = [];
-  for (const target of targets) {
-    const root = skillRootFor(target, projectRoot);
+  for (const root of skillRoots.values()) {
     for (const skillId of skillIds) {
       const source = path.join(packageRoot, 'skills', skillId);
       if (!(await exists(path.join(source, 'SKILL.md')))) throw new Error(`Skill asset not found: ${skillId}`);
-      await copyOwned({ projectRoot, source, destination: path.join(root, skillId), priorOwned, newFiles: files });
+      await copyOwned({ baseRoot, source, destination: path.join(root, skillId), priorOwned, newFiles: files });
     }
   }
 
   if (targets.includes('opencode')) {
-    const root = opencodeCommandRoot(projectRoot);
+    const root = commandRoot();
     for (const name of commandNames) {
       const source = path.join(packageRoot, 'commands', 'opencode', 'showdar', `${name}.md`);
       if (!(await exists(source))) throw new Error(`OpenCode command asset not found: ${name}`);
-      await copyOwned({ projectRoot, source, destination: path.join(root, `${name}.md`), priorOwned, newFiles: files });
+      await copyOwned({ baseRoot, source, destination: path.join(root, `${name}.md`), priorOwned, newFiles: files });
     }
   }
 
   const manifest = {
     version: 2,
+    scope,
     packageVersion,
     profile,
     ai,
@@ -150,35 +173,76 @@ export async function initProject({ projectRoot, packageRoot, profile, ai, skill
     commands: targets.includes('opencode') ? [...commandNames] : [],
     files,
   };
-  await writeJsonAtomic(path.join(projectRoot, MANIFEST), manifest);
-  await writeAgentsBlock(projectRoot, skillIds);
-  return inspectProject(projectRoot);
+  await mkdir(path.dirname(manifestPath), { recursive: true });
+  await writeJsonAtomic(manifestPath, manifest);
+  if (agentsRoot) await writeAgentsBlock(agentsRoot, skillIds);
+  return inspectInstallation({ baseRoot, manifestPath, agentsRoot, scope });
 }
 
-export async function inspectProject(projectRoot) {
+export async function initProject({ projectRoot, packageRoot, profile, ai, skillIds, commandNames = [], packageVersion = '0.2.0' }) {
+  return initInstallation({
+    baseRoot: projectRoot,
+    manifestPath: path.join(projectRoot, PROJECT_MANIFEST),
+    agentsRoot: projectRoot,
+    packageRoot,
+    profile,
+    ai,
+    skillIds,
+    commandNames,
+    packageVersion,
+    scope: 'project',
+    skillRootForTarget: (target) => skillRootFor(target, projectRoot),
+    commandRoot: () => opencodeCommandRoot(projectRoot),
+  });
+}
+
+export async function initGlobal({ homeRoot = homedir(), packageRoot, profile, ai, skillIds, commandNames = [], packageVersion = '0.2.0' }) {
+  const managedRoots = [...new Set(NATIVE_TARGETS.map((target) => globalSkillRootFor(target, { homeRoot }))), globalCommandRootFor({ homeRoot })];
+  return initInstallation({
+    baseRoot: homeRoot,
+    manifestPath: globalManifestPath(homeRoot),
+    agentsRoot: null,
+    packageRoot,
+    profile,
+    ai,
+    skillIds,
+    commandNames,
+    packageVersion,
+    scope: 'global',
+    skillRootForTarget: (target) => globalSkillRootFor(target, { homeRoot }),
+    commandRoot: () => globalCommandRootFor({ homeRoot }),
+    managedRoots,
+  });
+}
+
+async function inspectInstallation({ baseRoot, manifestPath, agentsRoot, scope, managedRoots = [] }) {
   let manifest;
-  try { manifest = await readManifest(projectRoot); }
-  catch (error) { return { installed: true, healthy: false, profile: null, ai: null, targets: [], skills: 0, commands: 0, issues: [error.message] }; }
-  if (!manifest) return { installed: false, healthy: false, profile: null, ai: null, targets: [], skills: 0, commands: 0, issues: ['Showdar is not installed.'] };
+  try { manifest = await readManifest(manifestPath); }
+  catch (error) { return { installed: true, healthy: false, scope, profile: null, ai: null, targets: [], skills: 0, commands: 0, issues: [error.message] }; }
+  if (!manifest) return { installed: false, healthy: false, scope, profile: null, ai: null, targets: [], skills: 0, commands: 0, issues: ['Showdar is not installed.'] };
 
   const issues = [];
   for (const entry of manifest.files ?? []) {
-    const target = path.join(projectRoot, entry.path);
+    const target = safeOwnedPath(baseRoot, entry.path, managedRoots);
+    if (!target) { issues.push(`Invalid managed path: ${entry.path}`); continue; }
     if (!(await exists(target))) { issues.push(`Missing managed path: ${entry.path}`); continue; }
     const actual = await hashTree(target);
     if (actual !== entry.hash) issues.push(`Managed path drift detected: ${entry.path}`);
   }
 
-  const agentsFile = path.join(projectRoot, 'AGENTS.md');
-  if (!(await exists(agentsFile))) issues.push('Missing AGENTS.md routing block');
-  else {
-    const text = await readFile(agentsFile, 'utf8');
-    if (!text.includes(START) || !text.includes(END)) issues.push('Missing Showdar AGENTS.md managed block');
+  if (agentsRoot) {
+    const agentsFile = path.join(agentsRoot, 'AGENTS.md');
+    if (!(await exists(agentsFile))) issues.push('Missing AGENTS.md routing block');
+    else {
+      const text = await readFile(agentsFile, 'utf8');
+      if (!text.includes(START) || !text.includes(END)) issues.push('Missing Showdar AGENTS.md managed block');
+    }
   }
 
   return {
     installed: true,
     healthy: issues.length === 0,
+    scope: manifest.scope ?? scope,
     profile: manifest.profile ?? null,
     ai: manifest.ai ?? null,
     targets: manifest.targets ?? [],
@@ -188,11 +252,32 @@ export async function inspectProject(projectRoot) {
   };
 }
 
-export async function removeProject(projectRoot) {
+async function removeInstallation({ baseRoot, manifestPath, agentsRoot, managedRoots = [] }) {
   let manifest;
-  try { manifest = await readManifest(projectRoot); }
+  try { manifest = await readManifest(manifestPath); }
   catch { manifest = null; }
-  for (const entry of manifest?.files ?? []) await rm(path.join(projectRoot, entry.path), { recursive: true, force: true });
-  await rm(path.join(projectRoot, MANIFEST), { force: true });
-  await removeAgentsBlock(projectRoot);
+  for (const entry of manifest?.files ?? []) {
+    const target = safeOwnedPath(baseRoot, entry.path, managedRoots);
+    if (target) await rm(target, { recursive: true, force: true });
+  }
+  await rm(manifestPath, { force: true });
+  if (agentsRoot) await removeAgentsBlock(agentsRoot);
+}
+
+export async function inspectProject(projectRoot) {
+  return inspectInstallation({ baseRoot: projectRoot, manifestPath: path.join(projectRoot, PROJECT_MANIFEST), agentsRoot: projectRoot, scope: 'project' });
+}
+
+export async function inspectGlobal({ homeRoot = homedir() } = {}) {
+  const managedRoots = [...new Set(NATIVE_TARGETS.map((target) => globalSkillRootFor(target, { homeRoot }))), globalCommandRootFor({ homeRoot })];
+  return inspectInstallation({ baseRoot: homeRoot, manifestPath: globalManifestPath(homeRoot), agentsRoot: null, scope: 'global', managedRoots });
+}
+
+export async function removeProject(projectRoot) {
+  await removeInstallation({ baseRoot: projectRoot, manifestPath: path.join(projectRoot, PROJECT_MANIFEST), agentsRoot: projectRoot });
+}
+
+export async function removeGlobal({ homeRoot = homedir() } = {}) {
+  const managedRoots = [...new Set(NATIVE_TARGETS.map((target) => globalSkillRootFor(target, { homeRoot }))), globalCommandRootFor({ homeRoot })];
+  await removeInstallation({ baseRoot: homeRoot, manifestPath: globalManifestPath(homeRoot), agentsRoot: null, managedRoots });
 }
