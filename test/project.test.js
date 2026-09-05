@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { access, mkdtemp, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { access, mkdtemp, mkdir, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { initGlobal, initProject, inspectGlobal, inspectProject, removeGlobal, removeProject } from '../src/project.js';
@@ -19,6 +19,11 @@ async function fixture() {
   await writeFile(path.join(packageRoot, 'skills', 'showdar-debug', 'SKILL.md'), '---\nname: showdar-debug\ndescription: A deep debugging workflow used only for installer fixture testing.\n---\n');
   await writeFile(path.join(packageRoot, 'commands', 'opencode', 'showdar', 'debug.md'), 'Use $showdar-debug for $ARGUMENTS\n');
   return { base, packageRoot, projectRoot };
+}
+
+async function withFixture(run) {
+  const data = await fixture();
+  try { return await run(data); } finally { await rm(data.base, { recursive: true, force: true }); }
 }
 
 const nativeRoots = {
@@ -282,6 +287,103 @@ test('project init preserves foreign same-name skills and rejects overwrite', as
     /Refusing to overwrite existing non-Showdar-managed skill/,
   );
   assert.equal(await readFile(path.join(target, 'SKILL.md'), 'utf8'), 'user-owned');
+});
+
+test('project init refuses a symlinked AGENTS.md without changing its target', async () => {
+  await withFixture(async ({ base, packageRoot, projectRoot }) => {
+    const external = path.join(base, 'external-agents.md');
+    const sentinel = 'external AGENTS sentinel\n';
+    await writeFile(external, sentinel);
+    await symlink(external, path.join(projectRoot, 'AGENTS.md'));
+
+    await assert.rejects(
+      initProject({ projectRoot, packageRoot, profile: 'minimal', ai: 'codex', skillIds: ['showdar-debug'], packageVersion: '0.2.2' }),
+      /symlink/i,
+    );
+    assert.equal(await readFile(external, 'utf8'), sentinel);
+  });
+});
+
+test('project init refuses symlinked managed roots without changing external contents', async () => {
+  await withFixture(async ({ base, packageRoot, projectRoot }) => {
+    const external = path.join(base, 'external-skills');
+    const sentinel = path.join(external, 'sentinel.txt');
+    await mkdir(external, { recursive: true });
+    await writeFile(sentinel, 'sentinel\n');
+    await symlink(external, path.join(projectRoot, '.agents'));
+
+    await assert.rejects(
+      initProject({ projectRoot, packageRoot, profile: 'minimal', ai: 'codex', skillIds: ['showdar-debug'], packageVersion: '0.2.2' }),
+      /symlink/i,
+    );
+    assert.equal(await readFile(sentinel, 'utf8'), 'sentinel\n');
+  });
+});
+
+test('project init refuses a symlinked nested managed directory', async () => {
+  await withFixture(async ({ base, packageRoot, projectRoot }) => {
+    const external = path.join(base, 'external-skills');
+    const sentinel = path.join(external, 'sentinel.txt');
+    await mkdir(path.join(projectRoot, '.agents'), { recursive: true });
+    await mkdir(external, { recursive: true });
+    await writeFile(sentinel, 'sentinel\n');
+    await symlink(external, path.join(projectRoot, '.agents', 'skills'));
+
+    await assert.rejects(
+      initProject({ projectRoot, packageRoot, profile: 'minimal', ai: 'codex', skillIds: ['showdar-debug'], packageVersion: '0.2.2' }),
+      /symlink/i,
+    );
+    assert.equal(await readFile(sentinel, 'utf8'), 'sentinel\n');
+  });
+});
+
+test('stale project cleanup refuses a symlinked managed path before removal', async () => {
+  await withFixture(async ({ base, packageRoot, projectRoot }) => {
+    const external = path.join(base, 'external-skills');
+    const sentinel = path.join(external, 'sentinel.txt');
+    await mkdir(external, { recursive: true });
+    await writeFile(sentinel, 'sentinel\n');
+    await initProject({ projectRoot, packageRoot, profile: 'minimal', ai: 'codex', skillIds: ['showdar-debug'], packageVersion: '0.2.2' });
+    await rm(path.join(projectRoot, '.agents', 'skills'), { recursive: true, force: true });
+    await symlink(external, path.join(projectRoot, '.agents', 'skills'));
+
+    await assert.rejects(
+      initProject({ projectRoot, packageRoot, profile: 'minimal', ai: 'codex', skillIds: [], packageVersion: '0.2.2' }),
+      /symlink/i,
+    );
+    assert.equal(await readFile(sentinel, 'utf8'), 'sentinel\n');
+  });
+});
+
+test('status and doctor integrity checks refuse a symlinked managed file', async () => {
+  await withFixture(async ({ base, packageRoot, projectRoot }) => {
+    const homeRoot = path.join(base, 'home');
+    const external = path.join(base, 'external-skill.md');
+    const sentinel = 'external skill sentinel\n';
+    await writeFile(external, sentinel);
+    await initProject({ projectRoot, homeRoot, packageRoot, profile: 'minimal', ai: 'codex', skillIds: ['showdar-debug'], packageVersion: '0.2.2' });
+    const managedFile = path.join(projectRoot, '.agents', 'skills', 'showdar-debug', 'SKILL.md');
+    await rm(managedFile);
+    await symlink(external, managedFile);
+
+    await assert.rejects(inspectProject(projectRoot, { homeRoot }), /symlink/i);
+    assert.equal(await readFile(external, 'utf8'), sentinel);
+  });
+});
+
+test('project remove refuses a symlinked managed parent without changing external contents', async () => {
+  await withFixture(async ({ base, packageRoot, projectRoot }) => {
+    const external = path.join(base, 'external-skills');
+    const sentinel = path.join(external, 'sentinel.txt');
+    await mkdir(external, { recursive: true });
+    await writeFile(sentinel, 'sentinel\n');
+    await initProject({ projectRoot, packageRoot, profile: 'minimal', ai: 'codex', skillIds: ['showdar-debug'], packageVersion: '0.2.2' });
+    await rm(path.join(projectRoot, '.agents'), { recursive: true, force: true });
+    await symlink(external, path.join(projectRoot, '.agents'));
+
+    await assert.rejects(removeProject(projectRoot), /symlink/i);
+    assert.equal(await readFile(sentinel, 'utf8'), 'sentinel\n');
+  });
 });
 
 test('project status warns when global Showdar exposes skills outside its profile', async () => {

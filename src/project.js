@@ -1,8 +1,9 @@
-import { access, cp, mkdir, readFile, readdir, rename, rm, stat, writeFile } from 'node:fs/promises';
+import { access, cp, mkdir, readFile, readdir, rename, rm, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { homedir } from 'node:os';
 import path from 'node:path';
 import { globalCommandRootFor, globalSkillRootFor, NATIVE_TARGETS, opencodeCommandRoot, resolveTargets, skillRootFor } from './adapters.js';
+import { assertSafeManagedPath, lstatWithoutSymlink, safeOwnedPath } from './path-safety.js';
 
 const PROJECT_MANIFEST = '.showdar.json';
 const START = '<!-- showdar-skills:start -->';
@@ -19,7 +20,7 @@ async function exists(target) {
 async function hashTree(target) {
   const h = createHash('sha256');
   async function walk(current, relative = '') {
-    const info = await stat(current);
+    const info = await lstatWithoutSymlink(current);
     if (info.isDirectory()) {
       const entries = await readdir(current, { withFileTypes: true });
       entries.sort((a, b) => a.name.localeCompare(b.name));
@@ -35,15 +36,20 @@ async function hashTree(target) {
   return h.digest('hex');
 }
 
-async function readManifest(manifestPath) {
+async function readManifest(manifestPath, baseRoot) {
+  await assertSafeManagedPath(baseRoot, manifestPath);
   if (!(await exists(manifestPath))) return null;
   try { return JSON.parse(await readFile(manifestPath, 'utf8')); }
   catch (error) { throw new Error(`Invalid Showdar manifest: ${error.message}`); }
 }
 
 async function writeJsonAtomic(target, value) {
+  await writeTextAtomic(target, `${JSON.stringify(value, null, 2)}\n`);
+}
+
+async function writeTextAtomic(target, value) {
   const tmp = `${target}.tmp-${process.pid}-${Date.now()}`;
-  await writeFile(tmp, `${JSON.stringify(value, null, 2)}\n`);
+  await writeFile(tmp, value, { flag: 'wx' });
   await rename(tmp, target);
 }
 
@@ -81,18 +87,20 @@ function stripManagedBlock(content) {
 
 async function writeAgentsBlock(projectRoot, skillIds) {
   const target = path.join(projectRoot, 'AGENTS.md');
+  await assertSafeManagedPath(projectRoot, target);
   const current = (await exists(target)) ? await readFile(target, 'utf8') : '';
   const clean = stripManagedBlock(current).trimEnd();
   const block = managedBlock(skillIds);
-  await writeFile(target, clean ? `${clean}\n\n${block}\n` : `${block}\n`);
+  await writeTextAtomic(target, clean ? `${clean}\n\n${block}\n` : `${block}\n`);
 }
 
 async function removeAgentsBlock(projectRoot) {
   const target = path.join(projectRoot, 'AGENTS.md');
+  await assertSafeManagedPath(projectRoot, target);
   if (!(await exists(target))) return;
   const current = await readFile(target, 'utf8');
   const clean = stripManagedBlock(current).trim();
-  if (clean) await writeFile(target, `${clean}\n`);
+  if (clean) await writeTextAtomic(target, `${clean}\n`);
   else await rm(target, { force: true });
 }
 
@@ -109,20 +117,13 @@ function uniqueRoots(targets, resolveRoot) {
   return [...roots.values()];
 }
 
-function safeOwnedPath(baseRoot, relative, allowedRoots = []) {
-  if (typeof relative !== 'string' || !relative) return null;
-  const roots = [baseRoot, ...allowedRoots].map((root) => path.resolve(root));
-  const target = path.resolve(relative.startsWith(path.sep) ? relative : path.join(roots[0], relative));
-  if (!roots.some((root) => target === root || target.startsWith(`${root}${path.sep}`))) return null;
-  return target;
-}
-
 function manifestPathFor(baseRoot, destination) {
   const relative = path.relative(baseRoot, destination);
   return relative.replaceAll(path.sep, '/');
 }
 
-async function copyOwned({ baseRoot, source, destination, priorOwned, newFiles }) {
+async function copyOwned({ baseRoot, source, destination, priorOwned, newFiles, managedRoots = [] }) {
+  await assertSafeManagedPath(baseRoot, destination, managedRoots);
   const relative = manifestPathFor(baseRoot, destination);
   if ((await exists(destination)) && !priorOwned.has(relative)) {
     throw new Error(`Refusing to overwrite existing non-Showdar-managed skill or command: ${destination}`);
@@ -135,14 +136,17 @@ async function copyOwned({ baseRoot, source, destination, priorOwned, newFiles }
 
 async function initInstallation({ baseRoot, manifestPath, agentsRoot, packageRoot, profile, ai, skillIds, commandNames = [], packageVersion = '0.2.0', scope, skillRootForTarget, commandRoot, managedRoots = [], homeRoot = homedir(), globalSkillRootForTarget = null }) {
   await mkdir(baseRoot, { recursive: true });
+  await assertSafeManagedPath(baseRoot, baseRoot);
+  await assertSafeManagedPath(baseRoot, manifestPath);
+  if (agentsRoot) await assertSafeManagedPath(agentsRoot, path.join(agentsRoot, 'AGENTS.md'));
   const targets = resolveTargets(ai);
-  const prior = await readManifest(manifestPath);
+  const prior = await readManifest(manifestPath, baseRoot);
   const priorOwned = ownedPathSet(prior);
   const desiredPaths = new Set();
 
   const skillRoots = uniqueRoots(targets, skillRootForTarget);
   const globalManifest = scope === 'project' && globalSkillRootForTarget
-    ? await readManifest(globalManifestPath(homeRoot))
+    ? await readManifest(globalManifestPath(homeRoot), homeRoot)
     : null;
   const globalOwned = ownedPathSet(globalManifest);
   const globalSatisfaction = [];
@@ -158,9 +162,11 @@ async function initInstallation({ baseRoot, manifestPath, agentsRoot, packageRoo
   for (const { root, target } of skillRoots) {
     for (const skillId of skillIds) {
       const destination = path.join(root, skillId);
+      await assertSafeManagedPath(baseRoot, destination, managedRoots);
       const relative = manifestPathFor(baseRoot, destination);
       const destinationExists = await exists(destination);
       const globalPath = globalSkillRootForTarget ? path.join(globalSkillRootForTarget(target), skillId) : null;
+      if (globalPath) await assertSafeManagedPath(homeRoot, globalPath);
       const globalRelative = globalPath ? manifestPathFor(homeRoot, globalPath) : null;
       const globalAvailable = Boolean(globalPath && globalOwned.has(globalRelative) && await exists(globalPath));
       if (scope === 'project' && globalAvailable && !destinationExists) {
@@ -174,18 +180,28 @@ async function initInstallation({ baseRoot, manifestPath, agentsRoot, packageRoo
     }
   }
   if (targets.includes('opencode')) {
-    for (const name of commandNames) desiredPaths.add(manifestPathFor(baseRoot, path.join(commandRoot(), `${name}.md`)));
+    const root = commandRoot();
+    for (const name of commandNames) {
+      const destination = path.join(root, `${name}.md`);
+      await assertSafeManagedPath(baseRoot, destination, managedRoots);
+      desiredPaths.add(manifestPathFor(baseRoot, destination));
+    }
   }
 
+  const staleTargets = [];
   for (const entry of prior?.files ?? []) {
     const target = safeOwnedPath(baseRoot, entry.path, managedRoots);
-    if (target && !desiredPaths.has(entry.path)) await rm(target, { recursive: true, force: true });
+    if (target && !desiredPaths.has(entry.path)) {
+      await assertSafeManagedPath(baseRoot, target, managedRoots);
+      staleTargets.push(target);
+    }
   }
+  for (const target of staleTargets) await rm(target, { recursive: true, force: true });
 
   const files = [];
   for (const { destination, skillId } of skillDestinations) {
     const source = path.join(packageRoot, 'skills', skillId);
-    await copyOwned({ baseRoot, source, destination, priorOwned, newFiles: files });
+    await copyOwned({ baseRoot, source, destination, priorOwned, newFiles: files, managedRoots });
     installedSkillIds.add(skillId);
   }
 
@@ -194,7 +210,7 @@ async function initInstallation({ baseRoot, manifestPath, agentsRoot, packageRoo
     for (const name of commandNames) {
       const source = path.join(packageRoot, 'commands', 'opencode', 'showdar', `${name}.md`);
       if (!(await exists(source))) throw new Error(`OpenCode command asset not found: ${name}`);
-      await copyOwned({ baseRoot, source, destination: path.join(root, `${name}.md`), priorOwned, newFiles: files });
+      await copyOwned({ baseRoot, source, destination: path.join(root, `${name}.md`), priorOwned, newFiles: files, managedRoots });
     }
   }
 
@@ -210,6 +226,7 @@ async function initInstallation({ baseRoot, manifestPath, agentsRoot, packageRoo
     commands: targets.includes('opencode') ? [...commandNames] : [],
     files,
   };
+  await assertSafeManagedPath(baseRoot, manifestPath);
   await mkdir(path.dirname(manifestPath), { recursive: true });
   await writeJsonAtomic(manifestPath, manifest);
   if (agentsRoot) await writeAgentsBlock(agentsRoot, skillIds);
@@ -266,7 +283,7 @@ export async function initGlobal({ homeRoot = homedir(), packageRoot, profile, a
 
 async function inspectInstallation({ baseRoot, manifestPath, agentsRoot, scope, managedRoots = [], homeRoot = homedir(), globalSkillRootForTarget = null }) {
   let manifest;
-  try { manifest = await readManifest(manifestPath); }
+  try { manifest = await readManifest(manifestPath, baseRoot); }
   catch (error) { return { installed: true, healthy: false, scope, profile: null, ai: null, targets: [], skills: 0, requestedSkills: 0, installedSkills: 0, satisfiedByGlobal: 0, commands: 0, issues: [error.message], warnings: [] }; }
   if (!manifest) return { installed: false, healthy: false, scope, profile: null, ai: null, targets: [], skills: 0, requestedSkills: 0, installedSkills: 0, satisfiedByGlobal: 0, commands: 0, issues: ['Showdar is not installed.'], warnings: [] };
 
@@ -276,7 +293,7 @@ async function inspectInstallation({ baseRoot, manifestPath, agentsRoot, scope, 
   const targets = manifest.targets?.length ? manifest.targets : manifest.ai ? resolveTargets(manifest.ai) : [];
   const skillIds = manifest.skills ?? [];
   const globalManifest = scope === 'project' && globalSkillRootForTarget
-    ? await readManifest(globalManifestPath(homeRoot))
+    ? await readManifest(globalManifestPath(homeRoot), homeRoot)
     : null;
   const globalOwned = ownedPathSet(globalManifest);
   const globalSatisfiedPaths = new Set();
@@ -294,7 +311,11 @@ async function inspectInstallation({ baseRoot, manifestPath, agentsRoot, scope, 
         if (!entry.path.startsWith(prefix)) continue;
         const skillId = entry.path.slice(prefix.length).split('/')[0];
         if (!skillId.startsWith('showdar-')) continue;
-        if (globalOwned.has(entry.path) && await exists(path.join(homeRoot, entry.path))) globalSkills.add(skillId);
+        const globalTarget = safeOwnedPath(homeRoot, entry.path);
+        if (globalTarget && globalTarget.startsWith(`${root}${path.sep}`) && globalOwned.has(entry.path)) {
+          await assertSafeManagedPath(homeRoot, globalTarget);
+          if (await exists(globalTarget)) globalSkills.add(skillId);
+        }
       }
     }
     const extra = [...globalSkills].filter((skillId) => !skillIds.includes(skillId)).sort();
@@ -308,6 +329,8 @@ async function inspectInstallation({ baseRoot, manifestPath, agentsRoot, scope, 
         const projectIsOwned = projectOwned.has(projectRelative);
         const globalPath = path.join(globalSkillRootForTarget(target), skillId);
         const globalRelative = manifestPathFor(homeRoot, globalPath);
+        await assertSafeManagedPath(baseRoot, projectPath);
+        await assertSafeManagedPath(homeRoot, globalPath);
         const globalExists = await exists(globalPath);
         const globalIsOwned = globalOwned.has(globalRelative);
 
@@ -333,6 +356,7 @@ async function inspectInstallation({ baseRoot, manifestPath, agentsRoot, scope, 
   for (const entry of manifest.files ?? []) {
     const target = safeOwnedPath(baseRoot, entry.path, managedRoots);
     if (!target) { issues.push(`Invalid managed path: ${entry.path}`); continue; }
+    await assertSafeManagedPath(baseRoot, target, managedRoots);
     if (!(await exists(target))) {
       if (!globalSatisfiedPaths.has(entry.path)) issues.push(`Missing managed path: ${entry.path}`);
       continue;
@@ -343,6 +367,7 @@ async function inspectInstallation({ baseRoot, manifestPath, agentsRoot, scope, 
 
   if (agentsRoot) {
     const agentsFile = path.join(agentsRoot, 'AGENTS.md');
+    await assertSafeManagedPath(agentsRoot, agentsFile);
     if (!(await exists(agentsFile))) issues.push('Missing AGENTS.md routing block');
     else {
       const text = await readFile(agentsFile, 'utf8');
@@ -368,13 +393,18 @@ async function inspectInstallation({ baseRoot, manifestPath, agentsRoot, scope, 
 }
 
 async function removeInstallation({ baseRoot, manifestPath, agentsRoot, managedRoots = [] }) {
+  await assertSafeManagedPath(baseRoot, manifestPath);
   let manifest;
-  try { manifest = await readManifest(manifestPath); }
+  try { manifest = await readManifest(manifestPath, baseRoot); }
   catch { manifest = null; }
   for (const entry of manifest?.files ?? []) {
     const target = safeOwnedPath(baseRoot, entry.path, managedRoots);
-    if (target) await rm(target, { recursive: true, force: true });
+    if (target) {
+      await assertSafeManagedPath(baseRoot, target, managedRoots);
+      await rm(target, { recursive: true, force: true });
+    }
   }
+  await assertSafeManagedPath(baseRoot, manifestPath);
   await rm(manifestPath, { force: true });
   if (agentsRoot) await removeAgentsBlock(agentsRoot);
 }
