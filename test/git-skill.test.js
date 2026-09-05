@@ -46,7 +46,7 @@ test('collect-diff resolves valid revisions and rejects option-like revisions', 
   const branch = spawnSync('git', ['branch', '--show-current'], { cwd: root, encoding: 'utf8' }).stdout.trim();
   const sha = spawnSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).stdout.trim();
   const tags = spawnSync('git', ['tag', '--points-at', 'HEAD'], { cwd: root, encoding: 'utf8' }).stdout.trim().split('\n').filter(Boolean);
-  for (const base of ['HEAD', branch, sha, ...tags.slice(0, 1)]) {
+  for (const base of ['HEAD', branch, sha, ...tags.slice(0, 1)].filter(Boolean)) {
     const result = spawnSync(process.execPath, [script, root, base], { encoding: 'utf8' });
     assert.equal(result.status, 0, result.stderr);
     const output = JSON.parse(result.stdout);
