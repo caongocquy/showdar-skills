@@ -2,6 +2,7 @@ import { access, readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { SKILLS, PROFILES } from './catalog.js';
+import { validateCapabilities } from './capabilities.js';
 import { CANONICAL_RUNTIME_FILE, VENDORED_RUNTIME_FILES } from './runtime.js';
 import { parseCsv } from '../engine/csv.mjs';
 
@@ -225,6 +226,8 @@ export async function validateRepository(packageRoot) {
   const warnings = [];
   const known = new Set(SKILLS.map((skill) => skill.id));
   const skillsRoot = path.join(packageRoot, 'skills');
+
+  for (const error of validateCapabilities().errors) errors.push(`capabilities: ${error}`);
 
   for (const skill of SKILLS) {
     const dir = path.join(skillsRoot, skill.id);
