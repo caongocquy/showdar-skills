@@ -60,8 +60,8 @@ priority. Unknown action/object labels simply produce unmatched evidence and a
 lower score.
 
 This scorer is a testable primitive only. It does not replace the existing
-`router/*.yaml`, retrieval engine, flagship ownership, profiles, CLI, or eval
-authority. Future routing may consume it after a separate design phase.
+`router/*.yaml`, retrieval engine, flagship ownership, profiles, CLI, or legacy
+eval authority.
 
 ## Shadow route planner
 
@@ -82,3 +82,30 @@ retrieval behavior, profiles, CLI, and flagship skill selection remain the
 production authority. The structured fixture can be checked with
 `node scripts/structured-routing-eval.mjs`; its metrics are separate from the
 legacy retrieval evaluation.
+
+## Verification budget
+
+`src/verification-budget.js` consumes a normalized Intent, a route plan, and
+optional bounded change metadata (`scope`, `filesChangedEstimate`,
+`crossBoundary`, `publicApiChange`, `schemaChange`, and `dependencyChange`).
+`buildVerificationPlan()` returns a `low`, `medium`, or `high` budget with
+explainable `reasons`, semantic `required` and `optional` checks, and
+`escalations`.
+
+Low is for small, low-risk bounded proof; medium is the default for normal
+implementation and regression surface; high is required by explicit
+production-impacting mutation, relevant remote operations, security-sensitive
+changes, compatibility upgrades, mutated data-integrity risk, public API or
+schema changes, broad cross-boundary scope, release readiness, or uncertain
+data-integrity failures. Low route confidence can raise low to medium, but
+advisors do not automatically multiply severity.
+
+Checks are semantic classes such as `targeted-test`, `relevant-suite`,
+`typecheck`, `build`, `package`, `security`, `compatibility`, `regression`,
+`release-readiness`, and `deployment-safety`; they are not shell commands.
+The budget controls verification depth, not permission or authorization. A
+high budget does not authorize remote or production mutation, and skill safety
+boundaries remain authoritative. This planner executes no checks, scans no
+repository files, loads no skills dynamically, and does not change current
+production behavior. Its separate fixture can be checked with
+`node scripts/verification-budget-eval.mjs`.
