@@ -15,7 +15,7 @@ export const EVIDENCE_KEYS = Object.freeze([
   'rootCauseKnown', 'behaviorDefined', 'failureObserved',
 ]);
 
-const INTENT_KEYS = new Set(['phase', 'action', 'object', 'risks', 'mutation', 'evidence']);
+const INTENT_KEYS = new Set(['phase', 'action', 'secondaryActions', 'object', 'risks', 'mutation', 'evidence']);
 
 const knownPhases = new Set(INTENT_PHASES);
 const knownMutations = new Set(MUTATION_CLASSES);
@@ -30,17 +30,17 @@ function isRecord(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
 
-function normalizedList(value, field, errors, { known, allowMissing = false } = {}) {
+function normalizedList(value, field, errors, { known, allowMissing = false, sort = false } = {}) {
   if (value === undefined && allowMissing) return [];
   if (!Array.isArray(value)) {
     errors.push(`intent ${field} must be an array`);
     return [];
   }
   const output = value.map(normalizedValue);
-  if (output.some((item) => !item)) errors.push(`intent ${field} must contain non-empty strings`);
+  if (value.some((item, index) => typeof item !== 'string' || !output[index])) errors.push(`intent ${field} must contain non-empty strings`);
   const unique = [...new Set(output)];
   if (known) for (const item of unique) if (item && !known.has(item)) errors.push(`intent ${field} contains invalid value: ${item}`);
-  return unique;
+  return sort ? unique.sort() : unique;
 }
 
 export function validateIntent(input) {
@@ -52,6 +52,7 @@ export function validateIntent(input) {
   if (typeof input.phase !== 'string' || !knownPhases.has(phase)) errors.push(`intent phase is invalid: ${phase || '<missing>'}`);
   const action = normalizedValue(input.action);
   if (typeof input.action !== 'string' || !action) errors.push('intent action must be a non-empty string');
+  const secondaryActions = normalizedList(input.secondaryActions, 'secondaryActions', errors, { allowMissing: true, sort: true });
   const object = normalizedValue(input.object);
   if (typeof input.object !== 'string' || !object) errors.push('intent object must be a non-empty string');
   const risks = normalizedList(input.risks, 'risks', errors, { known: knownRisks, allowMissing: true });
@@ -67,7 +68,7 @@ export function validateIntent(input) {
     else if (evidenceInput[key] !== null && typeof evidenceInput[key] !== 'boolean') errors.push(`intent evidence.${key} must be boolean or null`);
   }
 
-  const value = { phase, action, object, risks, mutation, evidence };
+  const value = { phase, action, secondaryActions, object, risks, mutation, evidence };
   return errors.length ? { ok: false, errors } : { ok: true, errors: [], value };
 }
 

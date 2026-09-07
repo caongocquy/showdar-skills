@@ -1,0 +1,170 @@
+[
+  {
+    "id": "redis-migration-regression",
+    "description": "After migrating Redis to Upstash, login intermittently logs users out. Fix it.",
+    "intent": { "phase": "diagnosis", "action": "fix", "object": "auth", "secondaryActions": ["upgrade"], "risks": ["regression", "compatibility"], "mutation": "local-write", "evidence": { "failureObserved": true, "rootCauseKnown": false } },
+    "expectedPrimary": "showdar-debug",
+    "requiredAdvisors": ["showdar-upgrade"]
+  },
+  {
+    "id": "stripe-webhook",
+    "description": "Implement a Stripe webhook endpoint with signature validation and regression tests.",
+    "intent": { "phase": "implementation", "action": "implement", "object": "api", "secondaryActions": ["security", "test"], "risks": ["security", "regression"], "mutation": "local-write", "evidence": { "behaviorDefined": true } },
+    "expectedPrimary": "showdar-build",
+    "requiredAdvisors": ["showdar-security", "showdar-test"]
+  },
+  {
+    "id": "oauth-threat-model",
+    "description": "Threat-model the OAuth authorization flow.",
+    "intent": { "phase": "discovery", "action": "assess", "object": "auth", "risks": ["security"], "mutation": "read-only" },
+    "expectedPrimary": "showdar-security",
+    "requiredAdvisors": [],
+    "forbiddenAdvisors": ["showdar-review"]
+  },
+  {
+    "id": "oauth-implementation",
+    "description": "Implement OAuth login according to approved acceptance criteria.",
+    "intent": { "phase": "implementation", "action": "implement", "object": "auth", "secondaryActions": ["security"], "risks": ["security"], "mutation": "local-write", "evidence": { "behaviorDefined": true } },
+    "expectedPrimary": "showdar-build",
+    "requiredAdvisors": ["showdar-security"]
+  },
+  {
+    "id": "react-native-upgrade",
+    "description": "Upgrade React Native and handle compatibility changes.",
+    "intent": { "phase": "implementation", "action": "upgrade", "object": "dependency", "risks": ["compatibility"], "mutation": "local-write" },
+    "expectedPrimary": "showdar-upgrade",
+    "requiredAdvisors": []
+  },
+  {
+    "id": "upgrade-crash",
+    "description": "The React Native upgrade is complete but Android now crashes intermittently.",
+    "intent": { "phase": "diagnosis", "action": "investigate", "object": "runtime", "secondaryActions": ["upgrade"], "risks": ["regression", "compatibility"], "mutation": "read-only", "evidence": { "failureObserved": true, "rootCauseKnown": false } },
+    "expectedPrimary": "showdar-debug",
+    "requiredAdvisors": ["showdar-upgrade"]
+  },
+  {
+    "id": "payment-regression-tests",
+    "description": "Write automated regression tests for the duplicate payment bug.",
+    "intent": { "phase": "verification", "action": "test", "object": "backend", "risks": ["regression"], "mutation": "local-write" },
+    "expectedPrimary": "showdar-test",
+    "requiredAdvisors": [],
+    "forbiddenAdvisors": ["showdar-quality"]
+  },
+  {
+    "id": "checkout-regression-matrix",
+    "description": "Create a risk-based regression matrix for checkout.",
+    "intent": { "phase": "verification", "action": "assess", "object": "backend", "risks": ["regression"], "mutation": "read-only" },
+    "expectedPrimary": "showdar-quality",
+    "requiredAdvisors": [],
+    "forbiddenAdvisors": ["showdar-test", "showdar-review"]
+  },
+  {
+    "id": "publish-readiness",
+    "description": "Check whether this package is ready to publish.",
+    "intent": { "phase": "delivery", "action": "assess", "object": "package", "mutation": "read-only" },
+    "expectedPrimary": "showdar-ship",
+    "requiredAdvisors": [],
+    "forbiddenAdvisors": ["showdar-ops"]
+  },
+  {
+    "id": "staging-deployment",
+    "description": "Deploy this container to staging.",
+    "intent": { "phase": "operations", "action": "deploy", "object": "container", "risks": ["operations"], "mutation": "remote-write" },
+    "expectedPrimary": "showdar-ops",
+    "requiredAdvisors": [],
+    "forbiddenAdvisors": ["showdar-ship"]
+  },
+  {
+    "id": "auth-vulnerability-review",
+    "description": "Review this auth diff specifically for authorization vulnerabilities.",
+    "intent": { "phase": "verification", "action": "review", "object": "auth", "risks": ["security"], "mutation": "read-only" },
+    "expectedPrimary": "showdar-security",
+    "requiredAdvisors": [],
+    "forbiddenAdvisors": ["showdar-review"]
+  },
+  {
+    "id": "correctness-maintainability-review",
+    "description": "Review this PR for correctness and maintainability.",
+    "intent": { "phase": "verification", "action": "review", "object": "architecture", "risks": ["regression"], "mutation": "read-only" },
+    "expectedPrimary": "showdar-review",
+    "requiredAdvisors": []
+  },
+  {
+    "id": "interrupted-implementation",
+    "description": "Resume the interrupted implementation and determine what was already changed.",
+    "intent": { "phase": "recovery", "action": "recover", "object": "implementation", "mutation": "local-write" },
+    "expectedPrimary": "showdar-recover",
+    "requiredAdvisors": []
+  },
+  {
+    "id": "commit-completed-files",
+    "description": "Commit only the completed task files.",
+    "intent": { "phase": "repository", "action": "git", "object": "commit", "mutation": "local-write" },
+    "expectedPrimary": "showdar-git",
+    "requiredAdvisors": []
+  },
+  {
+    "id": "partial-refund-rule",
+    "description": "The business rule for partial refunds is not known yet.",
+    "intent": { "phase": "definition", "action": "define", "object": "data", "mutation": "read-only", "evidence": { "behaviorDefined": false } },
+    "expectedPrimary": "showdar-requirements",
+    "requiredAdvisors": []
+  },
+  {
+    "id": "responsive-checkout-design",
+    "description": "Design the responsive checkout flow.",
+    "intent": { "phase": "design", "action": "design", "object": "ui", "mutation": "local-write" },
+    "expectedPrimary": "showdar-design",
+    "requiredAdvisors": []
+  },
+  {
+    "id": "repository-request-flow",
+    "description": "Map this unfamiliar repository and trace the request flow.",
+    "intent": { "phase": "discovery", "action": "understand", "object": "repository", "mutation": "read-only" },
+    "expectedPrimary": "showdar-understand",
+    "requiredAdvisors": []
+  },
+  {
+    "id": "approved-feature-plan",
+    "description": "Prepare the implementation plan for the approved feature.",
+    "intent": { "phase": "planning", "action": "plan", "object": "architecture", "mutation": "read-only" },
+    "expectedPrimary": "showdar-plan",
+    "requiredAdvisors": []
+  },
+  {
+    "id": "known-auth-mapper-bug",
+    "description": "Fix the known null-token bug in the auth mapper; the root cause is confirmed.",
+    "intent": { "phase": "implementation", "action": "fix", "object": "auth", "risks": ["regression"], "mutation": "local-write", "evidence": { "rootCauseKnown": true, "behaviorDefined": true, "failureObserved": true } },
+    "expectedPrimary": "showdar-build",
+    "requiredAdvisors": [],
+    "forbiddenAdvisors": ["showdar-debug"]
+  },
+  {
+    "id": "memory-leak-investigation",
+    "description": "Investigate a memory leak with no known cause.",
+    "intent": { "phase": "diagnosis", "action": "investigate", "object": "runtime", "risks": ["performance"], "mutation": "read-only", "evidence": { "failureObserved": true, "rootCauseKnown": false } },
+    "expectedPrimary": "showdar-debug",
+    "requiredAdvisors": []
+  },
+  {
+    "id": "release-compatibility-readiness",
+    "description": "Assess release readiness after a compatibility-sensitive dependency update.",
+    "intent": { "phase": "delivery", "action": "assess", "object": "release", "risks": ["compatibility"], "mutation": "read-only" },
+    "expectedPrimary": "showdar-ship",
+    "requiredAdvisors": ["showdar-upgrade"]
+  },
+  {
+    "id": "webhook-test-and-security",
+    "description": "Add tests for webhook replay protection while checking the signing boundary.",
+    "intent": { "phase": "verification", "action": "test", "object": "api", "secondaryActions": ["security"], "risks": ["security", "regression"], "mutation": "local-write" },
+    "expectedPrimary": "showdar-test",
+    "requiredAdvisors": ["showdar-security"]
+  },
+  {
+    "id": "ci-failure-trace",
+    "description": "Investigate an intermittent CI failure with no confirmed cause.",
+    "intent": { "phase": "diagnosis", "action": "investigate", "object": "build", "risks": ["regression"], "mutation": "read-only", "evidence": { "failureObserved": true, "rootCauseKnown": false } },
+    "expectedPrimary": "showdar-debug",
+    "requiredAdvisors": []
+  }
+]

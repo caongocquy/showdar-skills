@@ -27,6 +27,7 @@ test('intent model normalizes supported values and marks unspecified evidence', 
   }), {
     phase: 'diagnosis',
     action: 'investigate-intermittent',
+    secondaryActions: [],
     object: 'login-failure',
     risks: ['regression'],
     mutation: 'read-only',

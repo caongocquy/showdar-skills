@@ -12,6 +12,7 @@ additive infrastructure and capability scoring is not production routing.
 {
   phase: 'diagnosis',
   action: 'investigate',
+  secondaryActions: [],
   object: 'auth',
   risks: ['regression'],
   mutation: 'read-only',
@@ -25,9 +26,11 @@ additive infrastructure and capability scoring is not production routing.
 
 Phases, risks, mutation classes, and evidence keys are closed validated sets.
 Actions and objects are normalized non-empty labels so future domains can be
-added without changing the schema. An omitted evidence value is `null`, which
-means unknown rather than false. Evidence is deliberately limited to routing
-signals; execution state does not belong in the model.
+added without changing the schema. `secondaryActions` is an optional,
+backward-compatible, sorted list for explicit orthogonal concerns such as
+`security` or `test`; it does not change primary ownership. An omitted evidence
+value is `null`, which means unknown rather than false. Evidence is deliberately
+limited to routing signals; execution state does not belong in the model.
 
 ## Capability taxonomy
 
@@ -59,3 +62,23 @@ lower score.
 This scorer is a testable primitive only. It does not replace the existing
 `router/*.yaml`, retrieval engine, flagship ownership, profiles, CLI, or eval
 authority. Future routing may consume it after a separate design phase.
+
+## Shadow route planner
+
+`src/route-plan.js` consumes the normalized Intent and the Phase 1 scorer to
+return an explainable route plan: one `primary`, up to two `advisors`, ranked
+`candidates`, and deterministic `confidence` (`level`, `margin`, and whether a
+specialization rule was decisive).
+
+The primary is the sole owner of execution. Advisors are lightweight concern
+signals identified only by explicit secondary actions or focused orthogonal
+risks; they return skill IDs and reasons and do not load additional `SKILL.md`
+files. Advisors are capped at two and are never added merely because they are
+primary-score runners-up. Ties are ordered by descending score, then lexical
+skill ID.
+
+The planner is shadow-mode infrastructure for 0.3. The existing native router,
+retrieval behavior, profiles, CLI, and flagship skill selection remain the
+production authority. The structured fixture can be checked with
+`node scripts/structured-routing-eval.mjs`; its metrics are separate from the
+legacy retrieval evaluation.
