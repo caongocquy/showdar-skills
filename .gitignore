@@ -13,6 +13,8 @@ build/
 .tmp/
 tmp/
 
+test/
+
 # Local runtime state
 .showdar.json
 .showdar/
@@ -41,3 +43,4 @@ pnpm-debug.log*
 
 # Local planning documents are intentionally not part of the published repo.
 docs/
+.agents
