@@ -1,0 +1,1228 @@
+[
+  {
+    "id": "debug-intermittent-bug-unknown-root-cause",
+    "description": "Unknown intermittent bug, failure reproduced but root cause not known",
+    "intent": {
+      "phase": "diagnosis",
+      "action": "investigate",
+      "object": "runtime",
+      "risks": [
+        "regression"
+      ],
+      "mutation": "local-write",
+      "evidence": {
+        "failureObserved": true,
+        "rootCauseKnown": false
+      }
+    },
+    "routePlan": {
+      "primary": {
+        "skill": "showdar-debug",
+        "score": 100,
+        "reasons": []
+      }
+    },
+    "verificationPlan": {
+      "required": [
+        "targeted-test",
+        "relevant-suite",
+        "regression",
+        "typecheck"
+      ]
+    },
+    "evidence": [
+      {
+        "kind": "failure-reproduced",
+        "status": "observed"
+      }
+    ],
+    "blockers": [],
+    "expectedStatus": "active",
+    "expectedDecision": {
+      "type": "continue",
+      "target": null,
+      "reasons": [
+        "root cause not yet proven"
+      ]
+    }
+  },
+  {
+    "id": "debug-root-cause-proven-needs-implementation",
+    "description": "Bug root cause proven, code change still needed",
+    "intent": {
+      "phase": "diagnosis",
+      "action": "investigate",
+      "object": "runtime",
+      "risks": [
+        "regression"
+      ],
+      "mutation": "local-write",
+      "evidence": {
+        "failureObserved": true,
+        "rootCauseKnown": true
+      },
+      "secondaryActions": [
+        "implement"
+      ]
+    },
+    "routePlan": {
+      "primary": {
+        "skill": "showdar-debug",
+        "score": 100,
+        "reasons": []
+      }
+    },
+    "verificationPlan": {
+      "required": [
+        "targeted-test",
+        "relevant-suite",
+        "regression",
+        "typecheck"
+      ]
+    },
+    "evidence": [
+      {
+        "kind": "failure-reproduced",
+        "status": "verified"
+      },
+      {
+        "kind": "root-cause-proven",
+        "status": "verified"
+      }
+    ],
+    "blockers": [],
+    "expectedStatus": "ready-for-handoff",
+    "expectedDecision": {
+      "type": "handoff",
+      "target": "showdar-build",
+      "reasons": [
+        "root cause proven, implementation needed"
+      ]
+    }
+  },
+  {
+    "id": "debug-root-cause-proven-fix-implemented-verified",
+    "description": "Known bug fixed and targeted/relevant verification satisfied",
+    "intent": {
+      "phase": "diagnosis",
+      "action": "fix",
+      "object": "runtime",
+      "risks": [
+        "regression"
+      ],
+      "mutation": "local-write",
+      "evidence": {
+        "failureObserved": true,
+        "rootCauseKnown": true
+      }
+    },
+    "routePlan": {
+      "primary": {
+        "skill": "showdar-debug",
+        "score": 100,
+        "reasons": []
+      }
+    },
+    "verificationPlan": {
+      "required": [
+        "targeted-test",
+        "relevant-suite",
+        "regression",
+        "typecheck"
+      ]
+    },
+    "evidence": [
+      {
+        "kind": "failure-reproduced",
+        "status": "verified"
+      },
+      {
+        "kind": "root-cause-proven",
+        "status": "verified"
+      },
+      {
+        "kind": "change-implemented",
+        "status": "verified"
+      },
+      {
+        "kind": "regression-proof-added",
+        "status": "verified"
+      },
+      {
+        "kind": "targeted-tests-passed",
+        "status": "verified"
+      },
+      {
+        "kind": "relevant-suite-passed",
+        "status": "verified"
+      }
+    ],
+    "blockers": [],
+    "expectedStatus": "complete",
+    "expectedDecision": {
+      "type": "complete",
+      "target": null,
+      "reasons": [
+        "failure reproduced, root cause proven, fix implemented and verified"
+      ]
+    }
+  },
+  {
+    "id": "requirements-missing-critical-business-rule",
+    "description": "Requirements missing critical refund business rule",
+    "intent": {
+      "phase": "definition",
+      "action": "define",
+      "object": "backend",
+      "risks": [
+        "data-integrity"
+      ],
+      "mutation": "read-only"
+    },
+    "routePlan": {
+      "primary": {
+        "skill": "showdar-requirements",
+        "score": 100,
+        "reasons": []
+      }
+    },
+    "verificationPlan": {
+      "required": []
+    },
+    "evidence": [],
+    "blockers": [
+      {
+        "id": "refund-rule",
+        "reason": "refund eligibility business rule undefined",
+        "type": "business-rule"
+      }
+    ],
+    "expectedStatus": "blocked",
+    "expectedDecision": {
+      "type": "blocked",
+      "target": null,
+      "reasons": [
+        "critical business rule or behavior definition missing"
+      ]
+    }
+  },
+  {
+    "id": "requirements-behavior-defined-implementation-requested",
+    "description": "Requirements clarified, implementation requested",
+    "intent": {
+      "phase": "definition",
+      "action": "define",
+      "object": "backend",
+      "risks": [],
+      "mutation": "local-write",
+      "evidence": {
+        "behaviorDefined": true
+      },
+      "secondaryActions": [
+        "implement"
+      ]
+    },
+    "routePlan": {
+      "primary": {
+        "skill": "showdar-requirements",
+        "score": 100,
+        "reasons": []
+      }
+    },
+    "verificationPlan": {
+      "required": []
+    },
+    "evidence": [
+      {
+        "kind": "behavior-defined",
+        "status": "verified"
+      }
+    ],
+    "blockers": [],
+    "expectedStatus": "ready-for-handoff",
+    "expectedDecision": {
+      "type": "handoff",
+      "target": "showdar-build",
+      "reasons": [
+        "behavior defined, implementation requested"
+      ]
+    }
+  },
+  {
+    "id": "requirements-behavior-defined-plan-requested",
+    "description": "Requirements clarified, plan requested",
+    "intent": {
+      "phase": "definition",
+      "action": "plan",
+      "object": "backend",
+      "risks": [],
+      "mutation": "read-only",
+      "secondaryActions": [
+        "plan"
+      ]
+    },
+    "routePlan": {
+      "primary": {
+        "skill": "showdar-requirements",
+        "score": 100,
+        "reasons": []
+      }
+    },
+    "verificationPlan": {
+      "required": []
+    },
+    "evidence": [
+      {
+        "kind": "behavior-defined",
+        "status": "verified"
+      }
+    ],
+    "blockers": [],
+    "expectedStatus": "ready-for-handoff",
+    "expectedDecision": {
+      "type": "handoff",
+      "target": "showdar-plan",
+      "reasons": [
+        "behavior defined, implementation requested"
+      ]
+    }
+  },
+  {
+    "id": "plan-implementation-plan-complete",
+    "description": "Implementation plan complete",
+    "intent": {
+      "phase": "planning",
+      "action": "plan",
+      "object": "repository",
+      "risks": [],
+      "mutation": "read-only",
+      "secondaryActions": [
+        "implement"
+      ]
+    },
+    "routePlan": {
+      "primary": {
+        "skill": "showdar-plan",
+        "score": 100,
+        "reasons": []
+      }
+    },
+    "verificationPlan": {
+      "required": []
+    },
+    "evidence": [
+      {
+        "kind": "architecture-understood",
+        "status": "verified"
+      }
+    ],
+    "blockers": [],
+    "expectedStatus": "ready-for-handoff",
+    "expectedDecision": {
+      "type": "handoff",
+      "target": "showdar-build",
+      "reasons": [
+        "bounded implementation plan complete"
+      ]
+    }
+  },
+  {
+    "id": "build-change-implemented-verification-missing",
+    "description": "Build change implemented but required relevant suite missing",
+    "intent": {
+      "phase": "implementation",
+      "action": "implement",
+      "object": "backend",
+      "risks": [
+        "regression"
+      ],
+      "mutation": "local-write"
+    },
+    "routePlan": {
+      "primary": {
+        "skill": "showdar-build",
+        "score": 100,
+        "reasons": []
+      }
+    },
+    "verificationPlan": {
+      "required": [
+        "targeted-test",
+        "relevant-suite"
+      ]
+    },
+    "evidence": [
+      {
+        "kind": "change-implemented",
+        "status": "verified"
+      },
+      {
+        "kind": "targeted-tests-passed",
+        "status": "verified"
+      }
+    ],
+    "blockers": [],
+    "expectedStatus": "active",
+    "expectedDecision": {
+      "type": "continue",
+      "target": null,
+      "reasons": [
+        "required verification evidence missing"
+      ]
+    }
+  },
+  {
+    "id": "build-implementation-verification-complete",
+    "description": "Build implementation + required verification complete",
+    "intent": {
+      "phase": "implementation",
+      "action": "implement",
+      "object": "backend",
+      "risks": [
+        "regression"
+      ],
+      "mutation": "local-write"
+    },
+    "routePlan": {
+      "primary": {
+        "skill": "showdar-build",
+        "score": 100,
+        "reasons": []
+      }
+    },
+    "verificationPlan": {
+      "required": [
+        "targeted-test",
+        "relevant-suite"
+      ]
+    },
+    "evidence": [
+      {
+        "kind": "change-implemented",
+        "status": "verified"
+      },
+      {
+        "kind": "targeted-tests-passed",
+        "status": "verified"
+      },
+      {
+        "kind": "relevant-suite-passed",
+        "status": "verified"
+      }
+    ],
+    "blockers": [],
+    "expectedStatus": "complete",
+    "expectedDecision": {
+      "type": "complete",
+      "target": null,
+      "reasons": [
+        "change implemented and required verification satisfied"
+      ]
+    }
+  },
+  {
+    "id": "security-confirmed-authz-flaw-remediation-requested",
+    "description": "Security review finds confirmed authz flaw, remediation requested",
+    "intent": {
+      "phase": "verification",
+      "action": "assess",
+      "object": "auth",
+      "risks": [
+        "security"
+      ],
+      "mutation": "local-write",
+      "secondaryActions": [
+        "implement"
+      ]
+    },
+    "routePlan": {
+      "primary": {
+        "skill": "showdar-security",
+        "score": 100,
+        "reasons": []
+      }
+    },
+    "verificationPlan": {
+      "required": [
+        "security"
+      ]
+    },
+    "evidence": [
+      {
+        "kind": "security-reviewed",
+        "status": "verified"
+      }
+    ],
+    "blockers": [],
+    "expectedStatus": "ready-for-handoff",
+    "expectedDecision": {
+      "type": "handoff",
+      "target": "showdar-build",
+      "reasons": [
+        "security finding confirmed, remediation implementation requested"
+      ]
+    }
+  },
+  {
+    "id": "security-threat-model-complete-no-mutation",
+    "description": "Threat model complete with no requested mutation",
+    "intent": {
+      "phase": "discovery",
+      "action": "assess",
+      "object": "auth",
+      "risks": [
+        "security"
+      ],
+      "mutation": "read-only"
+    },
+    "routePlan": {
+      "primary": {
+        "skill": "showdar-security",
+        "score": 100,
+        "reasons": []
+      }
+    },
+    "verificationPlan": {
+      "required": [
+        "security"
+      ]
+    },
+    "evidence": [
+      {
+        "kind": "security-reviewed",
+        "status": "verified"
+      }
+    ],
+    "blockers": [],
+    "expectedStatus": "complete",
+    "expectedDecision": {
+      "type": "complete",
+      "target": null,
+      "reasons": [
+        "security review complete, no mutation requested"
+      ]
+    }
+  },
+  {
+    "id": "quality-qa-regression-matrix-finished",
+    "description": "QA regression matrix finished",
+    "intent": {
+      "phase": "verification",
+      "action": "assess",
+      "object": "backend",
+      "risks": [
+        "regression"
+      ],
+      "mutation": "read-only"
+    },
+    "routePlan": {
+      "primary": {
+        "skill": "showdar-quality",
+        "score": 100,
+        "reasons": []
+      }
+    },
+    "verificationPlan": {
+      "required": [
+        "regression"
+      ]
+    },
+    "evidence": [
+      {
+        "kind": "architecture-understood",
+        "status": "verified"
+      }
+    ],
+    "blockers": [],
+    "expectedStatus": "complete",
+    "expectedDecision": {
+      "type": "complete",
+      "target": null,
+      "reasons": [
+        "QA plan and regression matrix complete"
+      ]
+    }
+  },
+  {
+    "id": "test-automated-regression-tests-passing",
+    "description": "Automated regression tests implemented and passing",
+    "intent": {
+      "phase": "verification",
+      "action": "test",
+      "object": "backend",
+      "risks": [
+        "regression"
+      ],
+      "mutation": "local-write"
+    },
+    "routePlan": {
+      "primary": {
+        "skill": "showdar-test",
+        "score": 100,
+        "reasons": []
+      }
+    },
+    "verificationPlan": {
+      "required": [
+        "targeted-test",
+        "relevant-suite",
+        "regression"
+      ]
+    },
+    "evidence": [
+      {
+        "kind": "targeted-tests-passed",
+        "status": "verified"
+      },
+      {
+        "kind": "relevant-suite-passed",
+        "status": "verified"
+      },
+      {
+        "kind": "regression-proof-added",
+        "status": "verified"
+      }
+    ],
+    "blockers": [],
+    "expectedStatus": "complete",
+    "expectedDecision": {
+      "type": "complete",
+      "target": null,
+      "reasons": [
+        "automated tests implemented and required verification satisfied"
+      ]
+    }
+  },
+  {
+    "id": "ship-release-readiness-checks-incomplete",
+    "description": "Release readiness checks incomplete",
+    "intent": {
+      "phase": "delivery",
+      "action": "assess",
+      "object": "release",
+      "risks": [
+        "production"
+      ],
+      "mutation": "read-only"
+    },
+    "routePlan": {
+      "primary": {
+        "skill": "showdar-ship",
+        "score": 100,
+        "reasons": []
+      }
+    },
+    "verificationPlan": {
+      "required": [
+        "relevant-suite",
+        "release-readiness",
+        "package"
+      ]
+    },
+    "evidence": [
+      {
+        "kind": "package-verified",
+        "status": "verified"
+      }
+    ],
+    "blockers": [],
+    "expectedStatus": "active",
+    "expectedDecision": {
+      "type": "continue",
+      "target": null,
+      "reasons": [
+        "release readiness checks incomplete"
+      ]
+    }
+  },
+  {
+    "id": "ship-release-readiness-verified",
+    "description": "Release readiness verified",
+    "intent": {
+      "phase": "delivery",
+      "action": "assess",
+      "object": "release",
+      "risks": [
+        "production"
+      ],
+      "mutation": "read-only"
+    },
+    "routePlan": {
+      "primary": {
+        "skill": "showdar-ship",
+        "score": 100,
+        "reasons": []
+      }
+    },
+    "verificationPlan": {
+      "required": [
+        "relevant-suite",
+        "release-readiness",
+        "package"
+      ]
+    },
+    "evidence": [
+      {
+        "kind": "release-readiness-verified",
+        "status": "verified"
+      },
+      {
+        "kind": "package-verified",
+        "status": "verified"
+      }
+    ],
+    "blockers": [],
+    "expectedStatus": "complete",
+    "expectedDecision": {
+      "type": "complete",
+      "target": null,
+      "reasons": [
+        "release readiness and package verified"
+      ]
+    }
+  },
+  {
+    "id": "ops-production-deploy-requested-no-authorization",
+    "description": "Production deploy requested but authorization absent",
+    "intent": {
+      "phase": "operations",
+      "action": "deploy",
+      "object": "deployment",
+      "risks": [
+        "production",
+        "operations"
+      ],
+      "mutation": "production-impacting"
+    },
+    "routePlan": {
+      "primary": {
+        "skill": "showdar-ops",
+        "score": 100,
+        "reasons": []
+      }
+    },
+    "verificationPlan": {
+      "required": [
+        "relevant-suite",
+        "deployment-safety"
+      ]
+    },
+    "evidence": [],
+    "blockers": [
+      {
+        "id": "prod-auth",
+        "reason": "production deployment authorization absent",
+        "type": "authorization"
+      }
+    ],
+    "expectedStatus": "blocked",
+    "expectedDecision": {
+      "type": "blocked",
+      "target": null,
+      "reasons": [
+        "production deployment authorization absent"
+      ]
+    }
+  },
+  {
+    "id": "ops-authorized-staging-deploy-in-progress",
+    "description": "Authorized staging deploy in progress",
+    "intent": {
+      "phase": "operations",
+      "action": "deploy",
+      "object": "container",
+      "risks": [
+        "operations"
+      ],
+      "mutation": "remote-write"
+    },
+    "routePlan": {
+      "primary": {
+        "skill": "showdar-ops",
+        "score": 100,
+        "reasons": []
+      }
+    },
+    "verificationPlan": {
+      "required": [
+        "relevant-suite",
+        "deployment-safety"
+      ]
+    },
+    "evidence": [],
+    "blockers": [],
+    "expectedStatus": "active",
+    "expectedDecision": {
+      "type": "continue",
+      "target": null,
+      "reasons": [
+        "authorized deployment in progress"
+      ]
+    }
+  },
+  {
+    "id": "ops-deployment-verified",
+    "description": "Deployment verified",
+    "intent": {
+      "phase": "operations",
+      "action": "deploy",
+      "object": "deployment",
+      "risks": [
+        "production",
+        "operations"
+      ],
+      "mutation": "production-impacting"
+    },
+    "routePlan": {
+      "primary": {
+        "skill": "showdar-ops",
+        "score": 100,
+        "reasons": []
+      }
+    },
+    "verificationPlan": {
+      "required": [
+        "relevant-suite",
+        "deployment-safety"
+      ]
+    },
+    "evidence": [
+      {
+        "kind": "deployment-verified",
+        "status": "verified"
+      }
+    ],
+    "blockers": [],
+    "expectedStatus": "complete",
+    "expectedDecision": {
+      "type": "complete",
+      "target": null,
+      "reasons": [
+        "deployment verified"
+      ]
+    }
+  },
+  {
+    "id": "recover-reconstructs-interrupted-debug",
+    "description": "Recover reconstructs interrupted debug work",
+    "intent": {
+      "phase": "recovery",
+      "action": "recover",
+      "object": "implementation",
+      "risks": [
+        "regression"
+      ],
+      "mutation": "read-only"
+    },
+    "routePlan": {
+      "primary": {
+        "skill": "showdar-recover",
+        "score": 100,
+        "reasons": []
+      }
+    },
+    "verificationPlan": {
+      "required": []
+    },
+    "evidence": [
+      {
+        "kind": "architecture-understood",
+        "status": "verified"
+      }
+    ],
+    "blockers": [],
+    "context": {
+      "recoveredOwner": "showdar-debug"
+    },
+    "expectedStatus": "ready-for-handoff",
+    "expectedDecision": {
+      "type": "handoff",
+      "target": "showdar-debug",
+      "reasons": [
+        "interrupted execution context reconstructed"
+      ]
+    }
+  },
+  {
+    "id": "recover-reconstructs-interrupted-build",
+    "description": "Recover reconstructs interrupted build work",
+    "intent": {
+      "phase": "recovery",
+      "action": "recover",
+      "object": "implementation",
+      "risks": [
+        "regression"
+      ],
+      "mutation": "read-only"
+    },
+    "routePlan": {
+      "primary": {
+        "skill": "showdar-recover",
+        "score": 100,
+        "reasons": []
+      }
+    },
+    "verificationPlan": {
+      "required": []
+    },
+    "evidence": [
+      {
+        "kind": "architecture-understood",
+        "status": "verified"
+      }
+    ],
+    "blockers": [],
+    "context": {
+      "recoveredOwner": "showdar-build"
+    },
+    "expectedStatus": "ready-for-handoff",
+    "expectedDecision": {
+      "type": "handoff",
+      "target": "showdar-build",
+      "reasons": [
+        "interrupted execution context reconstructed"
+      ]
+    }
+  },
+  {
+    "id": "git-commit-completed-clean-state-verified",
+    "description": "Git commit completed and clean state verified",
+    "intent": {
+      "phase": "repository",
+      "action": "git",
+      "object": "commit",
+      "risks": [
+        "data-integrity"
+      ],
+      "mutation": "local-write"
+    },
+    "routePlan": {
+      "primary": {
+        "skill": "showdar-git",
+        "score": 100,
+        "reasons": []
+      }
+    },
+    "verificationPlan": {
+      "required": []
+    },
+    "evidence": [
+      {
+        "kind": "git-state-verified",
+        "status": "verified"
+      }
+    ],
+    "blockers": [],
+    "expectedStatus": "complete",
+    "expectedDecision": {
+      "type": "complete",
+      "target": null,
+      "reasons": [
+        "Git operation completed and state verified"
+      ]
+    }
+  },
+  {
+    "id": "advisor-security-concern-during-build-no-handoff",
+    "description": "Advisor security concern exists during build but no ownership transition condition",
+    "intent": {
+      "phase": "implementation",
+      "action": "implement",
+      "object": "backend",
+      "risks": [
+        "security"
+      ],
+      "mutation": "local-write"
+    },
+    "routePlan": {
+      "primary": {
+        "skill": "showdar-build",
+        "score": 100,
+        "reasons": []
+      },
+      "advisors": [
+        {
+          "skill": "showdar-security",
+          "score": 10,
+          "reasons": [
+            "security concern"
+          ]
+        }
+      ]
+    },
+    "verificationPlan": {
+      "required": [
+        "targeted-test",
+        "relevant-suite",
+        "security"
+      ]
+    },
+    "evidence": [
+      {
+        "kind": "change-implemented",
+        "status": "verified"
+      },
+      {
+        "kind": "targeted-tests-passed",
+        "status": "verified"
+      },
+      {
+        "kind": "relevant-suite-passed",
+        "status": "verified"
+      },
+      {
+        "kind": "security-reviewed",
+        "status": "verified"
+      }
+    ],
+    "blockers": [],
+    "expectedStatus": "complete",
+    "expectedDecision": {
+      "type": "complete",
+      "target": null,
+      "reasons": [
+        "change implemented and required verification satisfied"
+      ]
+    },
+    "forbiddenTransition": {
+      "from": "showdar-build",
+      "to": "showdar-security",
+      "reason": "advisor is not a handoff"
+    }
+  },
+  {
+    "id": "verification-optional-check-missing-can-complete",
+    "description": "Verification optional check missing but all required satisfied",
+    "intent": {
+      "phase": "implementation",
+      "action": "implement",
+      "object": "backend",
+      "risks": [
+        "regression"
+      ],
+      "mutation": "local-write"
+    },
+    "routePlan": {
+      "primary": {
+        "skill": "showdar-build",
+        "score": 100,
+        "reasons": []
+      }
+    },
+    "verificationPlan": {
+      "required": [
+        "targeted-test"
+      ],
+      "optional": [
+        "lint",
+        "typecheck"
+      ]
+    },
+    "evidence": [
+      {
+        "kind": "change-implemented",
+        "status": "verified"
+      },
+      {
+        "kind": "targeted-tests-passed",
+        "status": "verified"
+      }
+    ],
+    "blockers": [],
+    "expectedStatus": "complete",
+    "expectedDecision": {
+      "type": "complete",
+      "target": null,
+      "reasons": [
+        "change implemented and required verification satisfied"
+      ]
+    }
+  },
+  {
+    "id": "build-explicit-test-handoff-requested",
+    "description": "Build complete with explicit test handoff requested",
+    "intent": {
+      "phase": "implementation",
+      "action": "implement",
+      "object": "backend",
+      "risks": [
+        "regression"
+      ],
+      "mutation": "local-write",
+      "secondaryActions": [
+        "test"
+      ]
+    },
+    "routePlan": {
+      "primary": {
+        "skill": "showdar-build",
+        "score": 100,
+        "reasons": []
+      }
+    },
+    "verificationPlan": {
+      "required": [
+        "targeted-test",
+        "relevant-suite"
+      ]
+    },
+    "evidence": [
+      {
+        "kind": "change-implemented",
+        "status": "verified"
+      },
+      {
+        "kind": "targeted-tests-passed",
+        "status": "verified"
+      },
+      {
+        "kind": "relevant-suite-passed",
+        "status": "verified"
+      }
+    ],
+    "blockers": [],
+    "expectedStatus": "ready-for-handoff",
+    "expectedDecision": {
+      "type": "handoff",
+      "target": "showdar-test",
+      "reasons": [
+        "implementation complete, explicit test ownership requested"
+      ]
+    }
+  },
+  {
+    "id": "debug-root-cause-proven-no-implementation-needed",
+    "description": "Root cause proven but fix is config/documentation only (no code change)",
+    "intent": {
+      "phase": "diagnosis",
+      "action": "investigate",
+      "object": "config",
+      "risks": [],
+      "mutation": "local-write",
+      "evidence": {
+        "failureObserved": true,
+        "rootCauseKnown": true
+      }
+    },
+    "routePlan": {
+      "primary": {
+        "skill": "showdar-debug",
+        "score": 100,
+        "reasons": []
+      }
+    },
+    "verificationPlan": {
+      "required": [
+        "targeted-test",
+        "relevant-suite",
+        "regression",
+        "typecheck"
+      ]
+    },
+    "evidence": [
+      {
+        "kind": "failure-reproduced",
+        "status": "verified"
+      },
+      {
+        "kind": "root-cause-proven",
+        "status": "verified"
+      }
+    ],
+    "blockers": [],
+    "expectedStatus": "complete",
+    "expectedDecision": {
+      "type": "complete",
+      "target": null,
+      "reasons": [
+        "failure reproduced, root cause proven, fix is config/documentation only"
+      ]
+    }
+  },
+  {
+    "id": "build-with-claimed-evidence-only-not-complete",
+    "description": "Build with only claimed evidence (no verified/observed) cannot complete",
+    "intent": {
+      "phase": "implementation",
+      "action": "implement",
+      "object": "backend",
+      "risks": [
+        "regression"
+      ],
+      "mutation": "local-write"
+    },
+    "routePlan": {
+      "primary": {
+        "skill": "showdar-build",
+        "score": 100,
+        "reasons": []
+      }
+    },
+    "verificationPlan": {
+      "required": [
+        "targeted-test",
+        "relevant-suite"
+      ]
+    },
+    "evidence": [
+      {
+        "kind": "change-implemented",
+        "status": "claimed"
+      },
+      {
+        "kind": "targeted-tests-passed",
+        "status": "claimed"
+      }
+    ],
+    "blockers": [],
+    "expectedStatus": "active",
+    "expectedDecision": {
+      "type": "continue",
+      "target": null,
+      "reasons": [
+        "required verification evidence missing"
+      ]
+    }
+  },
+  {
+    "id": "ops-missing-reproduction-evidence-blocked",
+    "description": "Ops task missing reproduction evidence where guessing would be unsafe",
+    "intent": {
+      "phase": "operations",
+      "action": "assess",
+      "object": "deployment",
+      "risks": [
+        "production"
+      ],
+      "mutation": "read-only"
+    },
+    "routePlan": {
+      "primary": {
+        "skill": "showdar-ops",
+        "score": 100,
+        "reasons": []
+      }
+    },
+    "verificationPlan": {
+      "required": [
+        "deployment-safety"
+      ]
+    },
+    "evidence": [],
+    "blockers": [
+      {
+        "id": "no-repro",
+        "reason": "missing deployment reproduction evidence",
+        "type": "evidence"
+      }
+    ],
+    "expectedStatus": "blocked",
+    "expectedDecision": {
+      "type": "blocked",
+      "target": null,
+      "reasons": [
+        "missing deployment reproduction evidence"
+      ]
+    }
+  }
+]
