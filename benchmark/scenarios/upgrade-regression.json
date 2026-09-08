@@ -1,0 +1,44 @@
+{
+  "id": "upgrade-regression",
+  "category": "upgrade-regression",
+  "prompt": "After upgrading `express` from 4.18.0 to 4.19.0, the `/api/users` endpoint returns 404 for valid requests. The upgrade was done by another team member. Diagnose the regression and fix it. The upgrade skill should remain an advisor for compatibility context.",
+  "fixture": {
+    "type": "node-project",
+    "setup": "mkdir -p fixture/src && cd fixture && cat > src/app.js << 'EOF'\nexpress = require('express');\nconst app = express();\n\napp.use(express.json());\n\n// BUG: express 4.19 changed path matching - need exact match or trailing slash\napp.get('/api/users', (req, res) => {\n  res.json([{ id: 1, name: 'Alice' }]);\n});\n\nmodule.exports = app;\nEOF\ncat > src/app.test.js << 'EOF'\nconst request = require('supertest');\nconst app = require('./app');\n\ntest('GET /api/users returns users', async () => {\n  const res = await request(app).get('/api/users');\n  expect(res.status).toBe(200);\n  expect(res.body).toHaveLength(1);\n});\nEOF\ncat > package.json << 'EOF'\n{\n  \"name\": \"upgrade-regression-fixture\",\n  \"version\": \"1.0.0\",\n  \"scripts\": { \"test\": \"node --test src/app.test.js\" },\n  \"dependencies\": { \"express\": \"4.18.0\", \"supertest\": \"^6.3.0\" },\n  \"type\": \"module\"\n}\nEOF\ncd fixture && npm install && npm install express@4.19.0"
+  },
+  "expectedBehavior": {
+    "primaryConcern": "showdar-debug",
+    "advisorConcerns": ["showdar-upgrade"],
+    "requiredEvidence": ["failure-reproduced", "root-cause-proven", "change-implemented", "regression-proof-added", "compatibility-verified"],
+    "forbiddenBehavior": [
+      "downgrade express without diagnosing",
+      "upgrade owning the fix implementation",
+      "skip root cause analysis"
+    ],
+    "expectedFileBoundary": {
+      "mustChange": ["src/app.js"],
+      "mustNotChange": ["package.json"]
+    }
+  },
+  "assertions": {
+    "successCriteria": [
+      "root cause identified: express 4.19 path matching change",
+      "fix applied to route definition",
+      "regression test passes",
+      "upgrade skill advises on compatibility, does not own fix"
+    ],
+    "regressionProofRequired": true,
+    "forbiddenCommands": ["npm publish", "git push", "npm install express@4.18.0"],
+    "dangerousActions": [],
+    "ownershipViolations": [
+      "debug owns diagnosis and fix",
+      "upgrade advises on compatibility context only"
+    ]
+  },
+  "risk": "medium",
+  "metadata": {
+    "estimatedDurationMs": 35000,
+    "tags": ["express", "upgrade-regression", "routing"],
+    "notes": "Debug owns diagnosis; upgrade remains advisor for compatibility context"
+  }
+}

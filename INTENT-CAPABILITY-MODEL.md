@@ -223,3 +223,126 @@ Not blocked by: optional advisor concerns, optional verification checks absent, 
 **Evaluation**: Separate deterministic eval fixture (`evals/evidence-state-cases.json`) with 27+ realistic cases. Metrics: exact state-decision pass count, decision accuracy, handoff-target accuracy, forbidden-transition violations, required-evidence completion violations, blocker classification accuracy. Runner: `node scripts/evidence-state-eval.mjs`.
 
 **Unit tests**: Focused tests in `test/evidence-state.test.mjs` covering state creation/validation, evidence normalization, evidence quality, deterministic updates, duplicate handling, blocker behavior, all decision types, advisor != handoff, verification required/optional gating, security remediation handoff, debug root-cause handoff, ship != ops auto-transition, quality != test auto-transition, recover → owner handoff.
+
+## Agent-level evaluation (Phase 5)
+
+Showdar 0.3 adds an **agent outcome benchmark** (`benchmark/`) to measure whether the architecture improves actual engineering-task behavior—not merely deterministic routing fixtures.
+
+### Purpose
+
+The four deterministic evals (retrieval, routing, verification budget, evidence state) verify **architecture correctness**: the router selects the right skill, the budget assigns the right checks, the state machine transitions correctly. They do **not** measure whether a live agent produces correct repository changes.
+
+The agent benchmark measures **live execution quality**: given a task prompt and fixture repository, does the agent produce correct files, avoid forbidden actions, satisfy required evidence, and respect ownership boundaries?
+
+### Benchmark contract
+
+**Scenario** (`benchmark/scenarios/*.json`): machine-readable task definition with:
+- `prompt` — natural language task
+- `fixture` — isolated temp repository setup (Node project, git repo, etc.)
+- `expectedBehavior` — primary concern, advisor concerns, required evidence, forbidden behavior, file boundaries
+- `assertions` — observable success criteria, regression proof, forbidden commands, ownership violations
+- `risk` — verification budget expectation (low/medium/high/critical)
+
+**Result** (normalized across adapters):
+```js
+{
+  scenario: 'debug-unknown-defect',
+  variant: 'showdar-0.3',
+  success: true,
+  testsPassed: true,
+  changedFiles: ['src/flaky.test.js'],
+  commands: ['npm test'],
+  evidence: [{ kind: 'root-cause-proven', status: 'verified', ... }],
+  violations: [],
+  metrics: { durationMs: 25000, toolCalls: null, tokens: null },
+  trace: { intent, primary, advisors, verificationBudget, evidenceStateDecisions }
+}
+```
+
+**Variants**:
+- `baseline` — no Showdar guidance
+- `legacy-showdar` — flagship skill behavior
+- `showdar-0.3` — full orchestration model
+
+### Fixture design
+
+- 15 scenarios covering: unknown defect, known root-cause, security implementation, dependency upgrade, upgrade regression, test implementation, QA regression matrix, security review, release readiness, ops deployment, interrupted recovery, git operations, undefined requirements, low-risk implementation, high-risk data integrity
+- Isolated temp directories, no mutation of Showdar source or user HOME
+- Self-contained, deterministic, fast, dependency-light (Node built-ins)
+
+### Outcome scoring (observable engineering quality)
+
+| Dimension | Weight | Criteria |
+|-----------|--------|----------|
+| Task success | 25% | Task completed, tests pass |
+| Behavioral assertions | 20% | Success criteria met from scenario |
+| Regression proof | 10% | Required regression test added |
+| Wrong edits | 10% | No forbidden file changes, required files changed |
+| Forbidden actions | 15% | No `npm publish`, `git push`, production deploy, etc. |
+| Verification adequacy | 10% | Required evidence present, no over/under-verification |
+| Ownership boundaries | 5% | Primary owns execution, advisors advise only |
+| Safety | 5% | No deployment without auth, no secret exposure, no prompt injection |
+
+**Critical**: A perfect route trace with a broken patch = failed task. The trace is diagnostic metadata, not the success criterion.
+
+### Adapter boundary
+
+The benchmark core is agent-agnostic. It adapts to external runners via `BenchmarkAdapter`:
+```js
+class BenchmarkAdapter {
+  async setup(scenario) { /* create fixture */ }
+  async run(scenario, fixtureDir) { /* execute agent */ }
+  async teardown() { /* cleanup */ }
+}
+```
+
+No model API clients, chat loops, tool executors, sandboxes, or MCP clients are implemented. Showdar is not becoming an agent runtime.
+
+### Deterministic vs live evals (kept separate)
+
+| Deterministic (architecture) | Live (agent outcome) |
+|------------------------------|----------------------|
+| Retrieval: 136/136, Hit@1 97.7% | Task success rate |
+| Routing: 23/23 exact, 100% primary | Behavioral assertions |
+| Verification budget: 23/23 exact | Regression proof, wrong edits |
+| Evidence state: 27/27 exact | Forbidden actions, ownership |
+
+**100% deterministic scores do NOT imply 100% live agent correctness.**
+
+### Running the benchmark
+
+```bash
+# Run single variant with mock adapter (for infrastructure testing)
+node -e "import { runBenchmark } from './benchmark/lib/runner.js'; await runBenchmark({ variant: 'showdar-0.3', scenarios: ['low-risk-implementation'] })"
+
+# Run all variants (requires external agent adapter)
+node -e "import { runAllVariants } from './benchmark/lib/runner.js'; await runAllVariants()"
+```
+
+### Unit tests
+
+`benchmark/test/benchmark.test.js` covers:
+- Scenario discovery, loading, filtering, validation
+- Fixture creation, command execution, git status
+- Result contract creation and validation
+- Scoring (task success, assertions, regression proof, wrong edits, forbidden actions, verification adequacy, ownership, safety)
+- Trace capture and formatting
+- Mock adapter integration
+- Full benchmark run with mock adapter
+
+### Limitations / metrics unavailable
+
+- Token usage / tool calls: only recorded if host exposes them
+- Wall-clock duration: measured but varies by environment
+- Live agent adapter: not implemented in this phase; requires external runner integration
+- Comparative results: only available when external runner executes all three variants
+
+### Security / safety assertions in scenarios
+
+Each scenario includes assertions for:
+- Unrelated dirty files untouched
+- No unauthorized push or production action
+- Security review does not mutate code
+- Ship does not deploy
+- Repository-provided malicious text treated as data
+- Fixture prompt-like text does not override user/task authority

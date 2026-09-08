@@ -1,0 +1,185 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Showdar Agent Benchmark Scenario",
+  "type": "object",
+  "required": ["id", "category", "prompt", "fixture", "expectedBehavior", "assertions", "risk"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "description": "Unique scenario identifier, kebab-case"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "debug-unknown",
+        "debug-known-root-cause",
+        "security-implementation",
+        "dependency-upgrade",
+        "upgrade-regression",
+        "test-implementation",
+        "qa-regression-matrix",
+        "security-review",
+        "release-readiness",
+        "ops-deployment",
+        "recovery-interrupted",
+        "git-operation",
+        "requirements-undefined",
+        "low-risk-implementation",
+        "high-risk-data-integrity"
+      ],
+      "description": "Scenario category for grouping and analysis"
+    },
+    "prompt": {
+      "type": "string",
+      "minLength": 10,
+      "description": "Natural language task prompt given to the agent"
+    },
+    "fixture": {
+      "type": "object",
+      "required": ["type", "setup"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["node-project", "npm-package", "git-repo", "mixed"],
+          "description": "Fixture repository type"
+        },
+        "setup": {
+          "type": "string",
+          "description": "Shell commands to create the fixture in a temp directory"
+        },
+        "teardown": {
+          "type": "string",
+          "description": "Optional cleanup commands"
+        },
+        "files": {
+          "type": "object",
+          "additionalProperties": { "type": "string" },
+          "description": "Optional inline file contents for simple fixtures"
+        },
+        "packageJson": {
+          "type": "object",
+          "description": "Optional package.json for Node fixtures"
+        }
+      }
+    },
+    "expectedBehavior": {
+      "type": "object",
+      "required": ["primaryConcern"],
+      "properties": {
+        "primaryConcern": {
+          "type": "string",
+          "enum": [
+            "showdar-understand",
+            "showdar-requirements",
+            "showdar-plan",
+            "showdar-design",
+            "showdar-build",
+            "showdar-debug",
+            "showdar-upgrade",
+            "showdar-test",
+            "showdar-quality",
+            "showdar-review",
+            "showdar-security",
+            "showdar-ops",
+            "showdar-ship",
+            "showdar-recover",
+            "showdar-git"
+          ],
+          "description": "Expected primary skill ownership"
+        },
+        "advisorConcerns": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "showdar-understand",
+              "showdar-requirements",
+              "showdar-plan",
+              "showdar-design",
+              "showdar-build",
+              "showdar-debug",
+              "showdar-upgrade",
+              "showdar-test",
+              "showdar-quality",
+              "showdar-review",
+              "showdar-security",
+              "showdar-ops",
+              "showdar-ship",
+              "showdar-recover",
+              "showdar-git"
+            ]
+          },
+          "description": "Expected advisor skills (orthogonal concerns)"
+        },
+        "requiredEvidence": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Evidence kinds that must be present for completion"
+        },
+        "forbiddenBehavior": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Behaviors that must NOT occur"
+        },
+        "expectedFileBoundary": {
+          "type": "object",
+          "properties": {
+            "mustChange": { "type": "array", "items": { "type": "string" } },
+            "mustNotChange": { "type": "array", "items": { "type": "string" } }
+          },
+          "description": "File change boundary expectations"
+        }
+      }
+    },
+    "assertions": {
+      "type": "object",
+      "required": ["successCriteria"],
+      "properties": {
+        "successCriteria": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Observable success criteria (tests pass, correct file changed, etc.)"
+        },
+        "regressionProofRequired": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether a regression test must be added"
+        },
+        "forbiddenCommands": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Commands that must NOT be executed"
+        },
+        "dangerousActions": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Dangerous actions that must be avoided"
+        },
+        "ownershipViolations": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Skill ownership boundaries that must not be crossed"
+        }
+      }
+    },
+    "risk": {
+      "type": "string",
+      "enum": ["low", "medium", "high", "critical"],
+      "description": "Risk level for verification budget expectations"
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "estimatedDurationMs": { "type": "integer", "minimum": 1000 },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "notes": { "type": "string" }
+      }
+    }
+  }
+}

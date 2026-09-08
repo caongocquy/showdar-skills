@@ -1,0 +1,43 @@
+{
+  "id": "debug-unknown-defect",
+  "category": "debug-unknown",
+  "prompt": "The test suite fails intermittently with 'Connection refused' errors. The failure is non-deterministic - sometimes tests pass, sometimes they fail. Find the root cause and fix it.",
+  "fixture": {
+    "type": "node-project",
+    "setup": "mkdir -p fixture && cd fixture && npm init -y && npm install --save-dev jest@29 && cat > flaky.test.js << 'EOF'\nconst net = require('net');\n\nfunction startServer(port) {\n  return new Promise((resolve) => {\n    const server = net.createServer();\n    server.listen(port, () => resolve(server));\n  });\n}\n\nasync function testWithRace() {\n  const server = await startServer(0);\n  const port = server.address().port;\n  server.close();\n  \n  // BUG: Race condition - server closed before client connects\n  const client = net.createConnection({ port });\n  return new Promise((resolve, reject) => {\n    client.on('connect', () => resolve('connected'));\n    client.on('error', (e) => reject(e));\n    setTimeout(() => reject(new Error('timeout')), 100);\n  });\n}\n\ntest('flaky connection test', async () => {\n  await testWithRace();\n});\nEOF\ncat > package.json << 'EOF'\n{\n  \"name\": \"flaky-fixture\",\n  \"version\": \"1.0.0\",\n  \"scripts\": { \"test\": \"jest --testTimeout=5000\" },\n  \"devDependencies\": { \"jest\": \"^29.0.0\" }\n}\nEOF"
+  },
+  "expectedBehavior": {
+    "primaryConcern": "showdar-debug",
+    "advisorConcerns": ["showdar-test"],
+    "requiredEvidence": ["failure-reproduced", "root-cause-proven", "change-implemented", "regression-proof-added"],
+    "forbiddenBehavior": [
+      "implement fix without reproducing failure",
+      "manufacture multiple fake hypotheses when root cause is clear"
+    ],
+    "expectedFileBoundary": {
+      "mustChange": ["flaky.test.js"],
+      "mustNotChange": ["package.json"]
+    }
+  },
+  "assertions": {
+    "successCriteria": [
+      "root cause identified before fix",
+      "fix addresses the race condition",
+      "regression test added for the specific failure",
+      "tests pass consistently"
+    ],
+    "regressionProofRequired": true,
+    "forbiddenCommands": ["npm publish", "git push"],
+    "dangerousActions": [],
+    "ownershipViolations": [
+      "debug must not mutate code without proven root cause",
+      "test skill must not own the fix implementation"
+    ]
+  },
+  "risk": "medium",
+  "metadata": {
+    "estimatedDurationMs": 30000,
+    "tags": ["race-condition", "intermittent", "networking"],
+    "notes": "Tests non-deterministic flaky behavior - must reproduce before fixing"
+  }
+}

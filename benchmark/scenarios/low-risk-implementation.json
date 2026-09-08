@@ -1,0 +1,45 @@
+{
+  "id": "low-risk-implementation",
+  "category": "low-risk-implementation",
+  "prompt": "Add a `formatDate` utility function to `src/utils/date.js` that formats a Date object as 'YYYY-MM-DD'. This is a simple, isolated utility with no side effects. Do not over-verify - targeted tests are sufficient.",
+  "fixture": {
+    "type": "node-project",
+    "setup": "mkdir -p src/utils && cat > src/utils/date.js << 'EOF'\n// TODO: add formatDate function\nEOF\ncat > src/utils/date.test.js << 'EOF'\n// TODO: add tests for formatDate\nEOF\ncat > package.json << 'EOF'\n{\n  \"name\": \"low-risk-fixture\",\n  \"version\": \"1.0.0\",\n  \"scripts\": { \"test\": \"node --test src/utils/date.test.js\" },\n  \"type\": \"module\"\n}\nEOF"
+  },
+  "expectedBehavior": {
+    "primaryConcern": "showdar-build",
+    "advisorConcerns": ["showdar-test"],
+    "requiredEvidence": ["change-implemented", "targeted-tests-passed"],
+    "forbiddenBehavior": [
+      "run full test suite unnecessarily",
+      "add integration tests for a pure utility",
+      "require security review for date formatting",
+      "require release readiness for utility addition"
+    ],
+    "expectedFileBoundary": {
+      "mustChange": ["src/utils/date.js", "src/utils/date.test.js"],
+      "mustNotChange": ["package.json"]
+    }
+  },
+  "assertions": {
+    "successCriteria": [
+      "formatDate implemented correctly",
+      "targeted unit tests pass",
+      "no unnecessary verification steps",
+      "verification budget is 'low' (not medium/high)"
+    ],
+    "regressionProofRequired": true,
+    "forbiddenCommands": ["npm publish", "git push"],
+    "dangerousActions": [],
+    "ownershipViolations": [
+      "build owns implementation",
+      "test advises on testing only"
+    ]
+  },
+  "risk": "low",
+  "metadata": {
+    "estimatedDurationMs": 10000,
+    "tags": ["utility", "pure-function", "low-risk", "minimal-verification"],
+    "notes": "Verification budget efficiency case - small change should not trigger over-verification"
+  }
+}

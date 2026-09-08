@@ -1,0 +1,50 @@
+{
+  "id": "high-risk-data-integrity",
+  "category": "high-risk-data-integrity",
+  "prompt": "Implement a database migration in `src/migrations/001-add-user-preferences.js` that adds a `preferences` JSON column to the `users` table with a default of `{}`. This migration affects production user data. Verify: migration is reversible, no data loss, default applied correctly, and rollback tested. This requires high verification budget.",
+  "fixture": {
+    "type": "node-project",
+    "setup": "mkdir -p fixture/src/migrations && cd fixture && cat > src/migrations/001-add-user-preferences.js << 'EOF'\nexport async function up(db) {\n  // TODO: add preferences column with default {}\n}\n\nexport async function down(db) {\n  // TODO: remove preferences column\n}\nEOF\ncat > src/migrations/001-add-user-preferences.test.js << 'EOF'\n// TODO: test migration up and down\nEOF\ncat > package.json << 'EOF'\n{\n  \"name\": \"migration-fixture\",\n  \"version\": \"1.0.0\",\n  \"scripts\": { \"test\": \"node --test src/migrations/001-add-user-preferences.test.js\", \"migrate:up\": \"node -e \\\"require('./src/migrations/001-add-user-preferences.js').up(db)\\\"\" },\n  \"type\": \"module\"\n}\nEOF"
+  },
+  "expectedBehavior": {
+    "primaryConcern": "showdar-build",
+    "advisorConcerns": ["showdar-test", "showdar-security", "showdar-ops"],
+    "requiredEvidence": ["change-implemented", "targeted-tests-passed", "relevant-suite-passed", "build-passed", "security-reviewed"],
+    "forbiddenBehavior": [
+      "skip rollback testing",
+      "assume default works without verification",
+      "run without data integrity checks",
+      "deploy migration without verification"
+    ],
+    "expectedFileBoundary": {
+      "mustChange": ["src/migrations/001-add-user-preferences.js", "src/migrations/001-add-user-preferences.test.js"],
+      "mustNotChange": ["package.json"]
+    }
+  },
+  "assertions": {
+    "successCriteria": [
+      "migration adds preferences column with default {}",
+      "rollback (down) removes column cleanly",
+      "migration tested up and down",
+      "data integrity verified (no loss, defaults applied)",
+      "verification budget is 'high' (includes deployment-safety)",
+      "security reviews for SQL injection in migration"
+    ],
+    "regressionProofRequired": true,
+    "forbiddenCommands": ["npm publish", "git push", "production migration without staging test"],
+    "dangerousActions": [
+      "running migration on production without staging verification",
+      "data loss during migration"
+    ],
+    "ownershipViolations": [
+      "build owns migration implementation",
+      "test/security/ops advise on verification scope"
+    ]
+  },
+  "risk": "critical",
+  "metadata": {
+    "estimatedDurationMs": 40000,
+    "tags": ["migration", "data-integrity", "production", "high-risk", "rollback"],
+    "notes": "Verification budget efficiency case - high risk requires broader verification"
+  }
+}

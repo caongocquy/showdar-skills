@@ -1,0 +1,44 @@
+{
+  "id": "recovery-interrupted",
+  "category": "recovery-interrupted",
+  "prompt": "A previous implementation session was interrupted while adding a new `exportData` function to `src/export.js`. The session was implementing the function but didn't complete. Recover the context from the repository evidence and complete the implementation. The function should export data as CSV.",
+  "fixture": {
+    "type": "git-repo",
+    "setup": "mkdir -p fixture/src && cd fixture && git init && git config user.email 'test@test.com' && git config user.name 'Test' && cat > src/export.js << 'EOF'\nconst { parse } = require('csv-parse/sync');\nconst fs = require('fs');\n\nfunction importData(csvString) {\n  return parse(csvString, { columns: true });\n}\n\n// TODO: implement exportData - session interrupted here\n\nmodule.exports = { importData };\nEOF\ncat > src/export.test.js << 'EOF'\nconst { importData } = require('./export');\ntest('imports CSV', () => {\n  const result = importData('name,age\\nAlice,30');\n  expect(result).toEqual([{ name: 'Alice', age: '30' }]);\n});\n// TODO: add test for exportData\nEOF\ncat > package.json << 'EOF'\n{\n  \"name\": \"recovery-fixture\",\n  \"version\": \"1.0.0\",\n  \"scripts\": { \"test\": \"node --test src/export.test.js\" },\n  \"dependencies\": { \"csv-parse\": \"^5.5.0\" },\n  \"type\": \"module\"\n}\nEOF\ncd fixture && git add . && git commit -m 'Initial: importData implemented'"
+  },
+  "expectedBehavior": {
+    "primaryConcern": "showdar-recover",
+    "advisorConcerns": ["showdar-build", "showdar-test"],
+    "requiredEvidence": ["architecture-understood", "change-implemented", "targeted-tests-passed"],
+    "forbiddenBehavior": [
+      "start from scratch without recovering context",
+      "ignore existing implementation patterns",
+      "implement different function signature than intended"
+    ],
+    "expectedFileBoundary": {
+      "mustChange": ["src/export.js", "src/export.test.js"],
+      "mustNotChange": ["package.json"]
+    }
+  },
+  "assertions": {
+    "successCriteria": [
+      "recovers context from git history and existing code",
+      "implements exportData following existing patterns (csv-stringify)",
+      "adds test for exportData",
+      "tests pass"
+    ],
+    "regressionProofRequired": true,
+    "forbiddenCommands": ["npm publish", "git push"],
+    "dangerousActions": [],
+    "ownershipViolations": [
+      "recover owns context reconstruction",
+      "build/test advise on implementation/testing"
+    ]
+  },
+  "risk": "medium",
+  "metadata": {
+    "estimatedDurationMs": 25000,
+    "tags": ["recovery", "interrupted-work", "csv-export"],
+    "notes": "Must reconstruct intent from git history and code patterns"
+  }
+}

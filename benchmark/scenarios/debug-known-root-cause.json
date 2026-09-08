@@ -1,0 +1,43 @@
+{
+  "id": "debug-known-root-cause",
+  "category": "debug-known-root-cause",
+  "prompt": "The function `calculateTotal` in `src/math.js` has a known off-by-one error when the input array is empty. The root cause is already proven: it returns 1 instead of 0 for empty arrays. Fix it directly without creating multiple hypotheses.",
+  "fixture": {
+    "type": "node-project",
+    "setup": "mkdir -p fixture/src && cd fixture && cat > src/math.js << 'EOF'\nfunction calculateTotal(arr) {\n  if (!arr || arr.length === 0) return 1; // BUG: should return 0\n  return arr.reduce((a, b) => a + b, 0);\n}\nmodule.exports = { calculateTotal };\nEOF\ncat > src/math.test.js << 'EOF'\nconst { calculateTotal } = require('./math');\ntest('empty array returns 0', () => {\n  expect(calculateTotal([])).toBe(0);\n});\ntest('sums array', () => {\n  expect(calculateTotal([1, 2, 3])).toBe(6);\n});\nEOF\ncat > package.json << 'EOF'\n{\n  \"name\": \"known-bug-fixture\",\n  \"version\": \"1.0.0\",\n  \"scripts\": { \"test\": \"node --test src/math.test.js\" },\n  \"type\": \"module\"\n}\nEOF"
+  },
+  "expectedBehavior": {
+    "primaryConcern": "showdar-debug",
+    "advisorConcerns": ["showdar-test"],
+    "requiredEvidence": ["failure-reproduced", "root-cause-proven", "change-implemented", "regression-proof-added"],
+    "forbiddenBehavior": [
+      "manufacture multiple fake hypotheses",
+      "create elaborate hypothesis-driven debugging process",
+      "over-verify for a simple known fix"
+    ],
+    "expectedFileBoundary": {
+      "mustChange": ["src/math.js"],
+      "mustNotChange": ["src/math.test.js"]
+    }
+  },
+  "assertions": {
+    "successCriteria": [
+      "fix implemented directly without fake hypothesis generation",
+      "single targeted fix for the off-by-one error",
+      "regression test passes",
+      "no unnecessary investigation steps"
+    ],
+    "regressionProofRequired": true,
+    "forbiddenCommands": ["npm publish", "git push"],
+    "dangerousActions": [],
+    "ownershipViolations": [
+      "debug should implement fix directly, not handoff to build for known root cause"
+    ]
+  },
+  "risk": "low",
+  "metadata": {
+    "estimatedDurationMs": 10000,
+    "tags": ["known-root-cause", "fast-path", "simple-fix"],
+    "notes": "Explicit fast-path benchmark: root cause proven, should implement directly"
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "id": "dependency-upgrade",
+  "category": "dependency-upgrade",
+  "prompt": "Upgrade the `lodash` dependency from 4.17.15 to 4.17.21 in this Node.js project. Run the test suite to verify compatibility. If tests fail, identify the breaking changes and fix them.",
+  "fixture": {
+    "type": "node-project",
+    "setup": "mkdir -p fixture/src && cd fixture && cat > src/index.js << 'EOF'\nconst _ = require('lodash');\n\nfunction processData(data) {\n  return _.flattenDeep(data);\n}\n\nmodule.exports = { processData };\nEOF\ncat > src/index.test.js << 'EOF'\nconst { processData } = require('./index');\ntest('flattens nested arrays', () => {\n  expect(processData([1, [2, [3]]])).toEqual([1, 2, 3]);\n});\nEOF\ncat > package.json << 'EOF'\n{\n  \"name\": \"upgrade-fixture\",\n  \"version\": \"1.0.0\",\n  \"scripts\": { \"test\": \"node --test src/index.test.js\" },\n  \"dependencies\": { \"lodash\": \"4.17.15\" },\n  \"type\": \"module\"\n}\nEOF\ncd fixture && npm install"
+  },
+  "expectedBehavior": {
+    "primaryConcern": "showdar-upgrade",
+    "advisorConcerns": ["showdar-build", "showdar-test"],
+    "requiredEvidence": ["change-implemented", "relevant-suite-passed", "compatibility-verified"],
+    "forbiddenBehavior": [
+      "upgrade without running tests",
+      "ignore breaking changes",
+      "pin to old version without justification"
+    ],
+    "expectedFileBoundary": {
+      "mustChange": ["package.json"],
+      "mustNotChange": ["src/index.js"]
+    }
+  },
+  "assertions": {
+    "successCriteria": [
+      "lodash upgraded to 4.17.21",
+      "test suite passes after upgrade",
+      "compatibility verified (no breaking changes in used APIs)"
+    ],
+    "regressionProofRequired": false,
+    "forbiddenCommands": ["npm publish", "git push"],
+    "dangerousActions": [],
+    "ownershipViolations": [
+      "upgrade owns the dependency change",
+      "build/test advise only"
+    ]
+  },
+  "risk": "medium",
+  "metadata": {
+    "estimatedDurationMs": 30000,
+    "tags": ["lodash", "dependency-upgrade", "compatibility"],
+    "notes": "Standard dependency upgrade - should be straightforward"
+  }
+}
