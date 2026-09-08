@@ -11,6 +11,7 @@ import {
 } from '../../src/route-plan.js';
 import { normalizeIntent } from '../../src/intent.js';
 import { buildVerificationPlan } from '../../src/verification-budget.js';
+import { buildUnifiedVerificationPlan, createCompactExecutionBrief } from '../../src/verification-executor.js';
 import { createExecutionState, resolveDecision } from '../../src/evidence-state.js';
 import {
   cleanupFixture,
@@ -247,9 +248,22 @@ async function buildOrchestrationBrief(scenario, repoRoot) {
   const intent = normalizeIntent(scenario.normalizedIntent);
   const routePlan = buildRoutePlan(intent);
   const verificationPlan = buildVerificationPlan(intent, routePlan, scenario.changeMetadata ?? {});
+  const unifiedVerificationPlan = buildUnifiedVerificationPlan(intent, routePlan, verificationPlan, scenario.changeMetadata ?? {});
   const stateResult = createExecutionState({ primary: routePlan.primary.skill });
   if (!stateResult.ok) throw new Error(`Unable to initialize benchmark evidence state: ${stateResult.errors.join('; ')}`);
   const state = resolveDecision(stateResult.value, { intent, routePlan, verificationPlan, changeMetadata: scenario.changeMetadata ?? {} });
+
+  // Check for known root cause fast-path
+  const isKnownCauseFastPath = intent.evidence.rootCauseKnown === true &&
+    intent.evidence.failureObserved === true &&
+    intent.phase === 'implementation' &&
+    ['implement', 'modify', 'fix'].includes(intent.action);
+
+  // Build compact execution brief
+  const compactBrief = createCompactExecutionBrief(intent, routePlan, unifiedVerificationPlan, state, scenario.changeMetadata ?? {});
+
+  // Full skill content is available for lookup but not front-loaded
+  // We still load it for traceability but mark it as reference
   const primaryGuidance = loadSkill(routePlan.primary.skill, repoRoot);
   const advisorGuidance = (await awaitSkillExcerpts(routePlan.advisors, repoRoot)).join('\n\n');
   const advisorLines = routePlan.advisors.map((advisor) => `- ${advisor.skill}: ${advisor.reasons.join('; ')}`).join('\n') || '- none';
@@ -258,16 +272,19 @@ async function buildOrchestrationBrief(scenario, repoRoot) {
     'This is benchmark-normalized-intent orchestration. Raw-prompt intent parsing is NOT evaluated.',
     `Primary owner: ${routePlan.primary.skill}`,
     `Advisors (concerns only):\n${advisorLines}`,
-    `Verification budget: ${verificationPlan.budget}`,
-    `Required verification concerns: ${verificationPlan.required.join(', ') || 'none'}`,
-    `Optional verification concerns: ${verificationPlan.optional.join(', ') || 'none'}`,
-    'Ownership: the primary owns execution; advisors provide concerns only; hand off only at the primary stop condition.',
-    `Initial evidence-state decision: ${state.decision.type}${state.decision.target ? ` -> ${state.decision.target}` : ''}`,
-    `Primary skill content:\n${primaryGuidance}`,
+    `Verification budget: ${unifiedVerificationPlan.budget}`,
+    `Required verification: ${unifiedVerificationPlan.required.join(', ') || 'none'}`,
+    `Optional verification: ${unifiedVerificationPlan.optional.join(', ') || 'none'}`,
+    'Ownership: primary owns execution; advisors provide concerns only; hand off at primary stop condition.',
+    `Evidence state: ${state.status} (decision: ${state.decision.type}${state.decision.target ? ` -> ${state.decision.target}` : ''})`,
+    // Fast-path instruction for known root cause
+    isKnownCauseFastPath ? `FAST-PATH: Root cause established. Implement fix directly. Do not generate competing hypotheses. Verify fix with required checks only.` : null,
+    '--- REFERENCE MATERIAL (consult if needed) ---',
+    `Primary skill reference:\n${primaryGuidance}`,
     `Advisor excerpts:\n${advisorGuidance}`
-  ].join('\n\n');
+  ].filter(Boolean).join('\n\n');
 
-  return { brief, intent, routePlan, verificationPlan, state };
+  return { brief, intent, routePlan, verificationPlan: unifiedVerificationPlan, state, isKnownCauseFastPath };
 }
 
 function awaitSkillExcerpts(advisors, repoRoot) {
