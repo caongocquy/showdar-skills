@@ -73,17 +73,28 @@ async function saveResults(outputDir, results, scenarioScores, summary, report) 
   console.log(`Results saved to ${outputDir}`);
 }
 
-export async function runAllVariants(scenarioIds = null, outputDir = null) {
+export async function runAllVariants(scenarioIds = null, outputDir = null, options = {}) {
   const variants = ['baseline', 'legacy-showdar', 'showdar-0.3'];
   const allResults = {};
   const allReports = {};
-  
-  for (const variant of variants) {
-    console.log(`\n=== Running variant: ${variant} ===`);
-    const { results, scenarioScores, summary, report } = await runBenchmark({ variant, scenarioIds, outputDir });
-    allResults[variant] = { results, scenarioScores, summary };
-    allReports[variant] = report;
+
+  try {
+    for (const variant of variants) {
+      console.log(`\n=== Running variant: ${variant} ===`);
+      const { results, scenarioScores, summary, report } = await runBenchmark({
+        variant,
+        scenarios: scenarioIds,
+        outputDir,
+        adapter: options.adapter ?? null
+      });
+      allResults[variant] = { results, scenarioScores, summary };
+      allReports[variant] = report;
+    }
+  } finally {
+    await options.adapter?.close?.();
   }
-  
-  return { allResults, allReports };
+
+  const results = Object.values(allResults).flatMap((variant) => variant.results);
+  const scenarioScores = Object.values(allResults).flatMap((variant) => variant.scenarioScores);
+  return { allResults, allReports, results, scenarioScores, report: generateReport(results, scenarioScores) };
 }

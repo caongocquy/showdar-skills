@@ -401,6 +401,8 @@ describe('Benchmark - Scoring', () => {
     const report = generateReport(results, scenarioScores);
     assert.ok(report.includes('AGENT BENCHMARK REPORT'));
     assert.ok(report.includes('showdar-0.3'));
+    assert.ok(report.includes('HardFail'));
+    assert.ok(report.includes('VerifyOK'));
   });
 });
 
@@ -485,5 +487,15 @@ describe('Benchmark - Integration', () => {
     assert.ok(result.summary['showdar-0.3']);
     assert.strictEqual(result.results[0].overall, result.scenarioScores[0].overall);
     assert.ok(Number.isFinite(result.summary['showdar-0.3'].averageScore));
+  });
+
+  it('passes scenario selectors through all variants', async () => {
+    const { runAllVariants } = await import('../lib/runner.js');
+    const result = await runAllVariants(['low-risk-implementation'], null, {
+      adapter: createMockAdapter('showdar-0.3')
+    });
+
+    assert.strictEqual(result.results.length, 3);
+    assert.ok(result.results.every((entry) => entry.scenario === 'low-risk-implementation'));
   });
 });

@@ -2,9 +2,11 @@
   "id": "security-webhook-implementation",
   "category": "security-implementation",
   "prompt": "Implement a Stripe webhook handler in `src/webhook.js` that verifies Stripe signatures using the `stripe-signature` header. The handler must validate the timestamp tolerance (5 minutes) and reject replay attacks. Add regression tests for signature verification, timestamp validation, and replay rejection.",
+  "normalizedIntent": { "phase": "implementation", "action": "implement", "secondaryActions": ["test"], "object": "api", "risks": ["security", "regression"], "mutation": "local-write", "evidence": { "rootCauseKnown": null, "behaviorDefined": true, "failureObserved": false } },
+  "changeMetadata": { "scope": "medium", "crossBoundary": true },
   "fixture": {
     "type": "node-project",
-    "setup": "mkdir -p fixture/src && cd fixture && cat > src/webhook.js << 'EOF'\nconst crypto = require('crypto');\n\nfunction verifyStripeSignature(payload, signature, secret) {\n  // TODO: implement\n  return true;\n}\n\nfunction handleWebhook(req, res) {\n  // TODO: implement\n  res.status(200).send('ok');\n}\n\nmodule.exports = { verifyStripeSignature, handleWebhook };\nEOF\ncat > src/webhook.test.js << 'EOF'\nconst { verifyStripeSignature, handleWebhook } = require('./webhook');\n// Tests will be added by the agent\nEOF\ncat > package.json << 'EOF'\n{\n  \"name\": \"webhook-fixture\",\n  \"version\": \"1.0.0\",\n  \"scripts\": { \"test\": \"node --test src/webhook.test.js\" },\n  \"type\": \"module\"\n}\nEOF"
+    "setup": "mkdir -p fixture/src && cd fixture && cat > src/webhook.js << 'EOF'\nconst crypto = require('crypto');\n\nfunction verifyStripeSignature(payload, signature, secret) {\n  // TODO: implement\n  return true;\n}\n\nfunction handleWebhook(req, res) {\n  // TODO: implement\n  res.status(200).send('ok');\n}\n\nmodule.exports = { verifyStripeSignature, handleWebhook };\nEOF\ncat > src/webhook.test.js << 'EOF'\nconst { verifyStripeSignature, handleWebhook } = require('./webhook');\n// Tests will be added by the agent\nEOF\ncat > package.json << 'EOF'\n{\n  \"name\": \"webhook-fixture\",\n  \"version\": \"1.0.0\",\n  \"scripts\": { \"test\": \"node --test src/webhook.test.js\" },\n  \"dependencies\": { \"stripe\": \"^14.0.0\" },\n  \"type\": \"module\"\n}\nEOF"
   },
   "expectedBehavior": {
     "primaryConcern": "showdar-build",
@@ -18,7 +20,7 @@
     ],
     "expectedFileBoundary": {
       "mustChange": ["src/webhook.js", "src/webhook.test.js"],
-      "mustNotChange": ["package.json"]
+      "mustNotChange": []
     }
   },
   "assertions": {

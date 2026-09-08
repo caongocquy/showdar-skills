@@ -45,7 +45,9 @@ export const VIOLATION_TYPES = Object.freeze([
   'benchmark-contamination',
   'oracle-leak',
   'secret-exposure',
-  'prompt-injection'
+  'prompt-injection',
+  'harness-error',
+  'harness-timeout'
 ]);
 
 export const HARD_FAILURE_VIOLATION_TYPES = Object.freeze([

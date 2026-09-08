@@ -1,7 +1,7 @@
 import { promises as fs } from 'fs';
 import { tmpdir } from 'os';
-import { basename, dirname, join } from 'path';
-import { randomBytes } from 'crypto';
+import { basename, dirname, join, relative } from 'path';
+import { createHash, randomBytes } from 'crypto';
 import { execSync } from 'child_process';
 
 export async function createFixture(scenario) {
@@ -10,7 +10,7 @@ export async function createFixture(scenario) {
   
   await fs.mkdir(fixtureDir, { recursive: true });
   
-  const setupScript = scenario.fixture.setup;
+  const setupScript = scenario.fixture.setup?.replace(/\ncd fixture && /g, '\n');
   if (setupScript) {
     try {
       execSync(setupScript, { 
@@ -46,6 +46,32 @@ export async function copyFixture(sourceDir, label = 'copy') {
   const destination = join(tmpdir(), `bench-${label}-${randomBytes(4).toString('hex')}`);
   await fs.cp(sourceDir, destination, { recursive: true });
   return destination;
+}
+
+export async function fingerprintFixture(fixtureDir) {
+  const files = {};
+
+  async function visit(currentDir) {
+    const entries = await fs.readdir(currentDir, { withFileTypes: true });
+    for (const entry of entries.sort((a, b) => a.name.localeCompare(b.name))) {
+      if (entry.name === '.git' || entry.name === 'node_modules' || entry.name === '.npm') continue;
+      const fullPath = join(currentDir, entry.name);
+      const relativeName = relative(fixtureDir, fullPath);
+      if (relativeName === 'Library' || relativeName.startsWith('Library/Application Support/rtk/')) continue;
+      if (entry.isDirectory()) {
+        await visit(fullPath);
+      } else if (entry.isFile()) {
+        const content = await fs.readFile(fullPath);
+        files[relativeName] = createHash('sha256').update(content).digest('hex');
+      }
+    }
+  }
+
+  await visit(fixtureDir);
+  const digest = createHash('sha256')
+    .update(JSON.stringify(files))
+    .digest('hex');
+  return { digest, files };
 }
 
 export async function cleanupFixture(fixtureDir) {

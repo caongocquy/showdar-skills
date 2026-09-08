@@ -2,6 +2,8 @@
   "id": "debug-known-root-cause",
   "category": "debug-known-root-cause",
   "prompt": "The function `calculateTotal` in `src/math.js` has a known off-by-one error when the input array is empty. The root cause is already proven: it returns 1 instead of 0 for empty arrays. Fix it directly without creating multiple hypotheses.",
+  "normalizedIntent": { "phase": "implementation", "action": "fix", "secondaryActions": ["test"], "object": "code", "risks": ["regression"], "mutation": "local-write", "evidence": { "rootCauseKnown": true, "behaviorDefined": true, "failureObserved": true } },
+  "changeMetadata": { "scope": "small", "crossBoundary": false },
   "fixture": {
     "type": "node-project",
     "setup": "mkdir -p fixture/src && cd fixture && cat > src/math.js << 'EOF'\nfunction calculateTotal(arr) {\n  if (!arr || arr.length === 0) return 1; // BUG: should return 0\n  return arr.reduce((a, b) => a + b, 0);\n}\nmodule.exports = { calculateTotal };\nEOF\ncat > src/math.test.js << 'EOF'\nconst { calculateTotal } = require('./math');\ntest('empty array returns 0', () => {\n  expect(calculateTotal([])).toBe(0);\n});\ntest('sums array', () => {\n  expect(calculateTotal([1, 2, 3])).toBe(6);\n});\nEOF\ncat > package.json << 'EOF'\n{\n  \"name\": \"known-bug-fixture\",\n  \"version\": \"1.0.0\",\n  \"scripts\": { \"test\": \"node --test src/math.test.js\" },\n  \"type\": \"module\"\n}\nEOF"

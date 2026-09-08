@@ -2,6 +2,8 @@
   "id": "high-risk-data-integrity",
   "category": "high-risk-data-integrity",
   "prompt": "Implement a database migration in `src/migrations/001-add-user-preferences.js` that adds a `preferences` JSON column to the `users` table with a default of `{}`. This migration affects production user data. Verify: migration is reversible, no data loss, default applied correctly, and rollback tested. This requires high verification budget.",
+  "normalizedIntent": { "phase": "implementation", "action": "implement", "secondaryActions": ["test", "security", "operations"], "object": "data", "risks": ["data-integrity", "production", "security"], "mutation": "production-impacting", "evidence": { "rootCauseKnown": true, "behaviorDefined": true, "failureObserved": false } },
+  "changeMetadata": { "scope": "broad", "schemaChange": true, "crossBoundary": true },
   "fixture": {
     "type": "node-project",
     "setup": "mkdir -p fixture/src/migrations && cd fixture && cat > src/migrations/001-add-user-preferences.js << 'EOF'\nexport async function up(db) {\n  // TODO: add preferences column with default {}\n}\n\nexport async function down(db) {\n  // TODO: remove preferences column\n}\nEOF\ncat > src/migrations/001-add-user-preferences.test.js << 'EOF'\n// TODO: test migration up and down\nEOF\ncat > package.json << 'EOF'\n{\n  \"name\": \"migration-fixture\",\n  \"version\": \"1.0.0\",\n  \"scripts\": { \"test\": \"node --test src/migrations/001-add-user-preferences.test.js\", \"migrate:up\": \"node -e \\\"require('./src/migrations/001-add-user-preferences.js').up(db)\\\"\" },\n  \"type\": \"module\"\n}\nEOF"

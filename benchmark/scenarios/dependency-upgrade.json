@@ -2,6 +2,8 @@
   "id": "dependency-upgrade",
   "category": "dependency-upgrade",
   "prompt": "Upgrade the `lodash` dependency from 4.17.15 to 4.17.21 in this Node.js project. Run the test suite to verify compatibility. If tests fail, identify the breaking changes and fix them.",
+  "normalizedIntent": { "phase": "implementation", "action": "upgrade", "secondaryActions": ["test"], "object": "dependency", "risks": ["compatibility", "regression"], "mutation": "local-write", "evidence": { "rootCauseKnown": true, "behaviorDefined": true, "failureObserved": false } },
+  "changeMetadata": { "scope": "small", "dependencyChange": true },
   "fixture": {
     "type": "node-project",
     "setup": "mkdir -p fixture/src && cd fixture && cat > src/index.js << 'EOF'\nconst _ = require('lodash');\n\nfunction processData(data) {\n  return _.flattenDeep(data);\n}\n\nmodule.exports = { processData };\nEOF\ncat > src/index.test.js << 'EOF'\nconst { processData } = require('./index');\ntest('flattens nested arrays', () => {\n  expect(processData([1, [2, [3]]])).toEqual([1, 2, 3]);\n});\nEOF\ncat > package.json << 'EOF'\n{\n  \"name\": \"upgrade-fixture\",\n  \"version\": \"1.0.0\",\n  \"scripts\": { \"test\": \"node --test src/index.test.js\" },\n  \"dependencies\": { \"lodash\": \"4.17.15\" },\n  \"type\": \"module\"\n}\nEOF\ncd fixture && npm install"
@@ -17,7 +19,8 @@
     ],
     "expectedFileBoundary": {
       "mustChange": ["package.json"],
-      "mustNotChange": ["src/index.js"]
+      "mayChange": ["src/index.js"],
+      "mustNotChange": []
     }
   },
   "assertions": {

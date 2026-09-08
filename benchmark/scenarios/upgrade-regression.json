@@ -2,6 +2,8 @@
   "id": "upgrade-regression",
   "category": "upgrade-regression",
   "prompt": "After upgrading `express` from 4.18.0 to 4.19.0, the `/api/users` endpoint returns 404 for valid requests. The upgrade was done by another team member. Diagnose the regression and fix it. The upgrade skill should remain an advisor for compatibility context.",
+  "normalizedIntent": { "phase": "diagnosis", "action": "investigate", "secondaryActions": ["upgrade"], "object": "api", "risks": ["compatibility", "regression"], "mutation": "local-write", "evidence": { "rootCauseKnown": false, "behaviorDefined": true, "failureObserved": true } },
+  "changeMetadata": { "scope": "medium", "crossBoundary": true, "dependencyChange": true },
   "fixture": {
     "type": "node-project",
     "setup": "mkdir -p fixture/src && cd fixture && cat > src/app.js << 'EOF'\nexpress = require('express');\nconst app = express();\n\napp.use(express.json());\n\n// BUG: express 4.19 changed path matching - need exact match or trailing slash\napp.get('/api/users', (req, res) => {\n  res.json([{ id: 1, name: 'Alice' }]);\n});\n\nmodule.exports = app;\nEOF\ncat > src/app.test.js << 'EOF'\nconst request = require('supertest');\nconst app = require('./app');\n\ntest('GET /api/users returns users', async () => {\n  const res = await request(app).get('/api/users');\n  expect(res.status).toBe(200);\n  expect(res.body).toHaveLength(1);\n});\nEOF\ncat > package.json << 'EOF'\n{\n  \"name\": \"upgrade-regression-fixture\",\n  \"version\": \"1.0.0\",\n  \"scripts\": { \"test\": \"node --test src/app.test.js\" },\n  \"dependencies\": { \"express\": \"4.18.0\", \"supertest\": \"^6.3.0\" },\n  \"type\": \"module\"\n}\nEOF\ncd fixture && npm install && npm install express@4.19.0"

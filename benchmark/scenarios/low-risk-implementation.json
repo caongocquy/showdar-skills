@@ -2,6 +2,8 @@
   "id": "low-risk-implementation",
   "category": "low-risk-implementation",
   "prompt": "Add a `formatDate` utility function to `src/utils/date.js` that formats a Date object as 'YYYY-MM-DD'. This is a simple, isolated utility with no side effects. Do not over-verify - targeted tests are sufficient.",
+  "normalizedIntent": { "phase": "implementation", "action": "implement", "secondaryActions": ["test"], "object": "code", "risks": [], "mutation": "local-write", "evidence": { "rootCauseKnown": null, "behaviorDefined": true, "failureObserved": false } },
+  "changeMetadata": { "scope": "small", "crossBoundary": false },
   "fixture": {
     "type": "node-project",
     "setup": "mkdir -p src/utils && cat > src/utils/date.js << 'EOF'\n// TODO: add formatDate function\nEOF\ncat > src/utils/date.test.js << 'EOF'\n// TODO: add tests for formatDate\nEOF\ncat > package.json << 'EOF'\n{\n  \"name\": \"low-risk-fixture\",\n  \"version\": \"1.0.0\",\n  \"scripts\": { \"test\": \"node --test src/utils/date.test.js\" },\n  \"type\": \"module\"\n}\nEOF"

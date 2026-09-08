@@ -2,9 +2,11 @@
   "id": "recovery-interrupted",
   "category": "recovery-interrupted",
   "prompt": "A previous implementation session was interrupted while adding a new `exportData` function to `src/export.js`. The session was implementing the function but didn't complete. Recover the context from the repository evidence and complete the implementation. The function should export data as CSV.",
+  "normalizedIntent": { "phase": "recovery", "action": "recover", "secondaryActions": ["implement", "test"], "object": "code", "risks": ["regression"], "mutation": "local-write", "evidence": { "rootCauseKnown": null, "behaviorDefined": true, "failureObserved": false } },
+  "changeMetadata": { "scope": "medium", "crossBoundary": false },
   "fixture": {
     "type": "git-repo",
-    "setup": "mkdir -p fixture/src && cd fixture && git init && git config user.email 'test@test.com' && git config user.name 'Test' && cat > src/export.js << 'EOF'\nconst { parse } = require('csv-parse/sync');\nconst fs = require('fs');\n\nfunction importData(csvString) {\n  return parse(csvString, { columns: true });\n}\n\n// TODO: implement exportData - session interrupted here\n\nmodule.exports = { importData };\nEOF\ncat > src/export.test.js << 'EOF'\nconst { importData } = require('./export');\ntest('imports CSV', () => {\n  const result = importData('name,age\\nAlice,30');\n  expect(result).toEqual([{ name: 'Alice', age: '30' }]);\n});\n// TODO: add test for exportData\nEOF\ncat > package.json << 'EOF'\n{\n  \"name\": \"recovery-fixture\",\n  \"version\": \"1.0.0\",\n  \"scripts\": { \"test\": \"node --test src/export.test.js\" },\n  \"dependencies\": { \"csv-parse\": \"^5.5.0\" },\n  \"type\": \"module\"\n}\nEOF\ncd fixture && git add . && git commit -m 'Initial: importData implemented'"
+    "setup": "mkdir -p fixture/src && cd fixture && git init && git config user.email 'test@test.com' && git config user.name 'Test' && cat > src/export.js << 'EOF'\nconst { parse } = require('csv-parse/sync');\nconst { stringify } = require('csv-stringify/sync');\nconst fs = require('fs');\n\nfunction importData(csvString) {\n  return parse(csvString, { columns: true });\n}\n\n// TODO: implement exportData - session interrupted here\n\nmodule.exports = { importData };\nEOF\ncat > src/export.test.js << 'EOF'\nconst { importData } = require('./export');\ntest('imports CSV', () => {\n  const result = importData('name,age\\nAlice,30');\n  expect(result).toEqual([{ name: 'Alice', age: '30' }]);\n});\n// TODO: add test for exportData\nEOF\ncat > package.json << 'EOF'\n{\n  \"name\": \"recovery-fixture\",\n  \"version\": \"1.0.0\",\n  \"scripts\": { \"test\": \"node --test src/export.test.js\" },\n  \"dependencies\": { \"csv-parse\": \"^5.5.0\", \"csv-stringify\": \"^6.4.0\" },\n  \"type\": \"module\"\n}\nEOF\ncd fixture && git add . && git commit -m 'Initial: importData implemented'"
   },
   "expectedBehavior": {
     "primaryConcern": "showdar-recover",
@@ -17,7 +19,7 @@
     ],
     "expectedFileBoundary": {
       "mustChange": ["src/export.js", "src/export.test.js"],
-      "mustNotChange": ["package.json"]
+      "mustNotChange": []
     }
   },
   "assertions": {

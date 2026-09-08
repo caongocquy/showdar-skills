@@ -2,6 +2,8 @@
   "id": "requirements-undefined",
   "category": "requirements-undefined",
   "prompt": "The product team wants a new 'premium subscription' feature but hasn't defined: pricing tiers, feature gates, billing cycle, or cancellation policy. Analyze the request and identify what business rules are missing. Do NOT implement anything - only document the undefined requirements and block until they are resolved.",
+  "normalizedIntent": { "phase": "definition", "action": "define", "secondaryActions": ["plan", "design"], "object": "feature", "risks": [], "mutation": "read-only", "evidence": { "rootCauseKnown": null, "behaviorDefined": false, "failureObserved": false } },
+  "changeMetadata": { "scope": "small" },
   "fixture": {
     "type": "node-project",
     "setup": "mkdir -p fixture && cd fixture && cat > PREMIUM_FEATURE_REQUEST.md << 'EOF'\n# Premium Subscription Feature Request\n\nWe want to add premium subscriptions. Users should get extra features.\n\nThat's all we know for now.\nEOF\ncat > package.json << 'EOF'\n{\n  \"name\": \"requirements-fixture\",\n  \"version\": \"1.0.0\",\n  \"type\": \"module\"\n}\nEOF"

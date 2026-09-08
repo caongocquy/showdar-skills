@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Showdar Agent Benchmark Scenario",
   "type": "object",
-  "required": ["id", "category", "prompt", "fixture", "expectedBehavior", "assertions", "risk"],
+  "required": ["id", "category", "prompt", "fixture", "normalizedIntent", "expectedBehavior", "assertions", "risk"],
   "additionalProperties": false,
   "properties": {
     "id": {
@@ -35,6 +35,48 @@
       "type": "string",
       "minLength": 10,
       "description": "Natural language task prompt given to the agent"
+    },
+    "normalizedIntent": {
+      "type": "object",
+      "required": ["phase", "action", "secondaryActions", "object", "risks", "mutation", "evidence"],
+      "additionalProperties": false,
+      "properties": {
+        "phase": {
+          "type": "string",
+          "enum": ["discovery", "definition", "planning", "design", "implementation", "diagnosis", "verification", "delivery", "operations", "recovery", "repository"]
+        },
+        "action": { "type": "string", "minLength": 1 },
+        "secondaryActions": { "type": "array", "items": { "type": "string" } },
+        "object": { "type": "string", "minLength": 1 },
+        "risks": {
+          "type": "array",
+          "items": { "type": "string", "enum": ["security", "compatibility", "regression", "data-integrity", "production", "performance", "operations"] }
+        },
+        "mutation": { "type": "string", "enum": ["read-only", "local-write", "remote-write", "production-impacting"] },
+        "evidence": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "rootCauseKnown": { "type": ["boolean", "null"] },
+            "behaviorDefined": { "type": ["boolean", "null"] },
+            "failureObserved": { "type": ["boolean", "null"] }
+          }
+        }
+      },
+      "description": "Benchmark-only normalized task semantics used to exercise current 0.3 orchestration; raw-prompt parsing is not evaluated"
+    },
+    "changeMetadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "scope": { "type": "string", "enum": ["small", "medium", "broad"] },
+        "filesChangedEstimate": { "type": "integer", "minimum": 0 },
+        "crossBoundary": { "type": "boolean" },
+        "publicApiChange": { "type": "boolean" },
+        "schemaChange": { "type": "boolean" },
+        "dependencyChange": { "type": "boolean" }
+      },
+      "description": "Benchmark-only change metadata required by the current verification planner"
     },
     "fixture": {
       "type": "object",

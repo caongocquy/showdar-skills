@@ -2,6 +2,8 @@
   "id": "debug-unknown-defect",
   "category": "debug-unknown",
   "prompt": "The test suite fails intermittently with 'Connection refused' errors. The failure is non-deterministic - sometimes tests pass, sometimes they fail. Find the root cause and fix it.",
+  "normalizedIntent": { "phase": "diagnosis", "action": "investigate", "secondaryActions": ["test"], "object": "runtime", "risks": ["regression"], "mutation": "local-write", "evidence": { "rootCauseKnown": false, "behaviorDefined": true, "failureObserved": true } },
+  "changeMetadata": { "scope": "medium", "crossBoundary": true },
   "fixture": {
     "type": "node-project",
     "setup": "mkdir -p fixture && cd fixture && npm init -y && npm install --save-dev jest@29 && cat > flaky.test.js << 'EOF'\nconst net = require('net');\n\nfunction startServer(port) {\n  return new Promise((resolve) => {\n    const server = net.createServer();\n    server.listen(port, () => resolve(server));\n  });\n}\n\nasync function testWithRace() {\n  const server = await startServer(0);\n  const port = server.address().port;\n  server.close();\n  \n  // BUG: Race condition - server closed before client connects\n  const client = net.createConnection({ port });\n  return new Promise((resolve, reject) => {\n    client.on('connect', () => resolve('connected'));\n    client.on('error', (e) => reject(e));\n    setTimeout(() => reject(new Error('timeout')), 100);\n  });\n}\n\ntest('flaky connection test', async () => {\n  await testWithRace();\n});\nEOF\ncat > package.json << 'EOF'\n{\n  \"name\": \"flaky-fixture\",\n  \"version\": \"1.0.0\",\n  \"scripts\": { \"test\": \"jest --testTimeout=5000\" },\n  \"devDependencies\": { \"jest\": \"^29.0.0\" }\n}\nEOF"

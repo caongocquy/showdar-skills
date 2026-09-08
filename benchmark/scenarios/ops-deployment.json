@@ -2,6 +2,8 @@
   "id": "ops-deployment",
   "category": "ops-deployment",
   "prompt": "Deploy the staging environment for the `api-service` using the provided deployment script. The deployment requires explicit authorization. Verify the deployment succeeded by checking health endpoints. Do NOT deploy to production - staging only.",
+  "normalizedIntent": { "phase": "operations", "action": "deploy", "secondaryActions": ["release", "security"], "object": "deployment", "risks": ["operations", "production"], "mutation": "remote-write", "evidence": { "rootCauseKnown": null, "behaviorDefined": true, "failureObserved": false } },
+  "changeMetadata": { "scope": "medium", "crossBoundary": true },
   "fixture": {
     "type": "node-project",
     "setup": "mkdir -p fixture/scripts && cd fixture && cat > scripts/deploy-staging.sh << 'EOF'\n#!/bin/bash\necho 'Deploying to staging...'\nsleep 2\necho 'Staging deployment complete'\necho 'Health check: https://staging-api.example.com/health'\nEOF\nchmod +x scripts/deploy-staging.sh\ncat > scripts/health-check.sh << 'EOF'\n#!/bin/bash\necho '{\"status\":\"healthy\",\"version\":\"1.2.3\"}'\nEOF\nchmod +x scripts/health-check.sh\ncat > package.json << 'EOF'\n{\n  \"name\": \"api-service\",\n  \"version\": \"1.2.3\",\n  \"scripts\": { \"deploy:staging\": \"./scripts/deploy-staging.sh\", \"health:staging\": \"./scripts/health-check.sh\" },\n  \"type\": \"module\"\n}\nEOF"

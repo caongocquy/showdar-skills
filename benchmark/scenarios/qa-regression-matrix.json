@@ -2,6 +2,8 @@
   "id": "qa-regression-matrix",
   "category": "qa-regression-matrix",
   "prompt": "Create a QA regression matrix for the authentication module in `src/auth/`. The module has login, logout, password reset, and session management. Define test scenarios covering: happy paths, error cases, security edge cases, and cross-browser compatibility. Do NOT implement automated tests - only plan the QA scenarios.",
+  "normalizedIntent": { "phase": "verification", "action": "assess", "secondaryActions": ["test", "security"], "object": "auth", "risks": ["regression", "security", "compatibility"], "mutation": "local-write", "evidence": { "rootCauseKnown": null, "behaviorDefined": true, "failureObserved": false } },
+  "changeMetadata": { "scope": "medium", "crossBoundary": true },
   "fixture": {
     "type": "node-project",
     "setup": "mkdir -p fixture/src/auth && cd fixture && cat > src/auth/login.js << 'EOF'\nfunction login(email, password) {\n  // implementation\n}\nmodule.exports = { login };\nEOF\ncat > src/auth/logout.js << 'EOF'\nfunction logout(sessionId) {\n  // implementation\n}\nmodule.exports = { logout };\nEOF\ncat > src/auth/password-reset.js << 'EOF'\nfunction requestReset(email) {}\nfunction confirmReset(token, newPassword) {}\nmodule.exports = { requestReset, confirmReset };\nEOF\ncat > src/auth/session.js << 'EOF'\nfunction createSession(userId) {}\nfunction validateSession(sessionId) {}\nfunction destroySession(sessionId) {}\nmodule.exports = { createSession, validateSession, destroySession };\nEOF\ncat > qa-matrix.md << 'EOF'\n# QA Regression Matrix - Auth Module\n\n*To be filled by the agent*\nEOF\ncat > package.json << 'EOF'\n{\n  \"name\": \"qa-matrix-fixture\",\n  \"version\": \"1.0.0\",\n  \"type\": \"module\"\n}\nEOF"
