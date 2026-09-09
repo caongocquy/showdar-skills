@@ -20,6 +20,45 @@ const CHECK_TO_EVIDENCE_MAP = {
 };
 
 /**
+ * Verification execution ordering policy.
+ * Lower number = higher priority (run first).
+ * This is EXECUTION guidance, not semantic requirement.
+ * Semantic required checks remain authoritative in verificationPlan.required.
+ */
+const EXECUTION_ORDER_PRIORITY = {
+  // Highest diagnostic value, lowest cost
+  'targeted-test': 10,
+  // Specific regression proof for the change
+  'regression': 20,
+  // Safety-sensitive concerns relevant to the specific change
+  'security': 30,
+  'compatibility': 30,
+  // Broader suite - run after targeted
+  'relevant-suite': 40,
+  // Type checking - usually fast
+  'typecheck': 50,
+  // Build - typically more expensive
+  'build': 60,
+  // Package / release / deployment - run last if required
+  'package': 70,
+  'release-readiness': 70,
+  'deployment-safety': 70,
+  // Optional quality checks
+  'lint': 80,
+};
+
+/**
+ * Checks that are safety-sensitive and should not be skipped or reordered
+ * based solely on priority.
+ */
+const SAFETY_SENSITIVE_CHECKS = new Set([
+  'security',
+  'deployment-safety',
+  'regression',
+  'compatibility',
+]);
+
+/**
  * Subsumption rules: when one check can replace another
  * Key: checking check, Value: array of checks it subsumes
  */
@@ -75,6 +114,105 @@ function checkSubsumes(checkA, checkB, intent, routePlan, metadata) {
   }
 
   return false;
+}
+
+/**
+ * Compute deterministic verification execution order.
+ * Semantic required checks remain the authority; this only orders execution.
+ * @param {Array<string>} requiredChecks - Semantic required checks from unified plan
+ * @param {Object} intent - Normalized intent
+ * @param {Object} routePlan - Current route plan
+ * @returns {Array<string>} Checks in execution order
+ */
+function computeVerificationExecutionOrder(requiredChecks, intent, routePlan) {
+  // Sort by priority, then by original semantic order for stability
+  const sorted = [...requiredChecks].sort((a, b) => {
+    const priorityA = EXECUTION_ORDER_PRIORITY[a] ?? 999;
+    const priorityB = EXECUTION_ORDER_PRIORITY[b] ?? 999;
+    if (priorityA !== priorityB) return priorityA - priorityB;
+    // Stable sort: preserve original semantic order for same priority
+    return requiredChecks.indexOf(a) - requiredChecks.indexOf(b);
+  });
+  return sorted;
+}
+
+/**
+ * One-pass verification policy: represent execution state to communicate
+ * which checks have succeeded and should not be repeated without relevant mutation.
+ * @param {Array<string>} executionOrder - Checks in execution order
+ * @param {Object} state - Current execution state with verification.completed
+ * @param {Object} intent - Normalized intent
+ * @returns {Object} Policy guidance for each check
+ */
+function computeOnePassVerificationPolicy(executionOrder, state, intent) {
+  const completed = new Set(state.verification?.completed ?? []);
+  const failed = new Set(state.verification?.failed ?? []);
+
+  return executionOrder.map(check => {
+    const evidenceKind = mapCheckToEvidence(check);
+    const hasVerified = state.evidence?.some(e => e.kind === evidenceKind && e.status === 'verified') ?? false;
+    const hasCompleted = completed.has(check);
+    const hasFailed = failed.has(check);
+
+    let shouldRun = true;
+    let reason = '';
+
+    if (hasFailed) {
+      // Failed check - should rerun after fix
+      shouldRun = true;
+      reason = 'previous failure, rerun after fix';
+    } else if (hasVerified || hasCompleted) {
+      // Already verified/completed - do not rerun unless relevant mutation
+      shouldRun = false;
+      reason = 'already verified, skip unless relevant files changed';
+    } else {
+      // Not yet run
+      shouldRun = true;
+      reason = 'not yet executed';
+    }
+
+    return {
+      check,
+      shouldRun,
+      reason,
+      evidenceKind,
+      priority: EXECUTION_ORDER_PRIORITY[check] ?? 999,
+    };
+  });
+}
+
+/**
+ * Generate repeat-control guidance for the execution brief.
+ * Communicates: successful check + no relevant subsequent mutation → do not rerun.
+ * @param {Object} onePassPolicy - Output from computeOnePassVerificationPolicy
+ * @param {Object} state - Current execution state
+ * @returns {string} Human-readable repeat control guidance
+ */
+function createRepeatControlGuidance(onePassPolicy, state) {
+  const lines = ['REPEAT CONTROL:'];
+  const completed = onePassPolicy.filter(p => !p.shouldRun && p.reason.includes('already verified'));
+  const toRun = onePassPolicy.filter(p => p.shouldRun);
+  const failed = onePassPolicy.filter(p => p.reason.includes('failure'));
+
+  if (completed.length > 0) {
+    lines.push('  Verified (do not rerun unless relevant files changed):');
+    completed.forEach(p => lines.push(`    - ${p.check}: ${p.reason}`));
+  }
+
+  if (toRun.length > 0) {
+    lines.push('  To execute (in order):');
+    toRun.forEach(p => lines.push(`    - ${p.check}: ${p.reason}`));
+  }
+
+  if (failed.length > 0) {
+    lines.push('  Failed (rerun after fix):');
+    failed.forEach(p => lines.push(`    - ${p.check}: ${p.reason}`));
+  }
+
+  // Add the general policy rule
+  lines.push('  POLICY: Run each required check once with minimum sufficient command. Do not repeat passing checks. Rerun only on: relevant mutation, previous failure, or new invalidating evidence.');
+
+  return lines.join('\n');
 }
 
 /**
@@ -300,13 +438,26 @@ export function createCompactExecutionBrief(intent, routePlan, unifiedVerificati
   // Constraints/safety
   lines.push(`CONSTRAINTS: mutation=${intent.mutation}; risks=${intent.risks.join(', ')}`);
 
-  // Minimal verification execution plan
+  // Semantic required checks (authoritative) vs recommended execution order
   lines.push(`VERIFICATION: budget=${unifiedVerificationPlan.budget}`);
   if (unifiedVerificationPlan.required.length > 0) {
-    lines.push(`  REQUIRED: ${unifiedVerificationPlan.required.join(', ')}`);
+    lines.push(`  REQUIRED (semantic): ${unifiedVerificationPlan.required.join(', ')}`);
   }
   if (unifiedVerificationPlan.optional.length > 0) {
-    lines.push(`  OPTIONAL: ${unifiedVerificationPlan.optional.join(', ')}`);
+    lines.push(`  OPTIONAL (semantic): ${unifiedVerificationPlan.optional.join(', ')}`);
+  }
+
+  // Deterministic execution ordering (execution guidance, not semantic requirement)
+  const executionOrder = computeVerificationExecutionOrder(unifiedVerificationPlan.required, intent, routePlan);
+  if (executionOrder.length > 0) {
+    lines.push(`  EXECUTION ORDER: ${executionOrder.join(' → ')}`);
+  }
+
+  // One-pass verification policy with repeat control
+  const onePassPolicy = computeOnePassVerificationPolicy(executionOrder, state, intent);
+  const repeatGuidance = createRepeatControlGuidance(onePassPolicy, state);
+  if (repeatGuidance) {
+    lines.push(repeatGuidance);
   }
 
   // Current evidence/stop condition
@@ -314,6 +465,12 @@ export function createCompactExecutionBrief(intent, routePlan, unifiedVerificati
   if (state.decision.target) {
     lines.push(`  TARGET: ${state.decision.target}`);
   }
+
+  // Explicit stop rule
+  lines.push('STOP RULE: When requested behavior is implemented, every REQUIRED obligation is satisfied, and no blocker remains → STOP. Do not rerun passing checks, reload skills, perform optional exploration, seek additional hypotheses, or broaden scope unless new contradictory evidence appears.');
+
+  // No skill rediscovery instruction
+  lines.push('GUIDANCE: Treat this execution brief as the authoritative current Showdar guidance. Do not search for or reload Showdar skill files already summarized here unless information required to complete the task is genuinely missing.');
 
   return lines.join('\n');
 }
@@ -352,4 +509,4 @@ function computeAdvisorDeltas(routePlan, unifiedVerificationPlan, intent, metada
   return [...deltas];
 }
 
-export { CHECK_TO_EVIDENCE_MAP, SUBSUMPTION_RULES, checkSubsumes };
+export { CHECK_TO_EVIDENCE_MAP, SUBSUMPTION_RULES, checkSubsumes, EXECUTION_ORDER_PRIORITY, SAFETY_SENSITIVE_CHECKS, computeVerificationExecutionOrder, computeOnePassVerificationPolicy, createRepeatControlGuidance };

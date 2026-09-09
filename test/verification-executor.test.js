@@ -74,8 +74,13 @@ describe('Verification Executor - A. Known-Root-Cause Fast Path', () => {
     const brief = createCompactExecutionBrief(task, routePlan, unified, state, { scope: 'small' });
 
     assert.ok(brief.includes('PRIMARY: showdar-build'));
-    assert.ok(brief.includes('REQUIRED: targeted-test, regression'));
+    assert.ok(brief.includes('REQUIRED (semantic): targeted-test, regression'));
     assert.ok(!brief.includes('competing') && !brief.includes('hypothesis'));
+    // New 5B.5E additions
+    assert.ok(brief.includes('EXECUTION ORDER:'));
+    assert.ok(brief.includes('REPEAT CONTROL:'));
+    assert.ok(brief.includes('STOP RULE:'));
+    assert.ok(brief.includes('GUIDANCE: Treat this execution brief as the authoritative current Showdar guidance'));
   });
 });
 
@@ -486,12 +491,16 @@ describe('Verification Executor - Compact Brief Format', () => {
 
     const brief = createCompactExecutionBrief(task, routePlan, unified, state, { scope: 'medium' });
 
-    // Should have all required sections
+    // Should have all required sections (updated for 5B.5E format)
     assert.ok(brief.startsWith('TASK:'));
     assert.ok(brief.includes('PRIMARY: showdar-build'));
     assert.ok(brief.includes('CONSTRAINTS:'));
     assert.ok(brief.includes('VERIFICATION:'));
-    assert.ok(brief.includes('REQUIRED:'));
+    assert.ok(brief.includes('REQUIRED (semantic):'));
+    assert.ok(brief.includes('EXECUTION ORDER:'));
+    assert.ok(brief.includes('REPEAT CONTROL:'));
+    assert.ok(brief.includes('STOP RULE:'));
+    assert.ok(brief.includes('GUIDANCE: Treat this execution brief as the authoritative current Showdar guidance'));
     assert.ok(brief.includes('EVIDENCE:'));
   });
 
@@ -507,7 +516,8 @@ describe('Verification Executor - Compact Brief Format', () => {
 
     const brief = createCompactExecutionBrief(task, routePlan, unified, state, { scope: 'medium' });
 
-    // Should be compact (< 500 chars vs thousands for full skill content)
-    assert.ok(brief.length < 500, `Brief should be compact, got ${brief.length} chars`);
+    // Should be compact (under 2000 chars vs thousands for full skill content)
+    // 5B.5E adds execution ordering, repeat control, stop rule, and guidance
+    assert.ok(brief.length < 2000, `Brief should be compact, got ${brief.length} chars`);
   });
 });
