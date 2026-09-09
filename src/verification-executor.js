@@ -499,14 +499,17 @@ function computeAdvisorDeltas(routePlan, unifiedVerificationPlan, intent, metada
   const primaryChecks = extractChecksFromSkillGuidance(routePlan.primary.skill, intent, metadata);
 
   // Advisor contributes: what they suggest that's not already covered by primary or budget
-  advisorChecks.forEach(check => {
-    if (!primaryChecks.has(check) && !requiredChecks.has(check)) {
-      // This is something the advisor wants that isn't required
-      deltas.add(`${advisor.skill}: consider ${check}`);
-    }
+  routePlan.advisors.forEach(advisor => {
+    const checks = extractChecksFromSkillGuidance(advisor.skill, intent, metadata);
+    checks.forEach(check => {
+      if (!primaryChecks.has(check) && !requiredChecks.has(check)) {
+        // This is something the advisor wants that isn't required
+        deltas.push(`${advisor.skill}: consider ${check}`);
+      }
+    });
   });
 
-  return [...deltas];
+  return deltas;
 }
 
 export { CHECK_TO_EVIDENCE_MAP, SUBSUMPTION_RULES, checkSubsumes, EXECUTION_ORDER_PRIORITY, SAFETY_SENSITIVE_CHECKS, computeVerificationExecutionOrder, computeOnePassVerificationPolicy, createRepeatControlGuidance };
