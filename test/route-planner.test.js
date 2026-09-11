@@ -96,10 +96,12 @@ test('specialization boundaries remain deterministic', () => {
   assert.ok(explicitSecurity.confidence.decisive);
 });
 
-test('security, compatibility, operations, and release concerns become focused advisors', () => {
-  const security = buildRoutePlan(intent({ risks: ['security'], object: 'api' }));
-  assert.ok(skills(security).includes('showdar-security'));
+test('advisors derive from explicit secondaryActions only, not risks', () => {
+  // Risk alone does NOT create an advisor
+  const securityRiskOnly = buildRoutePlan(intent({ risks: ['security'], object: 'api' }));
+  assert.deepEqual(skills(securityRiskOnly), []);
 
+  // secondaryActions: ['upgrade'] creates upgrade advisor
   const regressionAfterUpgrade = buildRoutePlan(intent({
     phase: 'diagnosis', action: 'investigate', object: 'runtime', risks: ['compatibility'],
     secondaryActions: ['upgrade'], mutation: 'read-only',
@@ -108,6 +110,7 @@ test('security, compatibility, operations, and release concerns become focused a
   assert.equal(regressionAfterUpgrade.primary.skill, 'showdar-debug');
   assert.deepEqual(skills(regressionAfterUpgrade), ['showdar-upgrade']);
 
+  // secondaryActions: ['release'] creates ship advisor
   const deploymentWithRelease = buildRoutePlan(intent({
     phase: 'operations', action: 'deploy', object: 'deployment', risks: ['operations'],
     secondaryActions: ['release'], mutation: 'remote-write',

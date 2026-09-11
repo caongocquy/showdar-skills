@@ -1,0 +1,668 @@
+{
+  "schemaVersion": 1,
+  "role": "holdout-generalization",
+  "description": "Holdout raw intent evaluation cases. Novel paraphrases not derived from the 42-case development set. Used for unbiased generalization measurement.",
+  "cases": [
+    {
+      "id": "holdout-trace-request-lifecycle",
+      "prompt": "Trace the request lifecycle from HTTP ingress to database",
+      "expected": {
+        "phase": "discovery",
+        "action": "understand",
+        "object": "repository",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "holdout-document-api-contract",
+      "prompt": "Document the API contract for the payment service",
+      "expected": {
+        "phase": "definition",
+        "action": "define",
+        "object": "api",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": false
+        },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "holdout-sketch-rollout-plan",
+      "prompt": "Sketch the rollout plan for the new auth module",
+      "expected": {
+        "phase": "planning",
+        "action": "plan",
+        "object": "auth",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "holdout-redesign-mobile-checkout",
+      "prompt": "Redesign the mobile checkout for accessibility",
+      "expected": {
+        "phase": "design",
+        "action": "design",
+        "object": "ui",
+        "mutation": "local-write",
+        "risks": [],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "holdout-add-idempotency-keys",
+      "prompt": "Add idempotency keys to the webhook handler",
+      "expected": {
+        "phase": "implementation",
+        "action": "implement",
+        "object": "api",
+        "mutation": "local-write",
+        "risks": [
+          "regression"
+        ],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": true
+        },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "holdout-staging-deploy-hanging",
+      "prompt": "Why is the staging deploy hanging at health check?",
+      "expected": {
+        "phase": "diagnosis",
+        "action": "investigate",
+        "object": "deployment",
+        "mutation": "read-only",
+        "risks": [
+          "operations"
+        ],
+        "evidence": {
+          "failureObserved": true,
+          "rootCauseKnown": false,
+          "behaviorDefined": null
+        },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "holdout-write-integration-tests",
+      "prompt": "Write integration tests for the retry logic",
+      "expected": {
+        "phase": "verification",
+        "action": "test",
+        "object": "backend",
+        "mutation": "local-write",
+        "risks": [
+          "regression"
+        ],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "holdout-map-qa-scenarios",
+      "prompt": "Map out QA scenarios for the subscription flow",
+      "expected": {
+        "phase": "verification",
+        "action": "test",
+        "object": "repository",
+        "mutation": "read-only",
+        "risks": [
+          "regression"
+        ],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "holdout-review-encryption-diff",
+      "prompt": "Review the diff for the new encryption module",
+      "expected": {
+        "phase": "verification",
+        "action": "review",
+        "object": "repository",
+        "mutation": "read-only",
+        "risks": [
+          "security"
+        ],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "holdout-pentest-token-refresh",
+      "prompt": "Penetration test the token refresh endpoint",
+      "expected": {
+        "phase": "discovery",
+        "action": "assess",
+        "object": "auth",
+        "mutation": "read-only",
+        "risks": [
+          "security"
+        ],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "holdout-verify-canary-config",
+      "prompt": "Verify the canary deployment config is correct",
+      "expected": {
+        "phase": "operations",
+        "action": "assess",
+        "object": "deployment",
+        "mutation": "read-only",
+        "risks": [
+          "operations"
+        ],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "holdout-confirm-release-artifact",
+      "prompt": "Confirm the release artifact passes all gates",
+      "expected": {
+        "phase": "delivery",
+        "action": "assess",
+        "object": "package",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "holdout-reconstruct-failed-deploy",
+      "prompt": "Reconstruct what happened in the failed deploy",
+      "expected": {
+        "phase": "recovery",
+        "action": "recover",
+        "object": "deployment",
+        "mutation": "read-only",
+        "risks": [
+          "operations"
+        ],
+        "evidence": {
+          "failureObserved": true,
+          "rootCauseKnown": false,
+          "behaviorDefined": null
+        },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "holdout-stage-config-changes",
+      "prompt": "Stage only the config changes for commit",
+      "expected": {
+        "phase": "repository",
+        "action": "git",
+        "object": "commit",
+        "mutation": "local-write",
+        "risks": [],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "holdout-fix-memory-leak-known-cause",
+      "prompt": "Fix the memory leak in the worker, cause is the unclosed stream",
+      "expected": {
+        "phase": "implementation",
+        "action": "fix",
+        "object": "runtime",
+        "mutation": "local-write",
+        "risks": [
+          "regression"
+        ],
+        "evidence": {
+          "failureObserved": true,
+          "rootCauseKnown": true,
+          "behaviorDefined": true
+        },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "holdout-intermittent-502-unknown",
+      "prompt": "Intermittent 502s from the gateway, no logs",
+      "expected": {
+        "phase": "diagnosis",
+        "action": "investigate",
+        "object": "network",
+        "mutation": "read-only",
+        "risks": [
+          "regression"
+        ],
+        "evidence": {
+          "failureObserved": true,
+          "rootCauseKnown": false,
+          "behaviorDefined": null
+        },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "holdout-add-unit-tests-validator",
+      "prompt": "Add unit tests for the validator, don't touch production code",
+      "expected": {
+        "phase": "verification",
+        "action": "test",
+        "object": "backend",
+        "mutation": "local-write",
+        "risks": [
+          "regression"
+        ],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "holdout-create-risk-matrix",
+      "prompt": "Create risk matrix for the migration, no test code",
+      "expected": {
+        "phase": "verification",
+        "action": "test",
+        "object": "repository",
+        "mutation": "read-only",
+        "risks": [
+          "regression"
+        ],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "holdout-security-review-oauth-callback",
+      "prompt": "Security review the OAuth callback, don't implement fixes",
+      "expected": {
+        "phase": "discovery",
+        "action": "assess",
+        "object": "auth",
+        "mutation": "read-only",
+        "risks": [
+          "security"
+        ],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "holdout-check-release-ready",
+      "prompt": "Check if v2.3.0 is ready to ship, don't publish",
+      "expected": {
+        "phase": "delivery",
+        "action": "assess",
+        "object": "package",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "holdout-deploy-hotfix-prod",
+      "prompt": "Deploy the hotfix to prod now",
+      "expected": {
+        "phase": "operations",
+        "action": "deploy",
+        "object": "deployment",
+        "mutation": "production-impacting",
+        "risks": [
+          "production",
+          "operations"
+        ],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "holdout-prepare-prod-deploy-steps",
+      "prompt": "Prepare prod deploy steps but don't execute",
+      "expected": {
+        "phase": "planning",
+        "action": "plan",
+        "object": "deployment",
+        "mutation": "read-only",
+        "risks": [
+          "operations"
+        ],
+        "constraints": [
+          "no-deploy"
+        ],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "holdout-replay-interrupted-feature",
+      "prompt": "Replay the interrupted feature work from git",
+      "expected": {
+        "phase": "recovery",
+        "action": "recover",
+        "object": "implementation",
+        "mutation": "local-write",
+        "risks": [],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "holdout-merge-locally-hold-push",
+      "prompt": "Merge the feature branch locally, hold the push",
+      "expected": {
+        "phase": "repository",
+        "action": "git",
+        "object": "branch",
+        "mutation": "local-write",
+        "risks": [],
+        "constraints": [
+          "no-push"
+        ],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "holdout-upgrade-db-driver",
+      "prompt": "Upgrade the database driver and add migration tests",
+      "expected": {
+        "phase": "implementation",
+        "action": "implement",
+        "object": "dependency",
+        "mutation": "local-write",
+        "risks": [
+          "compatibility",
+          "regression"
+        ],
+        "secondaryActions": [
+          "test"
+        ],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        }
+      }
+    },
+    {
+      "id": "holdout-implement-webhook-retry",
+      "prompt": "Implement the webhook retry with circuit breaker",
+      "expected": {
+        "phase": "implementation",
+        "action": "implement",
+        "object": "api",
+        "mutation": "local-write",
+        "risks": [
+          "regression",
+          "performance"
+        ],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": true
+        },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "holdout-check-flaky-test",
+      "prompt": "Can you check this flaky test?",
+      "expected": {
+        "phase": "implementation",
+        "action": "implement",
+        "object": "repository",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "failureObserved": true,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "holdout-explain-git-push",
+      "prompt": "Explain this: `git push origin main`",
+      "expected": {
+        "phase": "discovery",
+        "action": "understand",
+        "object": "repository",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "holdout-explain-kubectl",
+      "prompt": "```\nkubectl apply -f deployment.yaml\n```\nWhat does this do?",
+      "expected": {
+        "phase": "discovery",
+        "action": "understand",
+        "object": "repository",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "holdout-pasted-log",
+      "prompt": "Error: connection refused at 2026-09-10 14:22:01",
+      "expected": {
+        "phase": "diagnosis",
+        "action": "investigate",
+        "object": "network",
+        "mutation": "read-only",
+        "risks": [
+          "regression"
+        ],
+        "evidence": {
+          "failureObserved": true,
+          "rootCauseKnown": false,
+          "behaviorDefined": null
+        },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "holdout-deploy-works-rollback-fails",
+      "prompt": "The deploy script works but the rollback fails",
+      "expected": {
+        "phase": "diagnosis",
+        "action": "investigate",
+        "object": "deployment",
+        "mutation": "read-only",
+        "risks": [
+          "operations",
+          "regression"
+        ],
+        "evidence": {
+          "failureObserved": true,
+          "rootCauseKnown": false,
+          "behaviorDefined": null
+        },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "holdout-fix-auth-bypass-no-commit",
+      "prompt": "Fix the auth bypass, don't commit yet",
+      "expected": {
+        "phase": "implementation",
+        "action": "fix",
+        "object": "auth",
+        "mutation": "local-write",
+        "risks": [
+          "security",
+          "regression"
+        ],
+        "constraints": [
+          "no-commit"
+        ],
+        "evidence": {
+          "failureObserved": true,
+          "rootCauseKnown": null,
+          "behaviorDefined": true
+        }
+      }
+    },
+    {
+      "id": "holdout-add-feature-flags-no-deploy",
+      "prompt": "Add feature flags, no deploy",
+      "expected": {
+        "phase": "implementation",
+        "action": "implement",
+        "object": "backend",
+        "mutation": "local-write",
+        "risks": [
+          "regression"
+        ],
+        "constraints": [
+          "no-deploy"
+        ],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": true
+        },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "holdout-stage-hotfix-no-push-no-deploy",
+      "prompt": "Stage the hotfix, don't push, don't deploy",
+      "expected": {
+        "phase": "repository",
+        "action": "git",
+        "object": "commit",
+        "mutation": "local-write",
+        "risks": [],
+        "constraints": [
+          "no-push",
+          "no-deploy"
+        ],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "holdout-write-contract-tests",
+      "prompt": "Write contract tests for the payment API",
+      "expected": {
+        "phase": "verification",
+        "action": "test",
+        "object": "api",
+        "mutation": "local-write",
+        "risks": [
+          "regression"
+        ],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": []
+      }
+    }
+  ]
+}

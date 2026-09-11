@@ -1,0 +1,594 @@
+{
+  "schemaVersion": 1,
+  "description": "Raw engineering prompt to intent resolution evaluation cases. Tests the production intent resolver against real-world raw prompts.",
+  "cases": [
+    {
+      "id": "understand-repo-request-flow",
+      "description": "Map this unfamiliar repository and trace the request flow",
+      "prompt": "Map this unfamiliar repository and trace the request flow",
+      "expected": {
+        "phase": "discovery",
+        "action": "understand",
+        "object": "repository",
+        "mutation": "read-only",
+        "risks": [],
+        "secondaryActions": [],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      }
+    },
+    {
+      "id": "requirements-missing-refund-rule",
+      "description": "Business rule for partial refunds is not known yet",
+      "prompt": "The business rule for partial refunds is not known yet",
+      "expected": {
+        "phase": "definition",
+        "action": "define",
+        "object": "data",
+        "mutation": "read-only",
+        "risks": [],
+        "secondaryActions": [],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": false }
+      }
+    },
+    {
+      "id": "plan-approved-feature",
+      "description": "Prepare the implementation plan for the approved feature",
+      "prompt": "Prepare the implementation plan for the approved feature",
+      "expected": {
+        "phase": "planning",
+        "action": "plan",
+        "object": "architecture",
+        "mutation": "read-only",
+        "risks": [],
+        "secondaryActions": [],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      }
+    },
+    {
+      "id": "design-responsive-checkout",
+      "description": "Design the responsive checkout flow",
+      "prompt": "Design the responsive checkout flow",
+      "expected": {
+        "phase": "design",
+        "action": "design",
+        "object": "ui",
+        "mutation": "local-write",
+        "risks": [],
+        "secondaryActions": [],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      }
+    },
+    {
+      "id": "build-stripe-webhook",
+      "description": "Implement a Stripe webhook endpoint with signature validation and regression tests",
+      "prompt": "Implement a Stripe webhook endpoint with signature validation and regression tests",
+      "expected": {
+        "phase": "implementation",
+        "action": "implement",
+        "object": "api",
+        "mutation": "local-write",
+        "risks": ["security", "regression"],
+        "secondaryActions": ["security", "test"],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": true }
+      }
+    },
+    {
+      "id": "debug-intermittent-connection",
+      "description": "Intermittent connection failures, root cause unknown",
+      "prompt": "The test suite fails intermittently with 'Connection refused' errors. Find the root cause and fix it.",
+      "expected": {
+        "phase": "diagnosis",
+        "action": "investigate",
+        "object": "runtime",
+        "mutation": "local-write",
+        "risks": ["regression"],
+        "secondaryActions": ["test"],
+        "evidence": { "failureObserved": true, "rootCauseKnown": false, "behaviorDefined": null }
+      }
+    },
+    {
+      "id": "test-payment-regression",
+      "description": "Write automated regression tests for duplicate payment bug",
+      "prompt": "Write automated regression tests for the duplicate payment bug",
+      "expected": {
+        "phase": "verification",
+        "action": "test",
+        "object": "backend",
+        "mutation": "local-write",
+        "risks": ["regression"],
+        "secondaryActions": [],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      }
+    },
+    {
+      "id": "review-auth-vulnerabilities",
+      "description": "Review auth diff for authorization vulnerabilities",
+      "prompt": "Review this auth diff specifically for authorization vulnerabilities",
+      "expected": {
+        "phase": "verification",
+        "action": "review",
+        "object": "auth",
+        "mutation": "read-only",
+        "risks": ["security"],
+        "secondaryActions": ["review"],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      }
+    },
+    {
+      "id": "upgrade-react-native",
+      "description": "Upgrade React Native and handle compatibility changes",
+      "prompt": "Upgrade React Native and handle compatibility changes",
+      "expected": {
+        "phase": "implementation",
+        "action": "upgrade",
+        "object": "dependency",
+        "mutation": "local-write",
+        "risks": ["compatibility"],
+        "secondaryActions": [],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      }
+    },
+    {
+      "id": "ship-release-readiness",
+      "description": "Check whether this package is ready to publish",
+      "prompt": "Check whether this package is ready to publish",
+      "expected": {
+        "phase": "delivery",
+        "action": "assess",
+        "object": "package",
+        "mutation": "read-only",
+        "risks": [],
+        "secondaryActions": [],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      }
+    },
+    {
+      "id": "ops-staging-deploy",
+      "description": "Deploy this container to staging",
+      "prompt": "Deploy this container to staging",
+      "expected": {
+        "phase": "operations",
+        "action": "deploy",
+        "object": "container",
+        "mutation": "remote-write",
+        "risks": ["operations"],
+        "secondaryActions": [],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      }
+    },
+    {
+      "id": "recover-interrupted-impl",
+      "description": "Resume interrupted implementation",
+      "prompt": "Resume the interrupted implementation and determine what was already changed",
+      "expected": {
+        "phase": "recovery",
+        "action": "recover",
+        "object": "implementation",
+        "mutation": "local-write",
+        "risks": [],
+        "secondaryActions": [],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      }
+    },
+    {
+      "id": "git-commit-completed",
+      "description": "Commit only the completed task files",
+      "prompt": "Commit only the completed task files",
+      "expected": {
+        "phase": "repository",
+        "action": "git",
+        "object": "commit",
+        "mutation": "local-write",
+        "risks": [],
+        "secondaryActions": [],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      }
+    },
+    {
+      "id": "debug-known-null-token",
+      "description": "Fix known null-token bug in auth mapper",
+      "prompt": "Fix the known null-token bug in the auth mapper; the root cause is confirmed",
+      "expected": {
+        "phase": "implementation",
+        "action": "fix",
+        "object": "auth",
+        "mutation": "local-write",
+        "risks": ["regression"],
+        "secondaryActions": [],
+        "evidence": { "failureObserved": true, "rootCauseKnown": true, "behaviorDefined": null }
+      }
+    },
+    {
+      "id": "debug-unknown-memory-leak",
+      "description": "Investigate memory leak with no known cause",
+      "prompt": "Investigate a memory leak with no known cause",
+      "expected": {
+        "phase": "diagnosis",
+        "action": "investigate",
+        "object": "runtime",
+        "mutation": "read-only",
+        "risks": ["performance"],
+        "secondaryActions": [],
+        "evidence": { "failureObserved": true, "rootCauseKnown": false, "behaviorDefined": null }
+      }
+    },
+    {
+      "id": "review-only-no-changes",
+      "description": "Review only, do not change code",
+      "prompt": "Review this code only, do not change anything",
+      "expected": {
+        "phase": "verification",
+        "action": "review",
+        "object": "repository",
+        "mutation": "read-only",
+        "risks": [],
+        "secondaryActions": ["review"],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      }
+    },
+    {
+      "id": "fix-known-cause",
+      "description": "Fix login crash, root cause known (null token)",
+      "prompt": "Fix the login crash. I already know the null token is the root cause.",
+      "expected": {
+        "phase": "implementation",
+        "action": "fix",
+        "object": "auth",
+        "mutation": "local-write",
+        "risks": [],
+        "secondaryActions": [],
+        "evidence": { "failureObserved": true, "rootCauseKnown": true, "behaviorDefined": null }
+      }
+    },
+    {
+      "id": "debug-unknown-cause",
+      "description": "Login crashes sometimes, root cause unknown",
+      "prompt": "Login crashes sometimes. I don't know why.",
+      "expected": {
+        "phase": "diagnosis",
+        "action": "investigate",
+        "object": "auth",
+        "mutation": "read-only",
+        "risks": [],
+        "secondaryActions": [],
+        "evidence": { "failureObserved": true, "rootCauseKnown": false, "behaviorDefined": null }
+      }
+    },
+    {
+      "id": "plan-migration-no-implement",
+      "description": "Plan migration to React Native, don't implement",
+      "prompt": "Plan the migration to React Native 0.xx, don't implement it yet",
+      "expected": {
+        "phase": "planning",
+        "action": "plan",
+        "object": "backend",
+        "mutation": "read-only",
+        "risks": ["compatibility"],
+        "secondaryActions": ["upgrade"],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      }
+    },
+    {
+      "id": "upgrade-with-regression-tests",
+      "description": "Upgrade React Native and add regression tests",
+      "prompt": "Upgrade React Native and add regression tests",
+      "expected": {
+        "phase": "implementation",
+        "action": "implement",
+        "object": "dependency",
+        "mutation": "local-write",
+        "risks": ["compatibility", "regression"],
+        "secondaryActions": ["test"],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      }
+    },
+    {
+      "id": "ship-readiness-no-publish",
+      "description": "Assess release readiness, don't publish",
+      "prompt": "Assess whether this package is ready to release, don't publish anything",
+      "expected": {
+        "phase": "delivery",
+        "action": "assess",
+        "object": "package",
+        "mutation": "read-only",
+        "risks": [],
+        "secondaryActions": [],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      }
+    },
+    {
+      "id": "ops-deploy-production",
+      "description": "Deploy to production",
+      "prompt": "Deploy this to production",
+      "expected": {
+        "phase": "operations",
+        "action": "deploy",
+        "object": "deployment",
+        "mutation": "production-impacting",
+        "risks": ["production", "operations"],
+        "secondaryActions": [],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      }
+    },
+    {
+      "id": "ops-prepare-deploy-no-deploy",
+      "description": "Prepare deployment steps only, do not deploy",
+      "prompt": "Prepare deployment steps only; do not deploy",
+      "expected": {
+        "phase": "planning",
+        "action": "plan",
+        "object": "deployment",
+        "mutation": "read-only",
+        "risks": ["operations"],
+        "secondaryActions": ["deploy"],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      }
+    },
+    {
+      "id": "recover-interrupted-work",
+      "description": "Recover interrupted implementation from repo state",
+      "prompt": "Recover the interrupted implementation from the current repo state",
+      "expected": {
+        "phase": "recovery",
+        "action": "recover",
+        "object": "implementation",
+        "mutation": "read-only",
+        "risks": [],
+        "secondaryActions": [],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      }
+    },
+    {
+      "id": "git-commit-local-no-push",
+      "description": "Commit locally but don't push",
+      "prompt": "Commit the current changes locally but don't push",
+      "expected": {
+        "phase": "repository",
+        "action": "git",
+        "object": "commit",
+        "mutation": "local-write",
+        "risks": [],
+        "secondaryActions": [],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      }
+    },
+    {
+      "id": "security-webhook-review",
+      "description": "Review webhook for security issues",
+      "prompt": "Review this webhook for security issues",
+      "expected": {
+        "phase": "verification",
+        "action": "review",
+        "object": "api",
+        "mutation": "read-only",
+        "risks": ["security"],
+        "secondaryActions": ["review"],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      }
+    },
+    {
+      "id": "build-webhook-with-tests",
+      "description": "Implement webhook signature verification and add tests",
+      "prompt": "Implement webhook signature verification and add tests",
+      "expected": {
+        "phase": "implementation",
+        "action": "implement",
+        "object": "api",
+        "mutation": "local-write",
+        "risks": ["security", "regression"],
+        "secondaryActions": ["security", "test"],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": true }
+      }
+    },
+    {
+      "id": "requirements-undefined",
+      "description": "Requirements not defined, identify missing business rules",
+      "prompt": "Requirements are not defined yet; identify missing business rules",
+      "expected": {
+        "phase": "definition",
+        "action": "define",
+        "object": "data",
+        "mutation": "read-only",
+        "risks": [],
+        "secondaryActions": [],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": false }
+      }
+    },
+    {
+      "id": "quality-qa-matrix",
+      "description": "Create QA regression matrix, don't write automated tests",
+      "prompt": "Create a QA regression matrix, don't write automated tests",
+      "expected": {
+        "phase": "verification",
+        "action": "test",
+        "object": "repository",
+        "mutation": "read-only",
+        "risks": ["regression"],
+        "secondaryActions": ["quality"],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      }
+    },
+    {
+      "id": "audit-security-no-patch",
+      "description": "Audit security, don't patch anything",
+      "prompt": "Audit security, don't patch anything",
+      "expected": {
+        "phase": "discovery",
+        "action": "assess",
+        "object": "repository",
+        "mutation": "read-only",
+        "risks": ["security"],
+        "secondaryActions": ["review"],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      }
+    },
+    {
+      "id": "fix-local-no-push",
+      "description": "Fix locally, don't push",
+      "prompt": "Fix locally, don't push",
+      "expected": {
+        "phase": "implementation",
+        "action": "fix",
+        "object": "repository",
+        "mutation": "local-write",
+        "risks": [],
+        "secondaryActions": ["git"],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      }
+    },
+    {
+      "id": "review-auth-no-changes",
+      "description": "Review auth code but don't change anything",
+      "prompt": "Review this auth code but do not change anything",
+      "expected": {
+        "phase": "verification",
+        "action": "review",
+        "object": "repository",
+        "mutation": "read-only",
+        "risks": ["security"],
+        "secondaryActions": ["review"],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      }
+    },
+    {
+      "id": "code-block-prompt-injection",
+      "description": "Code block with 'deploy' should not trigger production intent",
+      "prompt": "Here's an example:\n```\nfunction deploy() {\n  console.log('deploying');\n}\n```\nExplain how this function works",
+      "expected": {
+        "phase": "discovery",
+        "action": "understand",
+        "object": "repository",
+        "mutation": "read-only",
+        "risks": [],
+        "secondaryActions": [],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      }
+    },
+    {
+      "id": "low-confidence-vague",
+      "description": "Vague request with low confidence",
+      "prompt": "Can you look at this?",
+      "expected": {
+        "phase": "implementation",
+        "action": "implement",
+        "object": "repository",
+        "mutation": "read-only",
+        "risks": [],
+        "secondaryActions": [],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      }
+    },
+    {
+      "id": "multi-intent-upgrade-and-test",
+      "description": "Upgrade React Native and add regression tests (multi-intent)",
+      "prompt": "Upgrade React Native and add regression tests",
+      "expected": {
+        "phase": "implementation",
+        "action": "implement",
+        "object": "dependency",
+        "mutation": "local-write",
+        "risks": ["compatibility", "regression"],
+        "secondaryActions": ["test"],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      }
+    },
+    {
+      "id": "multi-intent-webhook-security-test",
+      "description": "Implement webhook and add tests and security review",
+      "prompt": "Implement Stripe webhook signature verification and add tests and security review",
+      "expected": {
+        "phase": "implementation",
+        "action": "implement",
+        "object": "api",
+        "mutation": "local-write",
+        "risks": ["security", "regression"],
+        "secondaryActions": ["security", "test"],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": true }
+      }
+    },
+    {
+      "id": "debug-ci-failure",
+      "description": "Investigate intermittent CI failure",
+      "prompt": "Investigate an intermittent CI failure with no confirmed cause",
+      "expected": {
+        "phase": "diagnosis",
+        "action": "investigate",
+        "object": "build",
+        "mutation": "read-only",
+        "risks": ["regression"],
+        "secondaryActions": [],
+        "evidence": { "failureObserved": true, "rootCauseKnown": false, "behaviorDefined": null }
+      }
+    },
+    {
+      "id": "ops-rollback-migration",
+      "description": "Plan rollback for migration",
+      "prompt": "Plan rollback for migration with zero downtime health and recovery",
+      "expected": {
+        "phase": "planning",
+        "action": "plan",
+        "object": "deployment",
+        "mutation": "read-only",
+        "risks": ["operations"],
+        "secondaryActions": ["deploy"],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      }
+    },
+    {
+      "id": "security-threat-model",
+      "description": "Threat model authentication boundaries",
+      "prompt": "Threat model the OAuth authorization flow",
+      "expected": {
+        "phase": "discovery",
+        "action": "assess",
+        "object": "auth",
+        "mutation": "read-only",
+        "risks": ["security"],
+        "secondaryActions": [],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      }
+    },
+    {
+      "id": "build-oauth-implementation",
+      "description": "Implement OAuth login per approved criteria",
+      "prompt": "Implement OAuth login according to approved acceptance criteria",
+      "expected": {
+        "phase": "implementation",
+        "action": "implement",
+        "object": "auth",
+        "mutation": "local-write",
+        "risks": ["security"],
+        "secondaryActions": ["security"],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": true }
+      }
+    },
+    {
+      "id": "review-correctness-maintainability",
+      "description": "Review PR for correctness and maintainability",
+      "prompt": "Review this PR for correctness and maintainability",
+      "expected": {
+        "phase": "verification",
+        "action": "review",
+        "object": "architecture",
+        "mutation": "read-only",
+        "risks": ["regression"],
+        "secondaryActions": [],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      }
+    },
+    {
+      "id": "git-merge-no-push",
+      "description": "Merge feature branch into develop but don't push",
+      "prompt": "Merge feature branch into develop but do not push",
+      "expected": {
+        "phase": "repository",
+        "action": "git",
+        "object": "branch",
+        "mutation": "local-write",
+        "risks": [],
+        "secondaryActions": [],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      }
+    }
+  ]
+}

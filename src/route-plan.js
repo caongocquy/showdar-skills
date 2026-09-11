@@ -17,13 +17,6 @@ const SECONDARY_ACTION_SKILLS = Object.freeze({
   git: 'showdar-git',
 });
 
-const RISK_ADVISOR_SKILLS = Object.freeze({
-  security: 'showdar-security',
-  compatibility: 'showdar-upgrade',
-  operations: 'showdar-ops',
-  production: 'showdar-ops',
-});
-
 // These rules describe existing ownership boundaries; they do not add score bonuses.
 export const SPECIALIZATION_RULES = Object.freeze([
   { id: 'security-assessment', priority: 120, skill: 'showdar-security', reason: 'explicit security assessment is security-owned', matches: (intent) => intent.risks.includes('security') && ['assess', 'review'].includes(intent.action) && ['discovery', 'verification'].includes(intent.phase) },
@@ -53,9 +46,6 @@ function advisorSignals(intent, candidate) {
     if (SECONDARY_ACTION_SKILLS[action] === candidate.skill || action === candidate.skill) {
       addUnique(signals, signalForSecondaryAction(action) ?? `secondary action ${action} targets ${candidate.skill}`);
     }
-  }
-  for (const risk of intent.risks) {
-    if (RISK_ADVISOR_SKILLS[risk] === candidate.skill) addUnique(signals, `explicit ${risk} concern supports ${candidate.skill}`);
   }
   return signals;
 }

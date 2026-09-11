@@ -149,9 +149,9 @@
   {
     "id": "release-compatibility-readiness",
     "description": "Assess release readiness after a compatibility-sensitive dependency update.",
-    "intent": { "phase": "delivery", "action": "assess", "object": "release", "risks": ["compatibility"], "mutation": "read-only" },
+    "intent": { "phase": "delivery", "action": "assess", "object": "release", "secondaryActions": ["release"], "risks": ["compatibility"], "mutation": "read-only" },
     "expectedPrimary": "showdar-ship",
-    "requiredAdvisors": ["showdar-upgrade"]
+    "requiredAdvisors": []
   },
   {
     "id": "webhook-test-and-security",
