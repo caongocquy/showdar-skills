@@ -19,24 +19,24 @@ export function runShadow(prompt) {
   const legacyIntent = legacyResult.intent;
   const legacyPrimarySkill = extractPrimarySkillFromRoutePlan(legacyIntent);
 
-  // 2. Structural resolution (primary-only at T09)
+  // 2. Structural resolution (primary + mutation at T11)
   const requestFrame = assembleRequestFrame(prompt);
   const structuralPrimary = resolveStructuralIntent(requestFrame);
 
-  // 3. Build structural side with nulls for not-yet-projected fields
+  // 3. Build structural side with mutation projected (secondaryActions/primarySkill stay null)
   const structural = {
     phase: structuralPrimary.phase,
     action: structuralPrimary.action,
-    mutation: null,
+    mutation: structuralPrimary.mutation,
     secondaryActions: null,
     primarySkill: null,
   };
 
-  // 4. Build agreement (only phase/action can agree at this stage)
+  // 4. Build agreement (phase/action/mutation; secondary/primarySkill still not-yet-projected)
   const agreement = {
     phase: structuralPrimary.phase === legacyIntent.phase,
     action: structuralPrimary.action === legacyIntent.action,
-    mutation: false, // not-yet-projected
+    mutation: structuralPrimary.mutation === legacyIntent.mutation,
     secondary: false, // not-yet-projected
     primarySkill: structuralPrimary.action === legacyIntent.action && legacyPrimarySkill !== null,
   };

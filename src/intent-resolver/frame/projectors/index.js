@@ -1,12 +1,14 @@
-// Structural projector barrel (Phase 6F T08)
-// Primary-only wiring at this stage; mutation/secondary/metadata land in T11/T12/T14.
+// Structural projector barrel (Phase 6F T08; extended T11 with mutation)
+// Primary + mutation wiring; secondary/metadata land in T14.
 
 import { projectPrimary, projectConservativeIntent } from './primary.js';
+import { projectMutation } from './mutation.js';
 
-export { projectPrimary, projectConservativeIntent };
+export { projectPrimary, projectConservativeIntent, projectMutation };
 
 export function resolveStructuralIntent(requestFrame) {
-  // T08: primary-only projection
+  // T11: primary + mutation projection
   const primary = projectPrimary(requestFrame);
-  return primary;
+  const mutation = projectMutation(requestFrame);
+  return { ...primary, mutation };
 }

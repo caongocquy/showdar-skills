@@ -18,12 +18,12 @@ test('runShadow legacy side has phase/action/mutation/secondaryActions/primarySk
   assert.ok(legacy.primarySkill);
 });
 
-test('runShadow structural side has phase/action from primary projector, others null with reason', async () => {
+test('runShadow structural side has phase/action/mutation from projectors, others null with reason', async () => {
   const diff = runShadow('Deploy the api to staging.');
   const structural = diff.structural;
   assert.ok(structural.phase);
   assert.ok(structural.action);
-  assert.equal(structural.mutation, null);
+  assert.ok(structural.mutation); // T11: mutation now projected
   assert.equal(structural.secondaryActions, null);
   assert.equal(structural.primarySkill, null);
   // The reason is embedded in the structural object or we check agreement/issues
@@ -33,8 +33,8 @@ test('runShadow agreement shows phase/action match when structural primary match
   const diff = runShadow('implement X + audit X');
   assert.equal(diff.agreement.phase, true);
   assert.equal(diff.agreement.action, true);
-  // mutation/secondaryActions/primarySkill should be false or not agreed upon yet
-  assert.equal(diff.agreement.mutation, false);
+  // mutation now projected (boolean agreement); secondary still not-yet-projected
+  assert.equal(typeof diff.agreement.mutation, 'boolean');
   assert.equal(diff.agreement.secondary, false);
   assert.equal(typeof diff.agreement.primarySkill, 'boolean');
 });
