@@ -23,6 +23,14 @@ function isDiagnosticCode(code) {
   return DIAGNOSTIC_CODES.includes(code);
 }
 
+// Single gate for every diagnostic push — no unvalidated codes.
+function pushDiagnostic(diagnostics, code, detail) {
+  if (!isDiagnosticCode(code)) {
+    throw new Error(`Invalid diagnostic code: ${code}`);
+  }
+  diagnostics.push({ code, detail });
+}
+
 /**
  * T06-LOCAL constraint stub — returns empty array.
  * Replaced by real `buildConstraintFrames` from projectors/constraints.js in T12.
@@ -32,76 +40,88 @@ function buildConstraintFrames(_clauses, _actions) {
   return [];
 }
 
-function validateGovernance(actions) {
-  const diagnostics = [];
-  const governingActions = actions.filter(a => a.role === 'GOVERNING');
+function validateGovernance(actions, diagnostics) {
+  const governingActions = actions.filter((a) => a.role === 'GOVERNING');
 
   if (governingActions.length === 0) {
-    diagnostics.push({
-      code: 'NO_GOVERNING_ACTION',
-      detail: 'No positive AUTHORIZED_NOW action found to govern the request',
-    });
+    pushDiagnostic(diagnostics, 'NO_GOVERNING_ACTION', 'No positive AUTHORIZED_NOW action found to govern the request');
   } else if (governingActions.length > 1) {
-    diagnostics.push({
-      code: 'MULTIPLE_GOVERNING_ACTIONS',
-      detail: `Multiple governing actions found: ${governingActions.map(a => a.id).join(', ')}`,
-    });
+    pushDiagnostic(diagnostics, 'MULTIPLE_GOVERNING_ACTIONS', `Multiple governing actions found: ${governingActions.map((a) => a.id).join(', ')}`);
   }
-  return diagnostics;
 }
 
-function validateTargets(actions) {
-  const diagnostics = [];
+function validateTargets(actions, diagnostics) {
+  // Canonical actions from surface-map.js that typically bind a target.
+  const needsTarget = new Set(['deploy', 'git', 'test', 'assess', 'define', 'understand', 'recover']);
   for (const action of actions) {
-    // Actions with certain canonicalActions typically need a target
-    const needsTarget = ['deploy', 'git', 'test', 'implement', 'define'].includes(action.canonicalAction);
-    if (needsTarget && !action.target) {
-      diagnostics.push({
-        code: 'UNBOUND_TARGET',
-        detail: `Action ${action.id} (${action.canonicalAction}) has no bound target`,
-      });
+    if (needsTarget.has(action.canonicalAction) && !action.target) {
+      pushDiagnostic(diagnostics, 'UNBOUND_TARGET', `Action ${action.id} (${action.canonicalAction}) has no bound target`);
     }
   }
-  return diagnostics;
 }
 
-function validateRelations(relations, actions) {
-  const diagnostics = [];
-  const actionIds = new Set(actions.map(a => a.id));
+function validateRelations(relations, actions, diagnostics) {
+  const actionIds = new Set(actions.map((a) => a.id));
 
   for (const rel of relations) {
     if (!actionIds.has(rel.from)) {
-      diagnostics.push({
-        code: 'UNRESOLVED_RELATION',
-        detail: `Relation from unknown action ${rel.from}`,
-      });
+      pushDiagnostic(diagnostics, 'UNRESOLVED_RELATION', `Relation from unknown action ${rel.from}`);
     }
     if (!actionIds.has(rel.to)) {
-      diagnostics.push({
-        code: 'UNRESOLVED_RELATION',
-        detail: `Relation to unknown action ${rel.to}`,
-      });
+      pushDiagnostic(diagnostics, 'UNRESOLVED_RELATION', `Relation to unknown action ${rel.to}`);
     }
   }
-  return diagnostics;
 }
 
-function validateEnvironment(actions) {
-  const diagnostics = [];
+function validateEnvironment(actions, diagnostics) {
+  // Canonicals whose authority depends on an explicit environment.
+  const needsEnvironment = new Set(['deploy', 'git']);
   for (const action of actions) {
-    if (action.environment === 'unspecified' && action.canonicalAction === 'deploy') {
-      diagnostics.push({
-        code: 'AMBIGUOUS_ENVIRONMENT',
-        detail: `Deploy action ${action.id} has unspecified environment`,
-      });
+    if (action.environment === 'unspecified' && needsEnvironment.has(action.canonicalAction)) {
+      pushDiagnostic(diagnostics, 'AMBIGUOUS_ENVIRONMENT', `${action.canonicalAction} action ${action.id} has unspecified environment`);
     }
   }
-  return diagnostics;
 }
 
-function validateConstraints(_constraints) {
-  // Stub - real validation in T12
-  return [];
+function validateConstraints(_constraints, _diagnostics) {
+  // Stub — real scope validation lands with projectors/constraints.js in T12.
+}
+
+// Function words that can never be a clause-initial imperative verb.
+// Structural filter so pronoun/determiner-led clauses don't read as unknown verbs.
+const NON_VERB_LEADS = new Set([
+  'the', 'a', 'an', 'this', 'that', 'these', 'those',
+  'i', 'you', 'he', 'she', 'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them',
+  'my', 'your', 'his', 'its', 'our', 'their',
+  'in', 'on', 'at', 'to', 'for', 'with', 'from', 'by', 'about', 'into', 'over', 'after', 'before', 'between', 'through', 'during', 'under', 'of',
+  'is', 'are', 'was', 'were', 'be', 'been', 'being', 'am', 'has', 'have', 'had', 'do', 'does', 'did', 'will', 'would', 'can', 'could', 'should', 'shall', 'may', 'might', 'must',
+  'and', 'but', 'or', 'nor', 'so', 'yet', 'because', 'if', 'when', 'while', 'although', 'unless',
+  'no', 'not', 'all', 'some', 'any', 'each', 'every', 'few', 'many', 'much', 'more', 'most', 'other', 'such',
+  'also', 'just', 'still', 'already', 'here', 'there', 'now', 'then', 'today',
+]);
+
+function stemToken(token) {
+  if (token.length > 5 && token.endsWith('ing')) return token.slice(0, -3);
+  if (token.length > 4 && token.endsWith('ed')) return token.slice(0, -2);
+  if (token.length > 3 && token.endsWith('s')) return token.slice(0, -1);
+  return token;
+}
+
+// Structural signal: an authoritative clause whose clause-initial candidate verb
+// (imperative position) misses the surface map, yet the clause produced zero
+// authorized ActionFrames — the surface vocabulary has no entry for it.
+function detectUnknownSurfaceOperations(clauses, actions, diagnostics) {
+  for (const clause of clauses) {
+    if (clause.provenance !== 'DIRECT_INSTRUCTION' && clause.provenance !== 'SECONDARY_INSTRUCTION') continue;
+    if (!clause.text || !clause.text.trim()) continue;
+    if (actions.some((a) => a.clauseId === clause.id)) continue;
+
+    const first = clause.text.trim().split(/\s+/)[0].replace(/[^a-zA-Z-]/g, '').toLowerCase();
+    if (!first || NON_VERB_LEADS.has(first)) continue;
+    if (lookupSurfaceOperation(first) || lookupSurfaceOperation(stemToken(first))) continue;
+
+    pushDiagnostic(diagnostics, 'UNKNOWN_SURFACE_OPERATION', `Unknown surface verb "${first}" in clause ${clause.id}`);
+  }
 }
 
 /**
@@ -133,57 +153,16 @@ export function assembleRequestFrame(prompt) {
 
   // 7. Collect diagnostics (closed code set, never throws)
   const diagnostics = [];
-
-  // Governance diagnostics
-  diagnostics.push(...validateGovernance(actions));
-
-  // Target binding diagnostics
-  diagnostics.push(...validateTargets(actions));
-
-  // Relation integrity diagnostics
-  diagnostics.push(...validateRelations(relations, actions));
-
-  // Environment ambiguity diagnostics
-  diagnostics.push(...validateEnvironment(actions));
-
-  // Constraint scope diagnostics (stub)
-  diagnostics.push(...validateConstraints(constraints));
-
-  // Unknown surface operation diagnostics
-  // Check actions that came from authoritative clauses but have no surface mapping
-  const authoritativeClauses = clauses.filter(c =>
-    c.provenance === 'DIRECT_INSTRUCTION' || c.provenance === 'SECONDARY_INSTRUCTION'
-  );
-  for (const clause of authoritativeClauses) {
-    // Check if this clause produced any action
-    const clauseActions = actions.filter(a => a.clauseId === clause.id);
-    if (clauseActions.length === 0) {
-      // Clause had authoritative provenance but no action frame was created
-      // This means extractSurfaceOperation returned null for all words
-      // We need to detect if there was a verb-like word
-      const words = clause.text.split(/\s+/);
-      for (const word of words) {
-        const cleaned = word.replace(/[^a-zA-Z-]/g, '').toLowerCase();
-        if (!cleaned) continue;
-        // Conservative: if it looks like a verb we might want to track
-        const verbLike = /^(frobnicate|widget|foobar|xyzzy|plugh|deploy|push|commit|rebase|merge|run|execute|test|audit|define|specify|promote|rollout|recover|resume|map|trace|explain|implement|build|create|update|fix|upgrade|migrate|check|verify|validate|review|inspect|analyze|diagnose|investigate)$/i.test(cleaned);
-        if (verbLike) {
-          // Check if this specific word is unknown by trying the surface map
-          const result = lookupSurfaceOperation(cleaned);
-          if (!result) {
-            diagnostics.push({
-              code: 'UNKNOWN_SURFACE_OPERATION',
-              detail: `Unknown surface verb "${cleaned}" in clause ${clause.id}`,
-            });
-          }
-        }
-      }
-    }
-  }
+  validateGovernance(actions, diagnostics);
+  validateTargets(actions, diagnostics);
+  validateRelations(relations, actions, diagnostics);
+  validateEnvironment(actions, diagnostics);
+  validateConstraints(constraints, diagnostics);
+  detectUnknownSurfaceOperations(clauses, actions, diagnostics);
 
   // Deduplicate diagnostics by code+detail
   const seen = new Set();
-  const uniqueDiagnostics = diagnostics.filter(d => {
+  const uniqueDiagnostics = diagnostics.filter((d) => {
     const key = `${d.code}|${d.detail}`;
     if (seen.has(key)) return false;
     seen.add(key);
@@ -199,6 +178,3 @@ export function assembleRequestFrame(prompt) {
     diagnostics: uniqueDiagnostics,
   };
 }
-
-// Export stub for T06-local use (not for external consumption)
-export { buildConstraintFrames };

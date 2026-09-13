@@ -2,10 +2,6 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
-import { segmentPrompt } from '../src/intent-resolver/segments.js';
-import { parseClauses } from '../src/intent-resolver/frame/clause-frame.js';
-import { buildActionFrames, buildContextFrames } from '../src/intent-resolver/frame/action-frame.js';
-import { resolveRelations } from '../src/intent-resolver/frame/relations.js';
 import { assembleRequestFrame } from '../src/intent-resolver/frame/request-frame.js';
 
 export async function loadStructuralCases() {
