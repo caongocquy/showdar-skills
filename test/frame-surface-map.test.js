@@ -68,12 +68,18 @@ function testNoSkillOwnership() {
   }
 }
 
+function testPrototypeChainNamesReturnNull() {
+  assert.equal(lookupSurfaceOperation('__proto__'), null);
+  assert.equal(lookupSurfaceOperation('constructor'), null);
+}
+
 function runAll() {
   testRepresentativeTrace();
   testRepresentativePush();
   testRepresentativeDefine();
   testSeedEntries();
   testClosedSetUnknownReturnsNull();
+  testPrototypeChainNamesReturnNull();
   testNormalization();
   testMapIsFrozen();
   testNoSkillOwnership();

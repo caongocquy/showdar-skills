@@ -24,7 +24,7 @@ const ENTRIES = {
   resume: ['recovery', 'recover'],
 };
 
-const table = {};
+const table = Object.create(null);
 for (const [verb, [semanticCapability, canonicalAction]] of Object.entries(ENTRIES)) {
   table[verb] = Object.freeze({ semanticCapability, canonicalAction });
 }
