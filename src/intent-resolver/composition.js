@@ -19,11 +19,29 @@ export const VERB_FAMILIES = Object.freeze({
   design: ['design', 'layout', 'wireframe', 'mockup', 'prototype', 'ui', 'ux'],
   implement: ['implement', 'build', 'create', 'add', 'write', 'update', 'modify', 'refactor'],
   fix: ['fix', 'repair', 'resolve', 'patch', 'correct'],
-  test: ['test', 'run test', 'execute test', 'write test', 'add test', 'create test', 'regression test', 'add regression test', 'write regression test', 'regression matrix'],
+  test: ['test', 'run test', 'execute test', 'write test', 'add test', 'create test', 'regression test', 'add regression test', 'write regression test', 'regression matrix',
+    // Generalized test-authoring: plural and coverage forms compose the same capability.
+    // Bare nouns ('unit tests', 'coverage') are NOT verbs — only authoring-verb + test-target.
+    'write tests', 'add tests', 'create tests', 'author tests',
+    'write unit tests', 'add unit tests', 'create unit tests', 'author unit tests',
+    'write integration tests', 'add integration tests', 'create integration tests', 'author integration tests',
+    'write regression tests', 'add regression tests', 'create regression tests', 'author regression tests',
+    'write contract tests', 'add contract tests', 'create contract tests',
+    'add unit coverage', 'add regression coverage', 'add integration coverage',
+    'create unit coverage', 'write unit coverage'],
   quality: ['create matrix', 'define scenarios', 'quality assessment', 'map qa', 'map scenarios', 'qa matrix', 'quality matrix', 'risk matrix', 'coverage matrix', 'test matrix', 'qa regression matrix'],
   upgrade: ['upgrade', 'migrate', 'bump dependency', 'framework upgrade', 'dependency upgrade', 'update dependency'],
   deploy: ['deploy', 'push to', 'roll out', 'promote', 'scale', 'rotate', 'restart', 'blue-green'],
-  investigate: ['investigate', 'debug', 'diagnose', 'troubleshoot', 'crash', 'crashes', 'crashing', 'fail', 'fails', 'failing', 'error', 'broken', 'bug', 'issue', 'problem', 'reproduce', 'isolate', 'find cause', 'determine cause', 'find the cause', 'locate cause', 'trace failure'],
+  investigate: ['investigate', 'debug', 'diagnose', 'troubleshoot', 'crash', 'crashes', 'crashing', 'fail', 'fails', 'failing', 'error', 'broken', 'bug', 'issue', 'problem', 'reproduce', 'isolate', 'find cause', 'determine cause', 'find the cause', 'locate cause', 'trace failure',
+    // Generalized diagnostic investigation: unknown-cause + explicit investigation language.
+    // Bare verbs ('find', 'determine', 'identify', 'trace') are NOT included — only
+    // cause-bound compositions grant investigation authority.
+    'find the root cause', 'find root cause',
+    'determine the cause', 'determine the root cause', 'determine the underlying cause', 'determine the underlying reason',
+    'identify the cause', 'identify what is causing', 'identify the source', 'identify the reason',
+    'trace the source', 'trace what is causing', 'trace the cause',
+    'establish why', 'establish the cause',
+    'what is causing', 'what caused'],
   recover: ['recover', 'reconstruct', 'resume', 'replay', 'restore'],
   git: ['commit', 'merge', 'rebase', 'cherry-pick', 'push', 'stage', 'branch'],
   doc: ['update docs', 'update documentation', 'write docs', 'write documentation', 'add docs', 'add documentation', 'create docs', 'create documentation', 'document'],
@@ -69,7 +87,8 @@ const TARGET_PATTERNS = Object.freeze([
   { pattern: /\b(react\s+native\s+(upgrade|migration))\b/i, category: 'dependency', actionHint: 'upgrade' },
 
   // Testing/QA
-  { pattern: /\b((regression|integration|unit|e2e|automated|contract|smoke|migration)\s+test)\b/i, category: 'backend', actionHint: 'test' },
+  { pattern: /\b((regression|integration|unit|e2e|automated|contract|smoke|migration)\s+tests?)\b/i, category: 'backend', actionHint: 'test' },
+  { pattern: /\b((unit|regression|integration)\s+coverage)\b/i, category: 'backend', actionHint: 'test' },
   { pattern: /\b(test\s+(coverage|suite|cases|case|matrix|scenarios))\b/i, category: 'repository', actionHint: 'test' },
   { pattern: /\b(qa\s+(matrix|scenarios|matrix))\b/i, category: 'repository', actionHint: 'test' },
   { pattern: /\b(quality\s+(matrix|assessment))\b/i, category: 'repository', actionHint: 'test' },
@@ -295,6 +314,46 @@ function findTargetForVerb(verbSegment, allSegments) {
 }
 
 /**
+ * Weak execution verbs carry NO capability alone (perform/conduct/carry out).
+ * With a governed capability target they compose into the target's capability:
+ * security assessment/review/audit → assess, compatibility review → assess,
+ * compatibility/regression/unit/integration testing → test.
+ * Word-boundary matching keeps substrings ('performance') from firing.
+ */
+const WEAK_VERB_HEAD = /\b(perform(?:s|ed|ing)?|conduct(?:s|ed|ing)?|carr(?:y|ies)\s+out|carried\s+out|carrying\s+out)\b/i;
+const WEAK_VERB_TARGET = /\b(security\s+(?:assessment|review|audit)|compatibility\s+(?:review|assessment|audit|testing|tests?|test)|regression\s+(?:testing|tests?|test)|(?:unit|integration|e2e|contract|automated)\s+(?:testing|tests?|test))\b/i;
+
+function weakVerbTargetAction(targetText) {
+  const lowerTarget = lower(targetText);
+  if (/\b(testing|tests?)\b/i.test(lowerTarget)) return 'test';
+  return 'assess';
+}
+
+/**
+ * Extract weak-verb + governed-target compositions from a text span.
+ * Returns array of { verb, action, targetText }.
+ */
+function extractWeakVerbCompositions(text) {
+  const results = [];
+  const headRegex = new RegExp(WEAK_VERB_HEAD.source, 'gi');
+  let match;
+  while ((match = headRegex.exec(text)) !== null) {
+    const window = text.slice(match.index, match.index + match[0].length + 80);
+    const targetMatch = window.match(WEAK_VERB_TARGET);
+    if (targetMatch) {
+      results.push({
+        verb: `${match[0].toLowerCase()} ${targetMatch[0].toLowerCase()}`,
+        headVerb: match[0].toLowerCase(),
+        action: weakVerbTargetAction(targetMatch[0]),
+        targetText: targetMatch[0],
+        index: match.index,
+      });
+    }
+  }
+  return results;
+}
+
+/**
  * Extract all verbs from text with their action categories.
  * Returns array of { verb, action }.
  */
@@ -369,7 +428,14 @@ export function extractActionCandidates(segments) {
     
     // Extract all verbs from this segment
     const verbs = extractAllVerbs(segment.text);
-    
+
+    // Weak-verb + governed-target compositions (perform/conduct/carry out add
+    // no capability alone; the governed target supplies it).
+    for (const weak of extractWeakVerbCompositions(segment.text)) {
+      if (detectNegation(segment.text, weak.headVerb)) continue;
+      verbs.push({ verb: weak.verb, action: weak.action });
+    }
+
     for (const verbInfo of verbs) {
       // Check if this specific verb is negated in the segment
       if (detectNegation(segment.text, verbInfo.verb)) continue;
@@ -451,6 +517,22 @@ function actionToPhase(action) {
  * Also uses coordination groups for cross-segment logical requests.
  */
 export function composePrimaryAction(candidates, contextText = '', allSegments = []) {
+  // Generalized diagnostic investigation: unknown cause + explicit diagnostic
+  // investigation language → diagnose, read-only. Runs before the empty-candidate
+  // fallback so cause-bound verbs that yield no family match still resolve.
+  // Known cause + requested repair falls through to the fix path below.
+  const hasDiagnosticInvestigation = /\b(find the root cause|find root cause|determine the (root |underlying )?(cause|reason)|identify (the (cause|source|reason)|what is causing)|trace (the (source|cause)|what is causing)|establish why|what (caused|is causing)|why (did|does|is))\b/i.test(contextText);
+  const hasKnownCauseWithRepair = /\b(known cause|cause is (known|confirmed)|confirmed (root cause|cause)|already know|i know the|the cause is)\b/i.test(contextText)
+    && /\b(fix|repair|resolve|patch|correct|implement|build)\b/i.test(contextText);
+  if (hasDiagnosticInvestigation && !hasKnownCauseWithRepair) {
+    return {
+      phase: 'diagnosis',
+      action: 'investigate',
+      confidence: 'high',
+      source: 'diagnostic-investigation',
+    };
+  }
+
   // Special case: "is not known" / "are not defined" for business rules/requirements -> definition/define
   // This handles state descriptions like "The business rule for partial refunds is not known yet"
   // These are not negated commands but state-of-knowledge assertions requiring definition work
@@ -675,12 +757,16 @@ export function composePrimaryAction(candidates, contextText = '', allSegments =
     };
   }
   
-  // Special case: "write/add/create tests" without implementation -> verification/test
-  // When test candidate exists alongside implement candidate from "write" but no other implementation verbs
+  // Special case: test-authoring ("write/add/create/author tests|coverage") without
+  // implementation -> verification/test. The noun "test" alone never reaches here
+  // (no authoring verb means no test candidate); diagnostic/repair/review verbs
+  // own their candidates, so those contexts keep their semantics.
   const testCandidate = candidates.find(c => c.action === 'test');
   const implementCandidate = candidates.find(c => c.action === 'implement');
-  if (testCandidate && implementCandidate && implementCandidate.verb === 'write' &&
-      /\b(write|add|create)\s+(automated\s+)?(regression|unit|integration|e2e|contract|smoke|migration)\s+tests?\b/i.test(contextText) &&
+  const hasTestAuthoring = /\b(write|add|create|author)\s+(automated\s+)?(regression|unit|integration|e2e|contract|smoke|migration)\s+tests?\b/i.test(contextText)
+    || /\b(add|create|write|author)\s+(unit|regression|integration)\s+coverage\b/i.test(contextText);
+  if (testCandidate && implementCandidate && ['write', 'add', 'create', 'author'].includes(implementCandidate.verb) &&
+      hasTestAuthoring &&
       !/\b(implement|build|upgrade|migrate|fix|modify|change|update|refactor|patch|feature|functionality)\b/i.test(contextText)) {
     // Only test verb, no implementation intent -> keep test/verification
     return {
@@ -699,7 +785,8 @@ export function composePrimaryAction(candidates, contextText = '', allSegments =
   if (implementCandidate && testCandidate && implementCandidate.provenance.segmentIndex === testCandidate.provenance.segmentIndex) {
     // Check if there's explicit test language alongside implement
     const hasTestLanguage = /\b(regression tests?|unit tests?|integration tests?|e2e tests?|automated tests?|add tests?|write tests?)\b/i.test(contextText);
-    const hasWriteTestsPattern = /\b(write|add|create)\s+(automated\s+)?(regression|unit|integration|e2e|contract|smoke|migration)\s+tests?\b/i.test(contextText);
+    const hasWriteTestsPattern = /\b(write|add|create|author)\s+(automated\s+)?(regression|unit|integration|e2e|contract|smoke|migration)\s+tests?\b/i.test(contextText)
+      || /\b(add|create|write|author)\s+(unit|regression|integration)\s+coverage\b/i.test(contextText);
     // Check if implement verb is negated
     const negatedImplVerbs = ['implement', 'build', 'create', 'add', 'write', 'fix', 'modify', 'update', 'refactor', 'patch'];
     let hasNegatedImplVerb = false;

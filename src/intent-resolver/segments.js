@@ -266,7 +266,9 @@ export function segmentPrompt(text) {
   // NOTE: Longer patterns MUST come before shorter ones in alternation (regex tries left-to-right)
   // Extended to capture full compound verbs like "security audit logging", "security review", "add tests"
   // Also captures bare "and regression tests", "and tests", "and test" as explicit requests
-  const secondaryRegex = /\b(?:and\s+(?:also|then)?\s*|plus\s+|also\s+|additionally\s+)(?:add\s+regression\s+tests?|write\s+regression\s+tests?|add\s+tests?|write\s+tests?|create\s+tests?|add\s+security\s+audit\s+logging|security\s+audit\s+logging|security\s+audit|security\s+review|regression\s+tests?|tests?|write|add|create|implement|test|review|deploy|fix|upgrade|migrate|check|verify|validate|update)\b/gi;
+  // Weak execution verbs (perform/conduct/carry out) split only with a governed
+  // capability target; bare weak verbs never split.
+  const secondaryRegex = /\b(?:and\s+(?:also|then)?\s*|plus\s+|also\s+|additionally\s+)(?:(?:perform|conduct|carry\s+out)\s+(?:a\s+|an\s+|the\s+)?(?:security|compatibility|regression)\s+(?:assessment|review|audit|testing|tests?)|add\s+regression\s+tests?|write\s+regression\s+tests?|add\s+tests?|write\s+tests?|create\s+tests?|add\s+security\s+audit\s+logging|security\s+audit\s+logging|security\s+audit|security\s+review|regression\s+tests?|tests?|write|add|create|implement|test|review|deploy|fix|upgrade|migrate|check|verify|validate|update)\b/gi;
   const secondaryBlocks = [];
   while ((match = secondaryRegex.exec(text)) !== null) {
     secondaryBlocks.push({ start: match.index, end: match.index + match[0].length, text: match[0], kind: 'SECONDARY_INSTRUCTION' });
