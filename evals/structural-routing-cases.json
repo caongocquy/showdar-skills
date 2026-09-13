@@ -1,0 +1,70 @@
+{
+  "version": 1,
+  "cases": [
+    {
+      "id": "governing-plus-orthogonal",
+      "input": "Implement the API and also review the security guidelines.",
+      "expected": {
+        "clauses": [],
+        "actions": [],
+        "relations": [],
+        "constraints": [],
+        "intent": {"phase":"implementation","action":"implement","object":"api","secondaryActions":[],"risks":[],"mutation":"local-write","evidence":{}},
+        "primary": "showdar-build",
+        "advisors": ["showdar-security"]
+      }
+    },
+    {
+      "id": "governing-plus-supporting",
+      "input": "Deploy the service and then run integration tests.",
+      "expected": {
+        "clauses": [],
+        "actions": [],
+        "relations": [],
+        "constraints": [],
+        "intent": {"phase":"implementation","action":"deploy","object":"service","secondaryActions":[],"risks":[],"mutation":"remote-write","evidence":{}},
+        "primary": "showdar-ops",
+        "advisors": ["showdar-test"]
+      }
+    },
+    {
+      "id": "historical-context-vs-action",
+      "input": "Previously we fixed the login bug, now we need to audit the authentication flow.",
+      "expected": {
+        "clauses": [],
+        "actions": [],
+        "relations": [],
+        "constraints": [],
+        "intent": {"phase":"diagnosis","action":"audit","object":"authentication","secondaryActions":[],"risks":[],"mutation":"read-only","evidence":{}},
+        "primary": "showdar-security",
+        "advisors": []
+      }
+    },
+    {
+      "id": "log-context-vs-action",
+      "input": "The logs show intermittent failures, we should investigate the runtime.",
+      "expected": {
+        "clauses": [],
+        "actions": [],
+        "relations": [],
+        "constraints": [],
+        "intent": {"phase":"diagnosis","action":"investigate","object":"runtime","secondaryActions":[],"risks":[],"mutation":"read-only","evidence":{}},
+        "primary": "showdar-debug",
+        "advisors": []
+      }
+    },
+    {
+      "id": "conditional-action",
+      "input": "If the build passes, deploy to staging.",
+      "expected": {
+        "clauses": [],
+        "actions": [],
+        "relations": [],
+        "constraints": [],
+        "intent": {"phase":"implementation","action":"deploy","object":"staging","secondaryActions":[],"risks":[],"mutation":"remote-write","evidence":{}},
+        "primary": "showdar-ops",
+        "advisors": []
+      }
+    }
+  ]
+}
