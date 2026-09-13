@@ -124,9 +124,18 @@ test('confidence exposes deterministic margin and low confidence for a tie', () 
   assert.equal(clear.confidence.level, 'high');
   assert.equal(typeof clear.confidence.margin, 'number');
 
-  const tie = buildRoutePlan(intent({ phase: 'verification', action: 'review', object: 'repository', risks: ['regression'], mutation: 'read-only' }));
+  // Phase 6E: (verification, review) is decisively review-owned via the
+  // explicit-review rule, so the tie fixture moves to a still-ambiguous
+  // intent (discovery, assess) with no decisive rule.
+  const tie = buildRoutePlan(intent({ phase: 'discovery', action: 'assess', object: 'repository', mutation: 'read-only' }));
   assert.equal(tie.confidence.level, 'low');
   assert.equal(tie.confidence.margin, 0);
+});
+
+test('explicit review is decisively review-owned', () => {
+  const review = buildRoutePlan(intent({ phase: 'verification', action: 'review', object: 'repository', risks: ['regression'], mutation: 'read-only' }));
+  assert.equal(review.primary.skill, 'showdar-review');
+  assert.equal(review.confidence.level, 'high');
 });
 
 test('taxonomy and route ordering do not depend on capability declaration order', () => {

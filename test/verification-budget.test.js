@@ -82,7 +82,9 @@ test('advisors do not escalate budget by themselves', () => {
 });
 
 test('low route confidence raises an otherwise low plan to medium', () => {
-  const task = intent({ phase: 'verification', action: 'review', object: 'repository', risks: ['regression'], mutation: 'read-only' });
+  // Phase 6E: (verification, review) is decisively review-owned, so the
+  // low-confidence fixture uses a still-ambiguous (discovery, assess) route.
+  const task = intent({ phase: 'discovery', action: 'assess', object: 'repository', mutation: 'read-only' });
   const plan = buildVerificationPlan(task, buildRoutePlan(task), { scope: 'small' });
   assert.equal(plan.budget, 'medium');
   assert.ok(plan.escalations.some((reason) => reason.includes('route confidence')));

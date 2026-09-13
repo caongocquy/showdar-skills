@@ -67,7 +67,7 @@ export const OBJECT_KEYWORDS = Object.freeze({
 
 // Risk keywords - domain concerns
 export const RISK_KEYWORDS = Object.freeze({
-  security: ['security', 'auth', 'authorization', 'authentication', 'secret', 'credential', 'token', 'vulnerability', 'exploit', 'attack', 'threat', 'xss', 'csrf', 'sql injection', 'injection', 'idol', 'bola', 'ssrf', 'encryption', 'signature', 'webhook', 'trust boundary', 'penetration test', 'pentest', 'oauth callback', 'oauth login', 'oauth', 'encryption module'],
+  security: ['security', 'auth', 'authorization', 'authentication', 'secret', 'credential', 'token', 'vulnerability', 'vulnerabilities', 'exploit', 'attack', 'threat', 'xss', 'csrf', 'sql injection', 'injection', 'idol', 'bola', 'ssrf', 'encryption', 'signature', 'webhook', 'trust boundary', 'penetration test', 'pentest', 'oauth callback', 'oauth login', 'oauth', 'encryption module', 'hijack', 'hijacking', 'hijacked', 'breach'],
   regression: ['regression', 'regress', 'break', 'existing', 'previous', 'backward', 'compatibility', 'used to work', 'flaky', 'intermittent', 'regression test', 'regression matrix', 'flaky test', 'duplicate payment'],
   compatibility: ['compatibility', 'compatible', 'version', 'upgrade', 'migration', 'breaking', 'deprecated', 'polyfill', 'react native', 'database driver', 'dependency upgrade'],
   performance: ['performance', 'slow', 'latency', 'speed', 'optimization', 'bottleneck', 'memory', 'cpu', 'jank', 'lag', 'timeout', 'memory leak', 'circuit breaker', 'unclosed stream'],
@@ -118,13 +118,15 @@ export const NEGATION_PATTERNS = Object.freeze([
 ]);
 
 // Readiness patterns
+// The confirm-passes-gates form tolerates adjectives between the verb and the
+// gate noun ("passes all regional gates", "passes all onboarding gates").
 export const READINESS_PATTERNS = Object.freeze([
   /\bcheck whether.*ready\b/i,
   /\bassess whether.*ready\b/i,
   /\bready to (publish|release|deploy|ship)\b/i,
   /\breadiness\b/i,
   /\bconfirm.*release.*artifact\b/i,
-  /\bconfirm.*passes all gates\b/i,
+  /\bconfirm\b.*\bpass(?:es|ed|ing)?\b.*\bgates?\b/i,
 ]);
 
 // Staging detection

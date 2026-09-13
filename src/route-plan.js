@@ -76,6 +76,9 @@ const PRIMARY_SELECTION_RULES = Object.freeze([
   { id: 'release-readiness', priority: 110, skill: 'showdar-ship', reason: 'release readiness without deployment mutation is shipping-owned', matches: (intent) => intent.phase === 'delivery' && ['assess', 'release', 'review'].includes(intent.action) && intent.mutation === 'read-only' },
   // QA scope -> quality owns
   { id: 'qa-scope', priority: 105, skill: 'showdar-quality', reason: 'explicit QA or regression-scope assessment is quality-owned', matches: (intent) => intent.phase === 'verification' && intent.action === 'assess' },
+  // Explicit review -> review owns (below security-assessment so a
+  // security-scoped review still routes to security)
+  { id: 'explicit-review', priority: 100, skill: 'showdar-review', reason: 'explicit review without security scope is review-owned', matches: (intent) => intent.phase === 'verification' && intent.action === 'review' },
   // Automated test -> test owns
   { id: 'automated-test', priority: 105, skill: 'showdar-test', reason: 'automated test implementation is test-owned', matches: (intent) => intent.phase === 'verification' && intent.action === 'test' },
   // Dependency migration -> upgrade owns

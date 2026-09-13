@@ -427,8 +427,10 @@ export function resolveMutationFromComposition(candidates, segments) {
   }
 
   // Determine primary action from composition (for phase/action AND mutation)
-  // Mutation follows the PRIMARY authorized intent, not noun-matched context verbs
-  const primary = composePrimaryAction(candidates, fullContextText);
+  // Mutation follows the PRIMARY authorized intent, not noun-matched context verbs.
+  // Segments are passed so segment-aware composition (governing/supporting
+  // precedence) agrees with the intent path.
+  const primary = composePrimaryAction(candidates, fullContextText, segments);
   const primaryAction = primary.action;
 
   // Special case: setup deployment strategy (blue-green/canary configuration)

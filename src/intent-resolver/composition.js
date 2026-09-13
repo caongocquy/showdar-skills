@@ -45,6 +45,9 @@ export const VERB_FAMILIES = Object.freeze({
   recover: ['recover', 'reconstruct', 'resume', 'replay', 'restore'],
   git: ['commit', 'merge', 'rebase', 'cherry-pick', 'push', 'stage', 'branch'],
   doc: ['update docs', 'update documentation', 'write docs', 'write documentation', 'add docs', 'add documentation', 'create docs', 'create documentation', 'document'],
+  // Release verbs come last so score ties keep favoring incumbent families;
+  // readiness assessments ("ready to publish") still resolve via assess first.
+  release: ['release', 'ship', 'publish', 'deliver', 'handoff'],
 });
 
 /**
@@ -88,6 +91,7 @@ const TARGET_PATTERNS = Object.freeze([
 
   // Testing/QA
   { pattern: /\b((regression|integration|unit|e2e|automated|contract|smoke|migration)\s+tests?)\b/i, category: 'backend', actionHint: 'test' },
+  { pattern: /\b((regression|integration|unit|e2e|automated|contract|smoke|migration)\s+suite)\b/i, category: 'repository', actionHint: 'test' },
   { pattern: /\b((unit|regression|integration)\s+coverage)\b/i, category: 'backend', actionHint: 'test' },
   { pattern: /\b(test\s+(coverage|suite|cases|case|matrix|scenarios))\b/i, category: 'repository', actionHint: 'test' },
   { pattern: /\b(qa\s+(matrix|scenarios|matrix))\b/i, category: 'repository', actionHint: 'test' },
@@ -318,14 +322,23 @@ function findTargetForVerb(verbSegment, allSegments) {
  * With a governed capability target they compose into the target's capability:
  * security assessment/review/audit → assess, compatibility review → assess,
  * compatibility/regression/unit/integration testing → test.
- * Word-boundary matching keeps substrings ('performance') from firing.
+ * Review-headed capability targets (accessibility review, API contract review)
+ * compose into review; assessment/audit/validation-headed targets compose into
+ * assess. Word-boundary matching keeps substrings ('performance') from firing.
  */
 const WEAK_VERB_HEAD = /\b(perform(?:s|ed|ing)?|conduct(?:s|ed|ing)?|carr(?:y|ies)\s+out|carried\s+out|carrying\s+out)\b/i;
-const WEAK_VERB_TARGET = /\b(security\s+(?:assessment|review|audit)|compatibility\s+(?:review|assessment|audit|testing|tests?|test)|regression\s+(?:testing|tests?|test)|(?:unit|integration|e2e|contract|automated)\s+(?:testing|tests?|test))\b/i;
+const WEAK_VERB_TARGET = /\b(security\s+(?:assessment|review|audit)|compatibility\s+(?:review|assessment|audit|testing|tests?|test)|regression\s+(?:testing|tests?|test)|(?:unit|integration|e2e|contract|automated)\s+(?:testing|tests?|test)|accessibility\s+(?:review|audit|assessment)|(?:api\s+contract|contract)\s+review|migration\s+(?:validation|assessment)|(?:upgrade|migration))\b/i;
 
 function weakVerbTargetAction(targetText) {
   const lowerTarget = lower(targetText);
   if (/\b(testing|tests?)\b/i.test(lowerTarget)) return 'test';
+  // Review-headed capability targets name the review capability itself, except
+  // security-headed ones which stay security assessments (existing behavior).
+  if (/\breview\b/i.test(lowerTarget) && !/\bsecurity\b/i.test(lowerTarget)) return 'review';
+  // Bare upgrade/migration targets name the upgrade capability ("perform the
+  // upgrade"); assessment-headed forms stay assessments.
+  if (/\b(assessment|audit|validation)\b/i.test(lowerTarget)) return 'assess';
+  if (/\b(upgrade|migration)\b/i.test(lowerTarget)) return 'upgrade';
   return 'assess';
 }
 
@@ -354,9 +367,54 @@ function extractWeakVerbCompositions(text) {
 }
 
 /**
- * Extract all verbs from text with their action categories.
- * Returns array of { verb, action }.
+ * Test-execution verbs carry test capability ONLY with a governed test target
+ * (suite/tests/matrix/cases). Bare "run"/"execute" never manufacture authority:
+ * "run the server" and "execute the migration" yield no candidate, while
+ * "run the integration suite" composes into test execution (read-only — the
+ * execution semantics, not test-authoring local-write).
  */
+const EXEC_VERB_HEAD = /\b(run(?:s|ning)?|ran|execut(?:e|es|ed|ing)|rerun(?:s|ning)?|exercis(?:e|es|ed|ing))\b/i;
+const EXEC_TEST_TARGET = /\b((?:regression|integration|unit|e2e|automated|contract|smoke|migration)\s+(?:tests?|suite)|(?:regression|integration|unit|e2e|automated|contract|smoke|migration)?\s*test\s+suite|tests?\s+suite|test\s+(?:matrix|cases?))\b/i;
+
+/**
+ * Extract execution-verb + governed-test-target compositions from a text span.
+ * Returns array of { verb, headVerb, action, targetText, index }.
+ */
+function extractExecVerbCompositions(text) {
+  const results = [];
+  const headRegex = new RegExp(EXEC_VERB_HEAD.source, 'gi');
+  let match;
+  while ((match = headRegex.exec(text)) !== null) {
+    const window = text.slice(match.index, match.index + match[0].length + 80);
+    const targetMatch = window.match(EXEC_TEST_TARGET);
+    if (targetMatch) {
+      results.push({
+        verb: `${match[0].toLowerCase()} ${targetMatch[0].toLowerCase()}`,
+        headVerb: match[0].toLowerCase(),
+        action: 'test',
+        targetText: targetMatch[0],
+        index: match.index,
+      });
+    }
+  }
+  return results;
+}
+
+/**
+ * Determiner-headed nominalizations ("the invoice authorization check", "this
+ * patch", "the driver upgrade") and build artifact-noun phrases ("build
+ * output") use action words as nouns. Stripping them lets verb-role checks
+ * (verb extraction, review-guard exclusions) ignore noun uses without losing
+ * genuinely verbal uses elsewhere in the span.
+ */
+const NOMINAL_NP_SOURCE = '\\b(?:the|a|an|this|that|these|those)\\b(?:\\s+[a-z][a-z0-9_-]*){0,3}\\s+(?:check|verification|validation|upgrade|patch|release)\\b';
+const BUILD_NOUN_PHRASE_SOURCE = '\\bbuild\\s+(?:artifact|artifacts|output|outputs|binary|binaries|log|logs|number|numbers|status|report|results?)\\b';
+
+function stripNominalNouns(text) {
+  return text
+    .replace(new RegExp(NOMINAL_NP_SOURCE, 'gi'), ' ')
+    .replace(new RegExp(BUILD_NOUN_PHRASE_SOURCE, 'gi'), ' ');
+}
 function extractAllVerbs(text) {
   const lowerText = lower(text);
   const results = [];
@@ -394,11 +452,27 @@ function extractAllVerbs(text) {
             results.push({ verb, action });
           }
         }
-        // Special handling for "build" - avoid matching in noun phrases like "last build", "next build", "failed build"
+        // Special handling for "build" - avoid matching in noun phrases like "last build", "next build", "failed build",
+        // and in artifact-noun phrases like "build artifact", "build output" where
+        // "build" is a noun modifier, not the requested action ("build the artifact"
+        // keeps its verbal force because the governed noun is a determiner phrase).
         else if (verb === 'build') {
           const buildContextAdjectives = '(?:last|next|previous|failed|successful|recent|current|daily|nightly|ci|pipeline)';
-          const regex = new RegExp(`(?<!${buildContextAdjectives}\\s)\\bbuild\\b`, 'i');
+          const buildNounFollowers = '(?:artifact|artifacts|output|outputs|binary|binaries|log|logs|number|numbers|status|report|results?)';
+          const regex = new RegExp(`(?<!${buildContextAdjectives}\\s)\\bbuild\\b(?!\\s+${buildNounFollowers}\\b)`, 'i');
           if (regex.test(lowerText)) {
+            results.push({ verb, action });
+          }
+        }
+        // Special handling for nominalized verbs - determiner-headed noun phrases
+        // ("the invoice authorization check", "this patch", "the driver upgrade")
+        // use these words as nouns, not requested actions. Strip nominal
+        // occurrences so a genuinely verbal use elsewhere in the same span
+        // still counts.
+        else if (['check', 'verification', 'validation', 'upgrade', 'patch', 'release'].includes(verb)) {
+          const stripped = stripNominalNouns(lowerText);
+          const regex = new RegExp(`\\b${verb}\\b`, 'i');
+          if (regex.test(stripped)) {
             results.push({ verb, action });
           }
         }
@@ -434,6 +508,13 @@ export function extractActionCandidates(segments) {
     for (const weak of extractWeakVerbCompositions(segment.text)) {
       if (detectNegation(segment.text, weak.headVerb)) continue;
       verbs.push({ verb: weak.verb, action: weak.action });
+    }
+
+    // Execution-verb + governed-test-target compositions (run/execute/rerun
+    // grant test capability only with a strong test target).
+    for (const exec of extractExecVerbCompositions(segment.text)) {
+      if (detectNegation(segment.text, exec.headVerb)) continue;
+      verbs.push({ verb: exec.verb, action: exec.action });
     }
 
     for (const verbInfo of verbs) {
@@ -507,6 +588,7 @@ function actionToPhase(action) {
     investigate: 'diagnosis',
     recover: 'recovery',
     git: 'repository',
+    release: 'delivery',
   };
   return actionPhaseMap[action] || 'discovery';
 }
@@ -521,7 +603,11 @@ export function composePrimaryAction(candidates, contextText = '', allSegments =
   // investigation language → diagnose, read-only. Runs before the empty-candidate
   // fallback so cause-bound verbs that yield no family match still resolve.
   // Known cause + requested repair falls through to the fix path below.
-  const hasDiagnosticInvestigation = /\b(find the root cause|find root cause|determine the (root |underlying )?(cause|reason)|identify (the (cause|source|reason)|what is causing)|trace (the (source|cause)|what is causing)|establish why|what (caused|is causing)|why (did|does|is))\b/i.test(contextText);
+  // The verb + why/what-causes complement ("find why X happens", "figure out
+  // why X fails", "work out what causes X") is cause-bound investigation even
+  // when no other diagnostic noun is present. Bare "find" alone never fires.
+  const hasDiagnosticInvestigation = /\b(find the root cause|find root cause|determine the (root |underlying )?(cause|reason)|identify (the (cause|source|reason)|what is causing)|trace (the (source|cause)|what is causing)|establish why|what (caused|is causing)|why (did|does|is))\b/i.test(contextText)
+    || /\b(diagnos(?:e|es|ed|ing)?|investigates?|investigating|debug(?:s|ged|ging)?|troubleshoot(?:s|ed|ing)?|find(?:s|ing)?|determine[sd]?|determining|figure(?:s|d)?\s+out|work(?:s|ed|ing)?\s+out|identif(?:y|ies|ied|ying)|trac(?:e|es|ed|ing)?|establish(?:es|ed|ing)?)\b[^.?!]{0,60}\b(why|what\s+causes)\b/i.test(contextText);
   const hasKnownCauseWithRepair = /\b(known cause|cause is (known|confirmed)|confirmed (root cause|cause)|already know|i know the|the cause is)\b/i.test(contextText)
     && /\b(fix|repair|resolve|patch|correct|implement|build)\b/i.test(contextText);
   if (hasDiagnosticInvestigation && !hasKnownCauseWithRepair) {
@@ -545,6 +631,18 @@ export function composePrimaryAction(candidates, contextText = '', allSegments =
     };
   }
   
+  // Special case: readiness assessment with no verb-family candidate.
+  // A readiness assessment names its own authority even when the action must
+  // come from a noun phrase ("the build artifact") rather than a verb.
+  if (candidates.length === 0 && hasReadinessPattern(contextText)) {
+    return {
+      phase: 'delivery',
+      action: 'assess',
+      confidence: 'high',
+      source: 'readiness-pattern',
+    };
+  }
+
   if (candidates.length === 0) {
     // Safe fallback: no ownership-eligible candidate -> non-mutating discovery/assess
     // Does NOT grant implementation authority
@@ -569,7 +667,34 @@ export function composePrimaryAction(candidates, contextText = '', allSegments =
     primary = candidates[0];
     source = 'fallback';
   }
+
+  // Governing/supporting precedence: a supporting-step verb (fix/assess over a
+  // workflow byproduct such as conflicts or health) must not displace the
+  // governing workflow verb that opens the same instruction ("rebase ...
+  // resolve conflicts", "deploy ... verify health"). The governing verb must
+  // head the segment; a mid-sentence workflow noun ("fix the deploy script")
+  // never counts as governing. Standalone supporting steps with no governing
+  // verb ("resolve the merge conflicts") keep their own authority.
+  if (primary.action === 'fix' || primary.action === 'assess') {
+    const primarySegment = allSegments.find((s) => s.index === primary.provenance.segmentIndex);
+    const segmentText = primarySegment ? primarySegment.text : '';
+    const hasSupportingTarget = /\bconflicts?\b/i.test(segmentText)
+      || /\bhealth(\s+checks?|\s+endpoint)?\b/i.test(segmentText);
+    const hasGoverningHead = /^\s*(please\s+|kindly\s+)?(rebase|cherry-pick|merge|deploy|roll\s*out|rollout|recover|reconstruct|resume|upgrade|migrate|push)\b/i.test(segmentText);
+    if (hasSupportingTarget && hasGoverningHead) {
+      const governing = candidates.find((c) =>
+        (c.action === 'git' || c.action === 'deploy' || c.action === 'recover' || c.action === 'upgrade') &&
+        c.provenance.segmentIndex === primary.provenance.segmentIndex);
+      if (governing) {
+        primary = governing;
+        source = 'governing-workflow';
+      }
+    }
+  }
   
+  // (readiness assessment with no verb-family candidate handled above,
+  // before the empty-candidate fallback)
+
   // Special case: readiness patterns override to delivery/assess
   if (hasReadinessPattern(contextText) && primary.action !== 'deploy') {
     return {
@@ -581,7 +706,7 @@ export function composePrimaryAction(candidates, contextText = '', allSegments =
       originalPhase: primary.phase,
     };
   }
-  
+
   // Special case: staging deploy
   if (primary.action === 'deploy' && isStagingDeploy(contextText)) {
     return {
@@ -616,7 +741,11 @@ export function composePrimaryAction(candidates, contextText = '', allSegments =
   }
   // Only skip security-audit if there's a non-negated implementation verb
   // If impl verb exists but is negated (don't patch), still treat as audit-only -> discovery
-  if (/\b(threat model|threat-model|security audit|security review|audit security)\b/i.test(contextText) && (!hasImplementationVerb || hasNegatedImplVerb)) {
+  // An audit verb governing a threat target ("audit ... for hijack risks") is a
+  // security assessment even without the adjacent "security audit" compound.
+  const hasAuditThreatTarget = /\baudit\b/i.test(contextText)
+    && /\b(hijack|hijacking|hijacked|breach|vulnerabilit|threat|exploit|attack|compromise)\b/i.test(contextText);
+  if ((/\b(threat model|threat-model|security audit|security review|audit security)\b/i.test(contextText) || hasAuditThreatTarget) && (!hasImplementationVerb || hasNegatedImplVerb)) {
     return {
       phase: 'discovery',
       action: 'assess',
@@ -717,8 +846,10 @@ export function composePrimaryAction(candidates, contextText = '', allSegments =
   }
   
   // Special case: explicit review without implement
+  // The exclusion tests verb-role, not raw text: nominalized action nouns
+  // ("this patch", "the driver upgrade") must not block review ownership.
   if (primary.action === 'assess' && /\b(review|audit|code review|pr review)\b/i.test(contextText) &&
-      !/\b(implement|build|create|add|develop|write|fix|modify|update|refactor|patch)\b/i.test(contextText)) {
+      !/\b(implement|build|create|add|develop|write|fix|modify|update|refactor|patch)\b/i.test(stripNominalNouns(contextText))) {
     return {
       phase: 'verification',
       action: 'review',

@@ -49,7 +49,7 @@ export function resolveEvidence(evidenceKeywordSignals, fullText) {
   // === CONTEXT PATTERNS (collected before resolution) ===
   
   // failureObserved context patterns
-  const hasExplicitFailure = 
+  const hasExplicitFailure =
     hasKnownCausePattern(lowerText) ||
     /\b(ci|build)\b/i.test(lowerText) && /\b(fail|failure|error|broken)\b/i.test(lowerText) ||
     /\b(failed\s+deploy|deploy\s+failed|deployment\s+failed|failed\s+deployment|rollback\s+fails)\b/i.test(lowerText) ||
@@ -58,7 +58,11 @@ export function resolveEvidence(evidenceKeywordSignals, fullText) {
     /\bconnection refused\b/i.test(lowerText) ||
     /\b502\b/i.test(lowerText) && /\b(gateway|upstream)\b/i.test(lowerText) ||
     /\b(login crash|auth bypass|null token|null-token)\b/i.test(lowerText) ||
-    (/\b(investigate|debug|diagnose|troubleshoot)\b/i.test(lowerText) && 
+    // Nonzero process exit status ("Exit 137", "exited with status 3").
+    // Exit zero is success and never observes failure.
+    /\bexit\s+([1-9][0-9]{0,2})\b/i.test(lowerText) ||
+    /\bexited\s+with\s+status\s+([1-9][0-9]{0,2})\b/i.test(lowerText) ||
+    (/\b(investigate|debug|diagnose|troubleshoot)\b/i.test(lowerText) &&
      /\b(unknown|no known cause|no confirmed cause|don't know|unclear)\b/i.test(lowerText));
 
   const hasExplicitSuccess = 

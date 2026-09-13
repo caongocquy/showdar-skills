@@ -157,10 +157,10 @@
   },
   {
     "id": "ambiguous-local-task",
-    "description": "Review an ambiguous local repository change with weak routing evidence.",
+    "description": "Review a local repository change. Phase 6E: explicit review routes decisively (explicit-review rule), so a small read-only review budgets low; low-confidence escalation is covered by discovery/assess unit cases.",
     "intent": { "phase": "verification", "action": "review", "object": "repository", "risks": ["regression"], "mutation": "read-only" },
     "change": { "scope": "small" },
-    "expectedBudget": "medium",
+    "expectedBudget": "low",
     "expectedRequired": ["regression"]
   },
   {
