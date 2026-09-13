@@ -8,8 +8,10 @@ export async function loadStructuralCases() {
   const filePath = path.resolve(import.meta.dirname, '../evals/structural-routing-cases.json');
   const data = await readFile(filePath, 'utf8');
   const json = JSON.parse(data);
-  // Support both legacy array format or new { version, cases }
-  return json.cases ?? json;
+  // Support both legacy array format or new { version, cases, scopedConstraintCases }
+  const mainCases = json.cases ?? json;
+  const scopedCases = json.scopedConstraintCases ?? [];
+  return [...mainCases, ...scopedCases];
 }
 
 test('structural routing fixture schema keys', async () => {
