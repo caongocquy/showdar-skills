@@ -24,25 +24,47 @@ function testThenConnector() {
   assert.equal(clauses[1].connector, 'THEN');
 }
 
-function testIfConnector() {
-  const segments = segmentPrompt('Deploy if approved.');
-  const clauses = parseClauses(segments);
-  assert.equal(clauses[0].connector, 'ROOT');
-  // only one clause, but connector detection for IF should be ROOT for first clause
-  assert.equal(clauses.length, 1);
-}
-
-function testToConnector() {
-  const segments = segmentPrompt('Migrate to staging.');
-  const clauses = parseClauses(segments);
-  assert.equal(clauses[0].connector, 'ROOT');
-}
-
 function testBecauseConnector() {
   const segments = segmentPrompt('Run tests because CI requires it.');
   const clauses = parseClauses(segments);
   assert.equal(clauses.length, 2);
   assert.equal(clauses[1].connector, 'BECAUSE');
+}
+
+function testIfConnector() {
+  const segments = segmentPrompt('Deploy if approved.');
+  const clauses = parseClauses(segments);
+  assert.equal(clauses[0].connector, 'ROOT');
+  assert.equal(clauses.length, 2);
+  assert.equal(clauses[1].connector, 'IF');
+}
+
+function testToConnector() {
+  const segments = segmentPrompt('Migrate to staging.');
+  const clauses = parseClauses(segments);
+  assert.equal(clauses.length, 2);
+  assert.equal(clauses[1].connector, 'TO');
+}
+
+function testUnlessConnector() {
+  const segments = segmentPrompt('Proceed unless cancelled.');
+  const clauses = parseClauses(segments);
+  assert.equal(clauses.length, 2);
+  assert.equal(clauses[1].connector, 'UNLESS');
+}
+
+function testBeforeConnector() {
+  const segments = segmentPrompt('Backup before deployment.');
+  const clauses = parseClauses(segments);
+  assert.equal(clauses.length, 2);
+  assert.equal(clauses[1].connector, 'BEFORE');
+}
+
+function testWhileConnector() {
+  const segments = segmentPrompt('Monitor while running.');
+  const clauses = parseClauses(segments);
+  assert.equal(clauses.length, 2);
+  assert.equal(clauses[1].connector, 'WHILE');
 }
 
 function testAfterConnector() {
@@ -59,15 +81,53 @@ function testQuotedContentIgnored() {
   assert.equal(clauses[1].connector, 'AND');
 }
 
+function testQuotedContentClause() {
+  const segments = segmentPrompt('"deploy now"');
+  const clauses = parseClauses(segments);
+  assert.equal(clauses.length, 1);
+  assert.equal(clauses[0].provenance, 'QUOTED_CONTENT');
+  assert.equal(clauses[0].connector, 'ROOT');
+}
+
+function testCodeBlockClause() {
+  const segments = segmentPrompt('```js\nconsole.log(1);\n```');
+  const clauses = parseClauses(segments);
+  assert.equal(clauses.length, 1);
+  assert.equal(clauses[0].provenance, 'CODE_BLOCK');
+}
+
+function testInlineCodeClause() {
+  const segments = segmentPrompt('`npm test`');
+  const clauses = parseClauses(segments);
+  assert.equal(clauses.length, 1);
+  assert.equal(clauses[0].provenance, 'INLINE_CODE');
+  assert.equal(clauses[0].connector, 'ROOT');
+}
+
+function testExampleClause() {
+  const segments = segmentPrompt('For example, the system is slow.');
+  const clauses = parseClauses(segments);
+  assert.equal(clauses.length, 1);
+  assert.equal(clauses[0].provenance, 'EXAMPLE');
+  assert.equal(clauses[0].connector, 'ROOT');
+}
+
 function runAll() {
   testDirectAndAnd();
   testNegation();
   testThenConnector();
-  testIfConnector();
-  testToConnector();
   testBecauseConnector();
   testAfterConnector();
   testQuotedContentIgnored();
+  testIfConnector();
+  testToConnector();
+  testUnlessConnector();
+  testBeforeConnector();
+  testWhileConnector();
+  testQuotedContentClause();
+  testCodeBlockClause();
+  testInlineCodeClause();
+  testExampleClause();
   console.log('All clause-frame tests passed');
 }
 
