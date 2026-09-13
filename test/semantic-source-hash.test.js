@@ -6,9 +6,9 @@ import { hashSemanticSource, canonicalSemanticFileList, SEMANTIC_SOURCE_FIXED_PR
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 
-// Phase 6E frozen semantic-source hash. Guards the freeze: any semantic
+// Phase 6F T09 frozen semantic-source hash. Guards the freeze: any semantic
 // production change must go through a new freeze cycle, never a silent edit.
-const FROZEN_SEMANTIC_SOURCE_SHA256 = 'e69b7e6662e5abaa32af4d4ac5523902c91383c925e66ea6336cbd196679eb7d';
+const FROZEN_SEMANTIC_SOURCE_SHA256 = '6695b0d81a76e3240043049a2016e565f9098c4f2b0247b5cef51a1d738c5364';
 
 test('canonical file list uses the frozen fixed prefix plus codepoint-sorted resolver files', () => {
   const files = canonicalSemanticFileList(repoRoot);

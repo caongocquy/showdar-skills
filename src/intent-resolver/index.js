@@ -26,6 +26,7 @@ import { resolveRisks } from './risks.js';
 import { resolveMutation, resolveMutationFromComposition } from './mutation.js';
 import { resolveEvidence } from './evidence.js';
 import { computeConfidence } from './confidence.js';
+import { runShadow } from './frame/shadow.js';
 
 export const INTENT_RESOLVER_VERSION = '2.0.0';
 
@@ -334,8 +335,11 @@ function identifyUnresolved(text, intent, confidence) {
 
 /**
  * Main resolver function.
+ * @param {string} prompt
+ * @param {object} context - Options: { skipShadow: boolean }
  */
 export function resolveIntentFromPrompt(prompt, context = {}) {
+  const skipShadow = context.skipShadow === true;
   const originalText = String(prompt ?? '');
   const sanitizedText = sanitizePrompt(originalText);
 
@@ -440,6 +444,8 @@ export function resolveIntentFromPrompt(prompt, context = {}) {
         })),
         debug: getCompositionDebug(actionCandidates, sanitizedText),
       },
+      // Phase 6F T09: Structural shadow differential (diagnostic-only)
+      ...(skipShadow ? {} : { shadow: runShadow(originalText) }),
     },
   };
 }
