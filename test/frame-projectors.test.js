@@ -4,6 +4,8 @@ import { projectPrimary, projectConservativeIntent } from '../src/intent-resolve
 import { resolveStructuralIntent } from '../src/intent-resolver/frame/projectors/index.js';
 import { projectMutation } from '../src/intent-resolver/frame/projectors/mutation.js';
 import { buildConstraintFrames, applyConstraintGates } from '../src/intent-resolver/frame/projectors/constraints.js';
+import { projectSecondaries } from '../src/intent-resolver/frame/projectors/secondary.js';
+import { deriveRisks, deriveEvidence, deriveObject } from '../src/intent-resolver/frame/projectors/metadata.js';
 
 // Helper to build a fixed RequestFrame with a GOVERNING action and optional ORTHOGONAL action
 function makeFrame(governingVerb, orthogonalVerb = null, governingOptions = {}) {
@@ -675,4 +677,285 @@ test('applyConstraintGates: reduce-only never escalates (matrix)', async () => {
       assert.ok(resultIdx <= mutIdx, `${kind} on ${mut} gave ${result} (index ${resultIdx} > ${mutIdx})`);
     }
   }
+});
+
+// --- T14 Secondary projector tests ---
+
+function makeSecondaryFrame(governingVerb, orthogonalVerb = null, supportingVerb = null, governingOptions = {}) {
+  const actions = [
+    {
+      id: 'a0',
+      surfaceVerb: governingVerb,
+      canonicalAction: governingVerb,
+      target: 'X',
+      provenance: 'DIRECT_INSTRUCTION',
+      polarity: 'positive',
+      role: 'GOVERNING',
+      commitment: 'AUTHORIZED_NOW',
+      environment: 'unspecified',
+      clauseId: 'c0',
+      ...governingOptions,
+    },
+  ];
+  if (orthogonalVerb) {
+    actions.push({
+      id: 'a1',
+      surfaceVerb: orthogonalVerb,
+      canonicalAction: orthogonalVerb,
+      target: 'X',
+      provenance: 'DIRECT_INSTRUCTION',
+      polarity: 'positive',
+      role: 'ORTHOGONAL',
+      commitment: 'AUTHORIZED_NOW',
+      environment: 'unspecified',
+      clauseId: 'c1',
+    });
+  }
+  if (supportingVerb) {
+    actions.push({
+      id: 'a2',
+      surfaceVerb: supportingVerb,
+      canonicalAction: supportingVerb,
+      target: 'X',
+      provenance: 'DIRECT_INSTRUCTION',
+      polarity: 'positive',
+      role: 'SUPPORTING',
+      commitment: 'AUTHORIZED_NOW',
+      environment: 'unspecified',
+      clauseId: 'c2',
+    });
+  }
+  return { actions, relations: [], diagnostics: [], clauses: [], contexts: [], constraints: [] };
+}
+
+test('projectSecondaries: implement + security audit → [security]', async () => {
+  const frame = makeSecondaryFrame('implement', 'audit');
+  const secondaries = projectSecondaries(frame, 'implement');
+  assert.deepEqual(secondaries, ['security']);
+});
+
+test('projectSecondaries: upgrade + tests → [test]', async () => {
+  const frame = makeSecondaryFrame('upgrade', 'test');
+  const secondaries = projectSecondaries(frame, 'upgrade');
+  assert.deepEqual(secondaries, ['test']);
+});
+
+test('projectSecondaries: rebase + resolve conflicts → []', async () => {
+  const frame = makeSecondaryFrame('rebase', 'resolve');
+  const secondaries = projectSecondaries(frame, 'git');
+  assert.deepEqual(secondaries, []);
+});
+
+test('projectSecondaries: inspect + deploy if approved → [] (CONDITIONAL filtered)', async () => {
+  const frame = {
+    actions: [
+      { id: 'a0', surfaceVerb: 'inspect', canonicalAction: 'investigate', target: 'config', provenance: 'DIRECT_INSTRUCTION', polarity: 'positive', role: 'GOVERNING', commitment: 'AUTHORIZED_NOW', environment: 'unspecified', clauseId: 'c0' },
+      { id: 'a1', surfaceVerb: 'deploy', canonicalAction: 'deploy', target: 'staging', provenance: 'DIRECT_INSTRUCTION', polarity: 'positive', role: 'CONDITIONAL', commitment: 'CONDITIONAL', environment: 'staging', clauseId: 'c1' },
+    ],
+    relations: [],
+    diagnostics: [],
+    clauses: [],
+    contexts: [],
+    constraints: [],
+  };
+  const secondaries = projectSecondaries(frame, 'investigate');
+  assert.deepEqual(secondaries, []);
+});
+
+test('projectSecondaries: risk-only security context → [] (no ORTHOGONAL action)', async () => {
+  const frame = {
+    actions: [
+      { id: 'a0', surfaceVerb: 'inspect', canonicalAction: 'investigate', target: 'config', provenance: 'DIRECT_INSTRUCTION', polarity: 'positive', role: 'GOVERNING', commitment: 'AUTHORIZED_NOW', environment: 'unspecified', clauseId: 'c0' },
+      { id: 'a1', surfaceVerb: 'audit', canonicalAction: 'assess', target: 'security', provenance: 'CONTEXT', polarity: 'positive', role: 'CONTEXTUAL', commitment: 'AUTHORIZED_NOW', environment: 'unspecified', clauseId: 'c1' },
+    ],
+    relations: [],
+    diagnostics: [],
+    clauses: [],
+    contexts: [],
+    constraints: [],
+  };
+  const secondaries = projectSecondaries(frame, 'investigate');
+  assert.deepEqual(secondaries, []);
+});
+
+test('projectSecondaries: test noun only → [] (no action frame)', async () => {
+  const frame = makeSecondaryFrame('implement'); // no orthogonal action
+  const secondaries = projectSecondaries(frame, 'implement');
+  assert.deepEqual(secondaries, []);
+});
+
+test('projectSecondaries: deduplicates primary capability', async () => {
+  const frame = makeSecondaryFrame('implement', 'implement');
+  const secondaries = projectSecondaries(frame, 'implement');
+  assert.deepEqual(secondaries, []);
+});
+
+test('projectSecondaries: caps at 2', async () => {
+  const frame = {
+    actions: [
+      { id: 'a0', surfaceVerb: 'implement', canonicalAction: 'implement', target: 'X', provenance: 'DIRECT_INSTRUCTION', polarity: 'positive', role: 'GOVERNING', commitment: 'AUTHORIZED_NOW', environment: 'unspecified', clauseId: 'c0' },
+      { id: 'a1', surfaceVerb: 'audit', canonicalAction: 'assess', target: 'security', provenance: 'DIRECT_INSTRUCTION', polarity: 'positive', role: 'ORTHOGONAL', commitment: 'AUTHORIZED_NOW', environment: 'unspecified', clauseId: 'c1' },
+      { id: 'a2', surfaceVerb: 'test', canonicalAction: 'test', target: 'suite', provenance: 'DIRECT_INSTRUCTION', polarity: 'positive', role: 'ORTHOGONAL', commitment: 'AUTHORIZED_NOW', environment: 'unspecified', clauseId: 'c2' },
+      { id: 'a3', surfaceVerb: 'review', canonicalAction: 'review', target: 'code', provenance: 'DIRECT_INSTRUCTION', polarity: 'positive', role: 'ORTHOGONAL', commitment: 'AUTHORIZED_NOW', environment: 'unspecified', clauseId: 'c3' },
+    ],
+    relations: [],
+    diagnostics: [],
+    clauses: [],
+    contexts: [],
+    constraints: [],
+  };
+  const secondaries = projectSecondaries(frame, 'implement');
+  assert.equal(secondaries.length, 2);
+  assert.ok(secondaries.every(s => ['security', 'test', 'review'].includes(s)));
+});
+
+test('projectSecondaries: NEGATED orthogonal filtered', async () => {
+  const frame = {
+    actions: [
+      { id: 'a0', surfaceVerb: 'implement', canonicalAction: 'implement', target: 'X', provenance: 'DIRECT_INSTRUCTION', polarity: 'positive', role: 'GOVERNING', commitment: 'AUTHORIZED_NOW', environment: 'unspecified', clauseId: 'c0' },
+      { id: 'a1', surfaceVerb: 'audit', canonicalAction: 'assess', target: 'security', provenance: 'DIRECT_INSTRUCTION', polarity: 'negative', role: 'ORTHOGONAL', commitment: 'AUTHORIZED_NOW', environment: 'unspecified', clauseId: 'c1' },
+    ],
+    relations: [],
+    diagnostics: [],
+    clauses: [],
+    contexts: [],
+    constraints: [],
+  };
+  const secondaries = projectSecondaries(frame, 'implement');
+  assert.deepEqual(secondaries, []);
+});
+
+test('projectSecondaries: SUPPORTING filtered (not ORTHOGONAL)', async () => {
+  const frame = makeSecondaryFrame('implement', null, 'audit');
+  const secondaries = projectSecondaries(frame, 'implement');
+  assert.deepEqual(secondaries, []);
+});
+
+test('projectSecondaries: HYPOTHETICAL orthogonal filtered', async () => {
+  const frame = {
+    actions: [
+      { id: 'a0', surfaceVerb: 'implement', canonicalAction: 'implement', target: 'X', provenance: 'DIRECT_INSTRUCTION', polarity: 'positive', role: 'GOVERNING', commitment: 'AUTHORIZED_NOW', environment: 'unspecified', clauseId: 'c0' },
+      { id: 'a1', surfaceVerb: 'audit', canonicalAction: 'assess', target: 'security', provenance: 'DIRECT_INSTRUCTION', polarity: 'positive', role: 'ORTHOGONAL', commitment: 'HYPOTHETICAL', environment: 'unspecified', clauseId: 'c1' },
+    ],
+    relations: [],
+    diagnostics: [],
+    clauses: [],
+    contexts: [],
+    constraints: [],
+  };
+  const secondaries = projectSecondaries(frame, 'implement');
+  assert.deepEqual(secondaries, []);
+});
+
+// --- T14 Metadata projector tests ---
+
+test('deriveRisks: extracts from action verbs and environments', async () => {
+  const frames = [
+    { surfaceVerb: 'deploy', canonicalAction: 'deploy', target: 'production', environment: 'production', role: 'GOVERNING' },
+    { surfaceVerb: 'audit', canonicalAction: 'assess', target: 'security', environment: 'production', role: 'GOVERNING' },
+  ];
+  const risks = deriveRisks(frames);
+  assert.ok(risks.includes('production'));
+  assert.ok(risks.includes('security'));
+});
+
+test('deriveRisks: no actions → empty', async () => {
+  assert.deepEqual(deriveRisks([]), []);
+});
+
+test('deriveEvidence: fix alone → rootCauseKnown false', async () => {
+  const frames = [{ surfaceVerb: 'fix', canonicalAction: 'fix', target: 'bug', role: 'GOVERNING' }];
+  const evidence = deriveEvidence(frames);
+  assert.equal(evidence.rootCauseKnown, false);
+  assert.equal(evidence.behaviorDefined, null);
+  // 'bug' contains failure keyword, so failureObserved is true
+  assert.equal(evidence.failureObserved, true);
+});
+
+test('deriveEvidence: repair alone → rootCauseKnown false', async () => {
+  const frames = [{ surfaceVerb: 'repair', canonicalAction: 'fix', target: 'system', role: 'GOVERNING' }];
+  const evidence = deriveEvidence(frames);
+  assert.equal(evidence.rootCauseKnown, false);
+});
+
+test('deriveEvidence: resolve alone → rootCauseKnown false', async () => {
+  const frames = [{ surfaceVerb: 'resolve', canonicalAction: 'fix', target: 'issue', role: 'GOVERNING' }];
+  const evidence = deriveEvidence(frames);
+  assert.equal(evidence.rootCauseKnown, false);
+});
+
+test('deriveEvidence: explicit cause language → rootCauseKnown true', async () => {
+  const frames = [{ surfaceVerb: 'fix', canonicalAction: 'fix', target: 'bug caused by null pointer', role: 'GOVERNING' }];
+  const evidence = deriveEvidence(frames);
+  assert.equal(evidence.rootCauseKnown, true);
+});
+
+test('deriveEvidence: unknown-cause language → rootCauseKnown false', async () => {
+  const frames = [{ surfaceVerb: 'fix', canonicalAction: 'fix', target: 'bug unknown cause', role: 'GOVERNING' }];
+  const evidence = deriveEvidence(frames);
+  assert.equal(evidence.rootCauseKnown, false);
+});
+
+test('deriveEvidence: failureObserved when failure language present', async () => {
+  const frames = [{ surfaceVerb: 'investigate', canonicalAction: 'investigate', target: 'failure in production', role: 'GOVERNING' }];
+  const evidence = deriveEvidence(frames);
+  assert.equal(evidence.failureObserved, true);
+});
+
+test('deriveObject: from targets', async () => {
+  const frames = [{ surfaceVerb: 'implement', canonicalAction: 'implement', target: 'api', role: 'GOVERNING' }];
+  assert.equal(deriveObject(frames), 'api');
+});
+
+test('deriveObject: first target wins', async () => {
+  const frames = [
+    { surfaceVerb: 'implement', canonicalAction: 'implement', target: 'api', role: 'GOVERNING' },
+    { surfaceVerb: 'deploy', canonicalAction: 'deploy', target: 'staging', role: 'ORTHOGONAL' },
+  ];
+  assert.equal(deriveObject(frames), 'api');
+});
+
+test('deriveObject: no targets → unknown', async () => {
+  const frames = [{ surfaceVerb: 'inspect', canonicalAction: 'investigate', target: null, role: 'GOVERNING' }];
+  assert.equal(deriveObject(frames), 'unknown');
+});
+
+test('deriveObject: never grants authority (returns only metadata)', async () => {
+  const frames = [{ surfaceVerb: 'deploy', canonicalAction: 'deploy', target: 'production', role: 'GOVERNING' }];
+  const object = deriveObject(frames);
+  // Object is just string metadata, no authority signal
+  assert.equal(typeof object, 'string');
+});
+
+// --- T14 Metadata isolation: metadata never affects projectPrimary ---
+
+test('metadata isolation: varying risks never changes projectPrimary', async () => {
+  const base = makeFrame('implement', 'audit');
+  const withRisks = { ...base, risks: ['security', 'production'] };
+  const withoutRisks = { ...base, risks: [] };
+  assert.deepEqual(projectPrimary(withRisks), projectPrimary(withoutRisks));
+});
+
+test('metadata isolation: varying evidence never changes projectPrimary', async () => {
+  const base = makeFrame('implement', 'audit');
+  const withEvidence = { ...base, evidence: { rootCauseKnown: true, failureObserved: true, behaviorDefined: true } };
+  const withoutEvidence = { ...base, evidence: { rootCauseKnown: null, failureObserved: null, behaviorDefined: null } };
+  assert.deepEqual(projectPrimary(withEvidence), projectPrimary(withoutEvidence));
+});
+
+test('metadata isolation: varying object never changes projectPrimary', async () => {
+  const base = makeFrame('implement', 'audit');
+  const withObject = { ...base, object: 'api' };
+  const withoutObject = { ...base, object: 'other' };
+  assert.deepEqual(projectPrimary(withObject), projectPrimary(withoutObject));
+});
+
+// --- T14 Barrel composition test ---
+test('resolveStructuralIntent: wires primary → mutation → gates → secondaries → metadata', async () => {
+  const frame = makeSecondaryFrame('implement', 'audit');
+  const intent = resolveStructuralIntent(frame);
+  assert.equal(intent.action, 'implement');
+  assert.equal(intent.phase, 'implementation');
+  assert.ok(['local-write', 'read-only', 'remote-write', 'production-impacting'].includes(intent.mutation));
+  assert.deepEqual(intent.secondaryActions, ['security']);
 });

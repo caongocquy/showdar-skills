@@ -1,4 +1,4 @@
-// Shadow differential harness (Phase 6F T09)
+// Shadow differential harness (Phase 6F T09; extended T11 mutation; T14 secondaries)
 // Diagnostic-only comparison between legacy and structural intent resolution.
 
 import { resolveIntentFromPrompt } from '../index.js';
@@ -19,25 +19,27 @@ export function runShadow(prompt) {
   const legacyIntent = legacyResult.intent;
   const legacyPrimarySkill = extractPrimarySkillFromRoutePlan(legacyIntent);
 
-  // 2. Structural resolution (primary + mutation at T11)
+  // 2. Structural resolution (primary + mutation + secondaries)
   const requestFrame = assembleRequestFrame(prompt);
   const structuralPrimary = resolveStructuralIntent(requestFrame);
 
-  // 3. Build structural side with mutation projected (secondaryActions/primarySkill stay null)
+  // 3. Build structural side with mutation and secondaryActions projected (primarySkill stays null until T17)
   const structural = {
     phase: structuralPrimary.phase,
     action: structuralPrimary.action,
     mutation: structuralPrimary.mutation,
-    secondaryActions: null,
+    secondaryActions: structuralPrimary.secondaryActions,
     primarySkill: null,
   };
 
-  // 4. Build agreement (phase/action/mutation; secondary/primarySkill still not-yet-projected)
+  // 4. Build agreement (phase/action/mutation/secondary; primarySkill still not-yet-projected)
   const agreement = {
     phase: structuralPrimary.phase === legacyIntent.phase,
     action: structuralPrimary.action === legacyIntent.action,
     mutation: structuralPrimary.mutation === legacyIntent.mutation,
-    secondary: false, // not-yet-projected
+    secondary: Array.isArray(structuralPrimary.secondaryActions) && Array.isArray(legacyIntent.secondaryActions)
+      ? structuralPrimary.secondaryActions.join(',') === legacyIntent.secondaryActions.join(',')
+      : false,
     primarySkill: structuralPrimary.action === legacyIntent.action && legacyPrimarySkill !== null,
   };
 

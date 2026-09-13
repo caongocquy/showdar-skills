@@ -18,24 +18,23 @@ test('runShadow legacy side has phase/action/mutation/secondaryActions/primarySk
   assert.ok(legacy.primarySkill);
 });
 
-test('runShadow structural side has phase/action/mutation from projectors, others null with reason', async () => {
+test('runShadow structural side has phase/action/mutation/secondaryActions from projectors', async () => {
   const diff = runShadow('Deploy the api to staging.');
   const structural = diff.structural;
   assert.ok(structural.phase);
   assert.ok(structural.action);
   assert.ok(structural.mutation); // T11: mutation now projected
-  assert.equal(structural.secondaryActions, null);
-  assert.equal(structural.primarySkill, null);
-  // The reason is embedded in the structural object or we check agreement/issues
+  assert.ok(Array.isArray(structural.secondaryActions)); // T14: secondaryActions now projected
+  assert.equal(structural.primarySkill, null); // T17: primarySkill still not-yet-projected
 });
 
-test('runShadow agreement shows phase/action match when structural primary matches legacy', async () => {
+test('runShadow agreement shows phase/action/mutation match when structural matches legacy', async () => {
   const diff = runShadow('implement X + audit X');
   assert.equal(diff.agreement.phase, true);
   assert.equal(diff.agreement.action, true);
-  // mutation now projected (boolean agreement); secondary still not-yet-projected
   assert.equal(typeof diff.agreement.mutation, 'boolean');
-  assert.equal(diff.agreement.secondary, false);
+  // T14: secondary now compared as arrays
+  assert.equal(typeof diff.agreement.secondary, 'boolean');
   assert.equal(typeof diff.agreement.primarySkill, 'boolean');
 });
 

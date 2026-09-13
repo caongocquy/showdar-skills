@@ -67,6 +67,47 @@
       }
     }
   ],
+  "secondaryCases": [
+    {
+      "id": "governing-plus-orthogonal-secondary",
+      "input": "Implement the feature and also audit the security",
+      "expected": {
+        "clauses": [],
+        "actions": [],
+        "relations": [],
+        "constraints": [],
+        "intent": {"phase":"implementation","action":"implement","object":"feature","secondaryActions":["security"],"risks":["security"],"mutation":"local-write","evidence":{"rootCauseKnown":null,"behaviorDefined":null,"failureObserved":null}},
+        "primary": "showdar-build",
+        "advisors": ["showdar-security"]
+      }
+    },
+    {
+      "id": "supporting-no-advisor",
+      "input": "Fix the bug and then verify the fix works",
+      "expected": {
+        "clauses": [],
+        "actions": [],
+        "relations": [],
+        "constraints": [],
+        "intent": {"phase":"implementation","action":"fix","object":"bug","secondaryActions":[],"risks":[],"mutation":"local-write","evidence":{"rootCauseKnown":null,"behaviorDefined":null,"failureObserved":null}},
+        "primary": "showdar-build",
+        "advisors": []
+      }
+    },
+    {
+      "id": "conditional-no-advisor",
+      "input": "Inspect the config and deploy if approved",
+      "expected": {
+        "clauses": [],
+        "actions": [],
+        "relations": [],
+        "constraints": [],
+        "intent": {"phase":"diagnosis","action":"inspect","object":"config","secondaryActions":[],"risks":[],"mutation":"read-only","evidence":{"rootCauseKnown":null,"behaviorDefined":null,"failureObserved":null}},
+        "primary": "showdar-debug",
+        "advisors": []
+      }
+    }
+  ],
   "scopedConstraintCases": [
     {
       "id": "action-scoped-no-push",
