@@ -81,7 +81,7 @@ export const MUTATION_KEYWORDS = Object.freeze({
   'read-only': ['read only', 'read-only', 'review only', 'inspect only', 'audit only', 'assess only', 'check only', 'look at', 'examine', 'do not change', 'do not modify', 'do not write', 'no change', 'no modification', 'non-destructive', 'without changing', 'without modifying', 'explain', 'what does', 'how does', 'sketch', 'plan', 'planning', 'document', 'confirm', 'check if', 'verify config', 'sketch plan', 'rollout plan', 'canary config', 'verify config', 'reconstruct', 'what happened', 'failed deploy', 'prepare steps', 'prepare deploy steps', 'plan deploy'],
   'local-write': ['fix', 'implement', 'modify', 'change', 'update', 'refactor', 'add', 'create', 'write', 'code', 'develop', 'build', 'locally', 'local', 'commit', 'stage', 'add idempotency', 'add feature flags', 'write integration tests', 'write unit tests', 'write contract tests', 'create risk matrix', 'add unit tests'],
   'remote-write': ['push', 'merge', 'remote', 'upstream', 'origin', 'pull request', 'branch', 'rebase', 'cherry-pick', 'merge locally', 'hold the push', 'merge feature branch'],
-  'production-impacting': ['deploy', 'deployment', 'production', 'prod', 'live', 'release', 'publish', 'ship', 'rollout', 'canary', 'blue-green', 'infrastructure', 'terraform', 'kubernetes', 'docker', 'container', 'deploy hotfix', 'deploy to prod', 'deploy production'],
+  'production-impacting': ['deploy', 'production', 'prod', 'live', 'release', 'publish', 'ship', 'rollout', 'canary', 'blue-green', 'infrastructure', 'terraform', 'kubernetes', 'docker', 'container', 'deploy hotfix', 'deploy to prod', 'deploy production'],
 });
 
 // Evidence keys
@@ -369,4 +369,65 @@ export function isActionNegated(text, action) {
     /\bdon['']?t\s+implement\b/i.test(lowerText) ||
     /\bdo not\s+implement\b/i.test(lowerText) ||
     /\bwithout\s+implementing\b/i.test(lowerText);
+}
+
+/**
+ * Provenance-aware signal extraction.
+ * Extracts keywords from each segment and attaches provenance metadata.
+ *
+ * @param {Array} segments — from segmentPrompt
+ * @param {Object} keywordMap — keyword map to extract from
+ * @returns {Array<{category: string, value: string, segmentIndex: number, segmentKind: string, authority: number, polarity: string, negated: boolean, count: number, matched: string[]}>}
+ */
+export function extractSignalsWithProvenance(segments, keywordMap) {
+  const signals = [];
+
+  for (const segment of segments) {
+    const segmentSignals = extractKeywords(segment.text, keywordMap);
+    for (const [category, data] of segmentSignals.entries()) {
+      signals.push({
+        category,
+        value: data.matched[0], // primary matched keyword
+        segmentIndex: segment.index,
+        segmentKind: segment.kind,
+        authority: segment.authority,
+        polarity: segment.polarity,
+        negated: segment.negated,
+        count: data.count,
+        matched: data.matched,
+        segmentText: segment.text,
+        verb: segment.verb,
+        target: segment.target,
+      });
+    }
+  }
+
+  return signals;
+}
+
+/**
+ * Filter signals by segment kinds.
+ *
+ * @param {Array} signals — from extractSignalsWithProvenance
+ * @param {string[]} kinds — segment kinds to include
+ * @returns {Array}
+ */
+export function filterSignalsByKind(signals, kinds) {
+  const kindSet = new Set(kinds);
+  return signals.filter(s => kindSet.has(s.segmentKind));
+}
+
+/**
+ * Get highest authority signal for a category.
+ *
+ * @param {Array} signals — from extractSignalsWithProvenance
+ * @param {string} category
+ * @returns {Object|null}
+ */
+export function getHighestAuthoritySignal(signals, category) {
+  const categorySignals = signals.filter(s => s.category === category);
+  if (categorySignals.length === 0) return null;
+  return categorySignals.reduce((best, current) =>
+    current.authority > best.authority ? current : best
+  );
 }

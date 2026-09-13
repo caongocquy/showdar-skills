@@ -1,0 +1,324 @@
+{
+  "schemaVersion": 1,
+  "description": "Audit of Blind #2 expected secondaryActions against Phase 6C.4 semantic contract. Blind #2 remains immutable historical evidence; this is a diagnostic overlay only.",
+  "contract": "secondaryActions = explicit orthogonal additional requested work only. NOT: risk, domain context, nouns, verification needs, primary duplication.",
+  "cases": [
+    {
+      "id": "blind2-architect-microservice-boundaries",
+      "originalExpected": [],
+      "contractCorrectExpected": [],
+      "classification": "SEMANTICALLY_CURRENT",
+      "rationale": "No secondary work requested; pure architecture discovery"
+    },
+    {
+      "id": "blind2-define-subscription-billing-rules",
+      "originalExpected": [],
+      "contractCorrectExpected": [],
+      "classification": "SEMANTICALLY_CURRENT",
+      "rationale": "No secondary work requested; pure definition work"
+    },
+    {
+      "id": "blind2-plan-api-versioning-strategy",
+      "originalExpected": [],
+      "contractCorrectExpected": [],
+      "classification": "SEMANTICALLY_CURRENT",
+      "rationale": "No secondary work requested; pure planning"
+    },
+    {
+      "id": "blind2-design-admin-dashboard-layout",
+      "originalExpected": [],
+      "contractCorrectExpected": [],
+      "classification": "SEMANTICALLY_CURRENT",
+      "rationale": "No secondary work requested; pure design"
+    },
+    {
+      "id": "blind2-build-graphql-resolver-caching",
+      "originalExpected": ["test"],
+      "contractCorrectExpected": [],
+      "classification": "LEGACY_DOMAIN_INFERRED",
+      "rationale": "Prompt only mentions 'caching' - 'test' inferred from domain context (resolver), not explicitly requested"
+    },
+    {
+      "id": "blind2-debug-websocket-disconnects",
+      "originalExpected": [],
+      "contractCorrectExpected": [],
+      "classification": "SEMANTICALLY_CURRENT",
+      "rationale": "No secondary work requested; pure diagnosis"
+    },
+    {
+      "id": "blind2-test-e2e-checkout-flow",
+      "originalExpected": [],
+      "contractCorrectExpected": [],
+      "classification": "SEMANTICALLY_CURRENT",
+      "rationale": "Primary is test; no additional work requested"
+    },
+    {
+      "id": "blind2-quality-accessibility-audit",
+      "originalExpected": ["quality"],
+      "contractCorrectExpected": [],
+      "classification": "LEGACY_DOMAIN_INFERRED",
+      "rationale": "Prompt says 'accessibility audit' - 'quality' inferred from 'audit' noun, not explicit additional quality work; primary is assess"
+    },
+    {
+      "id": "blind2-review-privacy-compliance-diff",
+      "originalExpected": ["review"],
+      "contractCorrectExpected": [],
+      "classification": "PRIMARY_DUPLICATION",
+      "rationale": "Primary action is review; secondary 'review' duplicates primary capability"
+    },
+    {
+      "id": "blind2-security-scan-container-image",
+      "originalExpected": [],
+      "contractCorrectExpected": [],
+      "classification": "SEMANTICALLY_CURRENT",
+      "rationale": "No secondary work requested; 'scan' is the primary assessment verb"
+    },
+    {
+      "id": "blind2-upgrade-kubernetes-cluster",
+      "originalExpected": ["test", "deploy"],
+      "contractCorrectExpected": [],
+      "classification": "LEGACY_DOMAIN_INFERRED",
+      "rationale": "Prompt only says 'upgrade kubernetes cluster' - 'test' and 'deploy' inferred from domain nouns (cluster upgrade implies deploy), not explicitly requested as additional work"
+    },
+    {
+      "id": "blind2-ship-canary-release-readiness",
+      "originalExpected": ["release"],
+      "contractCorrectExpected": [],
+      "classification": "LEGACY_DOMAIN_INFERRED",
+      "rationale": "Prompt says 'canary release readiness' - 'release' is domain noun context, not explicit additional release work; primary is assess"
+    },
+    {
+      "id": "blind2-ops-rotate-database-credentials",
+      "originalExpected": [],
+      "contractCorrectExpected": [],
+      "classification": "SEMANTICALLY_CURRENT",
+      "rationale": "No secondary work requested; pure operations"
+    },
+    {
+      "id": "blind2-recover-partial-migration",
+      "originalExpected": [],
+      "contractCorrectExpected": [],
+      "classification": "SEMANTICALLY_CURRENT",
+      "rationale": "No secondary work requested; pure recovery"
+    },
+    {
+      "id": "blind2-git-squash-feature-commits",
+      "originalExpected": [],
+      "contractCorrectExpected": [],
+      "classification": "SEMANTICALLY_CURRENT",
+      "rationale": "No secondary work requested; pure git operation"
+    },
+    {
+      "id": "blind2-fix-sql-injection-known-cause",
+      "originalExpected": ["security", "test"],
+      "contractCorrectExpected": [],
+      "classification": "LEGACY_RISK_INFERRED",
+      "rationale": "'security' from SQL injection risk/domain noun, 'test' from verification need - neither is explicit additional requested work; primary is fix with known cause"
+    },
+    {
+      "id": "blind2-investigate-slow-query-unknown",
+      "originalExpected": [],
+      "contractCorrectExpected": [],
+      "classification": "SEMANTICALLY_CURRENT",
+      "rationale": "No secondary work requested; pure investigation"
+    },
+    {
+      "id": "blind2-implement-rate-limiting-with-docs",
+      "originalExpected": ["test", "doc"],
+      "contractCorrectExpected": ["doc"],
+      "classification": "PARTIAL",
+      "rationale": "'doc' explicitly requested via 'with docs' (explicit additional work); 'test' not mentioned - inferred from domain/verification need"
+    },
+    {
+      "id": "blind2-plan-feature-flag-rollout",
+      "originalExpected": ["deploy"],
+      "contractCorrectExpected": [],
+      "classification": "LEGACY_DOMAIN_INFERRED",
+      "rationale": "'deploy' inferred from 'rollout' domain noun, not explicitly requested as additional work; primary is plan"
+    },
+    {
+      "id": "blind2-review-security-dont-fix",
+      "originalExpected": ["review"],
+      "contractCorrectExpected": [],
+      "classification": "PRIMARY_DUPLICATION",
+      "rationale": "Primary action is assess (security review); secondary 'review' duplicates primary capability"
+    },
+    {
+      "id": "blind2-explain-terraform-plan-output",
+      "originalExpected": [],
+      "contractCorrectExpected": [],
+      "classification": "SEMANTICALLY_CURRENT",
+      "rationale": "No secondary work requested; pure explanation"
+    },
+    {
+      "id": "blind2-stage-only-dockerfile-changes",
+      "originalExpected": [],
+      "contractCorrectExpected": [],
+      "classification": "SEMANTICALLY_CURRENT",
+      "rationale": "No secondary work requested; pure git staging with constraint"
+    },
+    {
+      "id": "blind2-debug-ci-timeout-intermittent",
+      "originalExpected": [],
+      "contractCorrectExpected": [],
+      "classification": "SEMANTICALLY_CURRENT",
+      "rationale": "No secondary work requested; pure CI debugging"
+    },
+    {
+      "id": "blind2-add-contract-tests-consumer-driven",
+      "originalExpected": [],
+      "contractCorrectExpected": [],
+      "classification": "SEMANTICALLY_CURRENT",
+      "rationale": "Primary is test; no additional work requested"
+    },
+    {
+      "id": "blind2-upgrade-node-without-breaking",
+      "originalExpected": ["test"],
+      "contractCorrectExpected": [],
+      "classification": "LEGACY_DOMAIN_INFERRED",
+      "rationale": "'test' inferred from 'without breaking' (verification need), not explicitly requested as 'and add tests'"
+    },
+    {
+      "id": "blind2-ship-verify-rollback-procedure",
+      "originalExpected": ["release"],
+      "contractCorrectExpected": [],
+      "classification": "LEGACY_DOMAIN_INFERRED",
+      "rationale": "'release' inferred from 'rollback procedure' domain context, not explicit additional release work"
+    },
+    {
+      "id": "blind2-ops-scale-redis-cluster",
+      "originalExpected": [],
+      "contractCorrectExpected": [],
+      "classification": "SEMANTICALLY_CURRENT",
+      "rationale": "No secondary work requested; pure operations"
+    },
+    {
+      "id": "blind2-reconstruct-lost-changes-rebase",
+      "originalExpected": [],
+      "contractCorrectExpected": [],
+      "classification": "SEMANTICALLY_CURRENT",
+      "rationale": "No secondary work requested; pure recovery/git"
+    },
+    {
+      "id": "blind2-git-cherry-pick-hotfix-no-push",
+      "originalExpected": [],
+      "contractCorrectExpected": [],
+      "classification": "SEMANTICALLY_CURRENT",
+      "rationale": "No secondary work requested; pure git with constraint"
+    },
+    {
+      "id": "blind2-fix-race-condition-known-root",
+      "originalExpected": ["test"],
+      "contractCorrectExpected": [],
+      "classification": "LEGACY_DOMAIN_INFERRED",
+      "rationale": "'test' inferred from verification need for known-root fix, not explicitly requested"
+    },
+    {
+      "id": "blind2-analyze-bundle-size-regression",
+      "originalExpected": [],
+      "contractCorrectExpected": [],
+      "classification": "SEMANTICALLY_CURRENT",
+      "rationale": "No secondary work requested; pure analysis"
+    },
+    {
+      "id": "blind2-design-mobile-onboarding-flow",
+      "originalExpected": [],
+      "contractCorrectExpected": [],
+      "classification": "SEMANTICALLY_CURRENT",
+      "rationale": "No secondary work requested; pure design"
+    },
+    {
+      "id": "blind2-requirements-clarify-webhook-contract",
+      "originalExpected": [],
+      "contractCorrectExpected": [],
+      "classification": "SEMANTICALLY_CURRENT",
+      "rationale": "No secondary work requested; pure requirements definition"
+    },
+    {
+      "id": "blind2-plan-database-sharding-migration",
+      "originalExpected": ["upgrade"],
+      "contractCorrectExpected": [],
+      "classification": "LEGACY_DOMAIN_INFERRED",
+      "rationale": "'upgrade' inferred from 'migration' domain noun (sharding migration), not explicit additional upgrade work; primary is plan"
+    },
+    {
+      "id": "blind2-build-realtime-notifications-websockets",
+      "originalExpected": ["test"],
+      "contractCorrectExpected": [],
+      "classification": "LEGACY_DOMAIN_INFERRED",
+      "rationale": "'test' inferred from domain/verification, not explicitly requested as additional work"
+    },
+    {
+      "id": "blind2-debug-auth-token-expiry-edge-case",
+      "originalExpected": [],
+      "contractCorrectExpected": [],
+      "classification": "SEMANTICALLY_CURRENT",
+      "rationale": "No secondary work requested; pure debugging"
+    },
+    {
+      "id": "blind2-test-load-api-gateway",
+      "originalExpected": ["quality"],
+      "contractCorrectExpected": [],
+      "classification": "LEGACY_DOMAIN_INFERRED",
+      "rationale": "Primary is test; 'quality' inferred from 'load test' noun phrase, not explicit additional quality work"
+    },
+    {
+      "id": "blind2-security-review-infrastructure-terraform",
+      "originalExpected": ["review"],
+      "contractCorrectExpected": [],
+      "classification": "PRIMARY_DUPLICATION",
+      "rationale": "Primary action is assess (security review); secondary 'review' duplicates primary capability"
+    },
+    {
+      "id": "blind2-upgrade-postgres-major-version",
+      "originalExpected": ["test", "deploy"],
+      "contractCorrectExpected": [],
+      "classification": "LEGACY_DOMAIN_INFERRED",
+      "rationale": "'test' and 'deploy' inferred from 'major version upgrade' domain context, not explicitly requested as additional work"
+    },
+    {
+      "id": "blind2-ship-validate-deployment-manifests",
+      "originalExpected": ["release"],
+      "contractCorrectExpected": [],
+      "classification": "LEGACY_DOMAIN_INFERRED",
+      "rationale": "'release' inferred from 'validate deployment manifests' domain context, not explicit additional release work"
+    },
+    {
+      "id": "blind2-ops-blue-green-deploy-setup",
+      "originalExpected": [],
+      "contractCorrectExpected": [],
+      "classification": "SEMANTICALLY_CURRENT",
+      "rationale": "No secondary work requested; pure operations setup"
+    },
+    {
+      "id": "blind2-git-rebase-interactive-cleanup",
+      "originalExpected": [],
+      "contractCorrectExpected": [],
+      "classification": "SEMANTICALLY_CURRENT",
+      "rationale": "No secondary work requested; pure git"
+    },
+    {
+      "id": "blind2-code-block-no-deploy-trigger",
+      "originalExpected": [],
+      "contractCorrectExpected": [],
+      "classification": "SEMANTICALLY_CURRENT",
+      "rationale": "No secondary work requested; code block with provenance blocking"
+    },
+    {
+      "id": "blind2-mixed-intent-upgrade-and-security",
+      "originalExpected": ["security", "test"],
+      "contractCorrectExpected": ["security"],
+      "classification": "PARTIAL",
+      "rationale": "'security audit logging' explicitly requested (orthogonal security work); 'test' not explicitly requested"
+    }
+  ],
+  "summary": {
+    "total": 44,
+    "SEMANTICALLY_CURRENT": 15,
+    "LEGACY_DOMAIN_INFERRED": 18,
+    "LEGACY_RISK_INFERRED": 2,
+    "PRIMARY_DUPLICATION": 3,
+    "PARTIAL": 2,
+    "contractCorrectNonEmpty": 3
+  }
+}

@@ -539,8 +539,14 @@ function getSegmentAuthorityBoost(verb, target, segments) {
     if (segment.kind === 'DIRECT_INSTRUCTION') {
       if (segment.text.toLowerCase().includes(verb.toLowerCase())) boost += 10;
       if (target && segment.text.toLowerCase().includes(target.toLowerCase())) boost += 5;
-    } else if (segment.kind === 'INLINE_CODE' || segment.kind === 'FENCED_CODE') {
+    } else if (segment.kind === 'INLINE_CODE' || segment.kind === 'CODE_BLOCK' || segment.kind === 'FENCED_CODE') {
       // Code content should not boost action ownership
+      if (segment.text.toLowerCase().includes(verb.toLowerCase())) boost -= 5;
+    } else if (segment.kind === 'EXAMPLE' || segment.kind === 'EXAMPLE_TEXT' || segment.kind === 'QUOTED_CONTENT' || segment.kind === 'QUOTED_TEXT') {
+      // Example/quoted content should not boost action ownership
+      if (segment.text.toLowerCase().includes(verb.toLowerCase())) boost -= 3;
+    } else if (segment.kind === 'LOG_OUTPUT') {
+      // Log output should not boost action ownership
       if (segment.text.toLowerCase().includes(verb.toLowerCase())) boost -= 5;
     }
   }

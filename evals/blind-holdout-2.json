@@ -1,0 +1,583 @@
+{
+  "schemaVersion": 1,
+  "role": "blind-holdout-2",
+  "description": "Blind holdout #2 for Phase 6 semantic hardening. Novel cases not derived from development-regression or generalization-challenge datasets. Authored before any resolver execution.",
+  "authoredAt": "2026-09-11T14:30:00.000Z",
+  "cases": [
+    {
+      "id": "blind2-architect-microservice-boundaries",
+      "prompt": "Map out the service boundaries for the new microservice architecture",
+      "expected": {
+        "phase": "discovery",
+        "action": "understand",
+        "object": "architecture",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "blind2-define-subscription-billing-rules",
+      "prompt": "Define the billing rules for the new subscription tiers before we build anything",
+      "expected": {
+        "phase": "definition",
+        "action": "define",
+        "object": "data",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": false },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "blind2-plan-api-versioning-strategy",
+      "prompt": "Plan the API versioning strategy for the v3 release",
+      "expected": {
+        "phase": "planning",
+        "action": "plan",
+        "object": "api",
+        "mutation": "read-only",
+        "risks": ["compatibility"],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "blind2-design-admin-dashboard-layout",
+      "prompt": "Design the admin dashboard layout with dark mode support",
+      "expected": {
+        "phase": "design",
+        "action": "design",
+        "object": "ui",
+        "mutation": "local-write",
+        "risks": [],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "blind2-build-graphql-resolver-caching",
+      "prompt": "Implement GraphQL resolver caching with Redis",
+      "expected": {
+        "phase": "implementation",
+        "action": "implement",
+        "object": "api",
+        "mutation": "local-write",
+        "risks": ["performance", "regression"],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": true },
+        "secondaryActions": ["test"]
+      }
+    },
+    {
+      "id": "blind2-debug-websocket-disconnects",
+      "prompt": "WebSocket connections drop randomly after 5 minutes, cause unknown",
+      "expected": {
+        "phase": "diagnosis",
+        "action": "investigate",
+        "object": "network",
+        "mutation": "read-only",
+        "risks": ["regression"],
+        "evidence": { "failureObserved": true, "rootCauseKnown": false, "behaviorDefined": null },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "blind2-test-e2e-checkout-flow",
+      "prompt": "Write end-to-end tests for the complete checkout flow",
+      "expected": {
+        "phase": "verification",
+        "action": "test",
+        "object": "ui",
+        "mutation": "local-write",
+        "risks": ["regression"],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "blind2-quality-accessibility-audit",
+      "prompt": "Audit the new admin panel for WCAG 2.1 AA compliance",
+      "expected": {
+        "phase": "verification",
+        "action": "assess",
+        "object": "ui",
+        "mutation": "read-only",
+        "risks": ["regression"],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null },
+        "secondaryActions": ["quality"]
+      }
+    },
+    {
+      "id": "blind2-review-privacy-compliance-diff",
+      "prompt": "Review the GDPR compliance changes in the user data export diff",
+      "expected": {
+        "phase": "verification",
+        "action": "review",
+        "object": "repository",
+        "mutation": "read-only",
+        "risks": ["security", "compliance"],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null },
+        "secondaryActions": ["review"]
+      }
+    },
+    {
+      "id": "blind2-security-scan-container-image",
+      "prompt": "Scan the production container image for vulnerabilities",
+      "expected": {
+        "phase": "discovery",
+        "action": "assess",
+        "object": "container",
+        "mutation": "read-only",
+        "risks": ["security"],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "blind2-upgrade-kubernetes-cluster",
+      "prompt": "Upgrade the Kubernetes cluster from 1.28 to 1.29",
+      "expected": {
+        "phase": "implementation",
+        "action": "upgrade",
+        "object": "dependency",
+        "mutation": "remote-write",
+        "risks": ["compatibility", "operations"],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null },
+        "secondaryActions": ["test", "deploy"]
+      }
+    },
+    {
+      "id": "blind2-ship-canary-release-readiness",
+      "prompt": "Assess if the canary release is ready for gradual rollout",
+      "expected": {
+        "phase": "delivery",
+        "action": "assess",
+        "object": "deployment",
+        "mutation": "read-only",
+        "risks": ["operations", "production"],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null },
+        "secondaryActions": ["release"]
+      }
+    },
+    {
+      "id": "blind2-ops-rotate-database-credentials",
+      "prompt": "Rotate the production database credentials via the vault",
+      "expected": {
+        "phase": "operations",
+        "action": "deploy",
+        "object": "deployment",
+        "mutation": "production-impacting",
+        "risks": ["production", "security", "operations"],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "blind2-recover-partial-migration",
+      "prompt": "Recover the partially applied database migration from last night",
+      "expected": {
+        "phase": "recovery",
+        "action": "recover",
+        "object": "deployment",
+        "mutation": "local-write",
+        "risks": ["data-integrity", "operations"],
+        "evidence": { "failureObserved": true, "rootCauseKnown": false, "behaviorDefined": null },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "blind2-git-squash-feature-commits",
+      "prompt": "Squash the feature branch commits into a single commit before merge",
+      "expected": {
+        "phase": "repository",
+        "action": "git",
+        "object": "branch",
+        "mutation": "local-write",
+        "risks": [],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "blind2-fix-sql-injection-known-cause",
+      "prompt": "Fix the SQL injection in the search endpoint - the unsanitized input is confirmed",
+      "expected": {
+        "phase": "implementation",
+        "action": "fix",
+        "object": "api",
+        "mutation": "local-write",
+        "risks": ["security", "regression"],
+        "evidence": { "failureObserved": true, "rootCauseKnown": true, "behaviorDefined": true },
+        "secondaryActions": ["security", "test"]
+      }
+    },
+    {
+      "id": "blind2-investigate-slow-query-unknown",
+      "prompt": "Investigate why the analytics query is taking 30+ seconds, no idea why",
+      "expected": {
+        "phase": "diagnosis",
+        "action": "investigate",
+        "object": "runtime",
+        "mutation": "read-only",
+        "risks": ["performance", "regression"],
+        "evidence": { "failureObserved": true, "rootCauseKnown": false, "behaviorDefined": null },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "blind2-implement-rate-limiting-with-docs",
+      "prompt": "Implement rate limiting on the public API and update the developer docs",
+      "expected": {
+        "phase": "implementation",
+        "action": "implement",
+        "object": "api",
+        "mutation": "local-write",
+        "risks": ["regression", "performance"],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": true },
+        "secondaryActions": ["test", "doc"]
+      }
+    },
+    {
+      "id": "blind2-plan-feature-flag-rollout",
+      "prompt": "Plan the feature flag rollout for the new checkout, don't implement",
+      "expected": {
+        "phase": "planning",
+        "action": "plan",
+        "object": "backend",
+        "mutation": "read-only",
+        "risks": ["compatibility"],
+        "constraints": ["no-deploy"],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null },
+        "secondaryActions": ["deploy"]
+      }
+    },
+    {
+      "id": "blind2-review-security-dont-fix",
+      "prompt": "Review the authentication flow for security issues, but don't implement fixes",
+      "expected": {
+        "phase": "discovery",
+        "action": "assess",
+        "object": "auth",
+        "mutation": "read-only",
+        "risks": ["security"],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null },
+        "secondaryActions": ["review"]
+      }
+    },
+    {
+      "id": "blind2-explain-terraform-plan-output",
+      "prompt": "Explain what this terraform plan output means for our infrastructure",
+      "expected": {
+        "phase": "discovery",
+        "action": "understand",
+        "object": "repository",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "blind2-stage-only-dockerfile-changes",
+      "prompt": "Stage only the Dockerfile changes, leave the rest unstaged",
+      "expected": {
+        "phase": "repository",
+        "action": "git",
+        "object": "commit",
+        "mutation": "local-write",
+        "risks": [],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "blind2-debug-ci-timeout-intermittent",
+      "prompt": "The CI pipeline times out intermittently on the integration test stage, cause unknown",
+      "expected": {
+        "phase": "diagnosis",
+        "action": "investigate",
+        "object": "build",
+        "mutation": "read-only",
+        "risks": ["regression", "operations"],
+        "evidence": { "failureObserved": true, "rootCauseKnown": false, "behaviorDefined": null },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "blind2-add-contract-tests-consumer-driven",
+      "prompt": "Add consumer-driven contract tests for the payment service API",
+      "expected": {
+        "phase": "verification",
+        "action": "test",
+        "object": "api",
+        "mutation": "local-write",
+        "risks": ["regression", "compatibility"],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "blind2-upgrade-node-without-breaking",
+      "prompt": "Upgrade Node.js from 18 to 22 without breaking the build",
+      "expected": {
+        "phase": "implementation",
+        "action": "upgrade",
+        "object": "dependency",
+        "mutation": "local-write",
+        "risks": ["compatibility", "regression"],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null },
+        "secondaryActions": ["test"]
+      }
+    },
+    {
+      "id": "blind2-ship-verify-rollback-procedure",
+      "prompt": "Verify the rollback procedure works for the upcoming release",
+      "expected": {
+        "phase": "delivery",
+        "action": "assess",
+        "object": "deployment",
+        "mutation": "read-only",
+        "risks": ["operations", "data-integrity"],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null },
+        "secondaryActions": ["release"]
+      }
+    },
+    {
+      "id": "blind2-ops-scale-redis-cluster",
+      "prompt": "Scale the Redis cluster from 3 to 6 nodes during maintenance window",
+      "expected": {
+        "phase": "operations",
+        "action": "deploy",
+        "object": "container",
+        "mutation": "remote-write",
+        "risks": ["operations", "data-integrity", "performance"],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "blind2-reconstruct-lost-changes-rebase",
+      "prompt": "Reconstruct the lost changes after a failed rebase onto main",
+      "expected": {
+        "phase": "recovery",
+        "action": "recover",
+        "object": "implementation",
+        "mutation": "local-write",
+        "risks": ["data-integrity"],
+        "evidence": { "failureObserved": true, "rootCauseKnown": false, "behaviorDefined": null },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "blind2-git-cherry-pick-hotfix-no-push",
+      "prompt": "Cherry-pick the hotfix commit to release branch, don't push yet",
+      "expected": {
+        "phase": "repository",
+        "action": "git",
+        "object": "branch",
+        "mutation": "local-write",
+        "risks": [],
+        "constraints": ["no-push"],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "blind2-fix-race-condition-known-root",
+      "prompt": "Fix the race condition in the order processing - the missing lock is identified",
+      "expected": {
+        "phase": "implementation",
+        "action": "fix",
+        "object": "backend",
+        "mutation": "local-write",
+        "risks": ["regression", "data-integrity"],
+        "evidence": { "failureObserved": true, "rootCauseKnown": true, "behaviorDefined": true },
+        "secondaryActions": ["test"]
+      }
+    },
+    {
+      "id": "blind2-analyze-bundle-size-regression",
+      "prompt": "Analyze why the bundle size increased by 40% in the last build",
+      "expected": {
+        "phase": "diagnosis",
+        "action": "investigate",
+        "object": "runtime",
+        "mutation": "read-only",
+        "risks": ["performance", "regression"],
+        "evidence": { "failureObserved": true, "rootCauseKnown": false, "behaviorDefined": null },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "blind2-design-mobile-onboarding-flow",
+      "prompt": "Design the mobile onboarding flow with progressive disclosure",
+      "expected": {
+        "phase": "design",
+        "action": "design",
+        "object": "ui",
+        "mutation": "local-write",
+        "risks": [],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "blind2-requirements-clarify-webhook-contract",
+      "prompt": "Clarify the webhook payload contract with the payments team before implementation",
+      "expected": {
+        "phase": "definition",
+        "action": "define",
+        "object": "api",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": false },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "blind2-plan-database-sharding-migration",
+      "prompt": "Plan the database sharding migration with zero-downtime requirements",
+      "expected": {
+        "phase": "planning",
+        "action": "plan",
+        "object": "backend",
+        "mutation": "read-only",
+        "risks": ["compatibility", "data-integrity", "operations"],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null },
+        "secondaryActions": ["upgrade"]
+      }
+    },
+    {
+      "id": "blind2-build-realtime-notifications-websockets",
+      "prompt": "Build real-time notifications using WebSockets with reconnection logic",
+      "expected": {
+        "phase": "implementation",
+        "action": "implement",
+        "object": "backend",
+        "mutation": "local-write",
+        "risks": ["performance", "regression"],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": true },
+        "secondaryActions": ["test"]
+      }
+    },
+    {
+      "id": "blind2-debug-auth-token-expiry-edge-case",
+      "prompt": "Debug the edge case where auth tokens expire during long-running operations",
+      "expected": {
+        "phase": "diagnosis",
+        "action": "investigate",
+        "object": "auth",
+        "mutation": "read-only",
+        "risks": ["security", "regression"],
+        "evidence": { "failureObserved": true, "rootCauseKnown": false, "behaviorDefined": null },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "blind2-test-load-api-gateway",
+      "prompt": "Run load tests on the API gateway to find the breaking point",
+      "expected": {
+        "phase": "verification",
+        "action": "test",
+        "object": "deployment",
+        "mutation": "read-only",
+        "risks": ["performance", "operations"],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null },
+        "secondaryActions": ["quality"]
+      }
+    },
+    {
+      "id": "blind2-security-review-infrastructure-terraform",
+      "prompt": "Security review the Terraform infrastructure code for misconfigurations",
+      "expected": {
+        "phase": "discovery",
+        "action": "assess",
+        "object": "repository",
+        "mutation": "read-only",
+        "risks": ["security"],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null },
+        "secondaryActions": ["review"]
+      }
+    },
+    {
+      "id": "blind2-upgrade-postgres-major-version",
+      "prompt": "Upgrade PostgreSQL from 14 to 16 with logical replication",
+      "expected": {
+        "phase": "implementation",
+        "action": "upgrade",
+        "object": "dependency",
+        "mutation": "remote-write",
+        "risks": ["compatibility", "data-integrity", "operations"],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null },
+        "secondaryActions": ["test", "deploy"]
+      }
+    },
+    {
+      "id": "blind2-ship-validate-deployment-manifests",
+      "prompt": "Validate all Kubernetes deployment manifests before the release",
+      "expected": {
+        "phase": "delivery",
+        "action": "assess",
+        "object": "deployment",
+        "mutation": "read-only",
+        "risks": ["operations"],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null },
+        "secondaryActions": ["release"]
+      }
+    },
+    {
+      "id": "blind2-ops-blue-green-deploy-setup",
+      "prompt": "Set up blue-green deployment for the payment service",
+      "expected": {
+        "phase": "operations",
+        "action": "deploy",
+        "object": "deployment",
+        "mutation": "remote-write",
+        "risks": ["operations", "production"],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "blind2-git-rebase-interactive-cleanup",
+      "prompt": "Interactive rebase to clean up the commit history before opening PR",
+      "expected": {
+        "phase": "repository",
+        "action": "git",
+        "object": "branch",
+        "mutation": "local-write",
+        "risks": [],
+        "constraints": ["no-push"],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "blind2-code-block-no-deploy-trigger",
+      "prompt": "Here's a snippet:\n```\nkubectl apply -f prod/\n```\nWhat does this command do?",
+      "expected": {
+        "phase": "discovery",
+        "action": "understand",
+        "object": "repository",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null },
+        "secondaryActions": []
+      }
+    },
+    {
+      "id": "blind2-mixed-intent-upgrade-and-security",
+      "prompt": "Upgrade the auth library to 2.0 and add security audit logging",
+      "expected": {
+        "phase": "implementation",
+        "action": "implement",
+        "object": "auth",
+        "mutation": "local-write",
+        "risks": ["security", "compatibility", "regression"],
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": true },
+        "secondaryActions": ["security", "test"]
+      }
+    }
+  ]
+}

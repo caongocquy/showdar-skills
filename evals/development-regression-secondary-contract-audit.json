@@ -1,0 +1,152 @@
+{
+  "schemaVersion": 1,
+  "description": "Audit of Development Regression expected secondaryActions against Phase 6C.4 semantic contract.",
+  "contract": "secondaryActions = explicit orthogonal additional requested work only. NOT: risk, domain context, nouns, verification needs, primary duplication.",
+  "cases": [
+    {
+      "id": "build-stripe-webhook",
+      "prompt": "Implement a Stripe webhook endpoint with signature validation and regression tests",
+      "originalExpected": ["security", "test"],
+      "contractCorrectExpected": ["test"],
+      "classification": "PARTIAL",
+      "rationale": "'regression tests' explicitly requested (orthogonal test work); 'security' from 'signature validation' domain noun/risk, not explicit additional security review/audit"
+    },
+    {
+      "id": "debug-intermittent-connection",
+      "prompt": "The test suite fails intermittently with 'Connection refused' errors. Find the root cause and fix it.",
+      "originalExpected": ["test"],
+      "contractCorrectExpected": [],
+      "classification": "LEGACY_DOMAIN_INFERRED",
+      "rationale": "'test' from 'test suite' domain noun context, not explicit 'and add tests'; 'fix' is part of same repair workflow as 'find root cause'"
+    },
+    {
+      "id": "review-auth-vulnerabilities",
+      "prompt": "Review this auth diff specifically for authorization vulnerabilities",
+      "originalExpected": ["review"],
+      "contractCorrectExpected": [],
+      "classification": "PRIMARY_DUPLICATION",
+      "rationale": "Primary action is review; secondary 'review' duplicates primary capability"
+    },
+    {
+      "id": "review-only-no-changes",
+      "prompt": "Review this code only, do not change anything",
+      "originalExpected": ["review"],
+      "contractCorrectExpected": [],
+      "classification": "PRIMARY_DUPLICATION",
+      "rationale": "Primary action is review; secondary 'review' duplicates primary capability"
+    },
+    {
+      "id": "plan-migration-no-implement",
+      "prompt": "Plan the migration to React Native 0.xx, don't implement it yet",
+      "originalExpected": ["upgrade"],
+      "contractCorrectExpected": [],
+      "classification": "LEGACY_DOMAIN_INFERRED",
+      "rationale": "'upgrade' from 'migration' domain noun; primary is plan with no-implement constraint; upgrade not explicitly requested as additional work"
+    },
+    {
+      "id": "upgrade-with-regression-tests",
+      "prompt": "Upgrade React Native and add regression tests",
+      "originalExpected": ["test"],
+      "contractCorrectExpected": ["test"],
+      "classification": "SEMANTICALLY_CURRENT",
+      "rationale": "'add regression tests' explicitly requested as orthogonal test work alongside upgrade"
+    },
+    {
+      "id": "ops-prepare-deploy-no-deploy",
+      "prompt": "Prepare deployment steps only; do not deploy",
+      "originalExpected": ["deploy"],
+      "contractCorrectExpected": [],
+      "classification": "LEGACY_DOMAIN_INFERRED",
+      "rationale": "'deploy' from 'deployment' noun in 'prepare deployment steps'; primary is plan with no-deploy constraint; deploy explicitly negated"
+    },
+    {
+      "id": "security-webhook-review",
+      "prompt": "Review this webhook for security issues",
+      "originalExpected": ["review"],
+      "contractCorrectExpected": [],
+      "classification": "PRIMARY_DUPLICATION",
+      "rationale": "Primary action is review; 'security' and 'test' from domain/risk context, not explicit additional work. No secondary instructions in prompt."
+    },
+    {
+      "id": "build-webhook-with-tests",
+      "prompt": "Implement webhook signature verification and add tests",
+      "originalExpected": ["security", "test"],
+      "contractCorrectExpected": ["test"],
+      "classification": "PARTIAL",
+      "rationale": "'add tests' explicitly requested; 'security' from 'signature verification' domain noun/risk, not explicit additional security review/audit"
+    },
+    {
+      "id": "quality-qa-matrix",
+      "prompt": "Create a QA regression matrix, don't write automated tests",
+      "originalExpected": ["quality"],
+      "contractCorrectExpected": [],
+      "classification": "PRIMARY_DUPLICATION",
+      "rationale": "Primary action is test (QA matrix creation); secondary 'quality' duplicates primary capability (QA assessment)"
+    },
+    {
+      "id": "audit-security-no-patch",
+      "prompt": "Audit security, don't patch anything",
+      "originalExpected": ["review"],
+      "contractCorrectExpected": [],
+      "classification": "LEGACY_DOMAIN_INFERRED",
+      "rationale": "'review' from 'audit' synonym; primary is assess (audit); 'review' is same capability as primary assess/audit, not orthogonal additional work"
+    },
+    {
+      "id": "fix-local-no-push",
+      "prompt": "Fix locally, don't push",
+      "originalExpected": ["git"],
+      "contractCorrectExpected": [],
+      "classification": "LEGACY_DOMAIN_INFERRED",
+      "rationale": "'git' inferred from 'locally' + 'don't push' context; primary is fix; git operations are implied constraints, not explicit additional git work requested"
+    },
+    {
+      "id": "review-auth-no-changes",
+      "prompt": "Review this auth code but do not change anything",
+      "originalExpected": ["review"],
+      "contractCorrectExpected": [],
+      "classification": "PRIMARY_DUPLICATION",
+      "rationale": "Primary action is review; secondary 'review' duplicates primary capability"
+    },
+    {
+      "id": "multi-intent-upgrade-and-test",
+      "prompt": "Upgrade React Native and add regression tests",
+      "originalExpected": ["test"],
+      "contractCorrectExpected": ["test"],
+      "classification": "SEMANTICALLY_CURRENT",
+      "rationale": "'add regression tests' explicitly requested as orthogonal test work alongside upgrade"
+    },
+    {
+      "id": "multi-intent-webhook-security-test",
+      "prompt": "Implement Stripe webhook signature verification and add tests and security review",
+      "originalExpected": ["security", "test"],
+      "contractCorrectExpected": ["security", "test"],
+      "classification": "SEMANTICALLY_CURRENT",
+      "rationale": "Both 'security review' and 'add tests' explicitly requested as orthogonal additional work"
+    },
+    {
+      "id": "ops-rollback-migration",
+      "prompt": "Plan rollback for migration with zero downtime health and recovery",
+      "originalExpected": ["deploy"],
+      "contractCorrectExpected": [],
+      "classification": "LEGACY_DOMAIN_INFERRED",
+      "rationale": "'deploy' from 'rollback' domain noun; primary is plan; rollback planning is not explicit deploy work"
+    },
+    {
+      "id": "build-oauth-implementation",
+      "prompt": "Implement OAuth login according to approved acceptance criteria",
+      "originalExpected": ["security"],
+      "contractCorrectExpected": [],
+      "classification": "LEGACY_RISK_INFERRED",
+      "rationale": "'security' from OAuth/auth domain risk; not explicit 'and perform security review/audit'; primary is implement with defined behavior"
+    }
+  ],
+  "summary": {
+    "total": 17,
+    "SEMANTICALLY_CURRENT": 4,
+    "LEGACY_DOMAIN_INFERRED": 7,
+    "LEGACY_RISK_INFERRED": 1,
+    "PRIMARY_DUPLICATION": 4,
+    "PARTIAL": 1,
+    "contractCorrectNonEmpty": 7
+  }
+}

@@ -1,319 +1,343 @@
 /**
  * Secondary Actions Resolution — advisor signals only
- * 
- * Secondary actions represent explicit additional capabilities requested,
- * not inferred from nouns present in the prompt.
+ *
+ * Secondary actions represent EXPLICIT ADDITIONAL REQUESTED WORK.
+ * They MUST come from ownership-eligible authorized action candidates,
+ * NOT from keywords, risks, domain nouns, or provenance-leaking content.
  */
 
-import { isNegated, lower } from './signals.js';
+import { composePrimaryAction } from './composition.js';
+import { SEGMENT_KINDS } from './segments.js';
 
-export const SECONDARY_ACTION_MAP = Object.freeze({
-  security: [
-    'security review', 'security audit', 'threat model', 'threat-model',
-    'penetration test', 'pentest', 'assess security', 'evaluate security',
-    'check security', 'review security', 'audit security',
-    'signature verification', 'webhook signature', 'signature verify',
-    'auth bypass', 'oauth callback', 'oauth login', 'oauth',
-    'security issues', 'security issue', 'vulnerability assessment'
-  ],
-test: [
-      'add test', 'write test', 'create test', 'add tests', 'write tests', 'create tests',
-      'add regression test', 'write regression test', 'add regression tests', 'write regression tests',
-      'automated test', 'unit test', 'integration test', 'e2e test', 'test coverage',
-      'regression test', 'regression tests', 'flaky test', 'check flaky',
-      'test suite', 'test cases', 'test case', 'tests for',
-      'migration test', 'migration tests'
-    ],
-  quality: [
-    'qa', 'quality', 'regression matrix', 'risk coverage',
-    'compatibility matrix', 'map qa', 'map scenarios',
-    'qa matrix', 'quality matrix', 'create matrix', 'risk matrix',
-    'coverage matrix', 'test matrix'
-  ],
-  review: [
-    'code review', 'pr review', 'audit', 'inspect', 'evaluate',
-    'check correctness', 'check maintainability',
-    'review code', 'review implementation', 'review auth', 'review changes',
-    'review the', 'review this', 'review that'
-  ],
-  upgrade: [
-    'upgrade', 'migrate', 'migration', 'dependency upgrade', 'framework upgrade',
-    'update dependency'
-  ],
-  release: [
-    'release', 'ship', 'publish', 'deliver', 'handoff', 'readiness',
-    'release readiness', 'assess release', 'confirm release'
-  ],
-  deploy: [
-    'perform deploy', 'execute deploy', 'do the deploy', 'run deploy',
-    'perform deployment', 'execute deployment', 'do the deployment', 'run deployment',
-    'push to production', 'push to prod', 'deploy production', 'deploy prod',
-    'perform rollout', 'execute rollout', 'do the rollout',
-    'perform canary', 'execute canary', 'do the canary'
-  ],
-  operations: [
-    'operations', 'ops', 'cd', 'pipeline', 'monitor', 'observability',
-    'infrastructure', 'environment', 'deployment config', 'staging deploy',
-    'ci failure', 'build failure', 'ci error', 'ci broken'
-  ],
-  recover: [
-    'recover', 'reconstruct', 'resume', 'interrupted', 'replay'
-  ],
-  git: [
-    'commit', 'push', 'merge', 'rebase', 'branch', 'stage',
-    'cherry-pick', 'merge locally', 'merge feature branch', 'hold push',
-    'merge into develop', 'merge into main'
-  ],
+// Provenance kinds that CANNOT produce secondary actions
+const BLOCKED_PROVENANCE_KINDS = new Set([
+  'CONSTRAINT',
+  'QUOTED_CONTENT',
+  'CODE_BLOCK',
+  'INLINE_CODE',
+  'LOG_OUTPUT',
+  'EXAMPLE',
+  'MENTION',
+  'CONTEXT',
+]);
+
+// Actions that are part of the same workflow step as the primary
+// These should NOT become separate advisors unless explicitly requested
+const SAME_WORKFLOW_ACTIONS = new Set([
+  // fix + investigate = same repair workflow
+  'fix-investigate',
+  'investigate-fix',
+  'diagnose-fix',
+  'fix-diagnose',
+  'find-fix',
+  'fix-find',
+  // upgrade + test = same upgrade workflow (unless test is explicitly separate)
+  'upgrade-test',
+  'test-upgrade',
+  // implement + test = same implementation workflow
+  'implement-test',
+  'test-implement',
+  // recover + git = same recovery workflow
+  'recover-git',
+  'git-recover',
+  // deploy + plan = same deployment workflow
+  'deploy-plan',
+  'plan-deploy',
+  // implement + upgrade = same upgrade workflow
+  'implement-upgrade',
+  'upgrade-implement',
+  // test + quality = same quality workflow
+  'test-quality',
+  'quality-test',
+  // assess + security = same assessment workflow
+  'assess-security',
+  'security-assess',
+  // implement + review = same implementation workflow (when review is implied)
+  'implement-review',
+  'review-implement',
+]);
+
+/**
+ * Map from canonical action to secondary capability
+ */
+const ACTION_TO_SECONDARY = Object.freeze({
+  'review': 'review',
+  'assess': 'review',
+  'audit': 'review',
+  'test': 'test',
+  'upgrade': 'upgrade',
+  'deploy': 'deploy',
+  'push': 'deploy',
+  'release': 'release',
+  'ship': 'release',
+  'publish': 'release',
+  'deliver': 'release',
+  'handoff': 'release',
+  'operations': 'operations',
+  'recover': 'recover',
+  'reconstruct': 'recover',
+  'resume': 'recover',
+  'git': 'git',
+  'commit': 'git',
+  'push': 'git',
+  'rebase': 'git',
+  'cherry-pick': 'git',
+  'branch': 'git',
+  'stage': 'git',
+  'security': 'security',
+  'quality': 'quality',
+  'design': 'design',
+  'doc': 'doc',
+  'plan': 'plan',
+  'define': 'define',
+  'implement': 'implement',
+  'fix': 'fix',
+  'investigate': 'investigate',
 });
 
 /**
- * Resolve secondary actions from prompt text.
- * Only explicit requests become secondary actions.
- * 
- * @param {string} text — full prompt text
- * @param {string} primaryPhase — resolved primary phase
- * @param {string} primaryAction — resolved primary action
- * @returns {string[]} sorted secondary actions
+ * Map from verb to secondary capability (for compound verbs)
  */
-export function resolveSecondaryActions(text, primaryPhase, primaryAction) {
-  const lowerText = lower(text);
-  const actions = new Set();
+const VERB_TO_SECONDARY = Object.freeze({
+  'security review': 'security',
+  'security audit': 'security',
+  'threat model': 'security',
+  'threat-model': 'security',
+  'penetration test': 'security',
+  'pentest': 'security',
+  'code review': 'review',
+  'pr review': 'review',
+  'update docs': 'doc',
+  'update documentation': 'doc',
+  'write docs': 'doc',
+  'write documentation': 'doc',
+  'add docs': 'doc',
+  'add documentation': 'doc',
+});
 
-  for (const [action, keywords] of Object.entries(SECONDARY_ACTION_MAP)) {
-    for (const keyword of keywords) {
-      const regex = new RegExp(`\\b${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi');
-      if (regex.test(lowerText)) {
-const matches = lowerText.matchAll(regex);
-         let negated = false;
-         for (const match of matches) {
-           const contextStart = Math.max(0, match.index - 50);
-           const contextEnd = match.index + keyword.length;
-           const context = lowerText.substring(contextStart, contextEnd);
-           if (isNegated(context, keyword)) {
-             negated = true;
-             break;
-           }
-         }
-        if (!negated) {
-          actions.add(action);
-        }
-      }
+/**
+ * Get secondary capability from candidate action
+ */
+function getSecondaryCapability(candidate) {
+  // FIRST: Check verb for compound verbs (more specific than action)
+  if (candidate.verb) {
+    // Compound verb mapping
+    const compoundVerbCapability = VERB_TO_SECONDARY[candidate.verb.toLowerCase()];
+    if (compoundVerbCapability) return compoundVerbCapability;
+
+    // Check if verb contains security-related terms (before direct verb mapping)
+    const verbLower = candidate.verb.toLowerCase();
+    if (verbLower.includes('security') || verbLower.includes('threat') || verbLower.includes('penetration') || verbLower.includes('pentest')) {
+      return 'security';
     }
+    if (verbLower.includes('audit')) {
+      return 'security';  // "audit" -> security, not review
+    }
+    if (verbLower.includes('review')) {
+      return 'review';
+    }
+    if (verbLower.includes('test')) {
+      return 'test';
+    }
+    if (verbLower.includes('upgrade') || verbLower.includes('migrate')) {
+      return 'upgrade';
+    }
+    if (verbLower.includes('deploy') || verbLower.includes('rollout') || verbLower.includes('canary')) {
+      return 'deploy';
+    }
+    if (verbLower.includes('release') || verbLower.includes('ship') || verbLower.includes('publish') || verbLower.includes('deliver') || verbLower.includes('handoff')) {
+      return 'release';
+    }
+    if (verbLower.includes('operation') || verbLower.includes('ops') || verbLower.includes('infrastructure') || verbLower.includes('pipeline') || verbLower.includes('monitor')) {
+      return 'operations';
+    }
+    if (verbLower.includes('recover') || verbLower.includes('reconstruct') || verbLower.includes('resume') || verbLower.includes('replay')) {
+      return 'recover';
+    }
+    if (verbLower.includes('commit') || verbLower.includes('push') || verbLower.includes('merge') || verbLower.includes('rebase') || verbLower.includes('cherry-pick') || verbLower.includes('branch') || verbLower.includes('stage')) {
+      return 'git';
+    }
+    if (verbLower.includes('design')) {
+      return 'design';
+    }
+    // "define" -> "define" (not requirements), "requirement" -> "requirements"
+    if (verbLower.includes('requirement')) {
+      return 'requirements';
+    }
+
+    // Direct verb mapping (after contains checks)
+    const directVerbCapability = ACTION_TO_SECONDARY[candidate.verb];
+    if (directVerbCapability) return directVerbCapability;
   }
 
-  // Return all candidates; precision gate and final cap happen in filterSecondaryActions
-  // The route plan excludes primary skill from advisors automatically.
-  return Array.from(actions).sort();
+  // SECOND: Use actionHint if available AND different from action (for SECONDARY_INSTRUCTION with specific hints like "doc")
+  if (candidate.actionHint && ACTION_TO_SECONDARY[candidate.actionHint] && candidate.actionHint !== candidate.action) {
+    return ACTION_TO_SECONDARY[candidate.actionHint];
+  }
+
+  // THIRD: Use action mapping (the classified action is the primary signal)
+  const actionCapability = ACTION_TO_SECONDARY[candidate.action];
+  if (actionCapability) return actionCapability;
+
+  // FOURTH: Use actionHint if available (fallback when action doesn't map)
+  if (candidate.actionHint && ACTION_TO_SECONDARY[candidate.actionHint]) {
+    return ACTION_TO_SECONDARY[candidate.actionHint];
+  }
+
+  return null;
 }
 
 /**
- * Check if an advisor is explicitly requested (precision gate).
- * 
- * @param {string} advisor
- * @param {string} text
- * @param {string} primaryAction
- * @returns {boolean}
+ * Check if candidate is ownership-eligible for secondary action
  */
-export function isAdvisorExplicit(advisor, text, primaryAction) {
-  const lowerText = lower(text);
-  
-  // Don't infer security advisor from auth/token mentions alone
-  if (advisor === 'security') {
-    const explicitSecurityTerms = [
-      'security', 'secure', 'vulnerability', 'threat', 'exploit', 'penetration', 'pentest',
-      'security review', 'security audit', 'threat model', 'threat-model',
-      'encryption', 'signature', 'trust boundary',
-      'signature verification', 'webhook signature', 'signature verify',
-      'auth bypass', 'oauth callback', 'oauth login', 'oauth',
-      'security issues', 'security issue', 'vulnerability assessment'
-    ];
-    const hasSecurityTerm = explicitSecurityTerms.some(term => lowerText.includes(term));
-    if (!hasSecurityTerm) return false;
-    
-    // Exclude cases where security term describes the primary work (not additional work)
-    // General semantic rule: primary action is fix/implement targeting a security/auth concern,
-    // and no explicit security review/audit/assessment is requested
-    const isPrimarySecurityFix = primaryAction === 'fix' || primaryAction === 'implement';
-    const hasAuthSecurityTarget = /\b(auth bypass|vulnerability|security issue|security flaw)\b/i.test(lowerText);
-    const hasExplicitSecurityReview = /\b(security review|security audit|security assessment|threat model|threat-model|penetration test|pentest)\b/i.test(lowerText);
-    if (isPrimarySecurityFix && hasAuthSecurityTarget && !hasExplicitSecurityReview) {
+function isOwnershipEligible(candidate, segments) {
+  // Must have positive polarity
+  if (candidate.provenance && candidate.provenance.polarity === 'negative') {
+    return false;
+  }
+
+  // Must not be from blocked provenance
+  if (candidate.provenance && candidate.provenance.segmentKind) {
+    if (BLOCKED_PROVENANCE_KINDS.has(candidate.provenance.segmentKind)) {
       return false;
     }
-    
-    return true;
   }
 
-  // Don't infer test advisor from test nouns alone
-  if (advisor === 'test') {
-    const explicitTestTerms = [
-      'add test', 'write test', 'create test', 'add tests', 'write tests', 'create tests',
-      'add regression test', 'write regression test', 'automated test',
-      'unit test', 'integration test', 'e2e test', 'test coverage',
-      'regression test', 'regression tests', 'flaky test', 'check flaky',
-      'test suite', 'test cases', 'test case', 'tests for'
-    ];
-    // Exclude cases where test term describes the primary work (not additional work)
-    const excludeTestPatterns = [
-      /^can you check this flaky test\?/i
-    ];
-    if (excludeTestPatterns.some(pattern => pattern.test(lowerText))) {
-      return false;
+  // MUST come from SECONDARY_INSTRUCTION segment (explicit additional request)
+  // DIRECT_INSTRUCTION context verbs (like "test suite", "rebase", "set up")
+  // are NOT explicit secondary requests
+  if (candidate.provenance && candidate.provenance.segmentKind !== 'SECONDARY_INSTRUCTION') {
+    return false;
+  }
+
+  // Must not be negated
+  if (candidate.provenance && candidate.provenance.negated === true) {
+    return false;
+  }
+
+  // Must have a mappable capability
+  if (!getSecondaryCapability(candidate)) {
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * Check if two actions represent the same workflow step
+ */
+function isSameWorkflowStep(primaryAction, secondaryAction) {
+  const pair = `${primaryAction}-${secondaryAction}`;
+  const reversePair = `${secondaryAction}-${primaryAction}`;
+  return SAME_WORKFLOW_ACTIONS.has(pair) || SAME_WORKFLOW_ACTIONS.has(reversePair);
+}
+
+/**
+ * Resolve secondary actions from composition candidates
+ *
+ * @param {Array} candidates - from extractActionCandidates()
+ * @param {Array} segments - from segmentPrompt()
+ * @param {Object} primary - from composePrimaryAction()
+ * @returns {string[]} sorted secondary capabilities
+ */
+export function resolveSecondaryActionsFromComposition(candidates, segments, primary) {
+  const primaryAction = primary.action;
+  const secondaryCapabilities = new Set();
+
+  // Get all ownership-eligible candidates that are NOT the primary
+  // The primary may have been remapped (e.g., upgrade -> implement via special case)
+  // Use the original action from the composed result to find the correct candidate
+  const originalPrimaryAction = primary.originalAction || primary.action;
+  const primaryCandidateIndex = candidates.findIndex(c => c.action === originalPrimaryAction);
+
+  // First, filter to ownership-eligible non-primary candidates
+  const eligibleCandidates = candidates
+    .filter((c, i) => i !== primaryCandidateIndex && isOwnershipEligible(c, segments))
+    .map((c, i) => ({ ...c, originalIndex: candidates.indexOf(c) }));
+
+  // Deduplicate: if a candidate's verb is a substring of another candidate's verb
+  // from the same segment, and they have the same target, keep only the longer one
+  // Also: if a candidate has a compound verb (in VERB_TO_SECONDARY) from the same
+  // segment with same target, suppress generic connector verbs (add, write, create, etc.)
+  const CONNECTOR_VERBS = new Set(['add', 'write', 'create', 'implement', 'update', 'make', 'build', 'develop']);
+  const deduplicatedCandidates = [];
+  for (const candidate of eligibleCandidates) {
+    const isSubsumed = eligibleCandidates.some(other =>
+      other !== candidate &&
+      other.provenance.segmentIndex === candidate.provenance.segmentIndex &&
+      other.target === candidate.target &&
+      other.verb &&
+      candidate.verb &&
+      other.verb.toLowerCase().includes(candidate.verb.toLowerCase()) &&
+      other.verb.length > candidate.verb.length
+    );
+    // Also check if another candidate from same segment has a compound verb mapping
+    // and this candidate is a generic connector verb with same target
+    const hasCompoundVerbSibling = eligibleCandidates.some(other =>
+      other !== candidate &&
+      other.provenance.segmentIndex === candidate.provenance.segmentIndex &&
+      other.target === candidate.target &&
+      other.verb &&
+      VERB_TO_SECONDARY[other.verb.toLowerCase()] &&
+      CONNECTOR_VERBS.has(candidate.verb.toLowerCase())
+    );
+    if (!isSubsumed && !hasCompoundVerbSibling) {
+      deduplicatedCandidates.push(candidate);
     }
-    
-    // Also check for common variations like "migration tests"
-    const extendedTestTerms = [...explicitTestTerms, 'migration test', 'migration tests'];
-    return extendedTestTerms.some(term => lowerText.includes(term));
   }
 
-  // Don't infer quality advisor from QA nouns alone
-  if (advisor === 'quality') {
-    const explicitQualityTerms = [
-      'qa', 'quality', 'regression matrix', 'risk coverage', 'compatibility matrix',
-      'scenario', 'map qa', 'map scenarios', 'qa matrix', 'quality matrix',
-      'create matrix', 'risk matrix', 'coverage matrix', 'test matrix'
-    ];
-    
-    // Check if any explicit quality term is present
-    const hasQualityTerm = explicitQualityTerms.some(term => lowerText.includes(term));
-    if (!hasQualityTerm) return false;
-    
-    // Exclude cases where quality term describes the primary work (not additional work)
-    // General semantic rule: primary action creates a quality/risk assessment artifact
-    // (risk matrix, QA matrix, compatibility matrix) and migration/upgrade appears
-    // only as context/object, not as the primary action
-    const isQualityArtifactCreation = /\b(create|map|build|generate)\b/i.test(lowerText) && 
-                                      /\b(risk matrix|qa matrix|quality matrix|regression matrix|compatibility matrix|coverage matrix|test matrix)\b/i.test(lowerText);
-    const migrationIsContext = /\b(migration|upgrade)\b/i.test(lowerText) && 
-                               !/\b(plan|planning|prepare|steps|only|don['']?t|without)\b/i.test(lowerText);
-    if (isQualityArtifactCreation && migrationIsContext) {
-      return false;
-    }
-    
-    // Also exclude explicit primary QA work like "map out QA scenarios"
-    const excludeQualityPatterns = [
-      /^map out qa scenarios/i,
-    ];
-    if (excludeQualityPatterns.some(pattern => pattern.test(lowerText))) {
-      return false;
-    }
-    
-    return true;
-  }
+  for (const candidate of deduplicatedCandidates) {
+    const capability = getSecondaryCapability(candidate);
+    if (!capability) continue;
 
-  // Don't infer review advisor from code review nouns alone unless explicit
-  if (advisor === 'review') {
-    const explicitReviewTerms = [
-      'code review', 'pr review', 'audit', 'inspect', 'evaluate',
-      'check correctness', 'check maintainability',
-      'review code', 'review implementation', 'review changes',
-      'review the', 'review this', 'review that'
-    ];
-    // Don't count 'review' when it's part of 'security review' (explicit security review request)
-    const hasSecurityReview = lowerText.includes('security review');
-    if (hasSecurityReview) return false;
-    
-    // Exclude cases where review term describes the primary work (not additional work)
-    const excludeReviewPatterns = [
-      /^review the diff for the new encryption module/i
-    ];
-    if (excludeReviewPatterns.some(pattern => pattern.test(lowerText))) {
-      return false;
-    }
-    
-    return explicitReviewTerms.some(term => lowerText.includes(term));
-  }
+    // Primary skill cannot also be advisor (primary duplication check)
+    // Use the FINAL primary action's capability (after remapping), not the original candidate
+    const primaryCapability = ACTION_TO_SECONDARY[primaryAction];
+    if (primaryCapability && capability === primaryCapability) continue;
 
-  // Upgrade advisor - but NOT for rollback/migration planning contexts
-  if (advisor === 'upgrade' && primaryAction !== 'upgrade') {
-    // Check for rollback/migration planning - these should not trigger upgrade advisor
-    const isRollbackMigrationPlan = /\b(rollback|migration)\b/i.test(lowerText) && 
-      /\b(plan|planning|prepare|steps|only|don['']?t|without)\b/i.test(lowerText);
-    if (isRollbackMigrationPlan) return false;
-    
-    // Exclude cases where migration is mentioned as context (risk matrix, etc.) not as upgrade action
-    // General semantic rule: primary action creates a quality/risk assessment artifact
-    // and migration appears only as context
-    const isQualityArtifactCreation = /\b(create|map|build|generate)\b/i.test(lowerText) && 
-                                      /\b(risk matrix|qa matrix|quality matrix|regression matrix|compatibility matrix|coverage matrix|test matrix)\b/i.test(lowerText);
-    const migrationIsContext = /\b(migration|upgrade)\b/i.test(lowerText);
-    if (isQualityArtifactCreation && migrationIsContext) {
-      return false;
-    }
-    
-    // If primary action is implement and text contains upgrade/migrate (meaning upgrade IS the primary work),
-    // don't count upgrade as advisor (it's part of the primary work, not additional)
-    if (primaryAction === 'implement' && 
-        /\b(upgrade|migrate|migration|dependency upgrade|framework upgrade)\b/i.test(lowerText)) {
-      return false;
-    }
-    
-    return /\b(upgrade|migrate|migration|dependency upgrade|framework upgrade)\b/i.test(lowerText);
-  }
+    // Check workflow cohesion - same workflow step doesn't get separate advisor
+    // SAME_WORKFLOW_ACTIONS pairs are known workflow completions (e.g., investigate+fix,
+    // upgrade+test, implement+test, recover+git, deploy+plan, implement+upgrade,
+    // test+quality, assess+security, implement+review). These should NOT be separate
+    // advisors UNLESS explicitly requested as orthogonal additional work (SECONDARY_INSTRUCTION
+    // with its own verb indicating explicit request, not just natural completion).
+    if (isSameWorkflowStep(primaryAction, candidate.action)) {
+      // For SAME_WORKFLOW pairs, only allow if explicitly requested as orthogonal work
+      // Evidence: verb is a known compound verb (in VERB_TO_SECONDARY) OR contains
+      // a capability keyword (security, test, review, audit, threat, penetration, pentest, doc)
+      const verbLower = candidate.verb?.toLowerCase() || '';
+      const isCompoundVerb = VERB_TO_SECONDARY[verbLower] !== undefined;
+      const hasCapabilityKeyword = verbLower.includes('security') || verbLower.includes('test') ||
+        verbLower.includes('review') || verbLower.includes('audit') || verbLower.includes('threat') ||
+        verbLower.includes('penetration') || verbLower.includes('pentest') || verbLower.includes('doc');
 
-  // Release advisor
-  if (advisor === 'release' && primaryAction !== 'release') {
-    return /\b(release|ship|publish|deliver|handoff|readiness|release readiness)\b/i.test(lowerText);
-  }
-
-  // Deploy advisor
-  if (advisor === 'deploy' && primaryAction !== 'deploy') {
-    const explicitDeployTerms = [
-      'deploy', 'deployment', 'push to production', 'push to prod',
-      'deploy production', 'deploy prod', 'rollout', 'canary',
-      'perform deploy', 'execute deploy', 'do the deploy',
-      'perform deployment', 'execute deployment', 'do the deployment',
-      'perform rollout', 'execute rollout', 'do the rollout',
-      'perform canary', 'execute canary', 'do the canary'
-    ];
-    return explicitDeployTerms.some(term => lowerText.includes(term));
-  }
-
-  // Operations advisor - but NOT for CI in diagnosis/investigation context
-  if (advisor === 'operations' && primaryAction !== 'deploy') {
-    // CI/build failure investigation is diagnosis, not operations
-    if (/\b(investigate|debug|diagnose|investigation)\b/i.test(lowerText) && 
-        /\b(ci|build)\b/i.test(lowerText) &&
-        /\b(fail|failure|error|broken|intermittent)\b/i.test(lowerText)) {
-      return false;
-    }
-    return /\b(operations|ops|cd|pipeline|monitor|observability|infrastructure)\b/i.test(lowerText) ||
-           /\b(ci failure|build failure|ci error|ci broken)\b/i.test(lowerText);
-  }
-
-  // Recover advisor
-  if (advisor === 'recover' && primaryAction !== 'recover') {
-    return /\b(recover|reconstruct|resume|interrupted|replay)\b/i.test(lowerText);
-  }
-
-  // Git advisor - check negation
-  if (advisor === 'git' && primaryAction !== 'git') {
-    const gitTerms = ['commit', 'push', 'merge', 'rebase', 'branch', 'stage', 'cherry-pick', 'merge locally'];
-    return gitTerms.some(term => {
-      const regex = new RegExp(`\\b${term}\\b`, 'gi');
-      const matches = lowerText.matchAll(regex);
-      for (const match of matches) {
-        const contextStart = Math.max(0, match.index - 50);
-        const contextEnd = match.index + term.length;
-        const context = lowerText.substring(contextStart, contextEnd);
-        if (!isNegated(context, term)) {
-          return true;
-        }
+      // If no explicit evidence, it's just natural workflow completion - filter it
+      if (!isCompoundVerb && !hasCapabilityKeyword) {
+        continue;
       }
-      return false;
-    });
+    }
+
+    secondaryCapabilities.add(capability);
   }
 
-  return true; // default allow for other advisors
+  return Array.from(secondaryCapabilities).sort();
+}
+
+/**
+ * Legacy-compatible resolver using keyword matching (for backward compat only)
+ * @deprecated - use resolveSecondaryActionsFromComposition
+ */
+export function resolveSecondaryActions(text, primaryPhase, primaryAction) {
+  // This is kept for backward compatibility but should not be used
+  // The new flow uses composition candidates with provenance
+  return [];
 }
 
 /**
  * Filter secondary actions through precision gate.
- * 
- * @param {string[]} secondaryActions
- * @param {string} text
- * @param {string} primaryAction
- * @returns {string[]}
+ * This is now a no-op since filtering happens in resolveSecondaryActionsFromComposition
+ * @deprecated
  */
 export function filterSecondaryActions(secondaryActions, text, primaryAction) {
-  return secondaryActions.filter(a => isAdvisorExplicit(a, text, primaryAction));
+  return secondaryActions;
 }

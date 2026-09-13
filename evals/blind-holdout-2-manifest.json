@@ -1,0 +1,10 @@
+{
+  "dataset": "blind-holdout-2",
+  "datasetSha256": "d4f6fa4523dbb86ec02bb7a6b637dbad6715e7900e5b40b3dd74cd625320350c",
+  "semanticSourceSha256": "c0a8ada33db6788f2d96e1fb1a0e8529ba7f2b63555f98e521c01407bbb19a0d",
+  "gitCommitSha": "07496ae",
+  "gitBranch": "feat/runtime-intent-shadow",
+  "authoredAt": "2026-09-11T14:30:00.000Z",
+  "caseCount": 44,
+  "status": "frozen"
+}

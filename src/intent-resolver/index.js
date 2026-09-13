@@ -17,11 +17,13 @@
 
 import { validateIntent, normalizeIntent } from '../intent.js';
 import { extractConstraints } from './constraints.js';
-import { extractKeywords, lower, PHASE_KEYWORDS, ACTION_KEYWORDS, OBJECT_KEYWORDS, RISK_KEYWORDS, MUTATION_KEYWORDS, EVIDENCE_KEYWORDS, NEGATION_PATTERNS, MULTI_INTENT_SEPARATORS, findBestMatch, isNegated, isActionNegated, EVIDENCE_KEYS, hasKnownCausePattern, hasFindRootCausePattern, hasReadinessPattern, isStagingDeploy } from './signals.js';
-import { resolveSecondaryActions, filterSecondaryActions } from './secondary.js';
+import { extractKeywords, lower, PHASE_KEYWORDS, ACTION_KEYWORDS, OBJECT_KEYWORDS, RISK_KEYWORDS, EVIDENCE_KEYWORDS, NEGATION_PATTERNS, MULTI_INTENT_SEPARATORS, findBestMatch, isNegated, isActionNegated, EVIDENCE_KEYS, hasKnownCausePattern, hasFindRootCausePattern, hasReadinessPattern, isStagingDeploy, extractSignalsWithProvenance, filterSignalsByKind, getHighestAuthoritySignal } from './signals.js';
+import { segmentPrompt, getDirectInstructionText, getContextText } from './segments.js';
+import { extractActionCandidates, composePrimaryAction, resolvePhaseFromComposition, resolveActionFromComposition, getCompositionDebug } from './composition.js';
+import { resolveSecondaryActionsFromComposition } from './secondary.js';
 import { resolveObject } from './object.js';
 import { resolveRisks } from './risks.js';
-import { resolveMutation } from './mutation.js';
+import { resolveMutation, resolveMutationFromComposition } from './mutation.js';
 import { resolveEvidence } from './evidence.js';
 import { computeConfidence } from './confidence.js';
 
@@ -337,36 +339,50 @@ export function resolveIntentFromPrompt(prompt, context = {}) {
   const originalText = String(prompt ?? '');
   const sanitizedText = sanitizePrompt(originalText);
 
-  // Stage 1: Extract constraints
+  // Stage 0: Segment with provenance (Phase 6C.1)
+  const segments = segmentPrompt(originalText);
+  const directText = getDirectInstructionText(segments);
+  const contextText = getContextText(segments);
+
+  // Stage 1: Extract constraints (from original text, unchanged)
   const constraints = extractConstraints(originalText);
 
-  // Stage 2: Resolve phase and action from sanitized text
-  const phase = resolvePhase(sanitizedText);
-  const action = resolveAction(sanitizedText, phase);
+  // Stage 2: Compose primary action from verb-target candidates (Phase 6C.2)
+  // This replaces global keyword-bag phase/action with provenance-aware composition
+  const actionCandidates = extractActionCandidates(segments);
+  const composed = composePrimaryAction(actionCandidates, sanitizedText, segments);
+  const phase = composed.phase;
+  const action = composed.action;
+  const compositionConfidence = composed.confidence;
+  const compositionSource = composed.source;
 
-  // Stage 3: Extract object signals
-  const objectSignals = extractKeywords(sanitizedText, OBJECT_KEYWORDS);
-  const object = resolveObject(objectSignals, phase, action, sanitizedText);
+  // Stage 3: Extract object signals (backward compatible, uses contextText)
+  const objectSignals = extractKeywords(contextText, OBJECT_KEYWORDS);
+  const object = resolveObject(objectSignals, phase, action, contextText);
 
-  // Stage 4: Resolve risks
-  const riskSignals = extractKeywords(sanitizedText, RISK_KEYWORDS);
-  const risks = resolveRisks(riskSignals, sanitizedText, phase, action, object);
+  // Stage 4: Resolve risks (backward compatible)
+  const riskSignals = extractKeywords(contextText, RISK_KEYWORDS);
+  const risks = resolveRisks(riskSignals, contextText, phase, action, object);
 
-  // Stage 5: Resolve mutation
-  const mutationSignals = extractKeywords(sanitizedText, MUTATION_KEYWORDS);
-  const mutation = resolveMutation(mutationSignals, sanitizedText, phase, action);
+  // Stage 5: Resolve mutation from composition candidates (Phase 6C.3)
+  // Uses authorized action candidates + environment binding + constraint gates
+  const mutation = resolveMutationFromComposition(actionCandidates, segments);
 
-  // Stage 6: Resolve evidence
+  // Stage 6: Resolve evidence (backward compatible)
   const evidenceSignals = {
-    failureObserved: extractKeywords(sanitizedText, EVIDENCE_KEYWORDS.failureObserved),
-    rootCauseKnown: extractKeywords(sanitizedText, EVIDENCE_KEYWORDS.rootCauseKnown),
-    behaviorDefined: extractKeywords(sanitizedText, EVIDENCE_KEYWORDS.behaviorDefined),
+    failureObserved: extractKeywords(contextText, EVIDENCE_KEYWORDS.failureObserved),
+    rootCauseKnown: extractKeywords(contextText, EVIDENCE_KEYWORDS.rootCauseKnown),
+    behaviorDefined: extractKeywords(contextText, EVIDENCE_KEYWORDS.behaviorDefined),
   };
-  const evidence = resolveEvidence(evidenceSignals, sanitizedText);
+  const evidence = resolveEvidence(evidenceSignals, contextText);
 
-  // Stage 7: Resolve secondary actions
-  const rawSecondary = resolveSecondaryActions(sanitizedText, phase, action);
-  const secondaryActions = filterSecondaryActions(rawSecondary, sanitizedText, action).slice(0, 2);
+  // Stage 7: Resolve secondary actions from composition candidates (Phase 6C.4)
+  // Uses authorized action candidates with provenance - NOT keyword matching
+  const secondaryActions = resolveSecondaryActionsFromComposition(
+    actionCandidates,
+    segments,
+    composed
+  ).slice(0, 2);
 
   // Stage 8: Build and validate intent
   const intentInput = { phase, action, secondaryActions, object, risks, mutation, evidence };
@@ -374,8 +390,8 @@ export function resolveIntentFromPrompt(prompt, context = {}) {
   if (!validation.ok) throw new Error(`Resolved intent invalid: ${validation.errors.join('; ')}`);
   const intent = validation.value;
 
-  // Stage 9: Compute confidence
-  const confidence = computeConfidence(sanitizedText, intent);
+  // Stage 9: Compute confidence (use composition confidence when high, otherwise fallback)
+  const confidence = compositionConfidence === 'high' ? compositionConfidence : computeConfidence(sanitizedText, intent);
 
   // Stage 10: Extract signals and unresolved
   const signals = extractSignals(intent, sanitizedText);
@@ -394,6 +410,36 @@ export function resolveIntentFromPrompt(prompt, context = {}) {
       hasCodeBlocks: originalText !== sanitizedText,
       hasNegation: signals.includes('negation:present'),
       multiIntent: detectMultiIntent(sanitizedText),
+      // Phase 6C.1: Provenance metadata
+      segments: segments.map(s => ({
+        index: s.index,
+        kind: s.kind,
+        authority: s.authority,
+        polarity: s.polarity,
+        negated: s.negated,
+        verb: s.verb,
+        target: s.target,
+        textPreview: s.text.slice(0, 100),
+      })),
+      directText,
+      contextText,
+      // Phase 6C.2: Composition metadata
+      composition: {
+        source: compositionSource,
+        candidates: actionCandidates.map(c => ({
+          verb: c.verb,
+          action: c.action,
+          target: c.target,
+          targetCategory: c.targetCategory,
+          score: c.score,
+          kind: c.provenance.segmentKind,
+          authority: c.provenance.authority,
+          ownershipEligible: c.ownershipEligible,
+          segmentIndex: c.provenance.segmentIndex,
+          segmentKind: c.provenance.segmentKind,
+        })),
+        debug: getCompositionDebug(actionCandidates, sanitizedText),
+      },
     },
   };
 }
