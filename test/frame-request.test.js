@@ -54,8 +54,8 @@ test('assembleRequestFrame: valid multi-clause prompt produces all six keys', as
   assert.ok(frame.actions.length >= 1, 'expected at least one action');
 });
 
-test('assembleRequestFrame: unknown verb yields UNKNOWN_SURFACE_OPERATION diagnostic without throwing', async () => {
-  const prompt = 'Frobnicate the widget and then deploy it.'; // "frobnicate" not in surface map
+test('assembleRequestFrame: clause-initial unknown verb yields UNKNOWN_SURFACE_OPERATION without throwing', async () => {
+  const prompt = 'Frobnicate the widget';
   let frame;
   assert.doesNotThrow(() => {
     frame = assembleRequestFrame(prompt);
@@ -65,6 +65,42 @@ test('assembleRequestFrame: unknown verb yields UNKNOWN_SURFACE_OPERATION diagno
   const unknownDiag = frame.diagnostics.find(d => d.code === 'UNKNOWN_SURFACE_OPERATION');
   assert.ok(unknownDiag, 'expected UNKNOWN_SURFACE_OPERATION diagnostic');
   assert.ok(typeof unknownDiag.detail === 'string', 'diagnostic detail should be string');
+});
+
+test('assembleRequestFrame: mixed known+unknown clauses yield diagnostic for the unknown part', async () => {
+  const prompt = 'Deploy the api and frobnicate the widget';
+  let frame;
+  assert.doesNotThrow(() => {
+    frame = assembleRequestFrame(prompt);
+  }, 'should not throw on mixed known+unknown clauses');
+
+  // The known part assembles normally
+  assert.ok(frame.actions.length >= 1, 'expected at least one action from the known clause');
+
+  // The unknown part yields a diagnostic (UNRESOLVED_RELATION per ruling: segment has verb but clause has no frame)
+  const diag = frame.diagnostics.find(d => d.code === 'UNRESOLVED_RELATION');
+  assert.ok(diag, 'expected diagnostic for the unknown clause');
+});
+
+test('assembleRequestFrame: politeness-prefixed unknown verb yields diagnostic without throwing', async () => {
+  const prompt = 'Please frobnicate the widget';
+  let frame;
+  assert.doesNotThrow(() => {
+    frame = assembleRequestFrame(prompt);
+  }, 'should not throw on politeness-prefixed input');
+
+  const unknownDiag = frame.diagnostics.find(d => d.code === 'UNKNOWN_SURFACE_OPERATION');
+  assert.ok(unknownDiag, 'expected UNKNOWN_SURFACE_OPERATION diagnostic');
+  // Conservative assembly: frames still present, nothing authoritative over-claimed
+  assert.ok(Array.isArray(frame.clauses) && frame.clauses.length >= 1, 'expected clauses');
+  assert.ok(Array.isArray(frame.actions), 'expected actions array');
+});
+
+test('assembleRequestFrame: known verbs produce no UNKNOWN_SURFACE_OPERATION diagnostic', async () => {
+  const prompt = 'Deploy the api and run the test suite.';
+  const frame = assembleRequestFrame(prompt);
+  const unknownDiag = frame.diagnostics.find(d => d.code === 'UNKNOWN_SURFACE_OPERATION');
+  assert.ok(!unknownDiag, 'known verbs must not yield UNKNOWN_SURFACE_OPERATION');
 });
 
 test('assembleRequestFrame: empty input yields NO_GOVERNING_ACTION without throwing', async () => {

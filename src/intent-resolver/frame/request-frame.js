@@ -6,7 +6,6 @@ import { segmentPrompt } from '../segments.js';
 import { parseClauses } from './clause-frame.js';
 import { buildActionFrames, buildContextFrames } from './action-frame.js';
 import { resolveRelations } from './relations.js';
-import { lookupSurfaceOperation } from './surface-map.js';
 
 // Closed diagnostic code set
 const DIAGNOSTIC_CODES = Object.freeze([
@@ -87,41 +86,52 @@ function validateConstraints(_constraints, _diagnostics) {
   // Stub — real scope validation lands with projectors/constraints.js in T12.
 }
 
-// Function words that can never be a clause-initial imperative verb.
-// Structural filter so pronoun/determiner-led clauses don't read as unknown verbs.
-const NON_VERB_LEADS = new Set([
-  'the', 'a', 'an', 'this', 'that', 'these', 'those',
-  'i', 'you', 'he', 'she', 'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them',
-  'my', 'your', 'his', 'its', 'our', 'their',
-  'in', 'on', 'at', 'to', 'for', 'with', 'from', 'by', 'about', 'into', 'over', 'after', 'before', 'between', 'through', 'during', 'under', 'of',
-  'is', 'are', 'was', 'were', 'be', 'been', 'being', 'am', 'has', 'have', 'had', 'do', 'does', 'did', 'will', 'would', 'can', 'could', 'should', 'shall', 'may', 'might', 'must',
-  'and', 'but', 'or', 'nor', 'so', 'yet', 'because', 'if', 'when', 'while', 'although', 'unless',
-  'no', 'not', 'all', 'some', 'any', 'each', 'every', 'few', 'many', 'much', 'more', 'most', 'other', 'such',
-  'also', 'just', 'still', 'already', 'here', 'there', 'now', 'then', 'today',
-]);
-
-function stemToken(token) {
-  if (token.length > 5 && token.endsWith('ing')) return token.slice(0, -3);
-  if (token.length > 4 && token.endsWith('ed')) return token.slice(0, -2);
-  if (token.length > 3 && token.endsWith('s')) return token.slice(0, -1);
-  return token;
-}
-
-// Structural signal: an authoritative clause whose clause-initial candidate verb
-// (imperative position) misses the surface map, yet the clause produced zero
-// authorized ActionFrames — the surface vocabulary has no entry for it.
-function detectUnknownSurfaceOperations(clauses, actions, diagnostics) {
+// Structural unknown-verb signal: reuse segments.js verb extraction. For each
+// authoritative clause, align it to its originating segment (same offset logic
+// parseClauses uses). If the aligned segment's verb is null while the clause
+// yielded zero ActionFrames, the surface vocabulary has no entry for it.
+function detectUnknownSurfaceOperations(segments, clauses, actions, diagnostics) {
   for (const clause of clauses) {
     if (clause.provenance !== 'DIRECT_INSTRUCTION' && clause.provenance !== 'SECONDARY_INSTRUCTION') continue;
     if (!clause.text || !clause.text.trim()) continue;
     if (actions.some((a) => a.clauseId === clause.id)) continue;
 
-    const first = clause.text.trim().split(/\s+/)[0].replace(/[^a-zA-Z-]/g, '').toLowerCase();
-    if (!first || NON_VERB_LEADS.has(first)) continue;
-    if (lookupSurfaceOperation(first) || lookupSurfaceOperation(stemToken(first))) continue;
+    const origin = findOriginSegment(segments, clause);
+    if (!origin) continue;
 
-    pushDiagnostic(diagnostics, 'UNKNOWN_SURFACE_OPERATION', `Unknown surface verb "${first}" in clause ${clause.id}`);
+    const first = clause.text.trim().split(/\s+/)[0].replace(/[^a-zA-Z-]/g, '').toLowerCase();
+    if (!first) continue;
+
+    if (origin.verb === null) {
+      pushDiagnostic(diagnostics, 'UNKNOWN_SURFACE_OPERATION', `Unknown surface verb "${first}" in clause ${clause.id}`);
+    } else {
+      pushDiagnostic(diagnostics, 'UNRESOLVED_RELATION', `Segment verb "${origin.verb}" in clause ${clause.id} yielded no ActionFrame`);
+    }
   }
+}
+
+// Align a clause to its originating segment via the same start-offset walk
+// parseClauses uses in buildFullTextAndOffsets. Returns the segment whose
+// joined-text span covers the clause start, or null when no segment is present.
+function findOriginSegment(segments, clause) {
+  if (!segments || segments.length === 0 || !clause || !clause.text) return null;
+  // Rebuild spans the same way clause-frame.js does: join non-empty segment
+  // texts with single spaces in order.
+  const texts = segments.map((s) => s.text).filter((t) => t);
+  if (texts.length === 0) return null;
+  const fullText = texts.join(' ');
+  const start = fullText.indexOf(clause.text);
+  if (start === -1) return null;
+  // Walk the joined-text spans to find the segment covering the clause start.
+  let pos = 0;
+  for (const seg of segments) {
+    if (!seg.text) continue;
+    if (pos > 0) pos += 1;
+    const end = pos + seg.text.length;
+    if (start >= pos - 1 && start < end) return seg;
+    pos = end;
+  }
+  return null;
 }
 
 /**
@@ -158,7 +168,7 @@ export function assembleRequestFrame(prompt) {
   validateRelations(relations, actions, diagnostics);
   validateEnvironment(actions, diagnostics);
   validateConstraints(constraints, diagnostics);
-  detectUnknownSurfaceOperations(clauses, actions, diagnostics);
+  detectUnknownSurfaceOperations(segments, clauses, actions, diagnostics);
 
   // Deduplicate diagnostics by code+detail
   const seen = new Set();
