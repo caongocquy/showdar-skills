@@ -154,7 +154,7 @@ export function assembleRequestFrame(prompt) {
   // Note: resolveRelations mutates action.role
   const relations = resolveRelations(actions, clauses);
 
-  // 6. Build constraint frames (T06-local stub)
+  // 6. Build constraint frames (real implementation from projectors/constraints.js)
   const constraints = buildConstraintFrames(clauses, actions);
 
   // 7. Collect diagnostics (closed code set, never throws)

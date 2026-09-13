@@ -120,7 +120,7 @@ function extractConstraintsFromClause(clause) {
  * (d) otherwise 'global'
  * READ_ONLY derived from "only"/"anything" patterns is ALWAYS global (request-wide by nature).
  */
-function determineScope(clause, actions, constraintKind, triggerText) {
+function determineScope(clause, actions, constraintKind) {
   // Find actions in the same clause
   const clauseActions = actions.filter((a) => a.clauseId === clause.id);
   const lowerText = clause.text.toLowerCase();
@@ -253,8 +253,8 @@ export function buildConstraintFrames(clauses, actions) {
   for (const clause of clauses) {
     const clauseConstraints = extractConstraintsFromClause(clause);
 
-    for (const { kind, triggerText } of clauseConstraints) {
-      const scope = determineScope(clause, actions, kind, triggerText);
+    for (const { kind } of clauseConstraints) {
+      const scope = determineScope(clause, actions, kind);
       const isAmbiguous = scope.endsWith(':ambiguous');
 
       constraintFrames.push({
