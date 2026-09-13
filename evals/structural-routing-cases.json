@@ -66,5 +66,47 @@
         "advisors": []
       }
     }
+  ],
+  "scopedConstraintCases": [
+    {
+      "id": "action-scoped-no-push",
+      "input": "Deploy the api but do not push it",
+      "expected": {
+        "constraints": [
+          { "kind": "NO_PUSH", "scope": "action:a1" }
+        ],
+        "intent": {"phase":"implementation","action":"deploy","object":"api","secondaryActions":[],"risks":[],"mutation":"remote-write","evidence":{}}
+      }
+    },
+    {
+      "id": "clause-scoped-no-deploy",
+      "input": "Build the service and do not deploy",
+      "expected": {
+        "constraints": [
+          { "kind": "NO_DEPLOY", "scope": "clause:c0" }
+        ],
+        "intent": {"phase":"implementation","action":"implement","object":"service","secondaryActions":[],"risks":[],"mutation":"local-write","evidence":{}}
+      }
+    },
+    {
+      "id": "global-no-push-separate-clause",
+      "input": "Update the config but do not push",
+      "expected": {
+        "constraints": [
+          { "kind": "NO_PUSH", "scope": "global" }
+        ],
+        "intent": {"phase":"implementation","action":"implement","object":"config","secondaryActions":[],"risks":[],"mutation":"local-write","evidence":{}}
+      }
+    },
+    {
+      "id": "ambiguous-scope-avoid-pushing",
+      "input": "Avoid pushing changes",
+      "expected": {
+        "constraints": [
+          { "kind": "NO_PUSH", "scope": "global", "_ambiguous": true }
+        ],
+        "intent": {"phase":"implementation","action":"implement","object":"changes","secondaryActions":[],"risks":[],"mutation":"local-write","evidence":{}}
+      }
+    }
   ]
 }

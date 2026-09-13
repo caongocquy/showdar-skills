@@ -1,4 +1,4 @@
-// RequestFrame assembly (Phase 6F T06)
+// RequestFrame assembly (Phase 6F T06; T12 wires real constraints)
 // Composes clause, action, context, relation frames into a single RequestFrame
 // with diagnostics from the closed code set.
 
@@ -6,6 +6,7 @@ import { segmentPrompt } from '../segments.js';
 import { parseClauses } from './clause-frame.js';
 import { buildActionFrames, buildContextFrames } from './action-frame.js';
 import { resolveRelations } from './relations.js';
+import { buildConstraintFrames } from './projectors/constraints.js';
 
 // Closed diagnostic code set
 const DIAGNOSTIC_CODES = Object.freeze([
@@ -28,15 +29,6 @@ function pushDiagnostic(diagnostics, code, detail) {
     throw new Error(`Invalid diagnostic code: ${code}`);
   }
   diagnostics.push({ code, detail });
-}
-
-/**
- * T06-LOCAL constraint stub — returns empty array.
- * Replaced by real `buildConstraintFrames` from projectors/constraints.js in T12.
- * MUST NOT be consumed as real mutation authority by T08–T10.
- */
-function buildConstraintFrames(_clauses, _actions) {
-  return [];
 }
 
 function validateGovernance(actions, diagnostics) {
@@ -82,8 +74,12 @@ function validateEnvironment(actions, diagnostics) {
   }
 }
 
-function validateConstraints(_constraints, _diagnostics) {
-  // Stub — real scope validation lands with projectors/constraints.js in T12.
+function validateConstraints(constraints, diagnostics) {
+  for (const c of constraints) {
+    if (c._ambiguous) {
+      pushDiagnostic(diagnostics, 'AMBIGUOUS_CONSTRAINT_SCOPE', `Constraint ${c.kind} has ambiguous scope in: ${c.text}`);
+    }
+  }
 }
 
 // Structural unknown-verb signal: reuse segments.js verb extraction. For each
