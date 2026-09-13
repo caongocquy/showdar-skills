@@ -55,7 +55,12 @@ Carried into every task. Violation blocks the task.
 | `src/intent-resolver/frame/action-frame.js` | CREATE | `buildActionFrames` (authorized only) + `buildContextFrames` | 6F.1 (T04) |
 | `src/intent-resolver/frame/relations.js` | CREATE | `resolveRelations(frames)` → Relation[] with roles | 6F.1 (T05) |
 | `src/intent-resolver/frame/request-frame.js` | CREATE | `assembleRequestFrame` + diagnostics codes | 6F.1 (T06) |
-| `src/intent-resolver/frame/projectors.js` | CREATE | Pure Intent projectors (primary, mutation, secondary, constraints, risks/evidence/object) | 6F.2 (T08; extended T11/T12/T14) |
+| `src/intent-resolver/frame/projectors/primary.js` | CREATE | `projectPrimary` + `projectConservativeIntent`; imports only clause/action/relation/surface-map modules, never risk/object signals | 6F.2 (T08) |
+| `src/intent-resolver/frame/projectors/mutation.js` | CREATE | `projectMutation` over authorized frames + environment | 6F.3 (T11) |
+| `src/intent-resolver/frame/projectors/constraints.js` | CREATE | `buildConstraintFrames` + `applyConstraintGates` (reduce-only) | 6F.3 (T12) |
+| `src/intent-resolver/frame/projectors/secondary.js` | CREATE | `projectSecondaries` from orthogonal authorized frames only | 6F.4 (T14) |
+| `src/intent-resolver/frame/projectors/metadata.js` | CREATE | Authority-free risks/evidence/object derivation incl. evidence no-inference rule; its output never feeds authority decisions | 6F.4 (T14) |
+| `src/intent-resolver/frame/projectors/index.js` | CREATE | Barrel `resolveStructuralIntent(requestFrame)` composing projectors in fixed order (primary → mutation → gates → secondaries → metadata); grows per stage | 6F.2 (T08; extended T11/T12/T14) |
 | `src/intent-resolver/frame/shadow.js` | CREATE | `runShadow(prompt)` differential struct, diagnostic-only | 6F.2 (T09) |
 | `src/intent-resolver/segments.js` | MODIFY | Expose clause-usable segment spans; no authority semantics change | 6F.1 (T02) |
 | `src/intent-resolver/index.js` | MODIFY | Wire shadow (6F.2), then structural projectors (6F.6); engine-mode switch lives here | 6F.2 (T09) → 6F.6 (T20) |
@@ -63,7 +68,7 @@ Carried into every task. Violation blocks the task.
 | `src/intent-resolver/mutation.js` | MODIFY then DELETE-LATER | Legacy rescues deleted in 6F.7; surface vocabulary retained | 6F.7 (T21) |
 | `src/intent-resolver/secondary.js` | MODIFY then DELETE-LATER | Workflow heuristics deleted in 6F.7 | 6F.7 (T21) |
 | `src/route-plan.js` | MODIFY | Characterization (6F.5), thin mapping (6F.5), rule deletion (6F.7) | 6F.5 (T16) |
-| `scripts/semantic-source-hash.mjs` | MODIFY | Cover `src/intent-resolver/frame/*.js` deterministically | 6F.6 (T19) |
+| `scripts/semantic-source-hash.mjs` | MODIFY | Cover `src/intent-resolver/frame/*.js` and `src/intent-resolver/frame/projectors/*.js` deterministically | 6F.6 (T19) |
 | `test/frame-clause.test.js` | CREATE | L1 clause tests | 6F.1 (T02) |
 | `test/frame-surface-map.test.js` | CREATE | Surface taxonomy tests | 6F.1 (T03) |
 | `test/frame-action.test.js` | CREATE | L2 framing + provenance boundary tests | 6F.1 (T04) |
@@ -253,11 +258,14 @@ runtime output byte-identical on all deterministic suites.
   CREATE `test/frame-request.test.js` (extend T01 loader with assembly tests).
   **Interfaces**
   Consumes: `parseClauses`, `buildActionFrames`, `buildContextFrames`,
-  `resolveRelations`, `buildConstraintFrames` (stub returning [] until T12;
-  stub is explicit pass-through, not a placeholder: constraints land in T12).
+  `resolveRelations`, `buildConstraintFrames` (T06-local stub returning []
+  until T12; the stub is defined inside `request-frame.js`, is never consumed
+  as real mutation authority by T08–T10, and is replaced by the real
+  `projectors/constraints.js` implementation in T12 — before structural
+  mutation becomes authoritative at T20).
   Produces: `assembleRequestFrame(prompt)` → RequestFrame
   `{ clauses, actions, contexts, constraints, relations, diagnostics }` with
-  diagnostics from NO_GOVERNING_ACTION, MULTIPLE_GOVERNING_ACTIONS,
+  diagnostics as `{ code, detail }` objects from NO_GOVERNING_ACTION, MULTIPLE_GOVERNING_ACTIONS,
   UNBOUND_TARGET, UNRESOLVED_RELATION, UNKNOWN_SURFACE_OPERATION,
   AMBIGUOUS_ENVIRONMENT, AMBIGUOUS_CONSTRAINT_SCOPE. Never throws on normal
   language; unknown authority degrades to diagnostic + conservative frames.
@@ -279,15 +287,19 @@ Exit gate: relation matrix green; structural primary available in shadow; no
 runtime cutover (legacy outputs unchanged).
 
 - [ ] **T08 — Primary projector**
-  Files: CREATE `src/intent-resolver/frame/projectors.js` (primary section);
-  extend `test/frame-projectors.test.js` (CREATE in this task).
+  Files: CREATE `src/intent-resolver/frame/projectors/primary.js` and
+  CREATE `src/intent-resolver/frame/projectors/index.js` (barrel initially
+  wiring primary only: `resolveStructuralIntent` returns primary +
+  conservative fallback; mutation/secondary/metadata wiring lands in
+  T11/T12/T14); extend `test/frame-projectors.test.js` (CREATE in this task).
   **Interfaces**
   Consumes: RequestFrame.
   Produces: `projectPrimary(requestFrame)` → `{ phase, action }` taken
   EXCLUSIVELY from the positive AUTHORIZED_NOW GOVERNING ActionFrame via
   `lookupSurfaceOperation`; `projectConservativeIntent(diagnostics)` →
   discovery/verification read-only Intent with no secondaries. No numeric
-  scoring anywhere in this module.
+  scoring anywhere in this module. `primary.js` MUST NOT import risk or object
+  keyword modules; ownership inputs are governing frame + surface map only.
   Representative assertions on fixed RequestFrames:
   ```js
   assert.deepEqual(projectPrimary(frameFor('implement X + audit X')).action, 'implement');
@@ -295,6 +307,10 @@ runtime cutover (legacy outputs unchanged).
   assert.deepEqual(projectPrimary(frameFor('historical deploy + investigate')).action, 'investigate');
   assert.deepEqual(projectPrimary(frameFor('upgrade + deploy staging')).action, 'upgrade');
   assert.equal(projectConservativeIntent([{ code: 'NO_GOVERNING_ACTION' }]).mutation, 'read-only');
+  // ownership isolation: risks/object never change the primary
+  const base = frameFor('implement X + audit X');
+  assert.deepEqual(projectPrimary({ ...base, risks: ['security', 'production'] }),
+    projectPrimary({ ...base, risks: [], object: 'other' }));
   ```
   Behaviors covered: implement+audit, rebase+conflicts, investigate-why,
   historical+investigate, upgrade+deploy-staging, unresolved governing.
@@ -307,12 +323,18 @@ runtime cutover (legacy outputs unchanged).
   CREATE `test/frame-shadow.test.js`.
   **Interfaces**
   Consumes: raw prompt; legacy `resolveIntentFromPrompt`; structural
-  `assembleRequestFrame` + `projectPrimary`.
+  `assembleRequestFrame` + barrel `resolveStructuralIntent` (primary-only at
+  this stage).
   Produces: `runShadow(prompt)` →
   `{ legacy: { phase, action, mutation, secondaryActions, primarySkill },
      structural: { phase, action, mutation, secondaryActions, primarySkill },
      agreement: { phase, action, mutation, secondary, primarySkill },
-     issues: [...] }`.
+     issues: [...] }`
+  where at T09 the structural side reports phase/action from the structural
+  primary projector and reports mutation/secondaryActions/primarySkill as
+  `null` with reason `not-yet-projected` (those projectors land in
+  T11/T14/T17, which extend shadow coverage; T10 gates only phase/action
+  agreement). The T06 constraint stub is not consulted by the shadow.
   `index.js` change is append-only: compute `runShadow` after the legacy
   result and attach to `meta.shadow`; every existing return value unchanged
   (asserted by the full suite). Representative assertions:
@@ -326,8 +348,9 @@ runtime cutover (legacy outputs unchanged).
 
 - [ ] **T10 — 6F.2 exit gate**
   Gate checks: relation matrix (fixture cases tagged `matrix: relations`)
-  100%; shadow present on sample prompts without changing legacy outputs
-  (`node scripts/structured-routing-eval.mjs` unchanged);
+  100%; shadow present on sample prompts with phase/action agreement and
+  explicit `not-yet-projected` nulls elsewhere, without changing legacy
+  outputs (`node scripts/structured-routing-eval.mjs` unchanged);
   `node --test test/frame-projectors.test.js`
   `node --test test/frame-shadow.test.js` green. No cutover code exists.
 
@@ -337,8 +360,11 @@ Exit gate: provenance mutation leaks = 0; production escalation without an
 authorized action = 0; constraint matrix green.
 
 - [ ] **T11 — Mutation projector**
-  Files: MODIFY `src/intent-resolver/frame/projectors.js` (add
-  `projectMutation`); extend `test/frame-projectors.test.js`.
+  Files: CREATE `src/intent-resolver/frame/projectors/mutation.js`; extend
+  `src/intent-resolver/frame/projectors/index.js` (wire mutation after
+  primary); extend `test/frame-projectors.test.js`; extend shadow so the
+  structural side reports mutation (secondaryActions/primarySkill stay
+  `not-yet-projected` until T14/T17).
   **Interfaces**
   Consumes: RequestFrame (actions with role/commitment/environment/polarity).
   Produces: `projectMutation(requestFrame)` → mutation class via contributor
@@ -359,8 +385,10 @@ authorized action = 0; constraint matrix green.
   commit `feat(router): enforce structural mutation authority`.
 
 - [ ] **T12 — Constraint frames and gates**
-  Files: MODIFY `src/intent-resolver/frame/projectors.js` (add
-  `buildConstraintFrames`, `applyConstraintGates`); extend
+  Files: CREATE `src/intent-resolver/frame/projectors/constraints.js`
+  (replacing the T06-local stub; the stub is deleted in this task); extend
+  `src/intent-resolver/frame/projectors/index.js` (apply
+  `applyConstraintGates` after mutation projection); extend
   `test/frame-projectors.test.js`; extend fixture with scoped-constraint cases.
   **Interfaces**
   Consumes: ClauseFrame[] + ActionFrame[].
@@ -386,10 +414,16 @@ authorized action = 0; constraint matrix green.
 
 Exit gate: advisor relation matrix green; no supporting/contextual advisor leak.
 
-- [ ] **T14 — Secondary projector**
-  Files: MODIFY `src/intent-resolver/frame/projectors.js` (add
-  `projectSecondaries`); extend `test/frame-projectors.test.js`; extend
-  fixture with secondary cases.
+- [ ] **T14 — Secondary and metadata projectors**
+  Files: CREATE `src/intent-resolver/frame/projectors/secondary.js`;
+  CREATE `src/intent-resolver/frame/projectors/metadata.js` (authority-free
+  risks/evidence/object derivation, including the evidence no-inference rule:
+  `fix`/`repair`/`resolve` alone never imply `rootCauseKnown: true`; its
+  output is never consumed by primary/mutation/secondary decisions);
+  complete `src/intent-resolver/frame/projectors/index.js` barrel composition
+  order (primary → mutation → gates → secondaries → metadata); extend
+  `test/frame-projectors.test.js`; extend fixture with secondary cases;
+  extend shadow so the structural side reports secondaryActions.
   **Interfaces**
   Consumes: RequestFrame.
   Produces: `projectSecondaries(requestFrame, primaryCapability)` →
@@ -437,7 +471,9 @@ structural path.
   Produces: `{ primary: { skill }, advisors: [...] }` with zero scoring,
   zero PRIMARY_SELECTION_RULES, zero risk/object re-selection on the thin
   path. Removal of legacy rules is explicitly deferred to T21; this task only
-  adds the thin path and proves equivalence on characterization cases.
+  adds the thin path, proves equivalence on characterization cases, and
+  extends the shadow so the structural side reports primarySkill via the thin
+  mapper. The legacy runtime path is byte-identical before T20.
   TDD with `node --test test/route-planner-thin.test.js`, then `npm test`;
   commit `refactor(router): make route plan semantic-neutral`.
 
@@ -453,9 +489,11 @@ pass; no legacy authority fallback exists.
 
 - [ ] **T19 — Semantic hash protocol update for frame modules**
   Files: MODIFY `scripts/semantic-source-hash.mjs` (extend file list to
-  `src/intent-resolver/frame/*.js` in codepoint order after the existing
-  resolver files); MODIFY `test/semantic-source-hash.test.js` (list
-  membership, deterministic ordering, missing-file failure).
+  `src/intent-resolver/frame/*.js` plus `src/intent-resolver/frame/projectors/*.js`,
+  each group in codepoint order after the existing resolver files, so every
+  new authoritative frame/projector module is inside the hash); MODIFY
+  `test/semantic-source-hash.test.js` (list membership including the
+  `projectors/` subgroup, deterministic ordering, missing-file failure).
   **Interfaces**
   Consumes: existing `canonicalSemanticFileList(repoRoot)` contract.
   Produces: extended deterministic list; new combined SHA recorded by the
@@ -469,21 +507,33 @@ pass; no legacy authority fallback exists.
 - [ ] **T20 — Authoritative cutover switch**
   Files: MODIFY `src/intent-resolver/index.js` (engine modes conceptually
   legacy / structural-shadow / structural; structural becomes authoritative);
-  legacy remains callable for diagnostics only and is never consulted on any
-  authority decision.
+  the pre-cutover legacy implementation stays importable as
+  `resolveLegacyIntent` for diagnostics and the T20 proof test only, and is
+  never consulted on any authority decision.
   **Interfaces**
-  Consumes: `assembleRequestFrame`, all projectors, `buildThinRoutePlan`.
+  Consumes: `assembleRequestFrame`, barrel `resolveStructuralIntent`
+  (completed across T08/T11/T12/T14), `buildThinRoutePlan`.
   Produces: `resolveIntentFromPrompt` served by the structural engine with
   identical public contract; `meta.engine = 'structural'`.
-  Includes the explicit no-fallback proof test:
+  Includes the behavioral no-legacy-fallback proof test (novel wording, never
+  a Blind #5 phrase). The test first runs the legacy engine on the same input
+  to prove the trap is real, then asserts the structural runtime refuses it:
   ```js
-  const r = resolveIntentFromPrompt('Mystery phrase with no clear governing verb 6f.');
+  const input = 'Runbook note: "promote the build to production on Friday". File this under historical notes.';
+  const legacy = resolveLegacyIntent(input);
+  assert.equal(legacy.intent.mutation, 'production-impacting');
+  const r = resolveIntentFromPrompt(input); // structural authoritative
   assert.equal(r.intent.mutation, 'read-only');
-  assert.ok((r.meta.issues || []).length > 0);
+  assert.ok(['discovery', 'verification'].includes(r.intent.phase));
+  assert.notEqual(r.primary.skill, 'showdar-ops');
+  assert.ok((r.meta.issues || []).some((i) => ['NO_GOVERNING_ACTION', 'UNKNOWN_SURFACE_OPERATION'].includes(i.code)));
   assert.ok(!usesLegacyAuthority(r));
   ```
   where `usesLegacyAuthority` asserts no legacy scoring/selection function ran
   on the authority path (instrumented flag, removed in T21 with the code).
+  Invariant under test: structural uncertainty != legacy fallback — the
+  observed result is conservative structural authority, never the stronger
+  legacy authority the same input would have granted.
   Gate checks: safety 100% (leaks 0, constraint safety 100%, forbidden 0,
   production escalation 0); compatibility (dev raw primary ≥95%, mutation
   ≥95%, structured routing ≥ baseline, verification/evidence/retrieval green,
@@ -538,22 +588,31 @@ A. Spec coverage: §5 IR → T02–T06; §6 boundary → T04 (+T11 leak tests);
 projector scope (unchanged legacy derivations retained; evidence no-inference
 rule asserted in T08 tests); §13 taxonomy → T03; §14 thin route → T16–T18;
 §15 diagnostics → T06/T09; §16 multi-workflow → T08/T14 fixture cases;
-§17 layers → test files per layer; §18 fixture → T01 (+extensions);
-§§19–20 migration/shadow → T07/T09/T10/T20; §21 gates → T10/T13/T15/T18/T20;
-§22 tiers → contract policy section; §23 Blind #6 → constraints + T22;
-§24 boundaries → file map; §25 criteria → T20/T22 gates; §26 questions →
-resolved: frame/ breakdown kept as spec'd (T02–T06), connector inventory
-closed (T02), shadow via resolver metadata (T09).
+  §17 layers → test files per layer; §18 fixture → T01 (+extensions);
+  §§19–20 migration/shadow → T07/T09/T10/T20; §21 gates → T10/T13/T15/T18/T20;
+  §22 tiers → contract policy section; §23 Blind #6 → constraints + T22;
+  §24 boundaries → file map (projectors split across T08/T11/T12/T14, barrel
+  completed T14, wired T20); §25 criteria → T20/T22 gates; §26 questions →
+  resolved: frame/ breakdown kept as spec'd (T02–T06), connector inventory
+  closed (T02), shadow via resolver metadata (T09).
 B. Placeholder scan: no TBD/TODO/"as appropriate"/"edge cases"/bare "add
 tests" remain; every test step names file and assertions.
 C. Interface consistency: `parseClauses`, `lookupSurfaceOperation`,
 `buildActionFrames`/`buildContextFrames`, `resolveRelations`,
-`assembleRequestFrame`, `projectPrimary`/`projectMutation`/
-`projectSecondaries`/`buildConstraintFrames`/`applyConstraintGates`,
-`runShadow`, `buildThinRoutePlan` named identically in map, tasks, and tests.
+`assembleRequestFrame`, barrel `resolveStructuralIntent` composing
+`projectPrimary` (`projectors/primary.js`) / `projectMutation`
+(`projectors/mutation.js`) / `projectSecondaries` (`projectors/secondary.js`)
+/ `buildConstraintFrames`+`applyConstraintGates` (`projectors/constraints.js`)
+/ metadata derivation (`projectors/metadata.js`), `runShadow`,
+`buildThinRoutePlan` named identically in map, tasks, and tests. `primary.js`
+imports no risk/object signal modules.
 D. Dependency order: T02→T04→T05→T06→T08→T11/T12→T14→T17→T19→T20→T21 forms a
-chain with no forward references; T03 feeds T04; T09 needs T08; T16 precedes
-T17; T19 precedes T20.
+chain with no forward references (T06 ships a local constraint stub it defines
+itself; real constraint authority lands T12, before structural mutation goes
+authoritative at T20); T03 feeds T04; T09 needs T08 and is extended by
+T11/T14/T17; T16 precedes T17; T19 precedes T20; T20 consumes only the barrel,
+thin mapper, and hash interfaces produced earlier; T21 deletes only machinery
+T20 made redundant; T22 records only.
 E. Authority audit: shadow is discarded output until T20; T20 asserts
 `usesLegacyAuthority` false on the authority path; T21 deletes the legacy
 machinery so no fallback can be reintroduced.
