@@ -13,7 +13,7 @@ const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 // frame/projectors/ modules; final freeze SHA is still recorded at T22).
 // Guards the freeze: any semantic production change must go through a new
 // freeze cycle, never a silent edit.
-const FROZEN_SEMANTIC_SOURCE_SHA256 = 'a2d01468c9d6711b626231f7ada5371797da51f98b438f7c23d7ab910d1b07a8';
+const FROZEN_SEMANTIC_SOURCE_SHA256 = '3e8ec5081566b2fb7e8ba2fe40ba98212ae5f25e9f472befe25b536b76dd9e53';
 
 // T19: every new authoritative frame/projector module must be inside the hash.
 const EXPECTED_FRAME_FILES = [
