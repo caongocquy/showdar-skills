@@ -6,9 +6,11 @@ import { hashSemanticSource, canonicalSemanticFileList, SEMANTIC_SOURCE_FIXED_PR
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 
-// Phase 6F T09 frozen semantic-source hash. Guards the freeze: any semantic
-// production change must go through a new freeze cycle, never a silent edit.
-const FROZEN_SEMANTIC_SOURCE_SHA256 = '6695b0d81a76e3240043049a2016e565f9098c4f2b0247b5cef51a1d738c5364';
+// Phase 6F T17 frozen semantic-source hash (roll-forward from the T09/Phase 6E
+// freeze: src/route-plan.js gained the additive buildThinRoutePlan path).
+// Guards the freeze: any semantic production change must go through a new
+// freeze cycle, never a silent edit.
+const FROZEN_SEMANTIC_SOURCE_SHA256 = 'dcf250fad392655b2a62de60249ac7e51a920727fa4ffe8c19d1b1ea27fa760a';
 
 test('canonical file list uses the frozen fixed prefix plus codepoint-sorted resolver files', () => {
   const files = canonicalSemanticFileList(repoRoot);
