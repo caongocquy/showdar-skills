@@ -3,10 +3,15 @@
  *
  * Method (recovered from the Phase 6C freeze record — do NOT "improve"):
  * 1. Ordered file list: the four root semantic files in fixed order, then
- *    every src/intent-resolver/*.js file in codepoint-sorted order.
+ *    every src/intent-resolver/*.js file in codepoint-sorted order, then
+ *    every src/intent-resolver/frame/*.js top-level file in codepoint-sorted
+ *    order, then every src/intent-resolver/frame/projectors/*.js file in
+ *    codepoint-sorted order.
+ *    (Phase 6F T19 protocol update: the new authoritative frame/projector
+ *    modules must be inside the hash before freeze.)
  * 2. Compute per-file SHA-256 hex (equivalent to `shasum -a 256 <file>`).
- * 3. Combined hash = SHA-256 over the 16 per-file hex digests, each
- *    terminated by "\n" (equivalent to `printf '%s\n' h1 ... h16 | shasum -a 256`).
+ * 3. Combined hash = SHA-256 over the per-file hex digests, each
+ *    terminated by "\n" (equivalent to `printf '%s\n' h1 ... hn | shasum -a 256`).
  *    Filenames are NOT part of the combined input; file bytes are NOT
  *    concatenated directly.
  *
@@ -30,18 +35,31 @@ export const SEMANTIC_SOURCE_FIXED_PREFIX = Object.freeze([
 
 export const SEMANTIC_SOURCE_RESOLVER_DIR = 'src/intent-resolver';
 
+// Phase 6F T19: authoritative structural frame modules. Listed explicitly
+// (subdir, not filesystem order) so the hash is deterministic on
+// macOS+Linux; new authoritative modules must be inside the hash before
+// freeze.
+export const SEMANTIC_SOURCE_FRAME_DIR = 'src/intent-resolver/frame';
+export const SEMANTIC_SOURCE_PROJECTORS_DIR = 'src/intent-resolver/frame/projectors';
+
 function codepointSort(values) {
   return [...values].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
 }
 
-export function canonicalSemanticFileList(repoRoot) {
-  const dirents = readdirSync(join(repoRoot, SEMANTIC_SOURCE_RESOLVER_DIR), { withFileTypes: true });
-  const resolverFiles = codepointSort(
+function listTopLevelJsFiles(repoRoot, dir) {
+  const dirents = readdirSync(join(repoRoot, dir), { withFileTypes: true });
+  return codepointSort(
     dirents
       .filter((d) => d.isFile() && d.name.endsWith('.js'))
-      .map((d) => `${SEMANTIC_SOURCE_RESOLVER_DIR}/${d.name}`),
+      .map((d) => `${dir}/${d.name}`),
   );
-  return [...SEMANTIC_SOURCE_FIXED_PREFIX, ...resolverFiles];
+}
+
+export function canonicalSemanticFileList(repoRoot) {
+  const resolverFiles = listTopLevelJsFiles(repoRoot, SEMANTIC_SOURCE_RESOLVER_DIR);
+  const frameFiles = listTopLevelJsFiles(repoRoot, SEMANTIC_SOURCE_FRAME_DIR);
+  const projectorFiles = listTopLevelJsFiles(repoRoot, SEMANTIC_SOURCE_PROJECTORS_DIR);
+  return [...SEMANTIC_SOURCE_FIXED_PREFIX, ...resolverFiles, ...frameFiles, ...projectorFiles];
 }
 
 export function hashSemanticSource(repoRoot) {
