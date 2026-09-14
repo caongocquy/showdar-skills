@@ -143,3 +143,44 @@ export function buildRoutePlan(intentInput, capabilities = CAPABILITIES) {
 }
 
 export const planRoute = buildRoutePlan;
+
+// Thin deterministic route path (Phase 6F T17).
+// Canonical Intent → primary skill deterministic map + secondaryActions →
+// advisor map (SECONDARY_ACTION_SKILLS, deduplicated, primary excluded,
+// capped at MAX_ADVISORS). Zero scoring, zero PRIMARY_SELECTION_RULES,
+// zero risk/object re-selection.
+// discovery/understand → showdar-understand is hard-coded here because the
+// legacy path reaches it only via scoring fallback.
+// Legacy path (buildRoutePlan and all selection rules) is byte-identical.
+const THIN_PRIMARY_MAP = Object.freeze({
+  'implementation:implement': 'showdar-build',
+  'diagnosis:investigate': 'showdar-debug',
+  'verification:test': 'showdar-test',
+  'verification:review': 'showdar-review',
+  'operations:deploy': 'showdar-ops',
+  'delivery:assess': 'showdar-ship',
+  'recovery:recover': 'showdar-recover',
+  'repository:git': 'showdar-git',
+  'implementation:upgrade': 'showdar-upgrade',
+  'discovery:assess': 'showdar-security',
+});
+
+function thinPrimaryFor(intent) {
+  if (intent.phase === 'discovery' && intent.action === 'understand') return 'showdar-understand';
+  // ponytail: key lookup only; no scoring fallback, unknown Intent surfaces as explicit error.
+  const key = `${intent.phase}:${intent.action}`;
+  const skill = THIN_PRIMARY_MAP[key];
+  if (!skill) throw new Error(`No thin route mapping for intent (phase ${intent.phase}, action ${intent.action})`);
+  return skill;
+}
+
+export function buildThinRoutePlan(intentInput) {
+  const intent = normalizeIntent(intentInput);
+  const primary = thinPrimaryFor(intent);
+  const advisors = [];
+  for (const action of intent.secondaryActions) {
+    const skill = SECONDARY_ACTION_SKILLS[action] ?? (action.startsWith('showdar-') ? action : null);
+    if (skill && skill !== primary && !advisors.includes(skill) && advisors.length < MAX_ADVISORS) advisors.push(skill);
+  }
+  return { primary, advisors };
+}

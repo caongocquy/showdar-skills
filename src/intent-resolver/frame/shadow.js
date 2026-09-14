@@ -1,10 +1,10 @@
-// Shadow differential harness (Phase 6F T09; extended T11 mutation; T14 secondaries)
+// Shadow differential harness (Phase 6F T09; extended T11 mutation; T14 secondaries; T17 thin primarySkill)
 // Diagnostic-only comparison between legacy and structural intent resolution.
 
 import { resolveIntentFromPrompt } from '../index.js';
 import { assembleRequestFrame } from './request-frame.js';
 import { resolveStructuralIntent } from './projectors/index.js';
-import { buildRoutePlan } from '../../route-plan.js';
+import { buildRoutePlan, buildThinRoutePlan } from '../../route-plan.js';
 
 const NOT_YET_PROJECTED = 'not-yet-projected';
 
@@ -19,20 +19,36 @@ export function runShadow(prompt) {
   const legacyIntent = legacyResult.intent;
   const legacyPrimarySkill = extractPrimarySkillFromRoutePlan(legacyIntent);
 
-  // 2. Structural resolution (primary + mutation + secondaries)
+  // 2. Structural resolution (primary + mutation + secondaries + thin primarySkill)
   const requestFrame = assembleRequestFrame(prompt);
   const structuralPrimary = resolveStructuralIntent(requestFrame);
+  const structuralIntent = {
+    phase: structuralPrimary.phase,
+    action: structuralPrimary.action,
+    object: structuralPrimary.object,
+    secondaryActions: structuralPrimary.secondaryActions,
+    risks: structuralPrimary.risks,
+    mutation: structuralPrimary.mutation,
+    evidence: structuralPrimary.evidence,
+  };
 
-  // 3. Build structural side with mutation and secondaryActions projected (primarySkill stays null until T17)
+  // 3. Structural side reports primarySkill via the thin mapper (T17)
+  let structuralPrimarySkill = null;
+  try {
+    structuralPrimarySkill = buildThinRoutePlan(structuralIntent).primary;
+  } catch {
+    structuralPrimarySkill = null;
+  }
   const structural = {
     phase: structuralPrimary.phase,
     action: structuralPrimary.action,
     mutation: structuralPrimary.mutation,
     secondaryActions: structuralPrimary.secondaryActions,
-    primarySkill: null,
+    primarySkill: structuralPrimarySkill,
   };
 
-  // 4. Build agreement (phase/action/mutation/secondary; primarySkill still not-yet-projected)
+  // Structural side reports primarySkill via the thin mapper (T17),
+  // agreement compares structural skill against legacy skill directly
   const agreement = {
     phase: structuralPrimary.phase === legacyIntent.phase,
     action: structuralPrimary.action === legacyIntent.action,
@@ -40,7 +56,9 @@ export function runShadow(prompt) {
     secondary: Array.isArray(structuralPrimary.secondaryActions) && Array.isArray(legacyIntent.secondaryActions)
       ? structuralPrimary.secondaryActions.join(',') === legacyIntent.secondaryActions.join(',')
       : false,
-    primarySkill: structuralPrimary.action === legacyIntent.action && legacyPrimarySkill !== null,
+    primarySkill: typeof structuralPrimarySkill === 'string'
+      ? structuralPrimarySkill === legacyPrimarySkill
+      : false,
   };
 
   // 5. Collect issues from structural diagnostics

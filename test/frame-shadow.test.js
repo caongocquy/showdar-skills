@@ -25,7 +25,7 @@ test('runShadow structural side has phase/action/mutation/secondaryActions from 
   assert.ok(structural.action);
   assert.ok(structural.mutation); // T11: mutation now projected
   assert.ok(Array.isArray(structural.secondaryActions)); // T14: secondaryActions now projected
-  assert.equal(structural.primarySkill, null); // T17: primarySkill still not-yet-projected
+  assert.ok(typeof structural.primarySkill === 'string'); // T17: primarySkill flows via the thin mapper
 });
 
 test('runShadow agreement shows phase/action/mutation match when structural matches legacy', async () => {
