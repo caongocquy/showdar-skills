@@ -92,7 +92,7 @@ function thinIntent(overrides = {}) {
 
 function assertThinEquals(intentOverrides, expectedPrimary, expectedAdvisors = []) {
   const plan = buildThinRoutePlan(thinIntent(intentOverrides));
-  assert.equal(plan.primary, expectedPrimary);
+  assert.equal(plan.primary.skill, expectedPrimary);
   assert.deepEqual(plan.advisors, expectedAdvisors);
 }
 

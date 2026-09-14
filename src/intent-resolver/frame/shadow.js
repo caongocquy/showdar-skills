@@ -35,7 +35,7 @@ export function runShadow(prompt) {
   // 3. Structural side reports primarySkill via the thin mapper (T17)
   let structuralPrimarySkill = null;
   try {
-    structuralPrimarySkill = buildThinRoutePlan(structuralIntent).primary;
+    structuralPrimarySkill = buildThinRoutePlan(structuralIntent).primary.skill;
   } catch {
     structuralPrimarySkill = null;
   }

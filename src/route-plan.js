@@ -176,11 +176,11 @@ function thinPrimaryFor(intent) {
 
 export function buildThinRoutePlan(intentInput) {
   const intent = normalizeIntent(intentInput);
-  const primary = thinPrimaryFor(intent);
+  const skill = thinPrimaryFor(intent);
   const advisors = [];
   for (const action of intent.secondaryActions) {
-    const skill = SECONDARY_ACTION_SKILLS[action] ?? (action.startsWith('showdar-') ? action : null);
-    if (skill && skill !== primary && !advisors.includes(skill) && advisors.length < MAX_ADVISORS) advisors.push(skill);
+    const advisor = SECONDARY_ACTION_SKILLS[action] ?? (action.startsWith('showdar-') ? action : null);
+    if (advisor && advisor !== skill && !advisors.includes(advisor) && advisors.length < MAX_ADVISORS) advisors.push(advisor);
   }
-  return { primary, advisors };
+  return { primary: { skill }, advisors };
 }
