@@ -26,9 +26,18 @@ function testDeployAuthorizedNow() {
 }
 
 function testLogOutputNoDeployFrame() {
-  const frames = buildActionFrames(parse('Logs: deploy failed. Diagnose it.'));
-  assert.ok(frames.every((f) => f.surfaceVerb !== 'deploy'));
-  // Context frames hold the deploy verb; no action frame carries it.
+  // T02-reopen: 'Logs: deploy failed. Diagnose it.' splits at the provenance
+  // boundary — the LOG_OUTPUT fragment yields no action frame, while the
+  // genuine DIRECT_INSTRUCTION fragment does. The old expectation (no deploy
+  // frame at all) encoded the merging bug that swallowed the instruction.
+  const clauses = parse('Logs: deploy failed. Diagnose it.');
+  const logClauses = clauses.filter((c) => c.provenance === 'LOG_OUTPUT');
+  assert.ok(logClauses.length > 0);
+  assert.ok(buildActionFrames(logClauses).every((f) => f.surfaceVerb !== 'deploy'));
+  const frames = buildActionFrames(clauses);
+  assert.ok(frames.some((f) => f.surfaceVerb === 'deploy' && f.provenance === 'DIRECT_INSTRUCTION'));
+  // Context frames hold the log verb; no action frame carries LOG_OUTPUT provenance.
+  assert.ok(frames.every((f) => f.provenance !== 'LOG_OUTPUT'));
 }
 
 function testNonAuthoritativeProvenanceThrows() {

@@ -17,10 +17,12 @@ function clausePolarity(text) {
   return "positive";
 }
 
+const AUTHORITATIVE_PROVENANCES = new Set(['DIRECT_INSTRUCTION', 'SECONDARY_INSTRUCTION']);
+
 /**
  * Split a raw instruction string into clause fragments based on connectors.
  * Returns array of { text, connector } where connector is the word preceding the clause
- * (upper‑cased) or 'ROOT' for the first clause.
+ * (upper-cased) or 'ROOT' for the first clause.
  */
 function splitIntoClauses(raw, initialConnector = "ROOT") {
   const connectorPattern = /\b(and|then|if|unless|to|because|after|before|while|but)\b/gi;
@@ -44,93 +46,88 @@ function splitIntoClauses(raw, initialConnector = "ROOT") {
 }
 
 /**
- * Build a single string from segments and record each segment's start/end offsets.
- * Returns { fullText, segmentOffsets[] } where segmentOffsets maps segment index -> {start, end, kind }.
+ * Build full text with provenance tracking.
+ * Returns { runs[] } where each run = { text, provenance, start, end }
+ * Runs are contiguous spans of the same provenance.
  */
-function buildFullTextAndOffsets(segments) {
+function buildProvenanceRuns(segments) {
   const parts = [];
-  const maskedParts = [];
   const offsets = [];
   let pos = 0;
-  const nonSplitKinds = ['QUOTED_CONTENT', 'CODE_BLOCK', 'INLINE_CODE', 'EXAMPLE'];
   for (let i = 0; i < segments.length; i++) {
     const seg = segments[i];
     const txt = seg.text;
     if (!txt) continue;
-    const start = pos;
     if (pos > 0) {
       parts.push(' ');
-      maskedParts.push(' ');
+      offsets.push({ kind: 'SPACE', start: pos, end: pos + 1 });
       pos++;
     }
+    const start = pos;
     parts.push(txt);
-    if (nonSplitKinds.includes(seg.kind)) {
-      // mask content with spaces so connectors inside are ignored
-      maskedParts.push(' '.repeat(txt.length));
-    } else {
-      maskedParts.push(txt);
-    }
     pos += txt.length;
     offsets.push({ index: i, start, end: pos, kind: seg.kind });
   }
-  return { fullText: parts.join(''), maskedText: maskedParts.join(''), offsets };
-}
+  const fullText = parts.join('');
 
-function splitIntoClausesWithMask(fullText, maskedText, initialConnector = "ROOT") {
-  const connectorPattern = /\b(and|then|if|unless|to|because|after|before|while|but)\b/gi;
-  const parts = [];
-  let lastIndex = 0;
-  let match;
-  while ((match = connectorPattern.exec(maskedText)) !== null) {
-    const before = fullText.slice(lastIndex, match.index).trim();
-    if (before) {
-      parts.push({ text: before, connector: initialConnector });
-    }
-    const word = match[0].toLowerCase();
-    initialConnector = word === "but" ? "AND" : match[0].toUpperCase();
-    lastIndex = match.index + match[0].length;
-  }
-  const tail = fullText.slice(lastIndex).trim();
-  if (tail) {
-    parts.push({ text: tail, connector: initialConnector });
-  }
-  return parts;
-}
-
-/**
- * Given a clause start position in fullText, find the segment kind that covers it.
- */
-function provenanceForPosition(pos, offsets) {
+  // Merge contiguous offsets of same provenance into runs
+  const runs = [];
   for (const o of offsets) {
-    if (pos >= o.start && pos <= o.end) return o.kind;
+    if (o.kind === 'SPACE') continue;
+    if (runs.length && runs[runs.length - 1].provenance === o.kind) {
+      runs[runs.length - 1].end = o.end;
+      runs[runs.length - 1].text = fullText.slice(runs[runs.length - 1].start, o.end);
+    } else {
+      runs.push({
+        text: fullText.slice(o.start, o.end),
+        provenance: o.kind,
+        start: o.start,
+        end: o.end,
+      });
+    }
   }
-  return 'DIRECT_INSTRUCTION';
+  return { fullText, runs };
 }
 
 /**
  * Parse clauses from segment list.
- * Concatenates all segment texts, splits on connectors globally, assigns provenance
- * based on which segment covers the clause start.
+ * First splits at provenance boundaries (each contiguous same-provenance run).
+ * Then sub-splits ONLY authoritative runs on connectors.
+ * Non-authoritative runs become single clauses with their true provenance.
  */
 export function parseClauses(segments) {
-  const { fullText, maskedText, offsets } = buildFullTextAndOffsets(segments);
-  const rawClauses = splitIntoClausesWithMask(fullText, maskedText);
+  const { runs } = buildProvenanceRuns(segments);
   const clauses = [];
-  let cursor = 0;
-  for (let i = 0; i < rawClauses.length; i++) {
-    const rc = rawClauses[i];
-    const idx = fullText.indexOf(rc.text, cursor);
-    if (idx === -1) throw new Error('Clause text not found in fullText');
-    const prov = provenanceForPosition(idx, offsets);
-    clauses.push({
-      id: `c${i}`,
-      text: rc.text,
-      provenance: prov,
-      connector: rc.connector,
-      polarity: clausePolarity(rc.text),
-      parentClauseId: i === 0 ? null : `c${i - 1}`,
-    });
-    cursor = idx + rc.text.length;
+
+  for (const run of runs) {
+    if (AUTHORITATIVE_PROVENANCES.has(run.provenance)) {
+      // Authoritative run: split on connectors
+      const subClauses = splitIntoClauses(run.text, 'ROOT');
+      for (const sc of subClauses) {
+        if (!sc.text.trim()) continue;
+        const id = `c${clauses.length}`;
+        clauses.push({
+          id,
+          text: sc.text.trim(),
+          provenance: run.provenance,
+          connector: sc.connector,
+          polarity: clausePolarity(sc.text),
+          parentClauseId: clauses.length === 0 ? null : clauses[clauses.length - 1].id,
+        });
+      }
+    } else {
+      // Non-authoritative run: single clause with true provenance
+      const id = `c${clauses.length}`;
+      clauses.push({
+        id,
+        text: run.text.trim(),
+        provenance: run.provenance,
+        connector: 'ROOT',
+        polarity: clausePolarity(run.text),
+        parentClauseId: clauses.length === 0 ? null : clauses[clauses.length - 1].id,
+      });
+    }
   }
+
   return clauses;
 }
