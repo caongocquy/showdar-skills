@@ -16,7 +16,7 @@ const SECURITY_VERBS = Object.freeze(new Set([
 
 function hasProductionRisk(actions) {
   return actions.some(a =>
-    (a.environment === 'production' || a.environment === 'remote') &&
+    RISK_ENVS.has(a.environment) &&
     (RISK_VERBS.has(a.surfaceVerb?.toLowerCase()) || RISK_VERBS.has(a.canonicalAction))
   );
 }

@@ -37,16 +37,17 @@ const ACTION_TO_SECONDARY = Object.freeze({
 });
 
 function getSecondaryCapability(action) {
-  const canonical = action.canonicalAction;
-  if (canonical && ACTION_TO_SECONDARY[canonical]) {
-    return ACTION_TO_SECONDARY[canonical];
-  }
-  // Also check surfaceVerb for verb-specific mappings not covered by canonical
+  // Surface verb first: production-realistic audit frames have canonical 'assess'
+  // per surface-map.js, so canonical-first would return bare 'review' instead of 'security'.
   if (action.surfaceVerb) {
     const verb = action.surfaceVerb.toLowerCase();
     if (ACTION_TO_SECONDARY[verb]) {
       return ACTION_TO_SECONDARY[verb];
     }
+  }
+  const canonical = action.canonicalAction;
+  if (canonical && ACTION_TO_SECONDARY[canonical]) {
+    return ACTION_TO_SECONDARY[canonical];
   }
   return null;
 }

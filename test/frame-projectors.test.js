@@ -728,7 +728,24 @@ function makeSecondaryFrame(governingVerb, orthogonalVerb = null, supportingVerb
   return { actions, relations: [], diagnostics: [], clauses: [], contexts: [], constraints: [] };
 }
 
-test('projectSecondaries: implement + security audit → [security]', async () => {
+test('projectSecondaries: implement + security audit → [security] (production-realistic: canonical assess)', async () => {
+  // Production-realistic audit frame per surface-map.js: surfaceVerb 'audit', canonicalAction 'assess'
+  const frame = {
+    actions: [
+      { id: 'a0', surfaceVerb: 'implement', canonicalAction: 'implement', target: 'X', provenance: 'DIRECT_INSTRUCTION', polarity: 'positive', role: 'GOVERNING', commitment: 'AUTHORIZED_NOW', environment: 'unspecified', clauseId: 'c0' },
+      { id: 'a1', surfaceVerb: 'audit', canonicalAction: 'assess', target: 'X', provenance: 'DIRECT_INSTRUCTION', polarity: 'positive', role: 'ORTHOGONAL', commitment: 'AUTHORIZED_NOW', environment: 'unspecified', clauseId: 'c1' },
+    ],
+    relations: [],
+    diagnostics: [],
+    clauses: [],
+    contexts: [],
+    constraints: [],
+  };
+  const secondaries = projectSecondaries(frame, 'implement');
+  assert.deepEqual(secondaries, ['security']);
+});
+
+test('projectSecondaries: implement + audit (synthetic canonical audit) → [security]', async () => {
   const frame = makeSecondaryFrame('implement', 'audit');
   const secondaries = projectSecondaries(frame, 'implement');
   assert.deepEqual(secondaries, ['security']);
@@ -948,6 +965,43 @@ test('metadata isolation: varying object never changes projectPrimary', async ()
   const withObject = { ...base, object: 'api' };
   const withoutObject = { ...base, object: 'other' };
   assert.deepEqual(projectPrimary(withObject), projectPrimary(withoutObject));
+});
+
+test('metadata isolation (barrel): mutating returned metadata never changes authority projections', async () => {
+  // Barrel feedback check: attach poisoned metadata to the RequestFrame and
+  // prove primary/mutation/secondaries are byte-identical.
+  const frame = makeSecondaryFrame('implement', 'audit');
+  const first = resolveStructuralIntent(frame);
+  const primaryCapability = first.action;
+  const baseline = {
+    primary: projectPrimary(frame),
+    mutation: projectMutation(frame),
+    secondaries: projectSecondaries(frame, primaryCapability),
+  };
+  const poisoned = {
+    ...frame,
+    risks: ['production', 'security', 'operations'],
+    evidence: { rootCauseKnown: true, failureObserved: true, behaviorDefined: true },
+    object: 'production',
+  };
+  assert.deepEqual(projectPrimary(poisoned), baseline.primary);
+  assert.equal(projectMutation(poisoned), baseline.mutation);
+  assert.deepEqual(projectSecondaries(poisoned, primaryCapability), baseline.secondaries);
+  // Barrel output metadata exists but is informational only.
+  assert.ok(Array.isArray(first.risks));
+  assert.ok(first.evidence && typeof first.object === 'string');
+});
+
+test('metadata isolation (static): authority modules never import metadata.js', async () => {
+  // Acceptable per finding: read source to prove no authority→metadata import edge.
+  const { readFileSync } = await import('node:fs');
+  const { fileURLToPath } = await import('node:url');
+  const { dirname, join } = await import('node:path');
+  const here = dirname(fileURLToPath(import.meta.url));
+  for (const mod of ['primary.js', 'mutation.js', 'secondary.js', 'constraints.js']) {
+    const src = readFileSync(join(here, '..', 'src', 'intent-resolver', 'frame', 'projectors', mod), 'utf8');
+    assert.ok(!src.includes('metadata.js'), `${mod} must not import metadata.js`);
+  }
 });
 
 // --- T14 Barrel composition test ---
