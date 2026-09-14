@@ -13,6 +13,7 @@ function testDirectAndAnd() {
   assert.equal(clauses[1].connector, 'AND', 'second clause connector should be AND');
   assert.equal(clauses[1].parentClauseId, 'c0', 'parent of second clause should be c0');
   assert.equal(clauses[2].provenance, 'DIRECT_INSTRUCTION');
+  assertSweepSingleProvenance(clauses, segments);
 }
 
 function testNegation() {
@@ -24,12 +25,14 @@ function testNegation() {
   assert.equal(clauses.length, 3);
   assert.equal(clauses[1].provenance, 'CONSTRAINT');
   assert.equal(clauses[1].polarity, 'negative', 'negated clause polarity');
+  assertSweepSingleProvenance(clauses, segments);
 }
 
 function testThenConnector() {
   const segments = segmentPrompt('Build the tool then deploy it.');
   const clauses = parseClauses(segments);
   assert.equal(clauses[1].connector, 'THEN');
+  assertSweepSingleProvenance(clauses, segments);
 }
 
 function testBecauseConnector() {
@@ -37,6 +40,7 @@ function testBecauseConnector() {
   const clauses = parseClauses(segments);
   assert.equal(clauses.length, 2);
   assert.equal(clauses[1].connector, 'BECAUSE');
+  assertSweepSingleProvenance(clauses, segments);
 }
 
 function testIfConnector() {
@@ -45,6 +49,7 @@ function testIfConnector() {
   assert.equal(clauses[0].connector, 'ROOT');
   assert.equal(clauses.length, 2);
   assert.equal(clauses[1].connector, 'IF');
+  assertSweepSingleProvenance(clauses, segments);
 }
 
 function testToConnector() {
@@ -52,6 +57,7 @@ function testToConnector() {
   const clauses = parseClauses(segments);
   assert.equal(clauses.length, 2);
   assert.equal(clauses[1].connector, 'TO');
+  assertSweepSingleProvenance(clauses, segments);
 }
 
 function testUnlessConnector() {
@@ -59,6 +65,7 @@ function testUnlessConnector() {
   const clauses = parseClauses(segments);
   assert.equal(clauses.length, 2);
   assert.equal(clauses[1].connector, 'UNLESS');
+  assertSweepSingleProvenance(clauses, segments);
 }
 
 function testBeforeConnector() {
@@ -66,6 +73,7 @@ function testBeforeConnector() {
   const clauses = parseClauses(segments);
   assert.equal(clauses.length, 2);
   assert.equal(clauses[1].connector, 'BEFORE');
+  assertSweepSingleProvenance(clauses, segments);
 }
 
 function testWhileConnector() {
@@ -73,6 +81,7 @@ function testWhileConnector() {
   const clauses = parseClauses(segments);
   assert.equal(clauses.length, 2);
   assert.equal(clauses[1].connector, 'WHILE');
+  assertSweepSingleProvenance(clauses, segments);
 }
 
 function testAfterConnector() {
@@ -80,6 +89,7 @@ function testAfterConnector() {
   const clauses = parseClauses(segments);
   assert.equal(clauses.length, 2);
   assert.equal(clauses[1].connector, 'AFTER');
+  assertSweepSingleProvenance(clauses, segments);
 }
 
 function testQuotedContentIgnored() {
@@ -92,6 +102,7 @@ function testQuotedContentIgnored() {
   assert.equal(clauses[1].provenance, 'QUOTED_CONTENT');
   assert.equal(clauses[2].provenance, 'DIRECT_INSTRUCTION');
   assert.equal(clauses[2].connector, 'AND');
+  assertSweepSingleProvenance(clauses, segments);
 }
 
 function testQuotedContentClause() {
@@ -100,6 +111,7 @@ function testQuotedContentClause() {
   assert.equal(clauses.length, 1);
   assert.equal(clauses[0].provenance, 'QUOTED_CONTENT');
   assert.equal(clauses[0].connector, 'ROOT');
+  assertSweepSingleProvenance(clauses, segments);
 }
 
 function testCodeBlockClause() {
@@ -107,6 +119,7 @@ function testCodeBlockClause() {
   const clauses = parseClauses(segments);
   assert.equal(clauses.length, 1);
   assert.equal(clauses[0].provenance, 'CODE_BLOCK');
+  assertSweepSingleProvenance(clauses, segments);
 }
 
 function testInlineCodeClause() {
@@ -115,6 +128,7 @@ function testInlineCodeClause() {
   assert.equal(clauses.length, 1);
   assert.equal(clauses[0].provenance, 'INLINE_CODE');
   assert.equal(clauses[0].connector, 'ROOT');
+  assertSweepSingleProvenance(clauses, segments);
 }
 
 function testExampleClause() {
@@ -123,6 +137,7 @@ function testExampleClause() {
   assert.equal(clauses.length, 1);
   assert.equal(clauses[0].provenance, 'EXAMPLE');
   assert.equal(clauses[0].connector, 'ROOT');
+  assertSweepSingleProvenance(clauses, segments);
 }
 
 // T02-reopen: quoted deploy text inside an instruction must be isolated as
@@ -176,29 +191,51 @@ function testExampleMarkerPlusInstruction() {
   assertSweepSingleProvenance(clauses, segments);
 }
 
+function tokenizeWords(text) {
+  return text.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
+}
+
+// Trivial glue words that legitimately repeat across runs; not evidence of a merge.
+const SWEEP_STOPWORDS = new Set([
+  'a', 'an', 'the', 'it', 'its', 'this', 'that', 'these', 'those',
+  'and', 'or', 'but', 'to', 'of', 'in', 'on', 'for', 'with',
+  'is', 'are', 'was', 'were', 'be', 'as', 'at', 'by',
+]);
+
+function contentTokens(text) {
+  return new Set(tokenizeWords(text).filter((t) => !SWEEP_STOPWORDS.has(t)));
+}
+
 // Sweep: every clause carries exactly one provenance and no clause text spans
 // two segment runs (mixed-provenance clauses impossible by construction).
+// Token-level intersection catches partial splices that whole-string
+// containment misses: any content token in a clause that is absent from every
+// same-provenance run but present in a foreign-provenance run is a merge.
 function assertSweepSingleProvenance(clauses, segments) {
-  const runs = segments.filter((s) => s.text).map((s) => ({ text: s.text, kind: s.kind }));
+  const runs = segments
+    .filter((s) => s.text)
+    .map((s) => ({ text: s.text, kind: s.kind, tokens: contentTokens(s.text) }));
   for (const clause of clauses) {
     assert.ok(typeof clause.provenance === 'string' && clause.provenance.length > 0,
       `clause ${clause.id} must carry a single provenance`);
-    // The clause text must be contained within run(s) of its own provenance only.
-    const containing = runs.filter((r) => r.text.includes(clause.text) || clause.text.includes(r.text));
-    assert.ok(containing.length > 0, `clause ${clause.id} text must trace to a segment run`);
-    for (const r of containing) {
-      if (r.text.includes(clause.text) && clause.text.length === r.text.trim().length) {
-        assert.equal(r.kind, clause.provenance,
-          `clause ${clause.id} text lives in a ${r.kind} run but claims ${clause.provenance}`);
-      }
-    }
-    // No clause may contain text from a run of a different provenance.
+    const own = runs.filter((r) => r.kind === clause.provenance);
+    assert.ok(own.length > 0,
+      `clause ${clause.id} provenance ${clause.provenance} must trace to a segment run`);
+    // No clause may embed a whole foreign-provenance run verbatim.
     for (const r of runs) {
       if (r.kind === clause.provenance) continue;
       const foreign = r.text.trim();
       if (foreign.length > 0 && clause.text.includes(foreign)) {
         assert.fail(`clause ${clause.id} (${clause.provenance}) contains text from ${r.kind} run: ${JSON.stringify(foreign)}`);
       }
+    }
+    // Token-level: every content token must be explainable by an
+    // own-provenance run; an unexplained token present in a foreign run fails.
+    for (const tok of contentTokens(clause.text)) {
+      if (own.some((r) => r.tokens.has(tok))) continue;
+      const foreign = runs.filter((r) => r.kind !== clause.provenance && r.tokens.has(tok));
+      assert.ok(foreign.length === 0,
+        `clause ${clause.id} (${clause.provenance}) token ${JSON.stringify(tok)} comes from ${foreign.map((f) => f.kind).join(',')} run(s)`);
     }
   }
 }
