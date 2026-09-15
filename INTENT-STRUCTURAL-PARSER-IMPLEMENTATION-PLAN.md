@@ -294,12 +294,18 @@ runtime cutover (legacy outputs unchanged).
   T11/T12/T14); extend `test/frame-projectors.test.js` (CREATE in this task).
   **Interfaces**
   Consumes: RequestFrame.
-  Produces: `projectPrimary(requestFrame)` → `{ phase, action }` taken
-  EXCLUSIVELY from the positive AUTHORIZED_NOW GOVERNING ActionFrame via
-  `lookupSurfaceOperation`; `projectConservativeIntent(diagnostics)` →
+  Produces: `projectPrimary(requestFrame)` → `{ phase, action,
+  primaryCapability }` taken EXCLUSIVELY from the positive AUTHORIZED_NOW
+  GOVERNING ActionFrame via `lookupSurfaceOperation`, where `primaryCapability`
+  is the internal routing capability (spec §8A) derived from the governing
+  frame's `semanticCapability` — e.g. explicit security-scoped review/audit
+  verbs produce `security-assessment`, generic review produces `review`,
+  OAuth implementation produces `implement`; `projectConservativeIntent(diagnostics)` →
   discovery/verification read-only Intent with no secondaries. No numeric
   scoring anywhere in this module. `primary.js` MUST NOT import risk or object
   keyword modules; ownership inputs are governing frame + surface map only.
+  Invariance: given the same GOVERNING ActionFrame, changing risks/object/
+  evidence must not change `primaryCapability` (asserted in tests).
   Representative assertions on fixed RequestFrames:
   ```js
   assert.deepEqual(projectPrimary(frameFor('implement X + audit X')).action, 'implement');
@@ -311,6 +317,12 @@ runtime cutover (legacy outputs unchanged).
   const base = frameFor('implement X + audit X');
   assert.deepEqual(projectPrimary({ ...base, risks: ['security', 'production'] }),
     projectPrimary({ ...base, risks: [], object: 'other' }));
+  // security capability distinction (spec §8A): explicit security-scoped
+  // governing action produces security-assessment; auth-domain generic review
+  // stays review; implement with security risk stays implement
+  assert.equal(projectPrimary(frameFor('review webhook for vulnerabilities')).primaryCapability, 'security-assessment');
+  assert.equal(projectPrimary(frameFor('review auth code')).primaryCapability, 'review');
+  assert.equal(projectPrimary(frameFor('implement OAuth')).primaryCapability, 'implement');
   ```
   Behaviors covered: implement+audit, rebase+conflicts, investigate-why,
   historical+investigate, upgrade+deploy-staging, unresolved governing.
@@ -463,17 +475,22 @@ structural path.
 
 - [ ] **T17 — Thin deterministic mapping**
   Files: MODIFY `src/route-plan.js` (add structural path:
-  `buildThinRoutePlan(intent)` = canonical Intent → primary skill map +
-  secondaryActions → advisor map; legacy path untouched);
+  `buildThinRoutePlan(intent, routingMeta)` = internal `primaryCapability`
+  (§8A) → primary skill map + secondaryActions → advisor map; legacy path
+  untouched);
   extend `test/route-planner-thin.test.js`.
   **Interfaces**
-  Consumes: canonical Intent.
+  Consumes: internal `primaryCapability` + canonical Intent secondaryActions.
   Produces: `{ primary: { skill }, advisors: [...] }` with zero scoring,
-  zero PRIMARY_SELECTION_RULES, zero risk/object re-selection on the thin
-  path. Removal of legacy rules is explicitly deferred to T21; this task only
-  adds the thin path, proves equivalence on characterization cases, and
-  extends the shadow so the structural side reports primarySkill via the thin
-  mapper. The legacy runtime path is byte-identical before T20.
+  zero PRIMARY_SELECTION_RULES, zero risk/object/evidence re-selection on the
+  thin path; representative mapping: review → showdar-review,
+  security-assessment → showdar-security, quality-assessment → showdar-quality,
+  test → showdar-test, upgrade → showdar-upgrade. Removal of legacy rules is
+  explicitly deferred to T21; this task only adds the thin path, proves
+  equivalence on characterization cases (extended with generic review vs
+  explicit security-review vs auth-domain generic review), and extends the
+  shadow so the structural side reports primarySkill via the thin mapper.
+  The legacy runtime path is byte-identical before T20.
   TDD with `node --test test/route-planner-thin.test.js`, then `npm test`;
   commit `refactor(router): make route plan semantic-neutral`.
 
@@ -498,7 +515,12 @@ pass; no legacy authority fallback exists.
   Consumes: existing `canonicalSemanticFileList(repoRoot)` contract.
   Produces: extended deterministic list; new combined SHA recorded by the
   freeze task (T22), not here. Rationale recorded in-code: new authoritative
-  modules must be inside the hash before freeze.
+  modules must be inside the hash before freeze. The T20 primary-capability
+  mechanism files (`frame/surface-map.js`, `frame/action-frame.js`,
+  `frame/projectors/primary.js`, `src/route-plan.js` thin path,
+  `src/intent-resolver/index.js` routing-metadata wiring) are all within the
+  existing `frame/*.js` + `frame/projectors/*.js` + resolver coverage, so no
+  separate hash-list change is required beyond keeping that coverage exact.
   TDD with `node --test test/semantic-source-hash.test.js`, then `npm test`;
   commit `feat(router): cut over to structural intent engine` (part 1: hash
   protocol). NOTE: commit message groups protocol-with-cutover work; the
@@ -512,9 +534,12 @@ pass; no legacy authority fallback exists.
   never consulted on any authority decision.
   **Interfaces**
   Consumes: `assembleRequestFrame`, barrel `resolveStructuralIntent`
-  (completed across T08/T11/T12/T14), `buildThinRoutePlan`.
+  (completed across T08/T11/T12/T14, with T08's `primaryCapability`), thin
+  `buildThinRoutePlan` consuming `primaryCapability`.
   Produces: `resolveIntentFromPrompt` served by the structural engine with
-  identical public contract; `meta.engine = 'structural'`.
+  identical public contract; `meta.engine = 'structural'`; internal
+  `resolverMeta.routing.primaryCapability` carried to the thin mapper. No
+  PRIMARY_SELECTION_RULES on the structural runtime path.
   Includes the behavioral no-legacy-fallback proof test (novel wording, never
   a Blind #5 phrase). The test first runs the legacy engine on the same input
   to prove the trap is real, then asserts the structural runtime refuses it:
@@ -535,12 +560,23 @@ pass; no legacy authority fallback exists.
   observed result is conservative structural authority, never the stronger
   legacy authority the same input would have granted.
   Gate checks: safety 100% (leaks 0, constraint safety 100%, forbidden 0,
-  production escalation 0); compatibility (dev raw primary ≥95%, mutation
-  ≥95%, structured routing ≥ baseline, verification/evidence/retrieval green,
-  `npm run validate` green, `npm pack --dry-run` clean,
-  `git diff --check` clean). TDD with focused projector/shadow tests, then
-  full `npm test`; commit `feat(router): cut over to structural intent engine`
-  (part 2: switch). Do not push.
+  production escalation 0); structural capability routing
+  (risk-to-primary influence = 0, object-to-primary influence = 0, route
+  priority ownership = 0, structural runtime PRIMARY_SELECTION_RULES usage =
+  0, primaryCapability derived from governing action = 100%, generic review /
+  explicit security-review distinction = 100%); T20 contract-primary accuracy
+  ≥95% against contract-correct structural routing (legacy agreement is
+  diagnostic only); compatibility (dev raw mutation ≥95%, structured routing
+  ≥ baseline, verification/evidence/retrieval green, `npm run validate`
+  green, `npm pack --dry-run` clean, `git diff --check` clean). Explicit
+  capability tests: (1) generic review → review capability → showdar-review;
+  (2) explicit security review → security-assessment capability →
+  showdar-security; (3) auth-domain generic review → review capability →
+  showdar-review; (4) OAuth implementation + security risk → implement
+  capability → showdar-build; (5) identical governing frame with changed
+  risks → same primaryCapability. TDD with focused projector/shadow tests,
+  then full `npm test`; commit `feat(router): cut over to structural intent
+  engine` (part 2: switch). Do not push.
 
 ## Stage 6F.7 — Legacy Ownership Removal + Freeze Readiness
 
@@ -609,10 +645,17 @@ imports no risk/object signal modules.
 D. Dependency order: T02→T04→T05→T06→T08→T11/T12→T14→T17→T19→T20→T21 forms a
 chain with no forward references (T06 ships a local constraint stub it defines
 itself; real constraint authority lands T12, before structural mutation goes
-authoritative at T20); T03 feeds T04; T09 needs T08 and is extended by
+authoritative at T20); T03 feeds T04; T08 produces `primaryCapability`
+consumed by T17's thin mapper and T20's cutover; T09 needs T08 and is extended by
 T11/T14/T17; T16 precedes T17; T19 precedes T20; T20 consumes only the barrel,
 thin mapper, and hash interfaces produced earlier; T21 deletes only machinery
-T20 made redundant; T22 records only.
+T20 made redundant (including all PRIMARY_SELECTION_RULES); T22 records only.
+E. Primary-capability amendment: public Intent schema unchanged everywhere;
+`primaryCapability` is internal routing metadata only; T08 derives it from the
+governing frame with the risks/object invariance test; T17 maps capability→skill
+with zero priority rules; T20 gates forbid risk/object/priority ownership and
+require the five capability distinction tests; no fixture-specific rescue rule
+introduced; T19 hash coverage already spans every capability-mechanism file.
 E. Authority audit: shadow is discarded output until T20; T20 asserts
 `usesLegacyAuthority` false on the authority path; T21 deletes the legacy
 machinery so no fallback can be reintroduced.

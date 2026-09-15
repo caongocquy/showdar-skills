@@ -76,7 +76,9 @@ Constraints remain resolver metadata outside Intent
 (`no-push`, `no-commit`, `no-deploy`, `no-code-change`, `no-implementation`,
 `no-publish`, plus scoped variants). Existing route, verification, evidence,
 and capability consumers continue to receive this contract unchanged. Phase 6F
-introduces only an INTERNAL intermediate representation (the frame model in §5).
+introduces only an INTERNAL intermediate representation (the frame model in §5)
+and INTERNAL routing metadata (`resolverMeta.routing.primaryCapability`, §8A).
+The internal primary capability is never part of the public Intent schema.
 
 ## 4. Target pipeline
 
@@ -90,7 +92,8 @@ raw prompt
   -> authority resolution             (governing ownership, mutation ceiling)
   -> Intent projectors                (one pure projector per dimension, §§8-12)
   -> existing Intent                  (contract of §3)
-  -> thin route-plan                  (§14)
+     + internal primaryCapability     (§8A, routing metadata only)
+  -> thin route-plan                  (capability→skill, §14)
   -> verification
 ```
 
@@ -145,6 +148,11 @@ the fixture in §18, never per-phrase.
 }
 ```
 
+- `semanticCapability` is the authoritative routing source (§8A). It must
+  distinguish capability scope from target/domain mentions: "review auth code"
+  (auth is a domain noun) is `review`; "review auth code for vulnerabilities"
+  and "audit security" are `security-assessment`. An auth/OAuth/webhook noun
+  alone never implies security primary.
 - `role` describes the action's structural position in the request, resolved in §7.
 - `commitment` describes authorization timing: AUTHORIZED_NOW means the user
   requests the work now; CONDITIONAL means it depends on a future gate
@@ -257,6 +265,81 @@ conservative low-authority Intent (discovery or verification, read-only,
 no secondaries) plus diagnostics. Normative fallback rule: uncertainty may
 REDUCE authority; uncertainty MUST NEVER INCREASE authority.
 
+A prompt with no authoritative governing action (e.g. a bare "Can you look
+at this?") resolves conservatively to discovery/understand/read-only.
+
+## 8A. Authoritative internal primary capability
+
+Public Intent phase/action (§3) is NOT expressive enough to distinguish, for
+example, generic review (`verification:review` → showdar-review) from
+security-scoped review (`verification:review` → showdar-security). Routing on
+risks or route-plan priority to close that gap would violate this design.
+Instead, the structural resolver carries INTERNAL routing metadata:
+
+```js
+resolverMeta: {
+  routing: {
+    primaryCapability, // e.g. "review" | "security-assessment" | "upgrade" | ...
+  },
+}
+```
+
+Conceptually:
+
+```js
+type PrimaryCapability =
+  | 'understand'
+  | 'requirements'
+  | 'plan'
+  | 'design'
+  | 'implement'
+  | 'debug'
+  | 'test'
+  | 'review'
+  | 'quality'
+  | 'security-assessment'
+  | 'upgrade'
+  | 'ship'
+  | 'ops'
+  | 'recover'
+  | 'git';
+```
+
+Authority source: `primaryCapability` derives ONLY from the positive
+AUTHORIZED_NOW GOVERNING ActionFrame's `semanticCapability`. The same
+governing frame projects BOTH the public Intent phase/action AND the
+internal primaryCapability; neither projection consults route-plan.
+
+Hard firewall: `primaryCapability` MUST NEVER derive from risks, object,
+evidence, environment alone, secondaryActions, advisor candidates,
+PRIMARY_SELECTION_RULES, route priorities, or legacy keyword scoring.
+Risks remain verification-only metadata (§12).
+
+Worked distinctions:
+
+- "Review this code for correctness" — GOVERNING `review`;
+  public Intent `verification:review`; `primaryCapability: review`;
+  primary showdar-review.
+- "Review this webhook for security vulnerabilities" — GOVERNING
+  security-scoped review; `semanticCapability: security-assessment`;
+  public Intent `verification:review`; `primaryCapability: security-assessment`;
+  primary showdar-security.
+- "Audit security, don't patch anything" — GOVERNING security assessment;
+  `semanticCapability: security-assessment`; public Intent
+  `discovery:assess`; `primaryCapability: security-assessment`;
+  primary showdar-security; mutation read-only.
+- "Review this auth code but do not change anything" — auth is a
+  target/domain mention with no explicit security-assessment scope;
+  `semanticCapability: review`; `primaryCapability: review`;
+  primary showdar-review. A security risk/domain hint alone never converts
+  generic review into security-assessment.
+- "Implement OAuth" — `semanticCapability: implement`;
+  `primaryCapability: implement`; primary showdar-build even when security
+  risk metadata is present.
+
+Invariance requirement: given the same GOVERNING ActionFrame, changing
+risks/object/evidence must not change `primaryCapability`.
+
 ## 9. Mutation projection
 
 Contributors:
@@ -334,7 +417,10 @@ surface verb/operation -> semantic capability -> canonical Intent action -> rout
 Examples: map / trace / explain -> understanding capability -> `understand`;
 commit / rebase / push -> git capability -> `git`; run test suite ->
 testing capability -> `test`; audit / threat model -> assessment capability ->
-`assess`.
+`assess`; security-scoped review/audit ("review for vulnerabilities",
+"audit security") -> `security-assessment` capability (§8A). Generic review
+stays `review`; only an explicit security-assessment scope in the governing
+action produces `security-assessment`.
 
 User-surface verbs MUST NOT be scattered directly across competing canonical
 action families (the defect class behind Blind #5 b5-04/b5-05, where `define`
@@ -344,13 +430,19 @@ the only place new phrasing is added, and additions require a fixture case in
 
 ## 14. Route-plan after 6F
 
-Route-plan becomes intentionally thin. Allowed: canonical Intent -> primary
-skill; secondaryActions -> advisor skills. Forbidden: semantic ownership
-re-selection, risk priority deciding primary, object specialization deciding
-primary, runner-up scoring, PRIMARY_SELECTION_RULES, and any authority
-correction. If Intent is wrong, the fix belongs in the structural
-parser/projector. There is exactly one semantic engine; maintaining two is a
-defect, not a safety net.
+Route-plan becomes intentionally thin. Allowed: internal
+`primaryCapability` (§8A) -> primary skill via a deterministic
+capability→skill table; secondaryActions -> advisor skills. Representative
+mappings: review → showdar-review; security-assessment → showdar-security;
+quality-assessment → showdar-quality; test → showdar-test;
+upgrade → showdar-upgrade. Forbidden: semantic ownership re-selection, risk
+priority deciding primary, object specialization deciding primary, runner-up
+scoring, PRIMARY_SELECTION_RULES, and any authority correction. The structural
+authoritative path must never consult PRIMARY_SELECTION_RULES, numeric
+primary priorities, or risk/object/evidence to choose primary. If routing is
+wrong, the fix belongs in the governing ActionFrame capability or the
+primary projector, never in a route heuristic. There is exactly one semantic
+engine; maintaining two is a defect, not a safety net.
 
 ## 15. Error handling and diagnostics
 
@@ -422,8 +514,11 @@ structural specification for the matrices in §20, not a blind benchmark.
 
 During 6F.1-6F.5 the legacy resolver stays authoritative while the structural
 resolver runs as shadow, recording per-field agreement (phase, action,
-mutation, secondary, primary skill) plus structural issues. Shadow output never
-influences runtime results. After authoritative cutover (6F.6) there is NO
+mutation, secondary, primary skill) plus structural issues. Structural shadow
+primary routing compares structural `primaryCapability` → thin skill against
+the legacy diagnostic primary; legacy agreement is diagnostic only and is
+never a semantic-correctness gate. Shadow output never influences runtime
+results. After authoritative cutover (6F.6) there is NO
 automatic fallback from structural to legacy: a structural failure is handled
 by code-version rollback/revert, exactly like any other regression — never by
 a semantic runtime fallback, which would silently resurrect the architecture
@@ -434,7 +529,12 @@ being removed.
 Safety (hard 100% invariants): provenance authority leaks = 0; constraint
 safety = 100%; forbidden primaries = 0; unauthorized production escalations = 0.
 Structural: relation matrix = 100%; governing/supporting/orthogonal/conditional
-matrix = 100%; route-plan semantic overrides = 0. Compatibility: development
+matrix = 100%; route-plan semantic overrides = 0.
+Capability routing (hard structural invariants): risk-to-primary influence = 0;
+object-to-primary influence = 0; route-priority ownership = 0; structural
+runtime PRIMARY_SELECTION_RULES usage = 0; primaryCapability derived from the
+governing action = 100%; generic review / explicit security-review
+distinction = 100%. Compatibility: development
 raw primary >= 95%; development mutation >= 95%; structured routing at or above
 current baseline; verification/evidence/retrieval suites green. Blind #5
 contract-audit diagnostics: 4 authority-critical -> 0, 4 constraint-safety
@@ -452,6 +552,21 @@ inconsistent with the documented contract — the structural parser MUST NOT be
 forced to reproduce known legacy defects (e.g. surface-verb actions,
 vote-driven ownership). METADATA (object/risk fine distinctions) is
 non-blocking unless it affects routing, safety, or verification.
+
+T20 contract-audit rationale (recorded, fixtures untouched): an upgrade verb
+governing with orthogonal regression-test work routes to showdar-upgrade with
+a test secondary; a generic review stays showdar-review even with a security
+risk hint; a prompt with no authoritative governing action resolves
+conservatively to discovery/understand/read-only. Historical fixture
+expectations that encode the opposite remain untouched unless a later
+explicit contract-migration task approves changes.
+
+T20 genuine failure set (diagnostic, not fixture patches): non-security
+targets include test-authoring verbs, known-cause evidence, requirements vs
+diagnosis disambiguation, CODE_BLOCK authority, and vague-prompt
+conservatism; security routing (`review-auth-vulnerabilities`,
+`security-webhook-review`, `audit-security-no-patch`) must route via a
+governing `security-assessment` capability, never via risk-priority override.
 
 ## 23. Blind #6 requirement
 
@@ -521,3 +636,9 @@ cut over without legacy runtime fallback; and support a clean Blind #6.
   semantic runtime fallback.
 - Checked legacy-defect reproduction: §22 forbids forcing the parser to
   reproduce known legacy defects.
+- Checked primary-capability amendment: public Intent schema in §3 unchanged;
+  `primaryCapability` is internal routing metadata only (§8A); no risk/object/
+  evidence-based ownership remains in the structural design; route-plan has no
+  duplicate semantic engine (§14); capability naming is consistent across §5,
+  §8A, §13, and §14; T20/T21 ordering unchanged; no fixture-specific rescue
+  rule introduced.
