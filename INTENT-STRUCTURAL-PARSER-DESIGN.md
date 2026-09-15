@@ -534,13 +534,69 @@ Capability routing (hard structural invariants): risk-to-primary influence = 0;
 object-to-primary influence = 0; route-priority ownership = 0; structural
 runtime PRIMARY_SELECTION_RULES usage = 0; primaryCapability derived from the
 governing action = 100%; generic review / explicit security-review
-distinction = 100%. Compatibility: development
-raw primary >= 95%; development mutation >= 95%; structured routing at or above
-current baseline; verification/evidence/retrieval suites green. Blind #5
-contract-audit diagnostics: 4 authority-critical -> 0, 4 constraint-safety
-violations -> 0, genuine structural failures materially reduced. A full-perfect
-Blind #5 score is explicitly NOT required (it contains audited expectation
-errors and metadata limits; see §22).
+distinction = 100%. Compatibility: T20 contract-primary accuracy >= 95%
+(computed against the audited contract-primary oracle in §21A, never against
+legacy keyword routing); development mutation >= 95%; structured routing at
+or above current baseline; verification/evidence/retrieval suites green.
+Blind #5 contract-audit diagnostics: 4 authority-critical -> 0,
+4 constraint-safety violations -> 0, genuine structural failures materially
+reduced. A full-perfect Blind #5 score is explicitly NOT required (it contains
+audited expectation errors and metadata limits; see §22).
+
+## 21A. T20 contract-primary oracle
+
+T20 pass/fail MUST NOT use `legacyPrimaryFromPrompt()`, raw legacy keyword
+routing, or stale historical fixture phase/action where a contract audit has
+corrected it. The legacy matcher remains diagnostic-only
+(`LEGACY_COMPATIBILITY_DIAGNOSTIC`) and cannot affect T20 pass/fail.
+
+The T20 primary gate is computed against a derived, non-destructive
+contract-primary audit artifact:
+
+`evals/development-contract-primary-audit.json`
+
+The artifact identifies all 42 development cases by stable case id and
+contains, per case, the contract-correct expected routing data:
+
+```js
+{
+  caseId,               // stable id matching the development fixture
+  expectedPhase,        // contract-correct canonical phase
+  expectedAction,       // contract-correct canonical action
+  expectedPrimaryCapability, // internal routing capability (§8A)
+  expectedPrimarySkill, // thin-mapper skill for the capability
+  auditStatus,          // ORIGINAL_EXPECTATION_VALID | EXPECTATION_CORRECTED
+  rationale,            // required when EXPECTATION_CORRECTED
+}
+```
+
+Confirmed corrections (recorded, historical fixtures untouched):
+
+- `upgrade-with-regression-tests` → implementation / upgrade →
+  primaryCapability=upgrade → showdar-upgrade (upgrade GOVERNING, test
+  ORTHOGONAL).
+- `multi-intent-upgrade-and-test` → implementation / upgrade →
+  primaryCapability=upgrade → showdar-upgrade (same structure).
+- `review-auth-no-changes` → verification / review →
+  primaryCapability=review → showdar-review (security risk alone never
+  steals review primary).
+- `low-confidence-vague` → discovery / understand →
+  primaryCapability=understand → showdar-understand (no authoritative
+  governing action; conservative fallback).
+
+Historical development fixtures remain untouched; corrections live ONLY in
+the audit artifact. T20 computes:
+
+```
+T20_CONTRACT_PRIMARY_ACCURACY =
+  structural thin-route primary == contract audit expected primary
+```
+
+over the audited denominator. The audit artifact is semantic test/eval
+data, NOT production semantic source: it must NOT be added to
+semantic-source-hash coverage. It is reviewed and traceable, must never be
+generated from current structural output (no circular oracle), is NOT a
+blind dataset, and must never be described as one.
 
 ## 22. Regression philosophy
 
@@ -642,3 +698,10 @@ cut over without legacy runtime fallback; and support a clean Blind #6.
   duplicate semantic engine (§14); capability naming is consistent across §5,
   §8A, §13, and §14; T20/T21 ordering unchanged; no fixture-specific rescue
   rule introduced.
+- Checked contract-primary oracle (§21A): T20 pass/fail uses the audited
+  artifact only — never `legacyPrimaryFromPrompt()`; corrections are
+  non-destructive (historical fixtures untouched); the artifact is excluded
+  from semantic-source-hash coverage; it is not generated from structural
+  output (no circular oracle: expectations derive from the approved governing-
+  action contract and skill when-to-use semantics, reviewed before any gate
+  evaluation); it is not a blind dataset.

@@ -526,6 +526,37 @@ pass; no legacy authority fallback exists.
   protocol). NOTE: commit message groups protocol-with-cutover work; the
   cutover itself is T20.
 
+- [ ] **T20a — Contract-primary oracle artifact and evaluator (gate dependency)**
+  Files: CREATE `evals/development-contract-primary-audit.json` (reviewed
+  audit data, spec §21A); CREATE evaluator extension computing
+  `T20_CONTRACT_PRIMARY_ACCURACY` (structural thin-route primary ==
+  contract-audit expected primary) over the audited denominator, with
+  `LEGACY_COMPATIBILITY_DIAGNOSTIC` (structural vs `legacyPrimaryFromPrompt`)
+  reported separately and never gating pass/fail.
+  **Interfaces**
+  Consumes: 42 development case ids; approved governing-action contract and
+  skill when-to-use semantics (NOT current structural output, NOT legacy
+  keyword routing).
+  Produces: per-case `{ caseId, expectedPhase, expectedAction,
+  expectedPrimaryCapability, expectedPrimarySkill, auditStatus:
+  ORIGINAL_EXPECTATION_VALID | EXPECTATION_CORRECTED, rationale? }` for all
+  42 cases, including the four confirmed corrections (upgrade-with-regression-
+  tests and multi-intent-upgrade-and-test → implementation/upgrade/upgrade/
+  showdar-upgrade; review-auth-no-changes → verification/review/review/
+  showdar-review; low-confidence-vague → discovery/understand/understand/
+  showdar-understand). Historical development fixtures remain untouched; the
+  artifact is semantic test/eval data and is EXCLUDED from
+  semantic-source-hash coverage; it is not a blind dataset and must never be
+  described as one. Circular-oracle guard: the artifact is authored from the
+  contract and reviewed BEFORE any gate evaluation; the evaluator asserts the
+  artifact was not generated from structural output (manual review sign-off
+  recorded in the task tracker).
+  TDD: (1) write a test asserting artifact schema keys and all-42 coverage;
+  (2) evaluator test on fixed inputs (no resolver import); (3) focused test
+  green; (4) `npm test`; (5) `git diff --check`; (6) commit
+  `test(router): add contract primary gate oracle`.
+  This task MUST complete before the T20 ≥95% gate is evaluated.
+
 - [ ] **T20 — Authoritative cutover switch**
   Files: MODIFY `src/intent-resolver/index.js` (engine modes conceptually
   legacy / structural-shadow / structural; structural becomes authoritative);
@@ -647,9 +678,12 @@ chain with no forward references (T06 ships a local constraint stub it defines
 itself; real constraint authority lands T12, before structural mutation goes
 authoritative at T20); T03 feeds T04; T08 produces `primaryCapability`
 consumed by T17's thin mapper and T20's cutover; T09 needs T08 and is extended by
-T11/T14/T17; T16 precedes T17; T19 precedes T20; T20 consumes only the barrel,
-thin mapper, and hash interfaces produced earlier; T21 deletes only machinery
-T20 made redundant (including all PRIMARY_SELECTION_RULES); T22 records only.
+T11/T14/T17; T16 precedes T17; T19 precedes T20; T20a (contract-primary oracle)
+precedes the T20 ≥95% gate evaluation and consumes only the approved contract
+(spec §21A), never structural output or legacy routing; T20 consumes only the
+barrel, thin mapper, oracle artifact, and hash interfaces produced earlier;
+T21 deletes only machinery T20 made redundant (including all
+PRIMARY_SELECTION_RULES); T22 records only.
 E. Primary-capability amendment: public Intent schema unchanged everywhere;
 `primaryCapability` is internal routing metadata only; T08 derives it from the
 governing frame with the risks/object invariance test; T17 maps capability→skill
