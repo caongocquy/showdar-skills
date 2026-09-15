@@ -3,7 +3,7 @@
 
 import { resolveIntentFromPrompt } from '../index.js';
 import { assembleRequestFrame } from './request-frame.js';
-import { resolveStructuralIntent } from './projectors/index.js';
+import { resolveStructuralIntent, resolvePrimaryCapability } from './projectors/index.js';
 import { buildRoutePlan, buildThinRoutePlan } from '../../route-plan.js';
 
 const NOT_YET_PROJECTED = 'not-yet-projected';
@@ -32,10 +32,13 @@ export function runShadow(prompt) {
     evidence: structuralPrimary.evidence,
   };
 
-  // 3. Structural side reports primarySkill via the thin mapper (T17)
+  // 3. Structural side reports primarySkill via the thin mapper (T17),
+  // routed by the internal primaryCapability (T20, spec §8A)
   let structuralPrimarySkill = null;
   try {
-    structuralPrimarySkill = buildThinRoutePlan(structuralIntent).primary.skill;
+    structuralPrimarySkill = buildThinRoutePlan(structuralIntent, {
+      primaryCapability: resolvePrimaryCapability(requestFrame),
+    }).primary.skill;
   } catch {
     structuralPrimarySkill = null;
   }

@@ -182,5 +182,6 @@ export function assembleRequestFrame(prompt) {
     constraints,
     relations,
     diagnostics: uniqueDiagnostics,
+    originalText: prompt,
   };
 }

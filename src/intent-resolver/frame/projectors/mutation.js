@@ -9,14 +9,25 @@
 const MUTATION_LADDER = Object.freeze(['read-only', 'local-write', 'remote-write', 'production-impacting']);
 
 // Canonical action -> base mutation class
+// Complete over the canonical taxonomy: compound surface verbs (implement-oauth,
+// fix-login, upgrade-dependency, design-system) miss the surface table and must
+// resolve here rather than falling through to read-only.
 const CANONICAL_BASE_MUTATION = Object.freeze({
   understand: 'read-only',
   assess: 'read-only',
   test: 'read-only',
   define: 'read-only',
+  review: 'read-only',
+  investigate: 'read-only',
+  plan: 'read-only',
+  implement: 'local-write',
+  modify: 'local-write',
+  upgrade: 'local-write',
+  design: 'local-write',    // design artifacts (mockups, layouts) are local writes
   git: 'local-write',      // commit, rebase, merge are local-write
   deploy: 'production-impacting',
   recover: 'local-write',   // recovery/restoration
+  fix: 'local-write',       // fix/repair are local-write
 });
 
 // Surface verb -> base mutation (more specific than canonical)
@@ -65,12 +76,26 @@ const SURFACE_BASE_MUTATION = Object.freeze({
   resume: 'local-write',
   replay: 'local-write',
   upgrade: 'local-write',
+  migrate: 'local-write',
   deploy: 'production-impacting',
   rollback: 'production-impacting',
   restart: 'production-impacting',
   scale: 'production-impacting',
   rotate: 'production-impacting',
   promote: 'production-impacting',
+  // Test authoring verbs (writing tests is local-write)
+  'add-unit-coverage': 'local-write',
+  'write-integration-tests': 'local-write',
+  'write-unit-tests': 'local-write',
+  'create-unit-tests': 'local-write',
+  'add-integration-tests': 'local-write',
+  'create-integration-tests': 'local-write',
+  'add-regression-tests': 'local-write',
+  'write-regression-tests': 'local-write',
+  'create-regression-tests': 'local-write',
+  'add-tests': 'local-write',
+  'write-tests': 'local-write',
+  'create-tests': 'local-write',
 });
 
 function mutationIndex(mutation) {

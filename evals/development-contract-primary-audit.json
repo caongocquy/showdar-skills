@@ -1,0 +1,351 @@
+{
+  "schemaVersion": 1,
+  "description": "Contract-correct expected primary routing for the 42 development cases. Authored from the approved Phase 6F governing-action contract and skill when-to-use semantics (spec §8A, §21A). NOT generated from structural output. Historical development fixtures remain untouched; corrections live ONLY here. Semantic test/eval data — excluded from semantic-source-hash coverage. NOT a blind dataset.",
+  "cases": [
+    {
+      "caseId": "understand-repo-request-flow",
+      "expectedPhase": "discovery",
+      "expectedAction": "understand",
+      "expectedPrimaryCapability": "understand",
+      "expectedPrimarySkill": "showdar-understand",
+      "auditStatus": "ORIGINAL_EXPECTATION_VALID"
+    },
+    {
+      "caseId": "requirements-missing-refund-rule",
+      "expectedPhase": "definition",
+      "expectedAction": "define",
+      "expectedPrimaryCapability": "requirements",
+      "expectedPrimarySkill": "showdar-requirements",
+      "auditStatus": "ORIGINAL_EXPECTATION_VALID"
+    },
+    {
+      "caseId": "plan-approved-feature",
+      "expectedPhase": "planning",
+      "expectedAction": "plan",
+      "expectedPrimaryCapability": "plan",
+      "expectedPrimarySkill": "showdar-plan",
+      "auditStatus": "ORIGINAL_EXPECTATION_VALID"
+    },
+    {
+      "caseId": "design-responsive-checkout",
+      "expectedPhase": "design",
+      "expectedAction": "design",
+      "expectedPrimaryCapability": "design",
+      "expectedPrimarySkill": "showdar-design",
+      "auditStatus": "ORIGINAL_EXPECTATION_VALID"
+    },
+    {
+      "caseId": "build-stripe-webhook",
+      "expectedPhase": "implementation",
+      "expectedAction": "implement",
+      "expectedPrimaryCapability": "implement",
+      "expectedPrimarySkill": "showdar-build",
+      "auditStatus": "ORIGINAL_EXPECTATION_VALID"
+    },
+    {
+      "caseId": "debug-intermittent-connection",
+      "expectedPhase": "diagnosis",
+      "expectedAction": "investigate",
+      "expectedPrimaryCapability": "debug",
+      "expectedPrimarySkill": "showdar-debug",
+      "auditStatus": "ORIGINAL_EXPECTATION_VALID"
+    },
+    {
+      "caseId": "test-payment-regression",
+      "expectedPhase": "verification",
+      "expectedAction": "test",
+      "expectedPrimaryCapability": "test",
+      "expectedPrimarySkill": "showdar-test",
+      "auditStatus": "ORIGINAL_EXPECTATION_VALID"
+    },
+    {
+      "caseId": "review-auth-vulnerabilities",
+      "expectedPhase": "verification",
+      "expectedAction": "review",
+      "expectedPrimaryCapability": "security-assessment",
+      "expectedPrimarySkill": "showdar-security",
+      "auditStatus": "ORIGINAL_EXPECTATION_VALID",
+      "rationale": "Explicit security-assessment scope in the governing action ('specifically for authorization vulnerabilities'); capability, not risk, owns primary."
+    },
+    {
+      "caseId": "upgrade-react-native",
+      "expectedPhase": "implementation",
+      "expectedAction": "upgrade",
+      "expectedPrimaryCapability": "upgrade",
+      "expectedPrimarySkill": "showdar-upgrade",
+      "auditStatus": "ORIGINAL_EXPECTATION_VALID"
+    },
+    {
+      "caseId": "ship-release-readiness",
+      "expectedPhase": "delivery",
+      "expectedAction": "assess",
+      "expectedPrimaryCapability": "ship",
+      "expectedPrimarySkill": "showdar-ship",
+      "auditStatus": "ORIGINAL_EXPECTATION_VALID"
+    },
+    {
+      "caseId": "ops-staging-deploy",
+      "expectedPhase": "operations",
+      "expectedAction": "deploy",
+      "expectedPrimaryCapability": "ops",
+      "expectedPrimarySkill": "showdar-ops",
+      "auditStatus": "ORIGINAL_EXPECTATION_VALID"
+    },
+    {
+      "caseId": "recover-interrupted-impl",
+      "expectedPhase": "recovery",
+      "expectedAction": "recover",
+      "expectedPrimaryCapability": "recover",
+      "expectedPrimarySkill": "showdar-recover",
+      "auditStatus": "ORIGINAL_EXPECTATION_VALID"
+    },
+    {
+      "caseId": "git-commit-completed",
+      "expectedPhase": "repository",
+      "expectedAction": "git",
+      "expectedPrimaryCapability": "git",
+      "expectedPrimarySkill": "showdar-git",
+      "auditStatus": "ORIGINAL_EXPECTATION_VALID"
+    },
+    {
+      "caseId": "debug-known-null-token",
+      "expectedPhase": "implementation",
+      "expectedAction": "fix",
+      "expectedPrimaryCapability": "implement",
+      "expectedPrimarySkill": "showdar-build",
+      "auditStatus": "ORIGINAL_EXPECTATION_VALID"
+    },
+    {
+      "caseId": "debug-unknown-memory-leak",
+      "expectedPhase": "diagnosis",
+      "expectedAction": "investigate",
+      "expectedPrimaryCapability": "debug",
+      "expectedPrimarySkill": "showdar-debug",
+      "auditStatus": "ORIGINAL_EXPECTATION_VALID"
+    },
+    {
+      "caseId": "review-only-no-changes",
+      "expectedPhase": "verification",
+      "expectedAction": "review",
+      "expectedPrimaryCapability": "review",
+      "expectedPrimarySkill": "showdar-review",
+      "auditStatus": "ORIGINAL_EXPECTATION_VALID"
+    },
+    {
+      "caseId": "fix-known-cause",
+      "expectedPhase": "implementation",
+      "expectedAction": "fix",
+      "expectedPrimaryCapability": "implement",
+      "expectedPrimarySkill": "showdar-build",
+      "auditStatus": "ORIGINAL_EXPECTATION_VALID"
+    },
+    {
+      "caseId": "debug-unknown-cause",
+      "expectedPhase": "diagnosis",
+      "expectedAction": "investigate",
+      "expectedPrimaryCapability": "debug",
+      "expectedPrimarySkill": "showdar-debug",
+      "auditStatus": "ORIGINAL_EXPECTATION_VALID"
+    },
+    {
+      "caseId": "plan-migration-no-implement",
+      "expectedPhase": "planning",
+      "expectedAction": "plan",
+      "expectedPrimaryCapability": "plan",
+      "expectedPrimarySkill": "showdar-plan",
+      "auditStatus": "ORIGINAL_EXPECTATION_VALID"
+    },
+    {
+      "caseId": "upgrade-with-regression-tests",
+      "expectedPhase": "implementation",
+      "expectedAction": "upgrade",
+      "expectedPrimaryCapability": "upgrade",
+      "expectedPrimarySkill": "showdar-upgrade",
+      "auditStatus": "EXPECTATION_CORRECTED",
+      "rationale": "Governing verb is upgrade with orthogonal regression-test work; fixture phase/action (implementation/implement) encodes legacy keyword mapping. Primary is upgrade with test secondary."
+    },
+    {
+      "caseId": "ship-readiness-no-publish",
+      "expectedPhase": "delivery",
+      "expectedAction": "assess",
+      "expectedPrimaryCapability": "ship",
+      "expectedPrimarySkill": "showdar-ship",
+      "auditStatus": "ORIGINAL_EXPECTATION_VALID"
+    },
+    {
+      "caseId": "ops-deploy-production",
+      "expectedPhase": "operations",
+      "expectedAction": "deploy",
+      "expectedPrimaryCapability": "ops",
+      "expectedPrimarySkill": "showdar-ops",
+      "auditStatus": "ORIGINAL_EXPECTATION_VALID"
+    },
+    {
+      "caseId": "ops-prepare-deploy-no-deploy",
+      "expectedPhase": "planning",
+      "expectedAction": "plan",
+      "expectedPrimaryCapability": "plan",
+      "expectedPrimarySkill": "showdar-plan",
+      "auditStatus": "ORIGINAL_EXPECTATION_VALID"
+    },
+    {
+      "caseId": "recover-interrupted-work",
+      "expectedPhase": "recovery",
+      "expectedAction": "recover",
+      "expectedPrimaryCapability": "recover",
+      "expectedPrimarySkill": "showdar-recover",
+      "auditStatus": "ORIGINAL_EXPECTATION_VALID"
+    },
+    {
+      "caseId": "git-commit-local-no-push",
+      "expectedPhase": "repository",
+      "expectedAction": "git",
+      "expectedPrimaryCapability": "git",
+      "expectedPrimarySkill": "showdar-git",
+      "auditStatus": "ORIGINAL_EXPECTATION_VALID"
+    },
+    {
+      "caseId": "security-webhook-review",
+      "expectedPhase": "verification",
+      "expectedAction": "review",
+      "expectedPrimaryCapability": "security-assessment",
+      "expectedPrimarySkill": "showdar-security",
+      "auditStatus": "ORIGINAL_EXPECTATION_VALID",
+      "rationale": "Explicit security-assessment scope in the governing action ('for security issues'); capability, not risk, owns primary."
+    },
+    {
+      "caseId": "build-webhook-with-tests",
+      "expectedPhase": "implementation",
+      "expectedAction": "implement",
+      "expectedPrimaryCapability": "implement",
+      "expectedPrimarySkill": "showdar-build",
+      "auditStatus": "ORIGINAL_EXPECTATION_VALID"
+    },
+    {
+      "caseId": "requirements-undefined",
+      "expectedPhase": "definition",
+      "expectedAction": "define",
+      "expectedPrimaryCapability": "requirements",
+      "expectedPrimarySkill": "showdar-requirements",
+      "auditStatus": "ORIGINAL_EXPECTATION_VALID"
+    },
+    {
+      "caseId": "quality-qa-matrix",
+      "expectedPhase": "verification",
+      "expectedAction": "assess",
+      "expectedPrimaryCapability": "quality",
+      "expectedPrimarySkill": "showdar-quality",
+      "auditStatus": "EXPECTATION_CORRECTED",
+      "rationale": "Creating a QA regression matrix with explicit 'do not write automated tests' is quality assessment, not test execution; fixture action=test encodes legacy keyword mapping."
+    },
+    {
+      "caseId": "audit-security-no-patch",
+      "expectedPhase": "discovery",
+      "expectedAction": "assess",
+      "expectedPrimaryCapability": "security-assessment",
+      "expectedPrimarySkill": "showdar-security",
+      "auditStatus": "ORIGINAL_EXPECTATION_VALID",
+      "rationale": "Explicit security assessment scope in the governing action ('audit security'); capability, not risk, owns primary."
+    },
+    {
+      "caseId": "fix-local-no-push",
+      "expectedPhase": "implementation",
+      "expectedAction": "fix",
+      "expectedPrimaryCapability": "implement",
+      "expectedPrimarySkill": "showdar-build",
+      "auditStatus": "ORIGINAL_EXPECTATION_VALID"
+    },
+    {
+      "caseId": "review-auth-no-changes",
+      "expectedPhase": "verification",
+      "expectedAction": "review",
+      "expectedPrimaryCapability": "review",
+      "expectedPrimarySkill": "showdar-review",
+      "auditStatus": "EXPECTATION_CORRECTED",
+      "rationale": "Auth is a target/domain mention with no explicit security-assessment scope; security risk alone must not steal review primary."
+    },
+    {
+      "caseId": "code-block-prompt-injection",
+      "expectedPhase": "discovery",
+      "expectedAction": "understand",
+      "expectedPrimaryCapability": "understand",
+      "expectedPrimarySkill": "showdar-understand",
+      "auditStatus": "ORIGINAL_EXPECTATION_VALID"
+    },
+    {
+      "caseId": "low-confidence-vague",
+      "expectedPhase": "discovery",
+      "expectedAction": "understand",
+      "expectedPrimaryCapability": "understand",
+      "expectedPrimarySkill": "showdar-understand",
+      "auditStatus": "EXPECTATION_CORRECTED",
+      "rationale": "No authoritative governing action; fixture phase/action (implementation/implement with read-only) is self-contradictory. Conservative fallback is discovery/understand/read-only."
+    },
+    {
+      "caseId": "multi-intent-upgrade-and-test",
+      "expectedPhase": "implementation",
+      "expectedAction": "upgrade",
+      "expectedPrimaryCapability": "upgrade",
+      "expectedPrimarySkill": "showdar-upgrade",
+      "auditStatus": "EXPECTATION_CORRECTED",
+      "rationale": "Governing verb is upgrade with orthogonal regression-test work; fixture phase/action (implementation/implement) encodes legacy keyword mapping. Primary is upgrade with test secondary."
+    },
+    {
+      "caseId": "multi-intent-webhook-security-test",
+      "expectedPhase": "implementation",
+      "expectedAction": "implement",
+      "expectedPrimaryCapability": "implement",
+      "expectedPrimarySkill": "showdar-build",
+      "auditStatus": "ORIGINAL_EXPECTATION_VALID"
+    },
+    {
+      "caseId": "debug-ci-failure",
+      "expectedPhase": "diagnosis",
+      "expectedAction": "investigate",
+      "expectedPrimaryCapability": "debug",
+      "expectedPrimarySkill": "showdar-debug",
+      "auditStatus": "ORIGINAL_EXPECTATION_VALID"
+    },
+    {
+      "caseId": "ops-rollback-migration",
+      "expectedPhase": "planning",
+      "expectedAction": "plan",
+      "expectedPrimaryCapability": "plan",
+      "expectedPrimarySkill": "showdar-plan",
+      "auditStatus": "ORIGINAL_EXPECTATION_VALID"
+    },
+    {
+      "caseId": "security-threat-model",
+      "expectedPhase": "discovery",
+      "expectedAction": "assess",
+      "expectedPrimaryCapability": "security-assessment",
+      "expectedPrimarySkill": "showdar-security",
+      "auditStatus": "ORIGINAL_EXPECTATION_VALID",
+      "rationale": "Explicit threat-model scope in the governing action; capability, not risk, owns primary."
+    },
+    {
+      "caseId": "build-oauth-implementation",
+      "expectedPhase": "implementation",
+      "expectedAction": "implement",
+      "expectedPrimaryCapability": "implement",
+      "expectedPrimarySkill": "showdar-build",
+      "auditStatus": "ORIGINAL_EXPECTATION_VALID"
+    },
+    {
+      "caseId": "review-correctness-maintainability",
+      "expectedPhase": "verification",
+      "expectedAction": "review",
+      "expectedPrimaryCapability": "review",
+      "expectedPrimarySkill": "showdar-review",
+      "auditStatus": "ORIGINAL_EXPECTATION_VALID"
+    },
+    {
+      "caseId": "git-merge-no-push",
+      "expectedPhase": "repository",
+      "expectedAction": "git",
+      "expectedPrimaryCapability": "git",
+      "expectedPrimarySkill": "showdar-git",
+      "auditStatus": "ORIGINAL_EXPECTATION_VALID"
+    }
+  ]
+}

@@ -6,6 +6,7 @@ const ACTION_TO_SECONDARY = Object.freeze({
   review: 'review',
   assess: 'review',
   audit: 'security',   // audit -> security per legacy secondary.js mapping
+  'security-review': 'security',
   test: 'test',
   upgrade: 'upgrade',
   deploy: 'deploy',

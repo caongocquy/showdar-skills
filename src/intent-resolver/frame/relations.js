@@ -7,15 +7,23 @@ const SUPPORTING_VERBS = Object.freeze(new Set([
 
 /**
  * Determines if an action is a same-workflow supporting step
- * Based on verb and clause connector (THEN/AND after ROOT)
+ * Based on verb and clause connector (THEN/AND/AFTER/BEFORE after ROOT)
+ * AFTER/BEFORE are temporal sequencing - always supporting if positive AUTHORIZED_NOW
  */
 function isSupportingStep(action, clause, prevAction, prevClause) {
-  // Must be in a THEN or AND clause after a ROOT
+  // Must be in a THEN/AND/AFTER/BEFORE clause after a ROOT
   if (!prevClause) return false;
   if (prevClause.connector !== 'ROOT') return false;
-  if (clause.connector !== 'THEN' && clause.connector !== 'AND') return false;
+  if (clause.connector !== 'THEN' && clause.connector !== 'AND' && clause.connector !== 'AFTER' && clause.connector !== 'BEFORE') return false;
 
-  // Verb indicates supporting workflow step (structure-only, no keyword competition)
+  // AFTER/BEFORE are temporal sequencing - always supporting for positive authorized actions
+  if (clause.connector === 'AFTER' || clause.connector === 'BEFORE') {
+    return true;
+  }
+
+  // For THEN/AND, verb indicates supporting workflow step (structure-only, no keyword competition)
+  // But security-review is a distinct security capability, not a supporting step
+  if (action.surfaceVerb === 'security-review') return false;
   if (SUPPORTING_VERBS.has(action.canonicalAction)) return true;
 
   return false;
@@ -63,6 +71,7 @@ export function resolveRelations(actions, clauses) {
   const clauseById = Object.fromEntries(clauses.map(c => [c.id, c]));
 
   // Find first positive AUTHORIZED_NOW action in ROOT order
+  // Skip stative/background clauses (e.g., "The assessment is scheduled...")
   let firstAuthorizedIndex = -1;
   for (let i = 0; i < actions.length; i++) {
     const action = actions[i];
@@ -70,6 +79,11 @@ export function resolveRelations(actions, clauses) {
     if (action.polarity === 'positive' &&
         action.commitment === 'AUTHORIZED_NOW' &&
         !isContextual(clause)) {
+      // Skip stative background clauses: "The X is scheduled/planned/expected..."
+      const text = clause.text.toLowerCase();
+      if (/\b(the|this|that)\s+.+?\s+(is|are|was|were)\s+(scheduled|planned|expected|set|due|slated)\b/.test(text)) {
+        continue;
+      }
       firstAuthorizedIndex = i;
       break;
     }
