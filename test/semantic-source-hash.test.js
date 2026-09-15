@@ -8,12 +8,13 @@ import { hashSemanticSource, canonicalSemanticFileList, SEMANTIC_SOURCE_FIXED_PR
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 
-// Phase 6F T19 protocol-update frozen semantic-source hash (roll-forward:
-// canonical list extended to cover the authoritative frame/ and
-// frame/projectors/ modules; final freeze SHA is still recorded at T22).
+// Phase 6F T20 cutover semantic-source hash (roll-forward at T20 completion:
+// structural primaryCapability routing, security/test-authorship/deficit/
+// matrix capability classification, thin capability mapper, canonical mutation
+// taxonomy completion; final freeze SHA is still recorded at T22).
 // Guards the freeze: any semantic production change must go through a new
 // freeze cycle, never a silent edit.
-const FROZEN_SEMANTIC_SOURCE_SHA256 = '31f4c8d7156b3fc320f116c70a582a33386392ccaeecfdac9dc07e9ca334a855';
+const FROZEN_SEMANTIC_SOURCE_SHA256 = '55e3a33f3664fac9ea398fe6c1ce74807d006ed4f2b4f99a53f8beacba63eca4';
 
 // T19: every new authoritative frame/projector module must be inside the hash.
 const EXPECTED_FRAME_FILES = [
