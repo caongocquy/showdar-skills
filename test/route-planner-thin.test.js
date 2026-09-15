@@ -75,7 +75,8 @@ test('characterization: discovery/assess with security risk routes to security',
   frozen({ phase: 'discovery', action: 'assess', object: 'api', risks: ['security'] }, 'showdar-security');
 });
 
-// Thin-path equivalence tests (T17): buildThinRoutePlan must match characterization triples exactly.
+// Thin-path equivalence tests (T17/T21): buildThinRoutePlan must match characterization triples exactly.
+// Structural path uses primaryCapability → CAPABILITY_TO_SKILL.
 
 function thinIntent(overrides = {}) {
   return {
@@ -90,8 +91,27 @@ function thinIntent(overrides = {}) {
   };
 }
 
+// Map from (phase, action) to the structural primaryCapability that produces the expected skill.
+const PRIMARY_CAPABILITY_FOR = Object.freeze({
+  'discovery:understand': 'understand',
+  'implementation:implement': 'implement',
+  'diagnosis:investigate': 'debug',
+  'verification:test': 'test',
+  'verification:review': 'review',
+  'operations:deploy': 'ops',
+  'delivery:assess': 'ship',
+  'recovery:recover': 'recover',
+  'repository:git': 'git',
+  'implementation:upgrade': 'upgrade',
+  'discovery:assess': 'security-assessment', // with security risk
+});
+
 function assertThinEquals(intentOverrides, expectedPrimary, expectedAdvisors = []) {
-  const plan = buildThinRoutePlan(thinIntent(intentOverrides));
+  const testIntent = thinIntent(intentOverrides);
+  const key = `${testIntent.phase}:${testIntent.action}`;
+  const primaryCapability = PRIMARY_CAPABILITY_FOR[key];
+  if (!primaryCapability) throw new Error(`No primaryCapability mapping for ${key}`);
+  const plan = buildThinRoutePlan(testIntent, { primaryCapability });
   assert.equal(plan.primary.skill, expectedPrimary);
   assert.deepEqual(plan.advisors, expectedAdvisors);
 }

@@ -59,17 +59,15 @@ function confidenceFor(primary, candidates, decisive) {
 }
 
 /**
- * Primary selection rules based on intent semantics (phase, action, evidence).
- * These determine OWNERSHIP of the primary work unit.
+ * Legacy primary selection rules based on intent semantics (phase, action, evidence).
+ * These determine OWNERSHIP of the primary work unit in the legacy path.
  * They do NOT create advisors - advisors come ONLY from secondaryActions.
+ * KEPT for legacy diagnostic path (shadow harness, characterization tests) ONLY.
+ * Structural runtime (buildThinRoutePlan) does NOT use these rules.
  */
 const PRIMARY_SELECTION_RULES = Object.freeze([
   // Security assessment ownership
   { id: 'security-assessment', priority: 120, skill: 'showdar-security', reason: 'explicit security assessment is security-owned', matches: (intent) => intent.risks.includes('security') && ['assess', 'review'].includes(intent.action) && ['discovery', 'verification'].includes(intent.phase) },
-  // Multi-intent upgrade+test -> build owns (upgrade with test secondary means implement)
-  // REMOVED: This legacy rule contradicts semantic contract. Upgrade with orthogonal test
-  // secondary should remain upgrade-owned per structural intent (test is orthogonal, not governing).
-  // { id: 'upgrade-with-test', priority: 118, skill: 'showdar-build', reason: 'upgrade with test secondary is implementation-owned', matches: (intent) => intent.action === 'upgrade' && intent.secondaryActions.includes('test') },
   // Unexplained failure -> debug owns diagnosis
   { id: 'unexplained-failure', priority: 115, skill: 'showdar-debug', reason: 'an observed failure with an unknown cause is diagnosis-owned', matches: (intent) => intent.evidence.failureObserved === true && intent.evidence.rootCauseKnown === false && ['diagnosis', 'implementation'].includes(intent.phase) },
   // Known cause fix -> build owns (legacy parity: fix with known cause routes to build)
@@ -124,6 +122,11 @@ function choosePrimary(ranked, intent) {
   return { candidate: ranked[0], rule: null };
 }
 
+/**
+ * Legacy route plan with scoring and primary selection rules.
+ * Used ONLY for diagnostic/comparison (shadow harness, characterization tests).
+ * NOT used by the structural runtime.
+ */
 export function buildRoutePlan(intentInput, capabilities = CAPABILITIES) {
   const intent = normalizeIntent(intentInput);
   const ranked = rankCapabilities(intent, capabilities);
@@ -156,18 +159,12 @@ export function buildRoutePlan(intentInput, capabilities = CAPABILITIES) {
 
 export const planRoute = buildRoutePlan;
 
-// Thin deterministic route path (Phase 6F T17; extended with internal
-// primaryCapability routing in T20, spec §8A).
-// Structural path: internal primaryCapability → primary skill deterministic
-// table + secondaryActions → advisor map (SECONDARY_ACTION_SKILLS,
-// deduplicated, primary excluded, capped at MAX_ADVISORS). Zero scoring,
-// zero PRIMARY_SELECTION_RULES, zero risk/object/evidence re-selection —
+// Thin deterministic structural route path (Phase 6F T17; T20 primaryCapability routing, spec §8A).
+// Structural path: internal primaryCapability → primary skill via CAPABILITY_TO_SKILL
+// + secondaryActions → advisor map (SECONDARY_ACTION_SKILLS, deduplicated, primary excluded, capped at MAX_ADVISORS).
+// Zero scoring, zero PRIMARY_SELECTION_RULES, zero risk/object/evidence re-selection.
 // risks, object, and evidence are never consulted on this path.
-// Legacy-compat path (no routingMeta): canonical Intent phase/action lookup
-// preserved for characterization tests; never used by the structural runtime.
-// discovery/understand → showdar-understand is hard-coded here because the
-// legacy path reaches it only via scoring fallback.
-// Legacy path (buildRoutePlan and all selection rules) is byte-identical.
+// Legacy-compat path (no routingMeta): REMOVED in T21. Structural runtime MUST provide primaryCapability.
 const CAPABILITY_TO_SKILL = Object.freeze({
   understand: 'showdar-understand',
   requirements: 'showdar-requirements',
@@ -185,63 +182,17 @@ const CAPABILITY_TO_SKILL = Object.freeze({
   recover: 'showdar-recover',
   git: 'showdar-git',
 });
-const THIN_PRIMARY_MAP = Object.freeze({
-  'implementation:implement': 'showdar-build',
-  'implementation:fix': 'showdar-build',
-  'implementation:modify': 'showdar-build',
-  'diagnosis:investigate': 'showdar-debug',
-  'verification:test': 'showdar-test',
-  'verification:review': 'showdar-review',
-  'verification:assess': 'showdar-quality',
-  'operations:deploy': 'showdar-ops',
-  'delivery:assess': 'showdar-ship',
-  'delivery:release': 'showdar-ship',
-  'delivery:review': 'showdar-ship',
-  'recovery:recover': 'showdar-recover',
-  'repository:git': 'showdar-git',
-  'implementation:upgrade': 'showdar-upgrade',
-  'discovery:assess': 'showdar-review',
-  'discovery:review': 'showdar-review',
-  'planning:plan': 'showdar-plan',
-  'design:design': 'showdar-design',
-  'definition:define': 'showdar-requirements',
-});
-
-function thinPrimaryFor(intent) {
-  if (intent.phase === 'discovery' && intent.action === 'understand') return 'showdar-understand';
-  // Security assessment in discovery/verification -> security
-  if (intent.risks?.includes('security') && ['discovery', 'verification'].includes(intent.phase) && ['assess', 'review'].includes(intent.action)) {
-    return 'showdar-security';
-  }
-  // QA regression matrix / test scope -> quality (legacy keyword mapping alignment)
-  // Only for explicit QA/matrix scope: verification/test + regression risk + repository object
-  // (repository is the canonical object for "QA regression matrix", "regression matrix")
-  if (intent.phase === 'verification' && intent.action === 'test' && intent.object === 'repository' && intent.risks?.includes('regression')) {
-    return 'showdar-quality';
-  }
-  // ponytail: key lookup only; no scoring fallback, unknown Intent surfaces as explicit error.
-  const key = `${intent.phase}:${intent.action}`;
-  const skill = THIN_PRIMARY_MAP[key];
-  if (!skill) throw new Error(`No thin route mapping for intent (phase ${intent.phase}, action ${intent.action})`);
-  return skill;
-}
 
 export function buildThinRoutePlan(intentInput, routingMeta) {
   const intent = normalizeIntent(intentInput);
   // Structural authoritative path (spec §8A): the governing frame's internal
   // primaryCapability decides. This branch consults nothing else — no risks,
-  // no object, no evidence, no selection rules.
+  // no object, no evidence, no selection rules, no scoring fallback.
   const capability = routingMeta?.primaryCapability;
-  if (typeof capability === 'string' && CAPABILITY_TO_SKILL[capability]) {
-    const skill = CAPABILITY_TO_SKILL[capability];
-    const advisors = [];
-    for (const action of intent.secondaryActions) {
-      const advisor = SECONDARY_ACTION_SKILLS[action] ?? (action.startsWith('showdar-') ? action : null);
-      if (advisor && advisor !== skill && !advisors.includes(advisor) && advisors.length < MAX_ADVISORS) advisors.push(advisor);
-    }
-    return { primary: { skill }, advisors };
+  if (typeof capability !== 'string' || !CAPABILITY_TO_SKILL[capability]) {
+    throw new Error(`Structural route requires valid primaryCapability; got: ${capability}`);
   }
-  const skill = thinPrimaryFor(intent);
+  const skill = CAPABILITY_TO_SKILL[capability];
   const advisors = [];
   for (const action of intent.secondaryActions) {
     const advisor = SECONDARY_ACTION_SKILLS[action] ?? (action.startsWith('showdar-') ? action : null);
