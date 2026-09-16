@@ -10,6 +10,7 @@ import { validateIntent, normalizeIntent, RISK_CAPABILITIES } from '../intent.js
 import { assembleRequestFrame } from './frame/request-frame.js';
 import { resolveStructuralIntent, resolvePrimaryCapability, projectConservativeIntent } from './frame/projectors/index.js';
 import { buildThinRoutePlan } from '../route-plan.js';
+import { runAuthorityShadow } from './frame/authority/shadow.js';
 
 export const INTENT_RESOLVER_VERSION = '2.0.0';
 
@@ -169,6 +170,35 @@ export function resolveIntentFromPrompt(prompt, context = {}) {
   // Constraints extracted from original text for backward compatibility
   const constraints = extractConstraints(originalText);
 
+  // Authority shadow (Phase 6G T03): diagnostic-only, append-only.
+  // Computed in try/catch; errors swallowed — never breaks production.
+  let authorityShadow;
+  try {
+    authorityShadow = runAuthorityShadow(originalText);
+  } catch {
+    // Shadow must never break production
+  }
+
+  const meta = {
+    version: INTENT_RESOLVER_VERSION,
+    sourceTextLength: originalText.length,
+    processedTextLength: sanitizedText.length,
+    hasCodeBlocks: originalText !== sanitizedText,
+    hasNegation: signals.includes('negation:present'),
+    multiIntent: detectMultiIntent(sanitizedText),
+    // Phase 6F T20: Structural authoritative metadata
+    engine: 'structural',
+    usesLegacyAuthority: false,
+    primary: thinRoute.primary,
+    advisors: thinRoute.advisors,
+    // Diagnostics from RequestFrame assembly (+ report-attribution downgrade)
+    issues: diagnostics,
+  };
+  // Append-only: attach shadow if computed; existing fields untouched
+  if (authorityShadow !== undefined) {
+    meta.authorityShadow = authorityShadow;
+  }
+
   return {
     intent: structuralIntent,
     constraints,
@@ -184,21 +214,7 @@ export function resolveIntentFromPrompt(prompt, context = {}) {
         primaryCapability,
       },
     },
-    meta: {
-      version: INTENT_RESOLVER_VERSION,
-      sourceTextLength: originalText.length,
-      processedTextLength: sanitizedText.length,
-      hasCodeBlocks: originalText !== sanitizedText,
-      hasNegation: signals.includes('negation:present'),
-      multiIntent: detectMultiIntent(sanitizedText),
-      // Phase 6F T20: Structural authoritative metadata
-      engine: 'structural',
-      usesLegacyAuthority: false,
-      primary: thinRoute.primary,
-      advisors: thinRoute.advisors,
-      // Diagnostics from RequestFrame assembly (+ report-attribution downgrade)
-      issues: diagnostics,
-    },
+    meta,
   };
 }
 
