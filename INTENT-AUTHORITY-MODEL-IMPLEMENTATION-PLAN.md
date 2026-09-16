@@ -48,7 +48,7 @@ Carried into every task. Violation blocks the task.
 | `src/intent-resolver/frame/authority/projectors.js` | CREATE | Typed `projectPrimary6G`, `projectMutation6G`, `projectSecondary6G` with brand assertions | 6G.5 (T09) |
 | `src/intent-resolver/frame/authority/diagnostics.js` | CREATE | Per-candidate read-only trace builder (never feeds routing) | 6G.3 (T06) |
 | `src/intent-resolver/frame/authority/shadow.js` | CREATE | `runAuthorityShadow(prompt)` differential struct, diagnostic-only | 6G.2 (T03) |
-| `src/intent-resolver/frame/authority/index.js` | CREATE | Barrel composing candidate → adjudicate → relate → project (shadow until 6G.6) | 6G.5 (T10) |
+| `src/intent-resolver/frame/authority/index.js` | CREATE (barrel, re-exports composition only; not an authority stage) | Barrel composing candidate → adjudicate → relate → project (shadow until 6G.6) | 6G.5 (T10) |
 | `src/intent-resolver/index.js` | MODIFY | Wire shadow (6G.2–6G.5, append-only), cutover switch (6G.6), legacy removal (6G.7) | 6G.2 (T03) → 6G.6 (T12) |
 | `src/intent-resolver/frame/action-frame.js` | MODIFY then DELETE-AUTHORITY | Characterization target; authority-minting role removed in 6G.7, lexical recognition retained for candidate extraction | 6G.7 (T14) |
 | `src/intent-resolver/frame/relations.js` | MODIFY then DELETE-LATER | Old relation machinery superseded by authority/relations.js in 6G.7 | 6G.7 (T14) |
@@ -233,16 +233,28 @@ Exit gate: typed projectors produce Intent from authorized graph in shadow; auth
   ```js
   assert.throws(() => projectMutation6G([{ tag: 'AUTHORIZED', candidate: {} }]), /brand/);
   assert.equal(projectMutation6G([]), 'read-only');
-  assert.deepEqual(projectPrimary6G(null), { phase: 'discovery', action: 'assess', primaryCapability: 'review' });
+  assert.deepEqual(projectPrimary6G(null), { phase: 'discovery', action: 'understand', primaryCapability: 'understand' });
+  assert.deepEqual(projectMutation6G([]), 'read-only');
+  assert.deepEqual(projectSecondary6G([]), []);
   ```
-  Primary fallback is conservative routing, NOT authorization of an understand candidate (asserted: fallback path never calls `createAuthorized`).
+  Conservative fallback contract (routing/degradation, NOT authorization):
+  no GoverningAuthorizedAction → public Intent `{ phase: 'discovery', action:
+  'understand', secondaryActions: [], mutation: 'read-only' }` (metadata/
+  evidence/object/risks may populate but must not alter fallback authority)
+  with internal `primaryCapability: 'understand'`. The fallback path never
+  calls `createAuthorized`, never fabricates an AuthorizedAction, never enters
+  the relation graph, and never contributes mutation/advisors. Distinguish
+  from an AUTHORIZED review/assessment request, which routes per its governing
+  capability (verification/review, quality, or security-assessment). Dedicated
+  test: an UNRESOLVED-only prompt yields the understand fallback and MUST NOT
+  route to showdar-review.
   TDD with `node --test test/authority-projectors.test.js`, then `npm test`; commit `feat(router): add typed authority projectors`.
 
 - [ ] **T13 — Barrel composition + recall metric + hash coverage**
   Files: CREATE `src/intent-resolver/frame/authority/index.js` (`resolveAuthorityIntent(prompt)` composing candidate → adjudicate → relate → project; shadow-only); CREATE `test/authority-recall.test.js`; MODIFY `scripts/semantic-source-hash.mjs` (cover `src/intent-resolver/frame/authority/*.js` in codepoint order after projectors group, with in-code rationale); MODIFY `test/semantic-source-hash.test.js` (authority subgroup membership, ordering, missing-file failure).
   **Interfaces**
   Consumes: raw prompt + clause pipeline.
-  Produces: `{ intent, primaryCapability, diagnostics }` structurally parallel to `resolveStructuralIntent` but brand-gated. AUTHORIZED_REQUEST_RECALL metric: numerator = development-fixture expected-current requests adjudicated AUTHORIZED; denominator = expected-current requests; pre-freeze target set from development fixtures (NOT Blind #6): ≥90% (safety gates stay 100%; recall guards over-conservatism).
+  Produces: `{ intent, primaryCapability, diagnostics }` structurally parallel to `resolveStructuralIntent` but brand-gated. AUTHORIZED_REQUEST_RECALL = (development-fixture expected-authorized requests adjudicated AUTHORIZED) / (all development-fixture expected-authorized requests), gate ≥90%, labels authored from the design (never runtime output). Fallback-to-understand MUST NOT count as authorization: an expected-authorized request adjudicated UNRESOLVED is a false negative.
   TDD: focused tests green, then `npm test`, then `node scripts/semantic-source-hash.mjs`; commit `feat(router): compose authority pipeline` and `feat(router): cover authority source in hash` (two commits, hash second).
 
 - [ ] **T14 — 6G.5 exit gate**
@@ -258,7 +270,7 @@ Exit gate: new authority path authoritative; all §16 hard gates pass; no fallba
   Consumes: `resolveAuthorityIntent` barrel (T13).
   Produces: `resolveIntentFromPrompt` served by typed authority with identical public contract; internal `primaryCapability` from GoverningAuthorizedAction.
   Behavioral proof test (NEW wording, never Blind #6 strings): a historical-report prompt where old 6F grants deploy/production authority and the new path yields CONTEXTUAL deploy + AUTHORIZED investigate (or UNRESOLVED) with read-only mutation and no ops primary. The test runs the old path to prove the trap is real, then asserts the new path refuses it.
-  **Hard gates (§16):** minter count = 1 (import audit); plain-forgery accepted = 0; clone/spread forgery = 0; non-authorized projector acceptance = 0; unknown→AUTHORIZED = 0; context/conditional/hypothetical/negated→current = 0; environment-created authority = 0; risk/object/evidence influence = 0; legacy fallback = 0; Intent schema drift = 0; forbidden primary = 0; unauthorized production escalation = 0.
+  **Hard gates (§16):** minter count = 1 (import audit); plain-forgery accepted = 0; clone/spread forgery = 0; non-authorized projector acceptance = 0; unknown→AUTHORIZED = 0; context/conditional/hypothetical/negated→current = 0; environment-created authority = 0; risk/object/evidence influence = 0; legacy fallback = 0; Intent schema drift = 0; forbidden primary = 0; unauthorized production escalation = 0; EMPTY_ACTIONABLE_GRAPH_FALLBACK_CORRECT = 100% (phase=discovery, action=understand, mutation=read-only, no secondary advisor, primaryCapability=understand, no fabricated AuthorizedAction, no showdar-review fallback).
   TDD: proof test red on old path behavior, green on new; full `npm test`; commit `feat(router): cut over to typed authority`. Do not push.
 
 ## Stage 6G.7 — Remove Phase 6F authority machinery
