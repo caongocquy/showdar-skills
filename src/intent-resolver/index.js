@@ -167,14 +167,17 @@ export function resolveIntentFromPrompt(prompt, context = {}) {
   const signals = extractStructuralSignals(structuralIntent, sanitizedText);
   const unresolved = identifyUnresolved(sanitizedText, structuralIntent, confidence);
 
-  // Constraints extracted from original text for backward compatibility
+  // Stage 10: Constraints extracted from original text for backward compatibility
   const constraints = extractConstraints(originalText);
+
+  // Compute legacy result once for both return and shadow
+  const legacyResult = resolveLegacyIntent(originalText);
 
   // Authority shadow (Phase 6G T03): diagnostic-only, append-only.
   // Computed in try/catch; errors swallowed — never breaks production.
   let authorityShadow;
   try {
-    authorityShadow = runAuthorityShadow(originalText);
+    authorityShadow = runAuthorityShadow(originalText, legacyResult);
   } catch {
     // Shadow must never break production
   }

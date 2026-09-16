@@ -1,12 +1,13 @@
 import assert from 'node:assert/strict';
 import { runAuthorityShadow } from '../src/intent-resolver/frame/authority/shadow.js';
-import { resolveIntentFromPrompt } from '../src/intent-resolver/index.js';
+import { resolveIntentFromPrompt, resolveLegacyIntent } from '../src/intent-resolver/index.js';
 import { extractCandidates } from '../src/intent-resolver/frame/authority/candidate.js';
 import { assembleRequestFrame } from '../src/intent-resolver/frame/request-frame.js';
 
 function testShadowShape() {
   const prompt = 'Fix the login bug';
-  const shadow = runAuthorityShadow(prompt);
+  const legacyResult = resolveLegacyIntent(prompt);
+  const shadow = runAuthorityShadow(prompt, legacyResult);
   
   // Basic shape
   assert.ok(shadow);
@@ -36,7 +37,8 @@ function testShadowShape() {
 
 function testAuthorizedAlwaysZero() {
   const prompt = 'Fix the login bug';
-  const shadow = runAuthorityShadow(prompt);
+  const legacyResult = resolveLegacyIntent(prompt);
+  const shadow = runAuthorityShadow(prompt, legacyResult);
   assert.equal(shadow.authority.authorized, 0);
   assert.equal(shadow.authority.reason, 'adjudicator-pending');
 }
@@ -45,7 +47,7 @@ function testCandidatesCountMatchesExtractCandidates() {
   const prompt = 'Fix the login bug and deploy to staging';
   const requestFrame = assembleRequestFrame(prompt);
   const expectedCount = extractCandidates(requestFrame.clauses).length;
-  const shadow = runAuthorityShadow(prompt);
+  const shadow = runAuthorityShadow(prompt, resolveLegacyIntent(prompt));
   assert.equal(shadow.authority.candidates, expectedCount);
 }
 
@@ -56,11 +58,16 @@ function testShadowIsolationProof() {
   assert.equal(productionResult.meta.authorityShadow.authority.authorized, 0);
   assert.equal(productionResult.meta.authorityShadow.authority.reason, 'adjudicator-pending');
 
-  const { authorityShadow, ...metaRest } = productionResult.meta;
+const { authorityShadow, ...metaRest } = productionResult.meta;
   const productionWithoutShadow = { ...productionResult, meta: metaRest };
   assert.deepEqual(productionResult.intent, productionWithoutShadow.intent);
   assert.deepEqual(productionResult.primary, productionWithoutShadow.primary);
   assert.deepEqual(productionResult.advisors, productionWithoutShadow.advisors);
+  assert.deepEqual(productionResult.confidence, productionWithoutShadow.confidence);
+  assert.deepEqual(productionResult.signals, productionWithoutShadow.signals);
+  assert.deepEqual(productionResult.unresolved, productionWithoutShadow.unresolved);
+  assert.deepEqual(productionResult.constraints, productionWithoutShadow.constraints);
+  assert.deepEqual(productionResult.resolverMeta, productionWithoutShadow.resolverMeta);
   assert.equal(productionResult.intent.mutation, productionWithoutShadow.intent.mutation);
 }
 

@@ -1,4 +1,3 @@
-import { resolveLegacyIntent } from '../../index.js';
 import { extractCandidates } from './candidate.js';
 import { assembleRequestFrame } from '../request-frame.js';
 
@@ -8,24 +7,10 @@ import { assembleRequestFrame } from '../request-frame.js';
  * Never alters production behavior; all errors swallowed.
  *
  * @param {string} prompt - Raw user prompt
+ * @param {object} [legacyResult] - Pre-computed legacy result (optional, for isolation)
  * @returns {object} Shadow comparison result
  */
-export function runAuthorityShadow(prompt) {
-  // Legacy resolution (unchanged production path)
-  let legacyResult;
-  try {
-    legacyResult = resolveLegacyIntent(prompt);
-  } catch (e) {
-    // Swallow errors; legacy should not throw but defense-in-depth
-    legacyResult = {
-      intent: {
-        phase: 'implementation',
-        action: 'implement',
-        mutation: 'local-write',
-      },
-    };
-  }
-
+export function runAuthorityShadow(prompt, legacyResult) {
   // Authority path: extract candidates from clauses
   let candidates = [];
   let agreement = {};
@@ -39,7 +24,7 @@ export function runAuthorityShadow(prompt) {
     // Agreement placeholder for future adjudication comparison
     const governingAction = requestFrame.actions.find(a => a.role === 'GOVERNING');
     agreement = {
-      legacyPhaseMatches: legacyResult.intent?.phase === (governingAction?.phase ?? 'unknown'),
+      legacyPhaseMatches: legacyResult?.intent?.phase === (governingAction?.phase ?? 'unknown'),
       candidateCount: candidates.length,
     };
   } catch (e) {
@@ -48,12 +33,14 @@ export function runAuthorityShadow(prompt) {
   }
 
   return {
-    legacy: {
-      phase: legacyResult.intent?.phase ?? 'unknown',
-      action: legacyResult.intent?.action ?? 'unknown',
-      mutation: legacyResult.intent?.mutation ?? 'unknown',
-      primary: 'legacy', // Legacy path has no primary capability concept
-    },
+    legacy: legacyResult
+      ? {
+          phase: legacyResult.intent?.phase ?? 'unknown',
+          action: legacyResult.intent?.action ?? 'unknown',
+          mutation: legacyResult.intent?.mutation ?? 'unknown',
+          primary: 'legacy',
+        }
+      : { status: 'not-provided' },
     authority: {
       candidates: candidates.length,
       authorized: 0,

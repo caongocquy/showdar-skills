@@ -8,12 +8,12 @@ import { hashSemanticSource, canonicalSemanticFileList, SEMANTIC_SOURCE_FIXED_PR
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 
-// Phase 6G T03 authority shadow harness (roll-forward: append-only
-// meta.authorityShadow wiring in src/intent-resolver/index.js; all existing
-// return values unchanged, shadow diagnostic-only). Guards the freeze: any
-// semantic production change must go through a new freeze cycle, never a
-// silent edit.
-const FROZEN_SEMANTIC_SOURCE_SHA256 = 'b3bc69b8fb2181934bae141ebe886dc417a61fbbbb76f130b090362c4bddb563';
+// Phase 6F T21 legacy removal semantic-source hash (roll-forward at T21 completion:
+// PRIMARY_SELECTION_RULES removed from structural path, legacy ownership machinery
+// removed, thin route now requires primaryCapability; final freeze SHA is still
+// recorded at T22). Guards the freeze: any semantic production change must go
+// through a new freeze cycle, never a silent edit.
+const FROZEN_SEMANTIC_SOURCE_SHA256 = '5c19f780a976a73a3907ac6b75e76fa00c3ae9782a58e21ba4e46bd40056050d';
 
 // T19: every new authoritative frame/projector module must be inside the hash.
 const EXPECTED_FRAME_FILES = [
