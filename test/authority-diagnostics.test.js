@@ -201,3 +201,19 @@ test('import audit: diagnostics stays out of the routing path', () => {
   assert.ok(!diagSrc.includes('createAuthorized'), 'diagnostics must not touch createAuthorized');
   assert.ok(!diagSrc.includes('WeakSet'), 'diagnostics must not touch WeakSet');
 });
+
+// T08 exit-gate: diagnostic evidence reference is deeply immutable
+test('diagnostic evidence reference is deeply immutable', () => {
+  const candidate = cand();
+  const evidence = ev({ requestForm: 'imperative', positiveRequest: true });
+  const adjudicated = adjudicate(candidate, evidence);
+  const trace = traceCandidate({ candidate, evidence, adjudicated });
+  assert.ok(Object.isFrozen(trace));
+  assert.ok(Object.isFrozen(trace.contributes));
+  assert.ok(Object.isFrozen(trace.evidence));
+  assert.ok(Object.isFrozen(trace.evidence.contextKinds));
+  assert.throws(() => { trace.evidence.contextKinds.push('quote'); }, TypeError);
+  const snapshot = JSON.stringify(trace);
+  const rederived = traceCandidate({ candidate, evidence, adjudicated });
+  assert.equal(JSON.stringify(rederived), snapshot);
+});

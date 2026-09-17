@@ -1,8 +1,10 @@
 import assert from 'node:assert/strict';
+import { test } from 'node:test';
 import { runAuthorityShadow } from '../src/intent-resolver/frame/authority/shadow.js';
-import { resolveIntentFromPrompt, resolveLegacyIntent } from '../src/intent-resolver/index.js';
+import { resolveIntentFromPrompt, resolveIntentFromPromptSync, resolveLegacyIntent } from '../src/intent-resolver/index.js';
 import { extractCandidates } from '../src/intent-resolver/frame/authority/candidate.js';
 import { assembleRequestFrame } from '../src/intent-resolver/frame/request-frame.js';
+import { assertAuthorized } from '../src/intent-resolver/frame/authority/adjudicator.js';
 
 function testShadowShape() {
   const prompt = 'Fix the login bug';
@@ -104,3 +106,55 @@ function runAll() {
 if (import.meta.url === `file://${process.argv[1]}`) {
   runAll();
 }
+
+function collectReachable(root) {
+  const values = [];
+  const stack = [root];
+  const seen = new Set();
+  while (stack.length > 0) {
+    const value = stack.pop();
+    values.push(value);
+    if (value !== null && (typeof value === 'object' || typeof value === 'function')) {
+      if (seen.has(value)) continue;
+      seen.add(value);
+      for (const key of [...Object.getOwnPropertyNames(value), ...Object.getOwnPropertySymbols(value)]) {
+        try {
+          stack.push(value[key]);
+        } catch {
+          // Ignore throwing getters; value itself was already recorded.
+        }
+      }
+    }
+  }
+  return values;
+}
+
+// T08 exit-gate: shadow exposes no live authority capability
+test('shadow exposes no live authority capability', () => {
+  const prompts = [
+    'Please tidy the lobby noticeboard before noon',
+    'Could the steward kindly file the evening roster',
+    'Kindly wipe the archive table after closing',
+  ];
+  for (const prompt of prompts) {
+    const result = resolveIntentFromPromptSync(prompt);
+    const shadow = result.meta.authorityShadow;
+    assert.ok(shadow);
+    const authority = shadow.authority;
+    assert.equal(typeof authority.authorized, 'number');
+    const reachable = collectReachable(shadow);
+    assert.ok(reachable.length > 0);
+    for (const value of reachable) {
+      assert.throws(() => assertAuthorized(value));
+    }
+    const revived = JSON.parse(JSON.stringify(authority.traces));
+    assert.deepEqual(
+      revived.map((t) => t.verdict),
+      authority.traces.map((t) => t.verdict),
+    );
+    assert.deepEqual(
+      revived.map((t) => t.isAuthorized),
+      authority.traces.map((t) => t.isAuthorized),
+    );
+  }
+});
