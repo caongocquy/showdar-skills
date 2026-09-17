@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "cases": [
+    {
+      "id": "dev-auth-hist-pastoutage",
+      "input": "During yesterday's outage the on-call engineer restarted the payment worker twice",
+      "mechanism": "history temporal framing over a known action verb is context evidence, never a live request"
+    },
+    {
+      "id": "dev-auth-log-traceexcerpt",
+      "input": "The service log shows connection pool exhaustion after the last deploy",
+      "mechanism": "log containment is descriptive provenance; no request form is present"
+    },
+    {
+      "id": "dev-auth-quoterunbook",
+      "input": "The on-call guide states: flush the cache before scaling the cluster",
+      "mechanism": "quoted directive inside a documented guide is QUOTE context, not current authority"
+    },
+    {
+      "id": "dev-auth-cond-gate",
+      "input": "Widen the rate limit if the nightly batch finishes early",
+      "mechanism": "conditional gate coexists with request-form evidence; T06 precedence decides authority"
+    },
+    {
+      "id": "dev-auth-hyp-mood",
+      "input": "Suppose the billing job failed overnight; what would the recovery steps look like",
+      "mechanism": "hypothetical framing keeps the action verb non-authoritative"
+    },
+    {
+      "id": "dev-auth-neg-direct",
+      "input": "Do not rotate the API credentials this week",
+      "mechanism": "explicit negation scopes the candidate and denies positive request evidence"
+    },
+    {
+      "id": "dev-auth-req-imperative",
+      "input": "Rotate the API credentials now",
+      "mechanism": "bare directive with present temporal marker is positive request evidence"
+    },
+    {
+      "id": "dev-auth-req-polite",
+      "input": "Please flush the cache on staging",
+      "mechanism": "polite imperative with a verb phrase is positive request evidence"
+    },
+    {
+      "id": "dev-auth-req-interrogative",
+      "input": "Can you flush the cache on staging",
+      "mechanism": "interrogative request form is positive request evidence"
+    },
+    {
+      "id": "dev-auth-req-need",
+      "input": "We need to widen the rate limit before the launch",
+      "mechanism": "need-statement form is positive request evidence; conditional wording absent"
+    },
+    {
+      "id": "dev-auth-req-help",
+      "input": "Help me diagnose the failing webhook handler",
+      "mechanism": "help-request form is positive request evidence"
+    },
+    {
+      "id": "dev-auth-req-investigate",
+      "input": "Figure out why the webhook handler is failing",
+      "mechanism": "investigate/question request form is positive request evidence"
+    }
+  ]
+}
