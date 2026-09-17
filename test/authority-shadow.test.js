@@ -20,12 +20,14 @@ function testShadowShape() {
   assert.equal(typeof shadow.legacy.mutation, 'string');
   assert.equal(typeof shadow.legacy.primary, 'string');
   
-  // authority: { candidates: n, authorized: 0, status: 'ir-only', reason: 'adjudicator-pending' }
+  // authority: { candidates: n, authorized: real AUTHORIZED count, status: 'adjudicated', traces: [...] }
+  // (T07 contract: supersedes T03 ir-only stage; see progress.md T07 preflight ruling)
   assert.ok(shadow.authority);
   assert.equal(typeof shadow.authority.candidates, 'number');
-  assert.equal(shadow.authority.authorized, 0);
-  assert.equal(shadow.authority.status, 'ir-only');
-  assert.equal(shadow.authority.reason, 'adjudicator-pending');
+  assert.equal(shadow.authority.authorized, shadow.authority.traces.filter(t => t.verdict === 'AUTHORIZED').length);
+  assert.equal(shadow.authority.status, 'adjudicated');
+  assert.ok(Array.isArray(shadow.authority.traces));
+  assert.equal(shadow.authority.traces.length, shadow.authority.candidates);
   
   // agreement: {...} - can be empty initially
   assert.ok(shadow.agreement);
@@ -35,12 +37,12 @@ function testShadowShape() {
   assert.ok(Array.isArray(shadow.issues));
 }
 
-function testAuthorizedAlwaysZero() {
+function testAuthorizedRealCount() {
   const prompt = 'Fix the login bug';
   const legacyResult = resolveLegacyIntent(prompt);
   const shadow = runAuthorityShadow(prompt, legacyResult);
-  assert.equal(shadow.authority.authorized, 0);
-  assert.equal(shadow.authority.reason, 'adjudicator-pending');
+  assert.equal(shadow.authority.authorized, shadow.authority.traces.filter(t => t.verdict === 'AUTHORIZED').length);
+  assert.equal(shadow.authority.status, 'adjudicated');
 }
 
 function testCandidatesCountMatchesExtractCandidates() {
@@ -55,8 +57,8 @@ function testShadowIsolationProof() {
   const prompt = 'Fix the login bug';
   const productionResult = resolveIntentFromPrompt(prompt);
   assert.ok(productionResult.meta.authorityShadow);
-  assert.equal(productionResult.meta.authorityShadow.authority.authorized, 0);
-  assert.equal(productionResult.meta.authorityShadow.authority.reason, 'adjudicator-pending');
+  assert.equal(productionResult.meta.authorityShadow.authority.authorized, productionResult.meta.authorityShadow.authority.traces.filter(t => t.verdict === 'AUTHORIZED').length);
+  assert.equal(productionResult.meta.authorityShadow.authority.status, 'adjudicated');
 
 const { authorityShadow, ...metaRest } = productionResult.meta;
   const productionWithoutShadow = { ...productionResult, meta: metaRest };
@@ -69,6 +71,13 @@ const { authorityShadow, ...metaRest } = productionResult.meta;
   assert.deepEqual(productionResult.constraints, productionWithoutShadow.constraints);
   assert.deepEqual(productionResult.resolverMeta, productionWithoutShadow.resolverMeta);
   assert.equal(productionResult.intent.mutation, productionWithoutShadow.intent.mutation);
+
+  // T07: traces present and JSON-serializable (brand symbols drop, verdicts survive)
+  const traces = productionResult.meta.authorityShadow.authority.traces;
+  assert.ok(Array.isArray(traces));
+  const revived = JSON.parse(JSON.stringify(traces));
+  assert.deepEqual(revived.map(t => t.verdict), traces.map(t => t.verdict));
+  assert.deepEqual(revived.map(t => t.reason), traces.map(t => t.reason));
 }
 
 function testErrorHandlingDoesNotBreakProduction() {
@@ -84,7 +93,7 @@ function testErrorHandlingDoesNotBreakProduction() {
 
 function runAll() {
   testShadowShape();
-  testAuthorizedAlwaysZero();
+  testAuthorizedRealCount();
   testCandidatesCountMatchesExtractCandidates();
   testShadowIsolationProof();
   testErrorHandlingDoesNotBreakProduction();
