@@ -232,6 +232,33 @@ test('deterministic, frozen, and input-preserving', () => {
   });
 });
 
+test('user-directed modal interrogatives carry positive request evidence', () => {
+  const cases = [
+    ['repair', 'Can you repair this parser?'],
+    ['update', 'Could you update the dependency?'],
+    ['review', 'Would you review this change?'],
+    ['investigate', 'Can you investigate why this worker stops?'],
+  ];
+  for (const [surface, clauseText] of cases) {
+    const r = gatherEvidence({ surface, clauseText });
+    assert.equal(r.requestForm, 'interrogative-request');
+    assert.equal(r.positiveRequest, true);
+  }
+});
+
+test('modal declarative statements carry no request evidence', () => {
+  const cases = [
+    ['update', 'You can update the dependency later.'],
+    ['deploy', 'You could deploy this manually.'],
+    ['retry', 'The service can retry the request.'],
+  ];
+  for (const [surface, clauseText] of cases) {
+    const r = gatherEvidence({ surface, clauseText });
+    assert.equal(r.requestForm, null);
+    assert.equal(r.positiveRequest, false);
+  }
+});
+
 test('interrogative request requires addressee or request predicate', () => {
   assert.equal(ev({ clauseText: 'can you restart the queue' }).requestForm, 'interrogative-request');
   assert.equal(ev({ clauseText: 'could you restart the queue' }).requestForm, 'interrogative-request');
