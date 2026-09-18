@@ -40,6 +40,7 @@ export const SEMANTIC_SOURCE_RESOLVER_DIR = 'src/intent-resolver';
 // macOS+Linux; new authoritative modules must be inside the hash before
 // freeze.
 export const SEMANTIC_SOURCE_FRAME_DIR = 'src/intent-resolver/frame';
+export const SEMANTIC_SOURCE_AUTHORITY_DIR = 'src/intent-resolver/frame/authority';
 export const SEMANTIC_SOURCE_PROJECTORS_DIR = 'src/intent-resolver/frame/projectors';
 
 function codepointSort(values) {
@@ -58,8 +59,9 @@ function listTopLevelJsFiles(repoRoot, dir) {
 export function canonicalSemanticFileList(repoRoot) {
   const resolverFiles = listTopLevelJsFiles(repoRoot, SEMANTIC_SOURCE_RESOLVER_DIR);
   const frameFiles = listTopLevelJsFiles(repoRoot, SEMANTIC_SOURCE_FRAME_DIR);
+  const authorityFiles = listTopLevelJsFiles(repoRoot, SEMANTIC_SOURCE_AUTHORITY_DIR);
   const projectorFiles = listTopLevelJsFiles(repoRoot, SEMANTIC_SOURCE_PROJECTORS_DIR);
-  return [...SEMANTIC_SOURCE_FIXED_PREFIX, ...resolverFiles, ...frameFiles, ...projectorFiles];
+  return [...SEMANTIC_SOURCE_FIXED_PREFIX, ...resolverFiles, ...frameFiles, ...authorityFiles, ...projectorFiles];
 }
 
 export function hashSemanticSource(repoRoot) {

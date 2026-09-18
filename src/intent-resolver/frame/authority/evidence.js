@@ -59,9 +59,9 @@ function stripLeads(tokens) {
   return t;
 }
 
-function verbComplementShape(tokens, surface) {
+function verbComplementShape(tokens, surface, firstSurfaceToken) {
   if (tokens.length < 2) return false;
-  if (tokens[0] !== surface) return false;
+  if (tokens[0] !== firstSurfaceToken) return false;
   return COMPLEMENT_STARTERS.has(tokens[1]);
 }
 
@@ -78,12 +78,14 @@ function innerSpans(text) {
 function detectRequestForm(lower, surface) {
   const normalized = String(surface ?? '').trim().toLowerCase();
   const tokens = tokensOf(lower);
-  const surfacePresent = normalized !== '' && normalized !== 'unknown' && tokens.includes(normalized);
+  const firstSurfaceToken = normalized.split('-')[0];
+  const surfacePresent = normalized !== '' && normalized !== 'unknown' &&
+    (tokens.includes(normalized) || tokens[0] === firstSurfaceToken);
 
   if (!surfacePresent) return null;
 
   const hasPolite = /\b(please|kindly)\b/.test(lower);
-  if (hasPolite && verbComplementShape(stripLeads(tokens), normalized)) {
+  if (hasPolite && verbComplementShape(stripLeads(tokens), normalized, firstSurfaceToken)) {
     return 'polite-request';
   }
 
@@ -115,12 +117,21 @@ function detectRequestForm(lower, surface) {
     return 'help-request';
   }
 
-  if (verbComplementShape(stripLeads(tokens), normalized)) {
+  // Test-writing prompts: write/add/create test(s) with optional qualifiers
+  if (
+    surfacePresent &&
+    /^(write|add|create)\b/.test(opener) &&
+    /\b(test|tests|unit|integration|e2e|regression|suite)\b/.test(lower)
+  ) {
+    return 'imperative';
+  }
+
+  if (verbComplementShape(stripLeads(tokens), normalized, firstSurfaceToken)) {
     return 'imperative';
   }
 
   for (const span of innerSpans(lower)) {
-    if (verbComplementShape(stripLeads(tokensOf(span)), normalized)) {
+    if (verbComplementShape(stripLeads(tokensOf(span)), normalized, firstSurfaceToken)) {
       return 'imperative';
     }
   }
