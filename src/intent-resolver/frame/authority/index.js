@@ -24,15 +24,35 @@ export function resolveAuthorityIntent(prompt) {
   // Extract candidates from clauses
   const candidates = extractCandidates(clauses);
 
+  // Build actionId -> clauseId mapping from action frames
+  const actionIdToClauseId = new Map();
+  for (const action of requestFrame.actions) {
+    actionIdToClauseId.set(action.id, action.clauseId);
+  }
+
+  // Determine conditional scope from RequestFrame relations (structural, pre-authority)
+  // CONDITIONAL relation means the target action is gated by the source condition
+  const conditionalClauseIds = new Set();
+  for (const rel of requestFrame.relations) {
+    if (rel.kind === 'CONDITIONAL') {
+      // The 'to' action is conditionally gated by the 'from' condition
+      const toActionId = rel.to;
+      const toClauseId = actionIdToClauseId.get(toActionId);
+      if (toClauseId) conditionalClauseIds.add(toClauseId);
+    }
+  }
+
   // Per-candidate pipeline: gather evidence → adjudicate → trace (read-only)
   const textByClauseId = new Map(clauses.map((c) => [c.id, c.text]));
   const traces = [];
   const adjudicatedList = [];
 
   for (const candidate of candidates) {
+    const isConditionallyGated = conditionalClauseIds.has(candidate.clauseId);
     const evidence = gatherEvidence({
       surface: candidate.surface,
       clauseText: textByClauseId.get(candidate.clauseId) ?? '',
+      conditionalScope: isConditionallyGated,
     });
     const adjudicated = adjudicate(candidate, evidence);
     adjudicatedList.push(adjudicated);

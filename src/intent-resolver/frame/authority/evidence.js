@@ -156,14 +156,14 @@ function detectRequestForm(lower, surface) {
   return null;
 }
 
-export function gatherEvidence({ surface, clauseText, neighbors = [], contextScope = null }) {
+export function gatherEvidence({ surface, clauseText, neighbors = [], contextScope = null, conditionalScope = false }) {
   const own = String(clauseText ?? '');
   const lower = own.toLowerCase();
 
   const requestForm = detectRequestForm(lower, surface);
 
   const negation = NEGATION.test(lower);
-  const condition = CONDITION.test(lower);
+  const condition = CONDITION.test(lower) || conditionalScope;
   const modal = MODAL.test(lower);
 
   const contextKinds = [];

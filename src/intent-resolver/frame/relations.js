@@ -31,10 +31,26 @@ function isSupportingStep(action, clause, prevAction, prevClause) {
 
 /**
  * Determines if action is conditional based on clause connector or commitment
+ * Also checks cross-clause conditional: 
+ * - previous clause IF/UNLESS gates this action when this clause is THEN/AFTER/BEFORE ("if condition then action")
+ * Does NOT check next clause for IF - the IF connector gates the action in its OWN clause
  */
-function isConditional(action, clause) {
+function isConditional(action, clause, clauses) {
   if (action.commitment === 'CONDITIONAL') return true;
   if (clause.connector === 'IF' || clause.connector === 'UNLESS') return true;
+
+  // Cross-clause conditional: previous clause is IF/UNLESS gates this action
+  // Only when this clause is an action connector (THEN/AFTER/BEFORE), not ROOT/IF
+  // Pattern: "if condition then action" → condition clause (IF) → action clause (THEN)
+  const clauseIndex = clauses.findIndex(c => c.id === clause.id);
+  if (clauseIndex > 0) {
+    const prevClause = clauses[clauseIndex - 1];
+    const isActionConnector = clause.connector === 'THEN' || clause.connector === 'AFTER' || clause.connector === 'BEFORE';
+    if (isActionConnector && (prevClause.connector === 'IF' || prevClause.connector === 'UNLESS')) {
+      return true;
+    }
+  }
+
   return false;
 }
 
@@ -56,12 +72,12 @@ function isContextual(clause) {
  * Determines if action is orthogonal (independent explicit request)
  * Positive, AUTHORIZED_NOW, not supporting, not conditional, not contextual
  */
-function isOrthogonal(action, clause, isFirstAuthorized) {
+function isOrthogonal(action, clause, isFirstAuthorized, clauses) {
   if (action.polarity !== 'positive') return false;
   if (action.commitment !== 'AUTHORIZED_NOW') return false;
   if (isFirstAuthorized) return false; // first becomes GOVERNING
   if (isSupportingStep(action, clause, null, null)) return false; // will be checked with context
-  if (isConditional(action, clause)) return false;
+  if (isConditional(action, clause, clauses)) return false;
   if (isContextual(clause)) return false;
   return true;
 }
@@ -103,7 +119,7 @@ export function resolveRelations(actions, clauses) {
     }
 
     // CONDITIONAL: IF-gated
-    if (isConditional(action, clause)) {
+    if (isConditional(action, clause, clauses)) {
       action.role = 'CONDITIONAL';
       continue;
     }
@@ -121,7 +137,7 @@ export function resolveRelations(actions, clauses) {
     }
 
     // ORTHOGONAL: independent explicit request
-    if (isOrthogonal(action, clause, i === firstAuthorizedIndex)) {
+    if (isOrthogonal(action, clause, i === firstAuthorizedIndex, clauses)) {
       action.role = 'ORTHOGONAL';
       continue;
     }
