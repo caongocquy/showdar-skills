@@ -1,15 +1,19 @@
 import { assertAuthorized } from './adjudicator.js';
 
-// T09 authorized-relation graph (non-authoritative, no production wiring).
-// Input array order IS clause order by contract. Absent clause-contexts,
-// governing = element 0. With clause-contexts, a clause carrying a
-// clause-linking subordination marker (closed structural class below) marks
-// its action SUPPORTING and governing defers to the first unmarked (served)
-// action.
-const SUBORDINATION_MARKER = /\bin order to\b|\bso\b|\bbefore\b|\bafter\b|\bonce\b|\bthen\b|\bfirst\b/i;
+// T11 authorized-relation graph (non-authoritative, no production wiring).
+// SUPPORTING iff the clause carries a closed-discourse subordination marker;
+// target equality is neither sufficient nor necessary (target unread).
+// Markers: purpose-so (so + you/we/it/they/that/the), in-order-to, before,
+// after, once, then, first (sequence-subordination approximation).
+// Governing = first unmarked (all-marked falls back to index 0). Absent
+// clause-contexts = all unmarked → element 0 governs, rest ORTHOGONAL.
+const IN_ORDER_TO = /\bin\s+order\s+to\b/i;
+const PURPOSE_SO = /\bso\s+(you|we|it|they|that|the)\b/i;
+const SEQUENCE_MARKER = /\bbefore\b|\bafter\b|\bonce\b|\bthen\b|\bfirst\b/i;
 
 function isSubordinateClause(text) {
-  return SUBORDINATION_MARKER.test(String(text ?? ''));
+  const s = String(text ?? '');
+  return IN_ORDER_TO.test(s) || PURPOSE_SO.test(s) || SEQUENCE_MARKER.test(s);
 }
 
 function contextTextFor(clauseContexts, clauseId) {
@@ -43,7 +47,6 @@ export function resolveAuthorizedRelations(authorized, clauseContexts) {
   }
   const governing = authorized[govIndex];
   const govId = `${governing.candidate.clauseId}:${governing.candidate.surface}`;
-  const govTarget = governing.candidate.target;
   const relations = [
     Object.freeze({ kind: 'GOVERNING', from: govId, to: govId }),
   ];
@@ -51,8 +54,7 @@ export function resolveAuthorizedRelations(authorized, clauseContexts) {
     if (i === govIndex) continue;
     const rec = authorized[i];
     const id = `${rec.candidate.clauseId}:${rec.candidate.surface}`;
-    const target = rec.candidate.target;
-    const kind = subordinate.has(i) || (target != null && target === govTarget) ? 'SUPPORTING' : 'ORTHOGONAL';
+    const kind = subordinate.has(i) ? 'SUPPORTING' : 'ORTHOGONAL';
     relations.push(Object.freeze({ kind, from: govId, to: id }));
   }
   return Object.freeze({ governing, relations: Object.freeze(relations) });
