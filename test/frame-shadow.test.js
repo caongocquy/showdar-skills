@@ -29,13 +29,13 @@ test('runShadow structural side has phase/action/mutation/secondaryActions from 
 });
 
 test('runShadow agreement shows phase/action/mutation match when structural matches legacy', async () => {
-  const diff = runShadow('implement X + audit X');
+  // Use a prompt where 6G authoritative path and 6F legacy path genuinely agree
+  const diff = runShadow('Implement the feature');
   assert.equal(diff.agreement.phase, true);
   assert.equal(diff.agreement.action, true);
-  assert.equal(typeof diff.agreement.mutation, 'boolean');
-  // T14: secondary now compared as arrays
-  assert.equal(typeof diff.agreement.secondary, 'boolean');
-  assert.equal(typeof diff.agreement.primarySkill, 'boolean');
+  assert.equal(diff.agreement.mutation, true);
+  assert.equal(diff.agreement.secondary, true);
+  assert.equal(diff.agreement.primarySkill, true);
 });
 
 test('runShadow issues array contains diagnostic codes', async () => {

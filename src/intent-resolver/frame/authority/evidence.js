@@ -133,6 +133,7 @@ function detectRequestForm(lower, surface) {
     'review', 'test', 'investigate', 'debug', 'upgrade', 'migrate',
     'recover', 'reconstruct', 'resume', 'commit', 'push', 'merge',
     'rebase', 'branch', 'stage', 'plan', 'design', 'define', 'assess',
+    'audit',
   ]);
   if (
     surfacePresent &&
