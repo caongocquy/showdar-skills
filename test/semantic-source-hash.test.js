@@ -102,10 +102,10 @@ test('semantic-source hash fails when a listed file is missing', () => {
   }
 });
 
-// T14 semantic-source hash (epistemic uncertainty markers added to MODAL regex).
-// This is NOT the final Phase 6G freeze — any semantic change in T15/T16
+// T15 semantic-source hash (production cutover: resolveIntentFromPrompt uses 6G authority composition; bare imperative fix in evidence.js).
+// This is NOT the final Phase 6G freeze — any semantic change in T16
 // requires another roll before final 6G.8 freeze.
-const INTERMEDIATE_SEMANTIC_SOURCE_SHA256 = '561b9ebae67900eab22864b5a1997c13a3415834897e9e032c0938efdce4232f';
+const INTERMEDIATE_SEMANTIC_SOURCE_SHA256 = '2022d4fcbc5b70e251d2f10cae3f30d84bb3e37c570408ddc366253d42834455';
 
 test('semantic-source hash is deterministic and matches the T13 intermediate freeze', () => {
   const first = hashSemanticSource(repoRoot);

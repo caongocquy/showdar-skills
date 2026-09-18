@@ -126,6 +126,23 @@ function detectRequestForm(lower, surface) {
     return 'imperative';
   }
 
+  // Bare imperative: single-word clause matching the surface verb
+  // Only for core action verbs commonly used as bare commands.
+  const BARE_IMPERATIVE_VERBS = new Set([
+    'deploy', 'fix', 'implement', 'build', 'create', 'add', 'develop',
+    'review', 'test', 'investigate', 'debug', 'upgrade', 'migrate',
+    'recover', 'reconstruct', 'resume', 'commit', 'push', 'merge',
+    'rebase', 'branch', 'stage', 'plan', 'design', 'define', 'assess',
+  ]);
+  if (
+    surfacePresent &&
+    tokens.length === 1 &&
+    tokens[0] === firstSurfaceToken &&
+    BARE_IMPERATIVE_VERBS.has(firstSurfaceToken)
+  ) {
+    return 'imperative';
+  }
+
   if (verbComplementShape(stripLeads(tokens), normalized, firstSurfaceToken)) {
     return 'imperative';
   }

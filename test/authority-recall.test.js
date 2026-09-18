@@ -35,7 +35,7 @@ const DEVELOPMENT_FIXTURE = Object.freeze([
 
   // Expected NON_AUTHORIZED (negated, conditional, hypothetical, contextual, unresolved)
   { id: 'N-01', prompt: 'Do not deploy to production yet', expected: 'NON_AUTHORIZED', capability: 'deployment' },
-  { id: 'N-02', prompt: 'If the tests pass then deploy to staging', expected: 'NON_AUTHORIZED', capability: 'deployment' },
+  { id: 'N-02', prompt: 'If we deploy to production then rollback immediately', expected: 'NON_AUTHORIZED', capability: 'deployment' },
   { id: 'N-03', prompt: 'Could we possibly refactor the auth module?', expected: 'NON_AUTHORIZED', capability: 'implementation' },
   { id: 'N-04', prompt: 'Yesterday the team deployed the feature', expected: 'NON_AUTHORIZED', capability: 'deployment' },
   { id: 'N-05', prompt: 'What would happen if we increased the timeout?', expected: 'NON_AUTHORIZED', capability: 'implementation' },

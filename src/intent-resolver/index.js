@@ -8,7 +8,8 @@
 
 import { validateIntent, normalizeIntent, RISK_CAPABILITIES } from '../intent.js';
 import { assembleRequestFrame } from './frame/request-frame.js';
-import { resolveStructuralIntent, resolvePrimaryCapability, projectConservativeIntent } from './frame/projectors/index.js';
+import { resolveAuthorityIntent } from './frame/authority/index.js';
+import { deriveEvidence, deriveObjectWithContext, deriveRisks } from './frame/projectors/metadata.js';
 import { buildThinRoutePlan } from '../route-plan.js';
 import { runAuthorityShadow } from './frame/authority/shadow.js';
 
@@ -111,8 +112,9 @@ function conservativeReportIntent() {
 }
 
 /**
- * Structural authoritative resolver (Phase 6F T20).
- * Path: assembleRequestFrame → resolveStructuralIntent → buildThinRoutePlan
+ * Structural authoritative resolver (Phase 6G T15 cutover).
+ * Path: assembleRequestFrame → resolveAuthorityIntent → buildThinRoutePlan
+ * Authority comes from typed 6G composition; no legacy authority fallback.
  */
 export function resolveIntentFromPrompt(prompt, context = {}) {
   const originalText = String(prompt ?? '');
@@ -121,56 +123,75 @@ export function resolveIntentFromPrompt(prompt, context = {}) {
   // Stage 1: Assemble RequestFrame from raw prompt
   const requestFrame = assembleRequestFrame(originalText);
 
-  // Stage 2: Resolve structural intent (primary → mutation → gates → secondaries → metadata)
-  let structuralIntent = resolveStructuralIntent(requestFrame);
-  // Schema conformance: structural metadata may emit informational risk tokens
-  // outside the public RISK_CAPABILITIES set; the public contract admits only
-  // known values, so drop unknown tokens here (never escalate, never infer).
+  // Stage 2: Resolve intent via 6G typed authority composition (T15 cutover)
+  // This replaces the 6F structural intent path entirely.
+  // resolveAuthorityIntent returns: { intent, primaryCapability, diagnostics }
+  const authorityResult = resolveAuthorityIntent(originalText);
+  let structuralIntent = authorityResult.intent;
+  const primaryCapability = authorityResult.primaryCapability;
+  let diagnostics = authorityResult.diagnostics;
+
+  // Schema conformance: ensure risks are from known set
   if (Array.isArray(structuralIntent.risks)) {
     structuralIntent = {
       ...structuralIntent,
       risks: structuralIntent.risks.filter((r) => RISK_CAPABILITIES.includes(r)),
     };
   }
-  let diagnostics = requestFrame.diagnostics;
+
+  // Compute evidence in the required object format (public Intent contract)
+  // Uses the same 6F deriveEvidence for compatibility; authority path derives
+  // authority from opaque AuthorizedAction, evidence is metadata only.
+  const evidence = deriveEvidence(requestFrame.actions, requestFrame.contexts);
+
+  // Compute object and risks using 6F metadata projectors for Intent contract compatibility.
+  // These are purely metadata extractions (not authority decisions).
+  const object = deriveObjectWithContext(requestFrame.actions, requestFrame.contexts);
+  const risks = deriveRisks(requestFrame.actions, requestFrame.contexts, requestFrame.clauses);
+
   // Unattributed-report downgrade (reported operation names no authority):
   // both the public Intent AND the routing capability degrade together —
   // routing the downgraded intent with the original capability would
   // reintroduce the refused authority through the back door.
   const reportDowngraded = structuralIntent.mutation !== 'read-only' && isUnattributedReport(sanitizedText);
   if (reportDowngraded) {
-    structuralIntent = conservativeReportIntent();
+    structuralIntent = { ...conservativeReportIntent(), evidence };
     diagnostics = [
       ...diagnostics,
       { code: 'NO_GOVERNING_ACTION', detail: 'Reported operation names no authorized governing action; degraded to conservative authority' },
     ];
+  } else {
+    // Merge authority-computed evidence into structural intent (overrides array format)
+    // Also ensure object and risks are in the correct format for public Intent contract
+    structuralIntent = { ...structuralIntent, evidence, object, risks: risks.filter((r) => RISK_CAPABILITIES.includes(r)) };
   }
 
   // Stage 3: Build thin route plan (internal primaryCapability → primary
   // skill + advisors; spec §8A). The capability derives ONLY from the
-  // GOVERNING ActionFrame; the thin map covers characterized capabilities,
-  // and an unmapped structural intent keeps its faithful intent (public
-  // contract) while routing degrades to the conservative read-only route
-  // (uncertainty reduces authority, never falls back to legacy scoring).
-  const primaryCapability = reportDowngraded ? 'understand' : resolvePrimaryCapability(requestFrame);
+  // GOVERNING opaque AuthorizedAction; the thin map covers characterized
+  // capabilities, and an unmapped structural intent keeps its faithful
+  // intent (public contract) while routing degrades to the conservative
+  // read-only route (uncertainty reduces authority, never falls back to
+  // legacy scoring).
+  const routeCapability = reportDowngraded ? 'understand' : primaryCapability;
   let thinRoute;
   try {
-    thinRoute = buildThinRoutePlan(structuralIntent, { primaryCapability });
+    thinRoute = buildThinRoutePlan(structuralIntent, { primaryCapability: routeCapability });
   } catch {
-    thinRoute = buildThinRoutePlan({ ...projectConservativeIntent(diagnostics), secondaryActions: [] });
+    thinRoute = buildThinRoutePlan({ ...structuralIntent, secondaryActions: [] });
   }
 
-  // Stage 4: Compute confidence (structural uses conservative confidence)
+  // Stage 4: Compute confidence (authority path uses conservative confidence)
   const confidence = computeStructuralConfidence(requestFrame, structuralIntent);
 
   // Stage 5: Extract signals and unresolved
   const signals = extractStructuralSignals(structuralIntent, sanitizedText);
   const unresolved = identifyUnresolved(sanitizedText, structuralIntent, confidence);
 
-  // Stage 10: Constraints extracted from original text for backward compatibility
+  // Stage 6: Constraints extracted from original text for backward compatibility
   const constraints = extractConstraints(originalText);
 
-  // Compute legacy result once for both return and shadow
+  // Compute legacy result for shadow comparison (diagnostic only)
   const legacyResult = resolveLegacyIntent(originalText);
 
   // Authority shadow (Phase 6G T03): diagnostic-only, append-only.
@@ -189,8 +210,8 @@ export function resolveIntentFromPrompt(prompt, context = {}) {
     hasCodeBlocks: originalText !== sanitizedText,
     hasNegation: signals.includes('negation:present'),
     multiIntent: detectMultiIntent(sanitizedText),
-    // Phase 6F T20: Structural authoritative metadata
-    engine: 'structural',
+    // Phase 6G T15: Authoritative 6G typed authority metadata
+    engine: 'authority',
     usesLegacyAuthority: false,
     primary: thinRoute.primary,
     advisors: thinRoute.advisors,
@@ -211,10 +232,10 @@ export function resolveIntentFromPrompt(prompt, context = {}) {
     primary: thinRoute.primary,
     advisors: thinRoute.advisors,
     // Internal routing metadata (spec §8A): authoritative capability for the
-    // structural path. Never part of the public Intent contract.
+    // authority path. Never part of the public Intent contract.
     resolverMeta: {
       routing: {
-        primaryCapability,
+        primaryCapability: routeCapability,
       },
     },
     meta,
