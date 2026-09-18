@@ -33,7 +33,8 @@ function isSupportingStep(action, clause, prevAction, prevClause) {
  * Determines if action is conditional based on clause connector or commitment
  * Also checks cross-clause conditional: 
  * - previous clause IF/UNLESS gates this action when this clause is THEN/AFTER/BEFORE ("if condition then action")
- * Does NOT check next clause for IF - the IF connector gates the action in its OWN clause
+ * - next clause IF/UNLESS gates previous action ("action if condition")
+ * Does NOT check next clause for IF on its own - the IF connector gates the action in its OWN clause
  */
 function isConditional(action, clause, clauses) {
   if (action.commitment === 'CONDITIONAL') return true;
@@ -48,6 +49,35 @@ function isConditional(action, clause, clauses) {
     const isActionConnector = clause.connector === 'THEN' || clause.connector === 'AFTER' || clause.connector === 'BEFORE';
     if (isActionConnector && (prevClause.connector === 'IF' || prevClause.connector === 'UNLESS')) {
       return true;
+    }
+  }
+
+  // Cross-clause conditional: any subsequent clause is IF/UNLESS gates this action
+  // Pattern: "action if condition" → action clause (ROOT/THEN/AND) → ... → condition clause (IF)
+  // BUT only when the IF clause is a genuine condition (no action verb), not a conditional action
+  if (clauseIndex < clauses.length - 1) {
+    for (let i = clauseIndex + 1; i < clauses.length; i++) {
+      const nextClause = clauses[i];
+      if (nextClause.connector === 'IF' || nextClause.connector === 'UNLESS') {
+        // Check if this IF clause has its own action with CONDITIONAL commitment
+        // Heuristic: if the IF clause text looks like a condition (approved, ready, etc.)
+        // vs an action (deploy, implement, etc.)
+        const nextClauseText = nextClause.text.toLowerCase();
+        const looksLikeCondition = /\b(approved|ready|complete|done|finished|passed|succeeds?|verified|validated)\b/.test(nextClauseText);
+        const looksLikeAction = /\b(deploy|implement|build|create|add|fix|upgrade|migrate|test|review|audit|investigate|debug)\b/.test(nextClauseText);
+        
+        if (looksLikeCondition && !looksLikeAction) {
+          return true;
+        }
+        // If it looks like an action, it's a conditional action, not a condition on this action
+        if (looksLikeAction) {
+          break;
+        }
+      }
+      // Stop at non-environment connectors (AND, THEN, etc.) - they may introduce new actions
+      if (nextClause.connector !== 'TO') {
+        break;
+      }
     }
   }
 
@@ -69,6 +99,33 @@ function isContextual(clause) {
 }
 
 /**
+ * Determines if action is hypothetical based on clause connector or commitment
+ * Also checks cross-clause hypothetical: modal markers in subsequent clauses
+ * Pattern: "action maybe" → action clause (ROOT) → modal clause (TO)
+ */
+function isHypothetical(action, clause, clauses) {
+  if (action.commitment === 'HYPOTHETICAL') return true;
+
+  const clauseIndex = clauses.findIndex(c => c.id === clause.id);
+  // Cross-clause hypothetical: any subsequent clause has modal markers
+  // Pattern: "action maybe" → action clause (ROOT) → ... → modal clause (TO)
+  if (clauseIndex < clauses.length - 1) {
+    for (let i = clauseIndex + 1; i < clauses.length; i++) {
+      const nextClause = clauses[i];
+      const text = nextClause.text.toLowerCase();
+      if (/\b(maybe|perhaps|possibly)\b/.test(text)) {
+        return true;
+      }
+      // Stop at non-environment connectors
+      if (nextClause.connector !== 'TO') {
+        break;
+      }
+    }
+  }
+  return false;
+}
+
+/**
  * Determines if action is orthogonal (independent explicit request)
  * Positive, AUTHORIZED_NOW, not supporting, not conditional, not contextual
  */
@@ -78,6 +135,7 @@ function isOrthogonal(action, clause, isFirstAuthorized, clauses) {
   if (isFirstAuthorized) return false; // first becomes GOVERNING
   if (isSupportingStep(action, clause, null, null)) return false; // will be checked with context
   if (isConditional(action, clause, clauses)) return false;
+  if (isHypothetical(action, clause, clauses)) return false;
   if (isContextual(clause)) return false;
   return true;
 }
@@ -180,3 +238,5 @@ export function resolveRelations(actions, clauses) {
 
   return relations;
 }
+
+export { isHypothetical };

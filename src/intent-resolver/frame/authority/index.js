@@ -7,6 +7,7 @@ import { gatherEvidence } from './evidence.js';
 import { adjudicate } from './adjudicator.js';
 import { traceCandidate } from './diagnostics.js';
 import { resolveAuthorizedRelations } from './relations.js';
+import { isHypothetical } from '../relations.js';
 import { projectPrimary6G, projectMutation6G, projectSecondary6G, capMutation } from './projectors.js';
 import { assembleRequestFrame } from '../request-frame.js';
 
@@ -41,6 +42,23 @@ export function resolveAuthorityIntent(prompt) {
       if (toClauseId) conditionalClauseIds.add(toClauseId);
     }
   }
+  // Also add clause IDs of ALL actions marked CONDITIONAL by the relation system
+  // (Some CONDITIONAL actions may not have CONDITIONAL relations if they're the governing action)
+  for (const action of requestFrame.actions) {
+    if (action.role === 'CONDITIONAL') {
+      conditionalClauseIds.add(action.clauseId);
+    }
+  }
+
+  // Determine modal/hypothetical scope from structural clause analysis
+  // Pattern: "action maybe" → action clause (ROOT) → modal clause (TO)
+  const modalClauseIds = new Set();
+  for (const action of requestFrame.actions) {
+    const clause = requestFrame.clauses.find(c => c.id === action.clauseId);
+    if (clause && isHypothetical(action, clause, requestFrame.clauses)) {
+      modalClauseIds.add(action.clauseId);
+    }
+  }
 
   // Per-candidate pipeline: gather evidence → adjudicate → trace (read-only)
   const textByClauseId = new Map(clauses.map((c) => [c.id, c.text]));
@@ -49,10 +67,12 @@ export function resolveAuthorityIntent(prompt) {
 
   for (const candidate of candidates) {
     const isConditionallyGated = conditionalClauseIds.has(candidate.clauseId);
+    const isModalGated = modalClauseIds.has(candidate.clauseId);
     const evidence = gatherEvidence({
       surface: candidate.surface,
       clauseText: textByClauseId.get(candidate.clauseId) ?? '',
       conditionalScope: isConditionallyGated,
+      modalScope: isModalGated,
     });
     const adjudicated = adjudicate(candidate, evidence);
     adjudicatedList.push(adjudicated);
