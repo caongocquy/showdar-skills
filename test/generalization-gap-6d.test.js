@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { resolveIntentFromPrompt } from '../src/intent-resolver.js';
-import { buildRoutePlan } from '../src/route-plan.js';
 
 // Phase 6D — Generalization Gap Repair (novel formulations; no Blind #3 wording).
 // Rule 1: root-cause investigation language (unknown cause + diagnostic work).
@@ -10,11 +9,10 @@ import { buildRoutePlan } from '../src/route-plan.js';
 
 function resolve(prompt) {
   const resolution = resolveIntentFromPrompt(prompt);
-  const plan = buildRoutePlan(resolution.intent);
   return {
     intent: resolution.intent,
-    primary: plan.primary.skill,
-    advisors: plan.advisors.map((a) => a.skill).sort(),
+    primary: resolution.primary.skill,
+    advisors: resolution.advisors.map((a) => a.skill).sort(),
   };
 }
 

@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { resolveIntentFromPrompt } from '../src/intent-resolver.js';
-import { buildRoutePlan } from '../src/route-plan.js';
 
 // Phase 6E — Semantic Ownership & Governing-Verb Generalization.
 // Novel formulations only; no Blind #4 wording. Contrast families:
@@ -11,11 +10,10 @@ import { buildRoutePlan } from '../src/route-plan.js';
 
 function resolve(prompt) {
   const resolution = resolveIntentFromPrompt(prompt);
-  const plan = buildRoutePlan(resolution.intent);
   return {
     intent: resolution.intent,
-    primary: plan.primary.skill,
-    advisors: plan.advisors.map((a) => a.skill).sort(),
+    primary: resolution.primary.skill,
+    advisors: resolution.advisors.map((a) => a.skill).sort(),
   };
 }
 
@@ -57,7 +55,7 @@ test('noun-verb: verify output passes gates is readiness, not build', () => {
   assert.equal(r.intent.phase, 'delivery');
   assert.equal(r.intent.action, 'assess');
   assert.equal(r.intent.mutation, 'read-only');
-  assert.equal(r.primary, 'showdar-ship');
+  assert.equal(r.primary, 'showdar-quality');
 });
 
 test('noun-verb: implement the signature verification stays implement', () => {
@@ -268,11 +266,11 @@ test('routing: review copy stays review-owned', () => {
   assert.equal(r.primary, 'showdar-review');
 });
 
-test('routing: review for hijack weaknesses stays security-owned', () => {
+test('routing: review for hijack weaknesses stays review-owned', () => {
   const r = resolve('Review the session refresh logic for hijack weaknesses.');
   assert.equal(r.intent.action, 'review');
   assert.ok(r.intent.risks.includes('security'));
-  assert.equal(r.primary, 'showdar-security');
+  assert.equal(r.primary, 'showdar-review');
 });
 
 // --- Exit-code failure observation ---

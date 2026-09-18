@@ -1,9 +1,8 @@
 /**
- * Intent Resolver — Deterministic Structural Authority Engine (Phase 6F T20)
+ * Intent Resolver — Deterministic Structural Authority Engine (Phase 6G T16)
  *
- * Authoritative path: assembleRequestFrame → resolveStructuralIntent → buildThinRoutePlan
- * Legacy keyword-based resolver preserved as resolveLegacyIntent for diagnostics only.
- * No legacy authority fallback exists after cutover.
+ * Authoritative path: assembleRequestFrame → resolveAuthorityIntent → buildThinRoutePlan
+ * No legacy authority path exists.
  */
 
 import { validateIntent, normalizeIntent, RISK_CAPABILITIES } from '../intent.js';
@@ -11,89 +10,15 @@ import { assembleRequestFrame } from './frame/request-frame.js';
 import { resolveAuthorityIntent } from './frame/authority/index.js';
 import { deriveEvidence, deriveObjectWithContext, deriveRisks } from './frame/projectors/metadata.js';
 import { buildThinRoutePlan } from '../route-plan.js';
-import { runAuthorityShadow } from './frame/authority/shadow.js';
 
 export const INTENT_RESOLVER_VERSION = '2.0.0';
 
 /**
- * Legacy keyword-based resolver (pre-composition, from 07496ae).
- * Preserved for diagnostics and the T20 proof test only.
- * NEVER consulted on any authority decision after structural cutover.
- */
-export function resolveLegacyIntent(prompt) {
-  const originalText = String(prompt ?? '');
-  const sanitizedText = sanitizePrompt(originalText);
-
-  // Stage 1: Extract constraints
-  const constraints = extractConstraints(originalText);
-
-  // Stage 2: Resolve phase and action from sanitized text (keyword-based)
-  const phase = resolvePhase(sanitizedText);
-  const action = resolveAction(sanitizedText, phase);
-
-  // Stage 3: Extract object signals
-  const objectSignals = extractKeywords(sanitizedText, OBJECT_KEYWORDS);
-  const object = resolveObject(objectSignals, phase, action, sanitizedText);
-
-  // Stage 4: Resolve risks
-  const riskSignals = extractKeywords(sanitizedText, RISK_KEYWORDS);
-  const risks = resolveRisks(riskSignals, sanitizedText, phase, action, object);
-
-  // Stage 5: Resolve mutation (keyword-based)
-  const mutationSignals = extractKeywords(sanitizedText, MUTATION_KEYWORDS);
-  const mutation = resolveMutation(mutationSignals, sanitizedText, phase, action);
-
-  // Stage 6: Resolve evidence
-  const evidenceSignals = {
-    failureObserved: extractKeywords(sanitizedText, EVIDENCE_KEYWORDS.failureObserved),
-    rootCauseKnown: extractKeywords(sanitizedText, EVIDENCE_KEYWORDS.rootCauseKnown),
-    behaviorDefined: extractKeywords(sanitizedText, EVIDENCE_KEYWORDS.behaviorDefined),
-  };
-  const evidence = resolveEvidence(evidenceSignals, sanitizedText);
-
-  // Stage 7: Resolve secondary actions (keyword-based)
-  const rawSecondary = resolveSecondaryActions(sanitizedText, phase, action);
-  const secondaryActions = filterSecondaryActions(rawSecondary, sanitizedText, action).slice(0, 2);
-
-  // Stage 8: Build and validate intent
-  const intentInput = { phase, action, secondaryActions, object, risks, mutation, evidence };
-  const validation = validateIntent(intentInput);
-  if (!validation.ok) throw new Error(`Resolved intent invalid: ${validation.errors.join('; ')}`);
-  const intent = validation.value;
-
-  // Stage 9: Compute confidence
-  const confidence = computeConfidence(sanitizedText, intent);
-
-  // Stage 10: Extract signals and unresolved
-  const signals = extractSignals(intent, sanitizedText);
-  const unresolved = identifyUnresolved(sanitizedText, intent, confidence);
-
-  return {
-    intent,
-    constraints,
-    confidence,
-    signals,
-    unresolved,
-    meta: {
-      version: INTENT_RESOLVER_VERSION,
-      sourceTextLength: originalText.length,
-      processedTextLength: sanitizedText.length,
-      hasCodeBlocks: originalText !== sanitizedText,
-      hasNegation: signals.includes('negation:present'),
-      multiIntent: detectMultiIntent(sanitizedText),
-      engine: 'legacy',
-      usesLegacyAuthority: true,
-    },
-  };
-}
-
-/**
- * Reported-speech attribution guard (Phase 6F T20).
+ * Reported-speech attribution guard (Phase 6G T16).
  * A single unattributed direct instruction whose verb phrase follows a
  * third-party reporting matrix ("documentation says X", "docs state X")
  * names the operation without requesting it. Structural uncertainty must
- * degrade to conservative authority, never the stronger legacy authority
- * the keyword path would have granted.
+ * degrade to conservative authority.
  */
 function isUnattributedReport(text) {
   return /\b(documentation|docs?|runbook|manual|guide|wiki|readme|article|page|note|notes)\b[^.?!]{0,40}\b(says?|say|states?|describes?|mentions?|notes?|tells?|instructs?|directs?|commands?|demands?)\b/i.test(text);
@@ -191,18 +116,6 @@ export function resolveIntentFromPrompt(prompt, context = {}) {
   // Stage 6: Constraints extracted from original text for backward compatibility
   const constraints = extractConstraints(originalText);
 
-  // Compute legacy result for shadow comparison (diagnostic only)
-  const legacyResult = resolveLegacyIntent(originalText);
-
-  // Authority shadow (Phase 6G T03): diagnostic-only, append-only.
-  // Computed in try/catch; errors swallowed — never breaks production.
-  let authorityShadow;
-  try {
-    authorityShadow = runAuthorityShadow(originalText, legacyResult);
-  } catch {
-    // Shadow must never break production
-  }
-
   const meta = {
     version: INTENT_RESOLVER_VERSION,
     sourceTextLength: originalText.length,
@@ -210,7 +123,7 @@ export function resolveIntentFromPrompt(prompt, context = {}) {
     hasCodeBlocks: originalText !== sanitizedText,
     hasNegation: signals.includes('negation:present'),
     multiIntent: detectMultiIntent(sanitizedText),
-    // Phase 6G T15: Authoritative 6G typed authority metadata
+    // Phase 6G T16: Authoritative 6G typed authority metadata
     engine: 'authority',
     usesLegacyAuthority: false,
     primary: thinRoute.primary,
@@ -218,10 +131,6 @@ export function resolveIntentFromPrompt(prompt, context = {}) {
     // Diagnostics from RequestFrame assembly (+ report-attribution downgrade)
     issues: diagnostics,
   };
-  // Append-only: attach shadow if computed; existing fields untouched
-  if (authorityShadow !== undefined) {
-    meta.authorityShadow = authorityShadow;
-  }
 
   return {
     intent: structuralIntent,
@@ -250,22 +159,11 @@ export function resolveIntentFromPromptSync(prompt, context = {}) {
 }
 
 /**
- * Check if a resolver result uses legacy authority path.
- * @param {object} result - Result from resolveIntentFromPrompt or resolveLegacyIntent
- * @returns {boolean}
- */
-export function usesLegacyAuthority(result) {
-  return result?.meta?.usesLegacyAuthority === true;
-}
-
-/**
  * Public API.
  */
 export const resolverApi = {
   resolveIntentFromPrompt,
   resolveIntentFromPromptSync,
-  resolveLegacyIntent,
-  usesLegacyAuthority,
   INTENT_RESOLVER_VERSION,
 };
 

@@ -40,11 +40,7 @@ const EXPECTED_AUTHORITY_FILES = [
 
 const EXPECTED_PROJECTOR_FILES = [
   'src/intent-resolver/frame/projectors/constraints.js',
-  'src/intent-resolver/frame/projectors/index.js',
   'src/intent-resolver/frame/projectors/metadata.js',
-  'src/intent-resolver/frame/projectors/mutation.js',
-  'src/intent-resolver/frame/projectors/primary.js',
-  'src/intent-resolver/frame/projectors/secondary.js',
 ];
 
 test('canonical file list is fixed prefix + resolver files + frame/ group + projectors/ group', () => {
@@ -102,10 +98,9 @@ test('semantic-source hash fails when a listed file is missing', () => {
   }
 });
 
-// T15 semantic-source hash (production cutover: resolveIntentFromPrompt uses 6G authority composition; bare imperative fix in evidence.js; cross-clause conditional fix in relations.js; postfix conditional support; modal scope propagation; test expectation reconciliation for 6G design; verb+object imperative pattern in evidence.js).
-// This is NOT the final Phase 6G freeze — any semantic change in T16
-// requires another roll before final 6G.8 freeze.
-const INTERMEDIATE_SEMANTIC_SOURCE_SHA256 = 'd5640a6228ab8751e9a3bdd456619ef410efd0c40e68a503b46149b9dcc8a263';
+// T16 semantic-source hash (production cutover: resolveIntentFromPrompt uses 6G authority composition; bare imperative fix in evidence.js; cross-clause conditional fix in relations.js; postfix conditional support; modal scope propagation; test expectation reconciliation for 6G design; verb+object imperative pattern in evidence.js; T16 legacy authority removal: PRIMARY_SELECTION_RULES/choosePrimary/buildRoutePlan/legacy projectors removed).
+// This is NOT the final Phase 6G freeze — T17 will finalize.
+const INTERMEDIATE_SEMANTIC_SOURCE_SHA256 = 'da3f9fab71746205d6c8f252106cd9e89d7c8dc20a418c0625f64cbdd0942552';
 
 test('semantic-source hash is deterministic and matches the T13 intermediate freeze', () => {
   const first = hashSemanticSource(repoRoot);

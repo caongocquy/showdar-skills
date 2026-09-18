@@ -5,29 +5,24 @@ import { traceCandidate } from './diagnostics.js';
 import { assembleRequestFrame } from '../request-frame.js';
 
 /**
- * Authority shadow harness — diagnostic-only comparison between legacy
- * resolution and authority-path candidate extraction.
- * Never alters production behavior; all errors swallowed.
+ * Authority shadow harness — diagnostic-only read-only evaluation of the
+ * authority pipeline. Never alters production behavior; all errors swallowed.
  *
  * @param {string} prompt - Raw user prompt
- * @param {object} [legacyResult] - Pre-computed legacy result (optional, for isolation)
- * @returns {object} Shadow comparison result
+ * @returns {object} Shadow evaluation result
  */
-export function runAuthorityShadow(prompt, legacyResult) {
-  // Authority path: extract candidates from clauses
-  let candidates = [];
-  let traces = [];
-  let agreement = {};
+export function runAuthorityShadow(prompt) {
+  let authoritySummary = { candidates: 0, authorized: 0, status: 'error', traces: [] };
   const issues = [];
 
   try {
     const requestFrame = assembleRequestFrame(prompt);
     const clauses = requestFrame.clauses;
-    candidates = extractCandidates(clauses);
+    const candidates = extractCandidates(clauses);
 
     // Per-candidate pipeline: gather evidence → adjudicate → trace (read-only)
     const textByClauseId = new Map(clauses.map((c) => [c.id, c.text]));
-    traces = candidates.map((candidate) => {
+    const traces = candidates.map((candidate) => {
       const evidence = gatherEvidence({
         surface: candidate.surface,
         clauseText: textByClauseId.get(candidate.clauseId) ?? '',
@@ -36,11 +31,13 @@ export function runAuthorityShadow(prompt, legacyResult) {
       return traceCandidate({ candidate, evidence, adjudicated });
     });
 
-    // Agreement placeholder for future adjudication comparison
+    // Authority pipeline summary
     const governingAction = requestFrame.actions.find(a => a.role === 'GOVERNING');
-    agreement = {
-      legacyPhaseMatches: legacyResult?.intent?.phase === (governingAction?.phase ?? 'unknown'),
-      candidateCount: candidates.length,
+    authoritySummary = {
+      candidates: candidates.length,
+      authorized: traces.filter((t) => t.verdict === 'AUTHORIZED').length,
+      status: 'adjudicated',
+      traces,
     };
   } catch (e) {
     // Swallow all errors — shadow must never break production
@@ -48,21 +45,7 @@ export function runAuthorityShadow(prompt, legacyResult) {
   }
 
   return {
-    legacy: legacyResult
-      ? {
-          phase: legacyResult.intent?.phase ?? 'unknown',
-          action: legacyResult.intent?.action ?? 'unknown',
-          mutation: legacyResult.intent?.mutation ?? 'unknown',
-          primary: 'legacy',
-        }
-      : { status: 'not-provided' },
-    authority: {
-      candidates: candidates.length,
-      authorized: traces.filter((t) => t.verdict === 'AUTHORIZED').length,
-      status: 'adjudicated',
-      traces,
-    },
-    agreement,
+    authority: authoritySummary,
     issues,
   };
 }
