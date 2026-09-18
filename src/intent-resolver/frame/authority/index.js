@@ -112,7 +112,6 @@ export function resolveAuthorityIntent(prompt) {
 export { assembleRequestFrame } from '../request-frame.js';
 export { extractCandidates } from './candidate.js';
 export { gatherEvidence } from './evidence.js';
-export { adjudicate } from './adjudicator.js';
 export { traceCandidate } from './diagnostics.js';
 export { resolveAuthorizedRelations } from './relations.js';
 export { projectPrimary6G, projectMutation6G, projectSecondary6G, capMutation } from './projectors.js';
