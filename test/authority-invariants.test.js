@@ -338,15 +338,16 @@ test('F10 AUDIT sequenced different-targets are SUPPORTING', () => {
   assert.equal(out.relations[1].kind, 'SUPPORTING', 'sequenced different-targets must support');
 });
 
-// Design semantics: same-target sequential inspect→patch IS a subordinate
-// step (the later patch serves the earlier inspection), so SUPPORTING —
-// independence would require a bare juxtaposition with different targets.
-test('F10 AUDIT same-target sequential requests are SUPPORTING', () => {
+// T11 §8: target equality is neither sufficient nor necessary. Same-target
+// bare juxtaposition carries no workflow linkage → ORTHOGONAL (overrides the
+// T10 design-semantics reading; sanctioned T09 reopen per ledger T11 ruling).
+// SUPPORTING requires an explicit subordination marker.
+test('F10 AUDIT same-target bare juxtaposition is ORTHOGONAL', () => {
   const [firstAuth, secondAuth] = multiPair('Inspect the gateway', 'Patch the gateway');
   assert.equal(firstAuth.tag, 'AUTHORIZED', 'audit premise: first clause authorized');
   assert.equal(secondAuth.tag, 'AUTHORIZED', 'audit premise: second clause authorized');
   const out = resolveAuthorizedRelations([firstAuth, secondAuth]);
-  assert.equal(out.relations[1].kind, 'SUPPORTING', 'same-target sequential requests support as subordinate steps');
+  assert.equal(out.relations[1].kind, 'ORTHOGONAL', 'bare juxtaposition without markers must not support');
 });
 
 test('F10 bare-juxtaposition different-targets are ORTHOGONAL', () => {
