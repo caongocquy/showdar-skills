@@ -2,7 +2,7 @@ const CONTEXT_KINDS = ['history', 'quote', 'log', 'code', 'example', 'report', '
 
 const NEGATION = /\b(no|not|never|do not|does not|did not|stop|avoid|without|halt|cancel)\b|n't\b/i;
 const CONDITION = /\b(if|when|unless|provided|assuming|in case|once|until|as long as)\b/i;
-const MODAL = /\b(would|could|should|might|may|suppose|imagine|hypothetical|what if)\b/i;
+const MODAL = /\b(would|could|should|might|may|maybe|perhaps|possibly|suppose|imagine|hypothetical|what if)\b/i;
 
 const PAST = /\b(yesterday|last night|last week|last month|last sprint|ago|earlier|previously|completed|finished)\b/i;
 const FUTURE = /\b(tomorrow|later|next week|next sprint|soon|will|going to)\b/i;

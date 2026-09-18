@@ -172,7 +172,7 @@ test('Cycle: non-authorized variants never contribute to primary/mutation/second
     { prompt: 'Yesterday we implemented the feature', expectedTags: ['CONTEXTUAL'] },
     { prompt: 'Could we implement the feature?', expectedTags: ['HYPOTHETICAL'] },
     { prompt: 'Do not implement the feature', expectedTags: ['NEGATED'] },
-    { prompt: 'Implement the feature maybe', expectedTags: ['AUTHORIZED'] }, // 'maybe' not detected as modal
+    { prompt: 'Implement the feature maybe', expectedTags: ['HYPOTHETICAL'] }, // clause-final uncertainty → HYPOTHETICAL
   ];
 
   for (const { prompt, expectedTags } of variants) {

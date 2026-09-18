@@ -102,10 +102,10 @@ test('semantic-source hash fails when a listed file is missing', () => {
   }
 });
 
-// T14 semantic-source hash (barrel export boundary fix: adjudicate removed from public exports).
+// T14 semantic-source hash (epistemic uncertainty markers added to MODAL regex).
 // This is NOT the final Phase 6G freeze — any semantic change in T15/T16
 // requires another roll before final 6G.8 freeze.
-const INTERMEDIATE_SEMANTIC_SOURCE_SHA256 = '3ff98162ddc0317c7ee38f8a19361c77dff63e5be37fa9fa69837c45c04ed6b0';
+const INTERMEDIATE_SEMANTIC_SOURCE_SHA256 = '561b9ebae67900eab22864b5a1997c13a3415834897e9e032c0938efdce4232f';
 
 test('semantic-source hash is deterministic and matches the T13 intermediate freeze', () => {
   const first = hashSemanticSource(repoRoot);
