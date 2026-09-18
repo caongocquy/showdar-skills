@@ -62,32 +62,31 @@ test('auth-domain generic review stays review capability', () => {
 
 // 4. OAuth implementation + security risk → implement capability → showdar-build
 test('OAuth implementation with security risk stays implement capability', () => {
-  // 6G: "Implement OAuth login according to approved acceptance criteria" - clause
-  // segmentation splits at "according to" (TO connector), leaving "Implement OAuth
-  // login according" as the governing clause. "according" is not a complement
-  // starter, so verb complement shape fails. "implement-oauth" surface maps to
-  // implementation capability but requestForm=null → UNRESOLVED → understand.
-  // 6F keyword-based selected implement; 6G requires positive request evidence.
+  // 6G: "Implement OAuth login according to approved acceptance criteria" - the governing
+  // clause "Implement OAuth login according" has surface "implement-oauth" with complement
+  // "OAuth login according". The first token "Implement" matches the surface verb, and
+  // the second token "OAuth" is not a complement starter, so the verb+object pattern
+  // recognizes this as imperative. "implement-oauth" maps to implementation capability.
+  // 6F keyword-based selected implement; 6G correctly recognizes the imperative request.
   const r = routed('Implement OAuth login according to approved acceptance criteria');
-  assert.equal(r.capability, 'understand');
-  assert.equal(r.primary, 'showdar-understand');
+  assert.equal(r.capability, 'implement');
+  assert.equal(r.primary, 'showdar-build');
 });
 
-// 4b. audit security → security-assessment capability → showdar-security, read-only
-test('audit security routes via security-assessment capability', () => {
-  // 6G: "Audit security, don't patch anything" - "Audit" is a recognized verb but
-  // "security" is a bare noun object, not a complement starter. The "don't patch"
-  // clause is NEGATED. No positive request evidence → UNRESOLVED → understand.
-  // 6F risk-based selected security-assessment; 6G requires positive request evidence.
-  // Note: "Audit security" IS grammatically an imperative, but the evidence layer
-  // currently requires a complement starter (determiner/preposition) after the verb.
-  // This is a known evidence layer limitation (verb + bare noun not recognized);
-  // the fix belongs in T05/T06 evidence layer improvement.
+// 4b. audit security → quality capability (assessment) → showdar-quality, read-only
+test('audit security routes via quality capability (assessment)', () => {
+  // 6G: "Audit security, don't patch anything" - "Audit security" has surface "audit-security"
+  // (hyphenated compound) with complement "security". The first token "Audit" matches
+  // the surface verb, and the second token "security" is not a complement starter,
+  // so the verb+object pattern recognizes this as imperative. "audit-security" maps
+  // to assessment capability → quality. The "don't patch anything" clause is NEGATED
+  // but doesn't affect the governing action. 6F risk-based selected security-assessment;
+  // 6G correctly recognizes the imperative with assessment capability.
   const r = routed("Audit security, don't patch anything");
-  assert.equal(r.capability, 'understand');
-  assert.equal(r.primary, 'showdar-understand');
+  assert.equal(r.capability, 'quality');
+  assert.equal(r.primary, 'showdar-quality');
   assert.equal(r.phase, 'discovery');
-  assert.equal(r.action, 'understand');
+  assert.equal(r.action, 'assess');
 });
 
 // 5. identical governing frame with changed risks → same primaryCapability
@@ -134,15 +133,17 @@ test('primary projector has no risk/object authority path', async () => {
   assert.ok(!src.includes('PRIMARY_SELECTION_RULES'), 'must not reference route selection rules');
 });
 
-// 9. threat-model verb produces security-assessment capability directly.
-test('threat model routes via security-assessment capability', () => {
+// 9. threat-model verb produces quality capability (assessment) directly.
+test('threat model routes via quality capability (assessment)', () => {
   // 6G: "Threat model the OAuth authorization flow" - "threat-model" surface maps
-  // to security-assessment capability, but "the OAuth authorization flow" doesn't
-  // match verb complement shape (requires complement starter). No positive request
-  // evidence → UNRESOLVED → understand. 6F keyword-based selected security-assessment.
+  // to assessment capability → quality. "the OAuth authorization flow" has "the"
+  // as a complement starter, so verbComplementShape correctly identifies this as
+  // imperative. "threat-model" maps to assessment capability → quality.
+  // 6F keyword-based selected security-assessment; 6G correctly recognizes the
+  // imperative request with assessment capability.
   const r = routed('Threat model the OAuth authorization flow');
-  assert.equal(r.capability, 'understand');
-  assert.equal(r.primary, 'showdar-understand');
+  assert.equal(r.capability, 'quality');
+  assert.equal(r.primary, 'showdar-quality');
 });
 
 // 10. auth-diff security review: explicit scope beats domain coincidence.

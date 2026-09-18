@@ -71,16 +71,15 @@ test('noun-verb: implement the signature verification stays implement', () => {
 // --- B. governing action vs supporting step ---
 
 test('governing: cherry-pick plus handle conflicts stays git', () => {
-  // 6G: "Cherry-pick the hotfix commit and handle any conflicts" - "cherry-pick" is
-  // a git verb but "handle" segments as a separate clause. The governing action
-  // "cherry-pick" is not recognized as a bare imperative (not in BARE_IMPERATIVE_VERBS)
-  // and the complement "the hotfix commit" doesn't match verb complement shape.
-  // 6G correctly falls back to discovery/understand. 6F keyword-based selected git.
+  // 6G: "Cherry-pick the hotfix commit and handle any conflicts" - "Cherry-pick the hotfix commit"
+  // has surface "cherry-pick" with complement "the hotfix commit" ("the" is a complement starter).
+  // verbComplementShape correctly identifies this as imperative. "cherry-pick" maps to git-op.
+  // 6F keyword-based selected git; 6G correctly recognizes the imperative request.
   const r = resolve('Cherry-pick the hotfix commit and handle any conflicts.');
-  assert.equal(r.intent.phase, 'discovery');
-  assert.equal(r.intent.action, 'understand');
-  assert.equal(r.intent.mutation, 'read-only');
-  assert.equal(r.primary, 'showdar-understand');
+  assert.equal(r.intent.phase, 'repository');
+  assert.equal(r.intent.action, 'git');
+  assert.equal(r.intent.mutation, 'local-write');
+  assert.equal(r.primary, 'showdar-git');
 });
 
 test('governing: rebase plus resolve conflicts stays git', () => {

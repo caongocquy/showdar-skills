@@ -148,6 +148,19 @@ function detectRequestForm(lower, surface) {
     return 'imperative';
   }
 
+  // Verb + object imperative: surface verb followed by any object (not a complement starter)
+  // Covers patterns like "Audit security", "Review code", "Test module", "Implement feature"
+  // Only for compound surfaces (verb-noun hyphenated) to avoid false positives on noun headings
+  if (
+    surfacePresent &&
+    normalized.includes('-') &&
+    tokens.length >= 2 &&
+    tokens[0] === firstSurfaceToken &&
+    !COMPLEMENT_STARTERS.has(tokens[1])
+  ) {
+    return 'imperative';
+  }
+
   for (const span of innerSpans(lower)) {
     if (verbComplementShape(stripLeads(tokensOf(span)), normalized, firstSurfaceToken)) {
       return 'imperative';
