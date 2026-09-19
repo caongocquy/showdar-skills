@@ -6,6 +6,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- Portable workflow skill model: 15 primitives (`kind: primitive`) plus 4
+  workflows (`kind: workflow`) for 19 total installable skills. Primitive
+  profiles, routing, and taxonomy remain unchanged.
+- `showdar-feature`: adaptive end-to-end feature implementation over
+  understand, requirements, plan, design, build, test, and review stages.
+- `showdar-bugfix`: adaptive defect resolution over understand, debug, build,
+  test, and review stages, including investigation-only mode.
+- `showdar-release`: release readiness versus execution separation over
+  quality, security, ship, and authority-gated ops stages.
+- `showdar-incident`: operational incident investigation and recovery over
+  understand, debug, recover, verification, and authority-gated ops stages.
+- `showdar add feature|bugfix|release|incident` installs workflows through the
+  existing installer; short names normalize like primitives.
+
 ## [0.3.0]
 
 ### Added

@@ -3,7 +3,7 @@ import path from 'node:path';
 import { homedir } from 'node:os';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { AI_TARGETS, PROFILE_ALIASES, PROFILES, SKILLS, canonicalProfile, isDeprecatedProfile, resolveProfile } from '../src/catalog.js';
+import { AI_TARGETS, PRIMITIVE_COUNT, PROFILE_ALIASES, PROFILES, SKILLS, TOTAL_COUNT, WORKFLOW_COUNT, canonicalProfile, isDeprecatedProfile, resolveProfile } from '../src/catalog.js';
 import { addSkill, globalManifestPath, initGlobal, initProject, inspectGlobal, inspectProject, removeGlobal, removeProject } from '../src/project.js';
 import { validateRepository } from '../src/validate.js';
 
@@ -69,7 +69,7 @@ async function main() {
 
   if (command === 'validate') {
     const result = await validateRepository(packageRoot);
-    if (result.ok) console.log(`Showdar validation OK (${SKILLS.length} skills).`);
+    if (result.ok) console.log(`Showdar validation OK (${PRIMITIVE_COUNT} primitives, ${WORKFLOW_COUNT} workflows, ${TOTAL_COUNT} total).`);
     else {
       console.log(`Showdar validation FAILED (${result.errors.length} errors).`);
       for (const error of result.errors) console.log(`- ${error}`);

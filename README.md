@@ -153,7 +153,8 @@ New manifests store the canonical `developer` profile.
 
 ## Skill catalog
 
-All 15 entries are first-class Showdar skills.
+All 15 primitive entries are first-class Showdar skills. Four workflow skills
+compose them; see [Workflow skills](#workflow-skills).
 
 ### Analysis and planning
 
@@ -194,6 +195,26 @@ All 15 entries are first-class Showdar skills.
 | `showdar-ship` | Checking whether a change, artifact, or release is ready for handoff or external release. |
 | `showdar-recover` | Interrupted or partial engineering work must be reconstructed from repository evidence before continuing. |
 | `showdar-git` | Performing local Git inspection, staging, commits, branch integration, conflicts, cleanup, or explicitly requested remote Git actions. |
+
+## Workflow skills
+
+Four workflow skills orchestrate primitives adaptively; they are not fixed
+pipelines and they grant no extra authority:
+
+| Skill | Use when |
+| --- | --- |
+| `showdar-feature` | Implementing a complete feature end-to-end. |
+| `showdar-bugfix` | Resolving an observed defect end-to-end. |
+| `showdar-release` | Preparing, validating, or executing a release lifecycle. |
+| `showdar-incident` | Investigating or recovering from an active operational incident. |
+
+Workflows compose primitives: they select only the stages the evidence
+requires, skip defined or decision-free stages, load one primitive at a time,
+and stop when evidence or authority is missing. Single primitive requests stay
+primitive (`showdar-review`, `showdar-debug`, `showdar-test`). Phase 6G remains
+the authority source; workflows consume it and never mint it. Install
+explicitly, for example `showdar add feature` or
+`showdar add showdar-incident`.
 
 ## A typical software workflow
 

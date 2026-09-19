@@ -1,7 +1,7 @@
 import { access, readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { SKILLS, PROFILES } from './catalog.js';
+import { ALL_SKILLS, PRIMITIVE_COUNT, SKILLS, PROFILES, TOTAL_COUNT, WORKFLOW_COUNT, WORKFLOW_SKILLS } from './catalog.js';
 import { validateCapabilities } from './capabilities.js';
 import { CANONICAL_RUNTIME_FILE, VENDORED_RUNTIME_FILES } from './runtime.js';
 import { parseCsv } from '../engine/csv.mjs';
@@ -224,16 +224,34 @@ async function validateCsvFiles(skillDir, errors) {
 export async function validateRepository(packageRoot) {
   const errors = [];
   const warnings = [];
-  const known = new Set(SKILLS.map((skill) => skill.id));
+  const known = new Set(ALL_SKILLS.map((skill) => skill.id));
+  const primitives = new Set(SKILLS.map((skill) => skill.id));
   const skillsRoot = path.join(packageRoot, 'skills');
+
+  if (SKILLS.length !== PRIMITIVE_COUNT || PRIMITIVE_COUNT !== 15) errors.push(`primitive skill count must remain 15 (found ${SKILLS.length})`);
+  if (WORKFLOW_SKILLS.length !== WORKFLOW_COUNT || WORKFLOW_COUNT !== 4) errors.push(`workflow skill count must be 4 (found ${WORKFLOW_SKILLS.length})`);
+  if (ALL_SKILLS.length !== TOTAL_COUNT || TOTAL_COUNT !== 19) errors.push(`total installable skill count must be 19 (found ${ALL_SKILLS.length})`);
 
   for (const error of validateCapabilities().errors) errors.push(`capabilities: ${error}`);
 
-  for (const skill of SKILLS) {
+  for (const skill of ALL_SKILLS) {
     const dir = path.join(skillsRoot, skill.id);
     const result = await validateSkillDirectory(dir);
     for (const error of result.errors) errors.push(`${skill.id}: ${error}`);
     warnings.push(...result.warnings.map((warning) => `${skill.id}: ${warning}`));
+  }
+
+  const primitiveIds = new Set(SKILLS.map((skill) => skill.id));
+  for (const workflow of WORKFLOW_SKILLS) {
+    if (!Array.isArray(workflow.stages) || !workflow.stages.length) {
+      errors.push(`${workflow.id}: workflow declares no candidate stages`);
+      continue;
+    }
+    for (const stage of workflow.stages) {
+      if (!primitiveIds.has(stage)) errors.push(`${workflow.id}: references unknown primitive stage ${stage}`);
+      if (stage === workflow.id) errors.push(`${workflow.id}: must not reference itself as a stage`);
+    }
+    if (new Set(workflow.stages).size !== workflow.stages.length) errors.push(`${workflow.id}: candidate stages contain duplicates`);
   }
 
   let canonicalRuntime;
@@ -263,6 +281,7 @@ export async function validateRepository(packageRoot) {
     const seen = new Set();
     for (const id of ids) {
       if (!known.has(id)) errors.push(`profile ${profile} references unknown skill ${id}`);
+      if (!primitives.has(id)) errors.push(`profile ${profile} must reference only primitive skills (found ${id})`);
       if (seen.has(id)) errors.push(`profile ${profile} duplicates skill ${id}`);
       seen.add(id);
     }
