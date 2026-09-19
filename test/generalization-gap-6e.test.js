@@ -51,11 +51,14 @@ test('noun-verb: staged output noun grants no implement authority', () => {
 });
 
 test('noun-verb: verify output passes gates is readiness, not build', () => {
+  // Delivery-scoped readiness assessment ships (restored 6F projector
+  // contract: assess + delivery capability → ship). Consistent with the
+  // design-authored contract-primary ship-readiness cases.
   const r = resolve('Confirm the build output passes all compliance gates.');
   assert.equal(r.intent.phase, 'delivery');
   assert.equal(r.intent.action, 'assess');
   assert.equal(r.intent.mutation, 'read-only');
-  assert.equal(r.primary, 'showdar-quality');
+  assert.equal(r.primary, 'showdar-ship');
 });
 
 test('noun-verb: implement the signature verification stays implement', () => {

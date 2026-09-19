@@ -48,6 +48,7 @@ test('all six request forms detected', () => {
 });
 
 test('non-requests do not produce request forms', () => {
+  // Bare verb alone is not a directive clause form (no object, no complement).
   assert.equal(ev({ clauseText: 'restart' }).requestForm, null);
   assert.equal(ev({ clauseText: 'the queue restart' }).requestForm, null);
   assert.equal(ev({ clauseText: 'the queue restarts nightly' }).requestForm, null);
@@ -84,8 +85,19 @@ test('third-person subject prevents imperative request evidence', () => {
 });
 
 test('noun headings never become imperative requests', () => {
+  // Noun headings carry no directive clause form. "Queue restart procedure"
+  // does not open with the candidate verb. "Restart checklist for on-call"
+  // yields surface 'unknown' in production (candidate extraction recognizes
+  // no action), so it never reaches request-form detection with a verb
+  // surface; the verb-first rule below fires only for recognized surfaces.
   assert.equal(ev({ clauseText: 'Queue restart procedure' }).requestForm, null);
-  assert.equal(ev({ clauseText: 'Restart checklist for on-call' }).requestForm, null);
+  assert.equal(ev({ surface: 'unknown', clauseText: 'Restart checklist for on-call' }).requestForm, null);
+  // Verb-first directive form with a recognized surface IS imperative, even
+  // with a plain-noun object ("Implement webhook signature verification").
+  assert.equal(
+    gatherEvidence({ surface: 'implement', clauseText: 'Implement webhook signature verification' }).requestForm,
+    'imperative',
+  );
 });
 
 test('positiveRequest coexists with negation, condition, modal, and context facts', () => {

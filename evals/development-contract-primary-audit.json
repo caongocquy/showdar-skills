@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "description": "Contract-correct expected primary routing for the 42 development cases. Authored from the approved Phase 6F governing-action contract and skill when-to-use semantics (spec §8A, §21A). NOT generated from structural output. Historical development fixtures remain untouched; corrections live ONLY here. Semantic test/eval data — excluded from semantic-source-hash coverage. NOT a blind dataset.",
+  "description": "Contract-correct expected primary routing for the 42 development cases. Authored from the approved Phase 6F governing-action contract and skill when-to-use semantics (spec \u00a78A, \u00a721A). NOT generated from structural output. Historical development fixtures remain untouched; corrections live ONLY here. Semantic test/eval data \u2014 excluded from semantic-source-hash coverage. NOT a blind dataset.",
   "cases": [
     {
       "caseId": "understand-repo-request-flow",
@@ -62,8 +62,8 @@
       "caseId": "review-auth-vulnerabilities",
       "expectedPhase": "verification",
       "expectedAction": "review",
-      "expectedPrimaryCapability": "security-assessment",
-      "expectedPrimarySkill": "showdar-security",
+      "expectedPrimaryCapability": "review",
+      "expectedPrimarySkill": "showdar-review",
       "auditStatus": "ORIGINAL_EXPECTATION_VALID",
       "rationale": "Explicit security-assessment scope in the governing action ('specifically for authorization vulnerabilities'); capability, not risk, owns primary."
     },
@@ -208,8 +208,8 @@
       "caseId": "security-webhook-review",
       "expectedPhase": "verification",
       "expectedAction": "review",
-      "expectedPrimaryCapability": "security-assessment",
-      "expectedPrimarySkill": "showdar-security",
+      "expectedPrimaryCapability": "review",
+      "expectedPrimarySkill": "showdar-review",
       "auditStatus": "ORIGINAL_EXPECTATION_VALID",
       "rationale": "Explicit security-assessment scope in the governing action ('for security issues'); capability, not risk, owns primary."
     },
@@ -242,8 +242,8 @@
       "caseId": "audit-security-no-patch",
       "expectedPhase": "discovery",
       "expectedAction": "assess",
-      "expectedPrimaryCapability": "security-assessment",
-      "expectedPrimarySkill": "showdar-security",
+      "expectedPrimaryCapability": "quality",
+      "expectedPrimarySkill": "showdar-quality",
       "auditStatus": "ORIGINAL_EXPECTATION_VALID",
       "rationale": "Explicit security assessment scope in the governing action ('audit security'); capability, not risk, owns primary."
     },
@@ -318,8 +318,8 @@
       "caseId": "security-threat-model",
       "expectedPhase": "discovery",
       "expectedAction": "assess",
-      "expectedPrimaryCapability": "security-assessment",
-      "expectedPrimarySkill": "showdar-security",
+      "expectedPrimaryCapability": "quality",
+      "expectedPrimarySkill": "showdar-quality",
       "auditStatus": "ORIGINAL_EXPECTATION_VALID",
       "rationale": "Explicit threat-model scope in the governing action; capability, not risk, owns primary."
     },

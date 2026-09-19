@@ -51,15 +51,35 @@ const DEVELOPMENT_FIXTURE = Object.freeze([
   { id: 'N-15', prompt: 'The user mentioned a crash on startup', expected: 'NON_AUTHORIZED', capability: 'diagnosis' },
 ]);
 
-// Helper: run full adjudication pipeline on a prompt, return array of verdict tags
+// Helper: run full adjudication pipeline on a prompt, return array of verdict tags.
+// Mirrors production (resolveAuthorityIntent): structural CONDITIONAL relations
+// gate candidates before adjudication, so THEN-branch actions after an IF
+// condition adjudicate CONDITIONAL, not AUTHORIZED.
 function adjudicatePrompt(prompt) {
   const frame = assembleRequestFrame(prompt);
   const candidates = extractCandidates(frame.clauses);
+  const actionIdToClauseId = new Map();
+  for (const action of frame.actions) {
+    actionIdToClauseId.set(action.id, action.clauseId);
+  }
+  const conditionalClauseIds = new Set();
+  for (const rel of frame.relations) {
+    if (rel.kind === 'CONDITIONAL') {
+      const toClauseId = actionIdToClauseId.get(rel.to);
+      if (toClauseId) conditionalClauseIds.add(toClauseId);
+    }
+  }
+  for (const action of frame.actions) {
+    if (action.role === 'CONDITIONAL') {
+      conditionalClauseIds.add(action.clauseId);
+    }
+  }
   const textByClauseId = new Map(frame.clauses.map((c) => [c.id, c.text]));
   return candidates.map((candidate) => {
     const evidence = gatherEvidence({
       surface: candidate.surface,
       clauseText: textByClauseId.get(candidate.clauseId) ?? '',
+      conditionalScope: conditionalClauseIds.has(candidate.clauseId),
     });
     const result = adjudicate(candidate, evidence);
     return { tag: result.tag, candidate };
