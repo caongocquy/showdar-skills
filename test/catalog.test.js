@@ -48,7 +48,7 @@ test('skill ids are unique and showdar-prefixed', () => {
 });
 
 test('supported AI targets include native and universal modes', () => {
-  assert.deepEqual(AI_TARGETS, ['codex', 'opencode', 'claude', 'universal', 'all']);
+  assert.deepEqual(AI_TARGETS, ['codex', 'opencode', 'cursor', 'claude', 'universal', 'all']);
 });
 
 test('full profile resolves every skill exactly once', () => {

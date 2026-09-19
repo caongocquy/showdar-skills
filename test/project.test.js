@@ -29,6 +29,7 @@ async function withFixture(run) {
 const nativeRoots = {
   codex: '.agents/skills',
   opencode: '.opencode/skills',
+  cursor: '.cursor/skills',
   claude: '.claude/skills',
   universal: '.agents/skills',
 };
@@ -41,7 +42,8 @@ test('adapter resolves native target roots and all mode', () => {
   assert.equal(skillRootFor('codex', root), skillRootFor('universal', root));
   assert.equal(globalSkillRootFor('codex', { homeRoot: '/home/user' }), globalSkillRootFor('universal', { homeRoot: '/home/user' }));
   assert.doesNotMatch(skillRootFor('codex', root), /\.codex/);
-  assert.deepEqual(resolveTargets('all'), ['codex', 'opencode', 'claude', 'universal']);
+  assert.deepEqual(resolveTargets('all'), ['codex', 'opencode', 'cursor', 'claude', 'universal']);
+  assert.deepEqual(resolveTargets('cursor'), ['cursor']);
   assert.throws(() => resolveTargets('wat'), /Unknown AI target/);
 });
 
@@ -69,7 +71,7 @@ test('init installs skills into each native target and writes ownership manifest
   assert.equal(manifest.profile, 'full');
   assert.equal(manifest.ai, 'all');
   assert.equal(manifest.scope, 'project');
-  assert.deepEqual(manifest.targets, ['codex', 'opencode', 'claude', 'universal']);
+  assert.deepEqual(manifest.targets, ['codex', 'opencode', 'cursor', 'claude', 'universal']);
   assert.equal(manifest.skills.length, 1);
   assert.equal(new Set(manifest.files.map(({ path: file }) => file)).size, manifest.files.length);
   assert.equal(manifest.files.filter(({ path: file }) => file === '.agents/skills/showdar-debug').length, 1);
@@ -150,7 +152,7 @@ test('global init uses verified native user roots and a separate manifest withou
     packageVersion: '0.2.0',
   });
 
-  for (const target of ['codex', 'opencode', 'claude', 'universal']) {
+  for (const target of ['codex', 'opencode', 'cursor', 'claude', 'universal']) {
     await access(path.join(globalSkillRootFor(target, { homeRoot }), 'showdar-debug', 'SKILL.md'));
   }
   await access(path.join(globalCommandRootFor({ homeRoot }), 'debug.md'));
