@@ -1,6 +1,6 @@
 {
   "name": "showdar-skills",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "description": "Production-grade software engineering lifecycle skills for coding agents.",
   "type": "module",
   "bin": { "showdar": "./bin/showdar.js" },
@@ -14,7 +14,7 @@
     "release:check": "node scripts/check-release-version.mjs"
   },
   "engines": { "node": ">=20" },
-  "files": ["bin", "src", "skills", "commands", "router", "bundles", "profiles", "engine", "README.md", "LICENSE"],
+  "files": ["bin", "src", "skills", "commands", "router", "bundles", "profiles", "engine", "README.md", "LICENSE", "CHANGELOG.md", "MIGRATION.md"],
   "keywords": ["agent-skills", "coding-agents", "codex", "opencode", "claude-code", "software-engineering", "developer-tools", "requirements", "qa", "security", "devops", "workflow"],
   "license": "MIT",
   "repository": {
