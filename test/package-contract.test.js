@@ -57,6 +57,25 @@ test('package contract excludes internal docs and is reproducible without them',
   }
 });
 
+test('packed package ships 15 primitives plus 4 workflows as 19 installable skills', async () => {
+  const { ALL_SKILLS, PRIMITIVE_COUNT, TOTAL_COUNT, WORKFLOW_COUNT } = await import('../src/catalog.js');
+  assert.equal(PRIMITIVE_COUNT, 15);
+  assert.equal(WORKFLOW_COUNT, 4);
+  assert.equal(TOTAL_COUNT, 19);
+  const sandbox = await mkdtemp(path.join(tmpdir(), 'showdar-workflow-contract-'));
+  const packDir = path.join(sandbox, 'pack');
+  await mkdir(packDir, { recursive: true });
+  try {
+    const files = packManifest(root, packDir);
+    for (const skill of ALL_SKILLS) {
+      assert.ok(files.includes(`skills/${skill.id}/SKILL.md`), `packed package must ship skills/${skill.id}/SKILL.md`);
+    }
+    assert.ok(files.includes('src/catalog.js'), 'packed package must ship workflow catalog metadata');
+  } finally {
+    await rm(sandbox, { recursive: true, force: true });
+  }
+});
+
 test('committed AGENTS instructions do not depend on ignored docs', async () => {
   const agents = await readFile(path.join(root, 'AGENTS.md'), 'utf8');
   assert.doesNotMatch(agents, /@docs\//);
