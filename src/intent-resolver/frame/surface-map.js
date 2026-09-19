@@ -237,6 +237,7 @@ const ENTRIES = {
   'merge-locally': ['git-op', 'git'],
   'merge-feature-branch': ['git-op', 'git'],
   'upgrade-dependency': ['implementation', 'upgrade'],
+  'upgrade-react-native': ['implementation', 'upgrade'],
   'framework-upgrade': ['implementation', 'upgrade'],
   'update-dependency': ['implementation', 'upgrade'],
   'regression-test': ['testing', 'test'],

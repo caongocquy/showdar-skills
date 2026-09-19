@@ -1,6 +1,11 @@
 const CONTEXT_KINDS = ['history', 'quote', 'log', 'code', 'example', 'report', 'background'];
 
-const NEGATION = /\b(no|not|never|do not|does not|did not|stop|avoid|without|halt|cancel)\b|n't\b/i;
+const NEGATION = /\b(never|do not|does not|did not|stop|avoid|without|halt|cancel)\b|n't\b/i;
+
+// "no"/"not" as noun-phrase content ("no known cause", "not known yet",
+// "not defined yet") describes an unknown, it does not deny the candidate
+// action. Only genuine denial scoping the candidate counts (design §10).
+const NEGATION_CONTENT = /\b(no|not)\s+(known|defined|confirmed|clear|available|specified|documented)\b/i;
 const CONDITION = /\b(if|when|unless|provided|assuming|in case|once|until|as long as)\b/i;
 const MODAL = /\b(would|could|should|might|may|maybe|perhaps|possibly|suppose|imagine|hypothetical|what if)\b/i;
 
@@ -161,6 +166,28 @@ function detectRequestForm(lower, surface) {
     return 'imperative';
   }
 
+  // Verb-first-token imperative: clause opens with the candidate's own verb
+  // ("Fix locally", "Implement webhook signature verification"). Design §10
+  // defines request semantics as directive clause form scoping the
+  // candidate, not as matching a complement-starter list. Noun headings
+  // ("Restart checklist for on-call") are excluded upstream: candidate
+  // extraction yields surface 'unknown' for them, so this rule never fires
+  // in production without a recognized action surface. Manner adjuncts
+  // ("locally") modify the directive without nominalizing it. A leading
+  // "verb:" label ("Error: connection refused") is report framing, not a
+  // directive: the colon marks a log/announcement label, so skip this rule
+  // (well-formed "Fix: the bug" still matches via complement shape below).
+  const hasLabelColon = /^[A-Za-z']+\s*:/.test(lower);
+  if (
+    surfacePresent &&
+    normalized !== '' &&
+    tokens.length >= 2 &&
+    tokens[0] === firstSurfaceToken &&
+    !hasLabelColon
+  ) {
+    return 'imperative';
+  }
+
   for (const span of innerSpans(lower)) {
     if (verbComplementShape(stripLeads(tokensOf(span)), normalized, firstSurfaceToken)) {
       return 'imperative';
@@ -176,7 +203,10 @@ export function gatherEvidence({ surface, clauseText, neighbors = [], contextSco
 
   const requestForm = detectRequestForm(lower, surface);
 
-  const negation = NEGATION.test(lower);
+  // Design §10: only negation scoping the candidate disqualifies. Bare
+  // "no"/"not" describing an unknown ("no known cause") is noun-phrase
+  // content, not denial of the requested action.
+  const negation = NEGATION.test(lower) && !NEGATION_CONTENT.test(lower);
   const condition = CONDITION.test(lower) || conditionalScope;
   const modal = MODAL.test(lower) || modalScope;
 

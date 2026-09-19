@@ -47,6 +47,19 @@ const CANONICAL_TO_PHASE = Object.freeze({
   review: 'verification',
 });
 
+// Surface-map semantic capability -> internal routing capability. The candidate
+// capability is authority-semantic (firewall rule); the surface taxonomy uses
+// finer-grained names (testing, verification, deployment, git-op) than the
+// routable capability set, so normalize here. Canonical mapping below is the
+// fallback when the semantic table misses.
+const SEMANTIC_TO_CAPABILITY = Object.freeze({
+  testing: 'test',
+  verification: 'review',
+  deployment: 'ops',
+  operations: 'ops',
+  'git-op': 'git',
+});
+
 // Canonical action -> internal routing capability.
 const CANONICAL_TO_CAPABILITY = Object.freeze({
   understand: 'understand',
@@ -76,9 +89,17 @@ export function projectPrimary6G(governing) {
   const phase = SEMANTIC_TO_PHASE[governing.candidate.capability]
     ?? CANONICAL_TO_PHASE[canonical]
     ?? FALLBACK_PRIMARY.phase;
-  const primaryCapability = governing.candidate.capability === 'security-assessment'
+  // Candidate capability is authority-semantic (firewall rule): normalize it
+  // to the routable set first. Delivery-scoped assess (release readiness)
+  // ships; verification-scoped assess is quality. Canonical mapping is the
+  // fallback when the semantic table misses.
+  const candidateCapability = governing.candidate.capability;
+  const primaryCapability = candidateCapability === 'security-assessment'
     ? 'security-assessment'
-    : (CANONICAL_TO_CAPABILITY[canonical] ?? FALLBACK_PRIMARY.primaryCapability);
+    : (SEMANTIC_TO_CAPABILITY[candidateCapability]
+      ?? (canonical === 'assess' && candidateCapability === 'delivery'
+        ? 'ship'
+        : (CANONICAL_TO_CAPABILITY[canonical] ?? FALLBACK_PRIMARY.primaryCapability)));
   return Object.freeze({ phase, action: canonical, primaryCapability });
 }
 

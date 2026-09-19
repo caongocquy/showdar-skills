@@ -165,6 +165,28 @@ function isBareNounClause(clauseText, matchPosition) {
   return /^(the|a|an|this|that)\b/i.test(clauseText.trim());
 }
 
+// Test-authorship capability rule (T01): the same closed-class construction
+// the evidence layer recognizes for request form (write/add/create + test
+// noun, design §10) carries testing capability. A qualifier adjective
+// ("automated") can break surface-map compound matching, leaving a bare
+// verb; capability must still reflect the authored tests. Guarded by
+// head-noun check so "regression matrix" (head: matrix) does not qualify.
+const TEST_AUTHORSHIP_VERBS = new Set(['write', 'add', 'create']);
+const TEST_HEAD_NOUNS = new Set(['test', 'tests', 'suite']);
+
+function testAuthorshipCapability(clauseText, surface, capability) {
+  if (capability !== 'implementation') return null;
+  const first = String(surface ?? '').split('-')[0].toLowerCase();
+  if (!TEST_AUTHORSHIP_VERBS.has(first)) return null;
+  const tokens = String(clauseText ?? '').toLowerCase().match(/[a-z']+/g) ?? [];
+  if (tokens[0] !== first) return null;
+  // Head noun of the authored object must be a test noun: qualifier
+  // adjectives may intervene ("automated regression tests"). A bare
+  // "regression matrix" has no test head noun and does not qualify.
+  if (!tokens.slice(1).some((t) => TEST_HEAD_NOUNS.has(t))) return null;
+  return 'testing';
+}
+
 export function extractCandidates(clauses) {
   const candidates = [];
 
@@ -179,6 +201,11 @@ export function extractCandidates(clauses) {
       capability = surfaceMatch.result.semanticCapability;
       canonicalAction = surfaceMatch.result.canonicalAction;
       surface = surfaceMatch.result.surfaceVerb;
+    }
+
+    const authorshipCapability = testAuthorshipCapability(clause.text, surface, capability);
+    if (authorshipCapability) {
+      capability = authorshipCapability;
     }
 
     const target = extractTarget(clause.text);
