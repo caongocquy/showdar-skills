@@ -98,9 +98,13 @@ test('semantic-source hash fails when a listed file is missing', () => {
   }
 });
 
-// T16 semantic-source hash (production cutover: resolveIntentFromPrompt uses 6G authority composition; bare imperative fix in evidence.js; cross-clause conditional fix in relations.js; postfix conditional support; modal scope propagation; test expectation reconciliation for 6G design; verb+object imperative pattern in evidence.js; T16 legacy authority removal: PRIMARY_SELECTION_RULES/choosePrimary/buildRoutePlan/legacy projectors removed).
-// This is NOT the final Phase 6G freeze — T17 will finalize.
-const INTERMEDIATE_SEMANTIC_SOURCE_SHA256 = 'da3f9fab71746205d6c8f252106cd9e89d7c8dc20a418c0625f64cbdd0942552';
+// T17 contract-primary regression fixes: negation-content scoping (unknown-cause
+// noun phrases are not denial), verb-first-token imperative (directive clause
+// form), test-authorship capability (write/add/create + test head noun yields
+// testing), semantic-to-routable capability normalization, delivery-scoped
+// assess ships, upgrade-react-native taxonomy entry, report-label colon guard.
+// Intermediate SHA; T17 finalizes.
+const INTERMEDIATE_SEMANTIC_SOURCE_SHA256 = '843bf0dfd71222fdf6552bda4b1c1b0e8dabf1884dbc9f9d353f397135ef3fd2';
 
 test('semantic-source hash is deterministic and matches the T13 intermediate freeze', () => {
   const first = hashSemanticSource(repoRoot);
