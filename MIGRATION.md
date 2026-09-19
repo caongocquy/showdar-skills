@@ -1,3 +1,26 @@
+# Migrating to 0.4.0
+
+0.4.0 adds four optional workflow skills over the unchanged 15 primitives:
+
+```bash
+showdar add feature
+showdar add bugfix
+showdar add release
+showdar add incident
+```
+
+- 0.3.0 `.showdar.json` v2 configs remain valid; no config-version migration
+  is required.
+- All 15 primitive IDs remain unchanged.
+- Profile behavior and composition are unchanged: `minimal` (8), `developer`
+  (12), `backend` (14), `qa` (9), `product` (6), `full` (15 primitives).
+- Workflows are additive and optional; they complement rather than replace
+  primitives. Nothing is removed.
+- No Phase 6G routing migration is required; the authority engine and the
+  15-capability primitive taxonomy are unchanged.
+- Single primitive requests keep resolving to primitives; whole-task or
+  lifecycle requests may select a workflow.
+
 # Migrating to 0.3.0
 
 ## Skill install roots

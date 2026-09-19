@@ -3,7 +3,7 @@
 [![npm version](https://img.shields.io/npm/v/showdar-skills?logo=npm)](https://www.npmjs.com/package/showdar-skills)
 [![Node >=20](https://img.shields.io/badge/node-%3E%3D20-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue?logo=opensourceinitiative&logoColor=white)](./LICENSE)
-[![15 skills](https://img.shields.io/badge/skills-15-6f42c1)](#skill-catalog)
+[![19 skills](https://img.shields.io/badge/skills-19-6f42c1)](#skill-catalog)
 
 Production-grade software engineering skills for coding agents. Showdar covers
 the full lifecycle—from requirements and planning through implementation, QA,
@@ -42,7 +42,7 @@ you want all capabilities available.
 
 ## Why Showdar?
 
-- **15 focused skills** instead of one oversized agent prompt.
+- **15 focused primitive skills** plus 4 adaptive workflow skills (19 installable) instead of one oversized agent prompt.
 - **Lifecycle coverage** from product rules to implementation, verification,
   security, operations, release readiness, and Git completion.
 - **Intent-based discovery** that selects the workflow matching the request.
@@ -72,9 +72,12 @@ SKILL.md
           only when needed
 ```
 
-The 15 skills are not eagerly loaded as full prompts. Lightweight descriptions
-help the agent choose one skill; that skill then loads its workflow and deeper
-knowledge progressively.
+The 15 primitive skills are not eagerly loaded as full prompts. Lightweight
+descriptions help the agent choose one skill; that skill then loads its
+workflow and deeper knowledge progressively. Workflow skills add a portable
+orchestration layer: a workflow selects the lifecycle stages a task actually
+needs and composes primitives one at a time, without duplicating their
+instructions.
 
 ## Supported agents
 
@@ -130,8 +133,10 @@ paths are refreshed or removed.
 
 ## Profiles
 
-Role-specific profiles improve routing precision. `full` exposes every skill,
-but still does not eagerly load every skill body.
+Role-specific profiles improve routing precision. Profiles install primitive
+skill sets; workflow skills are opt-in through `showdar add <workflow>` and
+are not silently included in any profile. `full` exposes every primitive
+skill, but still does not eagerly load every skill body.
 
 | Profile | Skills | Best for |
 | --- | ---: | --- |
@@ -140,7 +145,7 @@ but still does not eagerly load every skill body.
 | `backend` | 14 | APIs, services, and runtime operations |
 | `qa` | 9 | Testing and quality workflows |
 | `product` | 6 | Product, requirements, and design work |
-| `full` | 15 | All capabilities |
+| `full` | 15 | All primitive capabilities |
 
 Legacy aliases remain compatible:
 
@@ -208,13 +213,96 @@ pipelines and they grant no extra authority:
 | `showdar-release` | Preparing, validating, or executing a release lifecycle. |
 | `showdar-incident` | Investigating or recovering from an active operational incident. |
 
+How a workflow runs:
+
+```text
+Workflow
+  -> selects needed lifecycle stages
+  -> invokes/composes primitive skills one at a time
+  -> primitives retain their own semantics
+  -> Phase 6G remains the authority source
+```
+
+Properties:
+
+- Adaptive, not fixed pipelines: stages marked `?` below are skipped when
+  evidence permits.
+- Intended for whole-task and lifecycle requests.
+- Focused primitive requests remain primitive.
+- Workflow identity never grants mutation or deployment authority.
+- Risk and severity never grant production authority.
+- Workflows do not create a second router or authority engine.
+
+### showdar-feature
+
+```bash
+showdar add feature
+```
+
+Typical candidate flow:
+
+```text
+understand -> requirements? -> plan? -> design? -> build -> test -> review
+```
+
+Skip requirements when behavior is already defined, plan for genuinely
+focused work, and design when no architecture or UX decision exists.
+Verification is never skipped to move faster. Ops is not implied.
+
+### showdar-bugfix
+
+```bash
+showdar add bugfix
+```
+
+Typical:
+
+```text
+understand -> debug? -> build -> test -> review
+```
+
+If the root cause is already proven, debug may be skipped. If the request is
+diagnosis only, build is not implied and the workflow stops after
+`showdar-debug`.
+
+### showdar-release
+
+```bash
+showdar add release --scope global --ai claude
+```
+
+Typical:
+
+```text
+quality -> security? -> ship -> ops only with explicit target + authorization
+```
+
+Readiness must not imply deployment. `showdar-ship` stays delivery
+verification; `showdar-ops` loads only with an explicit target plus execution
+authorization.
+
+### showdar-incident
+
+```bash
+showdar add incident
+```
+
+Typical:
+
+```text
+understand -> debug -> recover -> verification -> ops only when explicitly authorized
+```
+
+Diagnose before mutating when the cause is unknown. Severity must not imply
+production mutation. The workflow never auto-deploys or restarts production
+from risk alone.
+
 Workflows compose primitives: they select only the stages the evidence
 requires, skip defined or decision-free stages, load one primitive at a time,
 and stop when evidence or authority is missing. Single primitive requests stay
 primitive (`showdar-review`, `showdar-debug`, `showdar-test`). Phase 6G remains
-the authority source; workflows consume it and never mint it. Install
-explicitly, for example `showdar add feature` or
-`showdar add showdar-incident`.
+the authority source; workflows consume it and never mint it. Workflows are
+opt-in through `showdar add <workflow>`; profiles install primitive sets only.
 
 ## A typical software workflow
 
@@ -276,17 +364,23 @@ OpenCode exposes native commands after initialization with `--ai opencode` or
 
 ## Adding a single skill
 
-Install one primitive skill without re-running a whole profile:
+Install one skill without re-running a whole profile:
 
 ```bash
 showdar add debug
 showdar add showdar-security
 showdar add test --ai cursor
 showdar add review --scope global --ai claude
+showdar add feature
+showdar add bugfix --ai cursor
+showdar add release --scope global --ai claude
+showdar add incident
 ```
 
-Accepted names are the short form (`debug`) or the canonical form
-(`showdar-debug`). The release ships exactly 15 primitive skills. `showdar add`
+Accepted names are the short form (`debug`, `feature`) or the canonical form
+(`showdar-debug`, `showdar-feature`). The release ships exactly 15 primitive
+skills plus 4 workflow skills (19 installable total); profiles install
+primitive sets only. There is no `showdar workflow ...` command. `showdar add`
 is idempotent, preserves the configured profile, supports `--ai`/`--scope`
 overrides, and refuses to overwrite a foreign same-name skill directory that
 Showdar does not own.

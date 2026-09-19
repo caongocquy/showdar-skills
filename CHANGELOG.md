@@ -6,11 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.4.0]
+
 ### Added
 
-- Portable workflow skill model: 15 primitives (`kind: primitive`) plus 4
-  workflows (`kind: workflow`) for 19 total installable skills. Primitive
-  profiles, routing, and taxonomy remain unchanged.
+- First-class workflow skill model: 15 primitives (`kind: primitive`) plus 4
+  workflows (`kind: workflow`) for 19 total installable skills.
 - `showdar-feature`: adaptive end-to-end feature implementation over
   understand, requirements, plan, design, build, test, and review stages.
 - `showdar-bugfix`: adaptive defect resolution over understand, debug, build,
@@ -21,6 +22,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   understand, debug, recover, verification, and authority-gated ops stages.
 - `showdar add feature|bugfix|release|incident` installs workflows through the
   existing installer; short names normalize like primitives.
+- Workflow composition and safety validation: stage references resolve to
+  known primitives, workflows never stage another workflow or themselves,
+  and workflow SKILL.md files stay lean by referencing primitives.
+
+### Changed
+
+- Catalog distinguishes primitive and workflow skills; `getSkill` and
+  `normalizeSkillName` resolve all 19 installable skills.
+- `showdar validate` reports primitive/workflow/total counts
+  (`15 primitives, 4 workflows, 19 total`).
+- `showdar add` normalization supports workflow IDs and short names.
+- OpenCode `skill.md` command lists all 19 skills with a whole-task versus
+  single-primitive selection guard.
+- AGENTS.md managed routing block includes workflow routes when installed.
 
 ## [0.3.0]
 
