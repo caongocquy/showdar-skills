@@ -21,7 +21,6 @@ const EXPECTED_FRAME_FILES = [
   'src/intent-resolver/frame/clause-frame.js',
   'src/intent-resolver/frame/relations.js',
   'src/intent-resolver/frame/request-frame.js',
-  'src/intent-resolver/frame/shadow.js',
   'src/intent-resolver/frame/surface-map.js',
 ];
 
@@ -98,13 +97,9 @@ test('semantic-source hash fails when a listed file is missing', () => {
   }
 });
 
-// T17 contract-primary regression fixes: negation-content scoping (unknown-cause
-// noun phrases are not denial), verb-first-token imperative (directive clause
-// form), test-authorship capability (write/add/create + test head noun yields
-// testing), semantic-to-routable capability normalization, delivery-scoped
-// assess ships, upgrade-react-native taxonomy entry, report-label colon guard.
-// Intermediate SHA; T17 finalizes.
-const INTERMEDIATE_SEMANTIC_SOURCE_SHA256 = '843bf0dfd71222fdf6552bda4b1c1b0e8dabf1884dbc9f9d353f397135ef3fd2';
+// T17 final: contract-primary regression fixes + orphaned frame/shadow.js
+// deletion (zero importers, imported deleted 6F projectors). Final SHA below.
+const INTERMEDIATE_SEMANTIC_SOURCE_SHA256 = '7597dba6da1e76d7e880ecbefd549d643e2070bff45d0497e5de204a83761431';
 
 test('semantic-source hash is deterministic and matches the T13 intermediate freeze', () => {
   const first = hashSemanticSource(repoRoot);
