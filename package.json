@@ -24,5 +24,8 @@
   "homepage": "https://github.com/caongocquy/showdar-skills#readme",
   "bugs": {
     "url": "https://github.com/caongocquy/showdar-skills/issues"
+  },
+  "devDependencies": {
+    "ajv": "^8.20.0"
   }
 }
