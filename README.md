@@ -17,8 +17,14 @@ Install the CLI, then install a role-oriented skill profile into your project:
 ```bash
 npm install -g showdar-skills
 cd my-project
-showdar init --ai codex --profile developer
+showdar init
 showdar doctor
+```
+
+```bash
+showdar init --ai cursor
+showdar init --ai claude --scope global
+showdar init --profile developer --ai opencode
 ```
 
 To install from source instead:
@@ -29,9 +35,10 @@ cd showdar-skills
 npm install -g .
 ```
 
-Showdar works with Codex, OpenCode, Claude Code, and universal agent skill
-directories. Choose `backend`, `qa`, or `product` when that gives discovery a
-more precise context; use `full` when you want all capabilities available.
+Showdar works with Universal Agent Skills, Codex, OpenCode, Cursor, and
+Claude Code as supported installation targets. Choose `backend`, `qa`, or
+`product` when that gives discovery a more precise context; use `full` when
+you want all capabilities available.
 
 ## Why Showdar?
 
@@ -71,15 +78,23 @@ knowledge progressively.
 
 ## Supported agents
 
-| Target | Project destination | Global destination |
-| --- | --- | --- |
-| Codex / Universal | `.agents/skills/` | `~/.agents/skills/` |
-| OpenCode skills | `.opencode/skills/` | `~/.config/opencode/skills/` |
-| OpenCode commands | `.opencode/commands/showdar/` | `~/.config/opencode/commands/showdar/` |
-| Claude Code | `.claude/skills/` | `~/.claude/skills/` |
+| Harness | Project path | Global path | Status |
+| --- | --- | --- | --- |
+| Universal Agent Skills | `.agents/skills/` | `~/.agents/skills/` | Supported installation target |
+| Codex | `.agents/skills/` | `~/.agents/skills/` | Supported installation target |
+| OpenCode | `.opencode/skills/` | `~/.config/opencode/skills/` | Supported installation target |
+| Cursor | `.cursor/skills/` | `~/.cursor/skills/` | Supported installation target |
+| Claude Code | `.claude/skills/` | `~/.claude/skills/` | Supported installation target |
 
-Codex and Universal intentionally share `.agents/skills/`. OpenCode receives
-both skills and native `/showdar/...` command files.
+Universal uses `.agents/skills/`. Explicit harness targets use their native
+skill directories. Codex and Universal intentionally share `.agents/skills/`.
+OpenCode additionally receives native `/showdar/...` command files in
+`.opencode/commands/showdar/` (project) and
+`~/.config/opencode/commands/showdar/` (global).
+
+"Supported installation target" means skills install to the harness-native
+directory. It does not promise identical implicit invocation, cloud,
+agent/subagent, or MCP behavior across harnesses.
 
 ## Project and global installation
 
@@ -238,10 +253,57 @@ OpenCode exposes native commands after initialization with `--ai opencode` or
 | `showdar-security` | Performs defensive, evidence-based analysis and never exposes secret values. |
 | `showdar-requirements` | Records assumptions and open decisions instead of inventing business decisions. |
 
+## Adding a single skill
+
+Install one primitive skill without re-running a whole profile:
+
+```bash
+showdar add debug
+showdar add showdar-security
+showdar add test --ai cursor
+showdar add review --scope global --ai claude
+```
+
+Accepted names are the short form (`debug`) or the canonical form
+(`showdar-debug`). The release ships exactly 15 primitive skills. `showdar add`
+is idempotent, preserves the configured profile, supports `--ai`/`--scope`
+overrides, and refuses to overwrite a foreign same-name skill directory that
+Showdar does not own.
+
+## Routing
+
+Showdar routes each request through progressive disclosure: the host discovers
+lightweight skill metadata, loads the relevant skill, and pulls deeper
+guides and data only when needed.
+
+```text
+current request
+      |
+      v
+structural interpretation
+      |
+      v
+authority classification
+      |
+      v
+primary capability
+      |
+      v
+skill
+```
+
+Product behavior notes:
+
+- Context, log, and example text does not automatically become requested work.
+- Conditional and hypothetical actions remain non-authoritative until current
+  request semantics permit them.
+- Risk metadata does not override an explicit governing action.
+
 ## CLI reference
 
 ```bash
 showdar init [--scope <project|global>] --ai <target> --profile <profile>
+showdar add <skill> [--ai <target>] [--scope <project|global>]
 showdar list
 showdar status [--scope <project|global>]
 showdar doctor [--scope <project|global>]
@@ -249,10 +311,12 @@ showdar validate
 showdar remove [--scope <project|global>]
 ```
 
-Main flags are `--ai`, `--profile`, and `--scope`. `--ai` accepts `codex`,
-`opencode`, `claude`, `universal`, or `all`. `--scope` defaults to `project`;
-`--profile` accepts the six canonical profiles and the `mobile`/`web` aliases.
-Run `showdar --help` or a command's `--help` for current options.
+Main flags are `--ai`, `--profile`, and `--scope`. `--ai` accepts `universal`,
+`codex`, `opencode`, `cursor`, `claude`, or `all` for `init` (single targets
+for `add`). `--scope` accepts `project` or `global` and defaults to `project`;
+`--profile` accepts the six canonical profiles and the deprecated
+`mobile`/`web` aliases. Run `showdar --help` or a command's `--help` for
+current options.
 
 `showdar validate` validates the installed Showdar package. `showdar doctor`
 checks managed files against ownership hashes, while `showdar remove` removes
