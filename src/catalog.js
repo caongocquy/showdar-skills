@@ -55,3 +55,16 @@ export function resolveProfile(profile) {
 export function getSkill(id) {
   return SKILLS.find((skill) => skill.id === id) ?? null;
 }
+
+export function normalizeSkillName(name) {
+  if (typeof name !== 'string' || !name.trim()) throw new Error('Skill name is required.');
+  const trimmed = name.trim();
+  const canonical = trimmed.startsWith('showdar-') ? trimmed : `showdar-${trimmed}`;
+  const skill = getSkill(canonical);
+  if (!skill) {
+    const known = SKILLS.map((s) => s.id.replace(/^showdar-/, '')).join(', ');
+    throw new Error(`Unknown skill "${name}". Available skills: ${known}`);
+  }
+  return skill.id;
+}
+

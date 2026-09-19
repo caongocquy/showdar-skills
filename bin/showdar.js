@@ -4,7 +4,7 @@ import { homedir } from 'node:os';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { AI_TARGETS, PROFILE_ALIASES, PROFILES, SKILLS, canonicalProfile, isDeprecatedProfile, resolveProfile } from '../src/catalog.js';
-import { globalManifestPath, initGlobal, initProject, inspectGlobal, inspectProject, removeGlobal, removeProject } from '../src/project.js';
+import { addSkill, globalManifestPath, initGlobal, initProject, inspectGlobal, inspectProject, removeGlobal, removeProject } from '../src/project.js';
 import { validateRepository } from '../src/validate.js';
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -39,7 +39,11 @@ function printHelp(version, command = null) {
     console.log(`Showdar Skills ${version}\n\nUsage:\n  showdar ${command} ${scopeUsage}\n\nDefault scope: project. Use --scope global for the user installation.`);
     return;
   }
-  console.log(`Showdar Skills ${version}\n\nUsage:\n  showdar init ${scopeUsage} [--profile <name>] [--ai <universal|codex|opencode|cursor|claude|all>]\n  showdar status ${scopeUsage}\n  showdar doctor ${scopeUsage}\n  showdar validate\n  showdar list\n  showdar remove ${scopeUsage}\n\nDefaults: scope project, profile full, AI target universal.\nProfiles: ${Object.keys(PROFILES).join(', ')}\nDeprecated aliases: ${Object.entries(PROFILE_ALIASES).map(([alias, target]) => `${alias} -> ${target}`).join(', ')}\nAI targets: ${AI_TARGETS.join(', ')}`);
+  if (command === 'add') {
+    console.log(`Showdar Skills ${version}\n\nUsage:\n  showdar add <skill> [--ai <universal|codex|opencode|cursor|claude>] [--scope <project|global>]\n\nExamples:\n  showdar add debug\n  showdar add showdar-security\n  showdar add test --ai cursor\n  showdar add review --scope global --ai claude\n\nDefault scope: project. Default AI target: universal, or the configured .showdar.json value when present.`);
+    return;
+  }
+  console.log(`Showdar Skills ${version}\n\nUsage:\n  showdar init ${scopeUsage} [--profile <name>] [--ai <universal|codex|opencode|cursor|claude|all>]\n  showdar add <skill> [--ai <universal|codex|opencode|cursor|claude>] [--scope <project|global>]\n  showdar status ${scopeUsage}\n  showdar doctor ${scopeUsage}\n  showdar validate\n  showdar list\n  showdar remove ${scopeUsage}\n\nDefaults: scope project, profile full, AI target universal.\nProfiles: ${Object.keys(PROFILES).join(', ')}\nDeprecated aliases: ${Object.entries(PROFILE_ALIASES).map(([alias, target]) => `${alias} -> ${target}`).join(', ')}\nAI targets: ${AI_TARGETS.join(', ')}`);
 }
 
 async function main() {
@@ -55,7 +59,7 @@ async function main() {
   }
   if (args.includes('--help') || args.includes('-h')) return printHelp(version, command);
 
-  const scope = ['init', 'status', 'doctor', 'remove'].includes(command) ? scopeAfter(args) : null;
+  const scope = ['init', 'status', 'doctor', 'remove', 'add'].includes(command) ? scopeAfter(args) : null;
 
   if (command === 'list') {
     console.log(`Profiles: ${Object.keys(PROFILES).join(', ')}\nDeprecated aliases: ${Object.entries(PROFILE_ALIASES).map(([alias, target]) => `${alias} -> ${target}`).join(', ')}\n\nSkills:`);
@@ -109,6 +113,25 @@ async function main() {
     for (const issue of result.issues) console.log(`- ${issue}`);
     for (const warning of result.warnings ?? []) console.log(`warning: ${warning}`);
     if (command === 'doctor' && !result.healthy) process.exitCode = 1;
+    return;
+  }
+
+  if (command === 'add') {
+    const positional = args.filter((a, i) => i > 0 && !a.startsWith('--') && args[i - 1] !== '--ai' && args[i - 1] !== '--scope');
+    const skillArg = positional[0];
+    if (!skillArg) throw new Error('Skill name is required. Usage: showdar add <skill> [--ai <target>] [--scope <project|global>]');
+    const hasAiFlag = args.includes('--ai');
+    const hasScopeFlag = args.includes('--scope');
+    const result = await addSkill({
+      cwd: projectRoot,
+      skill: skillArg,
+      ai: hasAiFlag ? valueAfter(args, '--ai', 'universal') : null,
+      scope: hasScopeFlag ? scope : null,
+      home: homedir(),
+      packageRoot,
+      packageVersion: version,
+    });
+    console.log(`Showdar skill ${result.added ? 'added' : 'already installed'}.\nSkill: ${result.skill}\nScope: ${result.scope}\nAI: ${result.ai}\nPath: ${result.destination}`);
     return;
   }
 

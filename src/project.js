@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import { homedir } from 'node:os';
 import path from 'node:path';
 import { globalCommandRootFor, globalSkillRootFor, NATIVE_TARGETS, opencodeCommandRoot, resolveTargets, resolveSkillRoot, skillRootFor } from './adapters.js';
+import { normalizeSkillName } from './catalog.js';
 import { assertSafeManagedPath, lstatWithoutSymlink, safeOwnedPath } from './path-safety.js';
 
 const PROJECT_MANIFEST = '.showdar.json';
@@ -423,6 +424,61 @@ export async function inspectProject(projectRoot, { homeRoot = homedir() } = {})
 export async function inspectGlobal({ homeRoot = homedir() } = {}) {
   const managedRoots = [...new Set(NATIVE_TARGETS.map((target) => globalSkillRootFor(target, { homeRoot }))), globalCommandRootFor({ homeRoot })];
   return inspectInstallation({ baseRoot: homeRoot, manifestPath: globalManifestPath(homeRoot), agentsRoot: null, scope: 'global', managedRoots });
+}
+
+export async function addSkill({ cwd, skill, ai = null, scope = null, home = homedir(), packageRoot, packageVersion = '0.2.0' }) {
+  const skillId = normalizeSkillName(skill);
+  const baseRoot = scope === 'global' ? home : cwd;
+
+  const existingManifest = scope === 'global'
+    ? await readManifest(globalManifestPath(home), home)
+    : await readManifest(path.join(cwd, PROJECT_MANIFEST), cwd);
+
+  const effectiveAi = ai ?? existingManifest?.ai ?? 'universal';
+  const effectiveScope = scope ?? existingManifest?.scope ?? 'project';
+  if (!NATIVE_TARGETS.includes(effectiveAi)) throw new Error(`Unknown AI target "${effectiveAi}".`);
+  if (effectiveScope !== 'project' && effectiveScope !== 'global') throw new Error(`Unknown scope "${effectiveScope}".`);
+
+  const root = resolveSkillRoot({ ai: effectiveAi, scope: effectiveScope, cwd, home });
+  const destination = path.join(root, skillId);
+  const managedRoots = effectiveScope === 'global'
+    ? [...new Set(NATIVE_TARGETS.map((t) => globalSkillRootFor(t, { homeRoot: home }))), globalCommandRootFor({ homeRoot: home })]
+    : [];
+  const manifestPath = effectiveScope === 'global' ? globalManifestPath(home) : path.join(cwd, PROJECT_MANIFEST);
+
+  const source = path.join(packageRoot, 'skills', skillId);
+  if (!(await exists(path.join(source, 'SKILL.md')))) throw new Error(`Packaged skill source missing: ${skillId}`);
+
+  await mkdir(baseRoot, { recursive: true });
+  const priorOwned = ownedPathSet(existingManifest);
+  const relative = manifestPathFor(baseRoot, destination);
+  const existed = await exists(destination);
+  const alreadyTracked = priorOwned.has(relative);
+
+  const files = [];
+  await copyOwned({ baseRoot, source, destination, priorOwned, newFiles: files, managedRoots });
+
+  const merged = new Map((existingManifest?.files ?? []).map((e) => [e.path, e]));
+  for (const f of files) merged.set(f.path, f);
+  const manifest = {
+    version: existingManifest?.version ?? 2,
+    scope: effectiveScope,
+    packageVersion,
+    profile: existingManifest?.profile ?? null,
+    ai: ai ?? existingManifest?.ai ?? 'universal',
+    targets: [effectiveAi],
+    skills: [...new Set([...(existingManifest?.skills ?? []), skillId])],
+    satisfiedByGlobal: existingManifest?.satisfiedByGlobal ?? [],
+    commands: existingManifest?.commands ?? [],
+    files: [...merged.values()],
+  };
+  await mkdir(path.dirname(manifestPath), { recursive: true });
+  await writeJsonAtomic(manifestPath, manifest);
+  if (effectiveScope === 'project') {
+    const allSkillIds = manifest.skills;
+    await writeAgentsBlock(cwd, allSkillIds);
+  }
+  return { skill: skillId, root, destination, added: !alreadyTracked || !existed, scope: effectiveScope, ai: effectiveAi, profile: manifest.profile };
 }
 
 export async function removeProject(projectRoot) {
