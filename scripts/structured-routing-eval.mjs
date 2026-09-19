@@ -1,5 +1,5 @@
 import fs from 'node:fs';
-import { buildRoutePlan } from '../src/route-plan.js';
+import { buildThinRoutePlan } from '../src/route-plan.js';
 
 const fixturePath = new URL('../evals/structured-routing-cases.json', import.meta.url);
 const cases = JSON.parse(fs.readFileSync(fixturePath, 'utf8'));
@@ -15,8 +15,14 @@ let exactPass = 0;
 for (const testCase of cases) {
   if (ids.has(testCase.id)) throw new Error(`Duplicate structured routing case: ${testCase.id}`);
   ids.add(testCase.id);
-  const plan = buildRoutePlan(testCase.intent);
-  const actualAdvisors = plan.advisors.map(({ skill }) => skill);
+  // 6G thin route: capability is design-authored per case (fixture field),
+  // never inferred from intent. Missing capability is a fixture error.
+  if (typeof testCase.primaryCapability !== 'string') {
+    throw new Error(`Structured routing case missing design-authored primaryCapability: ${testCase.id}`);
+  }
+  const plan = buildThinRoutePlan(testCase.intent, { primaryCapability: testCase.primaryCapability });
+  // Thin route returns advisors as skill strings (no scoring metadata).
+  const actualAdvisors = plan.advisors.map((a) => typeof a === 'string' ? a : a.skill);
   const expectedAdvisors = testCase.requiredAdvisors ?? [];
   const forbidden = testCase.forbiddenAdvisors ?? [];
   const actualSet = new Set(actualAdvisors);

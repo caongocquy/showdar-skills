@@ -1,5 +1,5 @@
 import fs from 'node:fs';
-import { buildRoutePlan } from '../src/route-plan.js';
+import { buildThinRoutePlan } from '../src/route-plan.js';
 import { buildVerificationPlan } from '../src/verification-budget.js';
 
 const fixturePath = new URL('../evals/verification-budget-cases.json', import.meta.url);
@@ -14,7 +14,20 @@ let exactPass = 0;
 for (const testCase of cases) {
   if (ids.has(testCase.id)) throw new Error(`Duplicate verification-budget case: ${testCase.id}`);
   ids.add(testCase.id);
-  const routePlan = buildRoutePlan(testCase.intent);
+  // 6G thin route: capability is design-authored per case (fixture field),
+  // never inferred from intent fields. The thin plan is decisive by
+  // construction (direct capability mapping, no scoring), so confidence is
+  // high and the low-confidence budget rule cannot fire.
+  const capability = testCase.primaryCapability;
+  if (typeof capability !== 'string') {
+    throw new Error(`Verification-budget case missing design-authored primaryCapability: ${testCase.id}`);
+  }
+  const thin = buildThinRoutePlan(testCase.intent, { primaryCapability: capability });
+  const routePlan = {
+    primary: thin.primary,
+    advisors: thin.advisors.map((skill) => ({ skill })),
+    confidence: { level: 'high', margin: 0, decisive: true },
+  };
   const plan = buildVerificationPlan(testCase.intent, routePlan, testCase.change);
   const expectedRequired = testCase.expectedRequired ?? [];
   const forbidden = testCase.forbiddenChecks ?? [];

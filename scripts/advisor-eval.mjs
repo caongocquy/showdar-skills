@@ -1,5 +1,4 @@
 import { resolveIntentFromPrompt } from '../src/intent-resolver.js';
-import { buildRoutePlan } from '../src/route-plan.js';
 import fs from 'fs';
 
 const challenge = JSON.parse(fs.readFileSync('./evals/generalization-challenge.json', 'utf-8'));
@@ -33,9 +32,10 @@ let advisorRecallFN = 0;
 let labeledCount = 0;
 
 for (const tc of challenge.cases) {
+  // 6G production result directly: advisors derive from ORTHOGONAL +
+  // AUTHORIZED secondaries via the thin route. No legacy recomputation.
   const result = resolveIntentFromPrompt(tc.prompt);
-  const routePlan = buildRoutePlan(result.intent);
-  
+
   // Expected advisors from secondaryActions
   const expectedAdvisors = [];
   if (tc.expected.secondaryActions) {
@@ -43,8 +43,8 @@ for (const tc of challenge.cases) {
       if (skillMap[sa]) expectedAdvisors.push(skillMap[sa]);
     }
   }
-  
-  const actualAdvisors = routePlan.advisors.map(a => a.skill);
+
+  const actualAdvisors = result.advisors.map(a => a.skill);
   const { tp, fp, fn } = compareArrays(expectedAdvisors, actualAdvisors);
   
   advisorPrecisionTP += tp;

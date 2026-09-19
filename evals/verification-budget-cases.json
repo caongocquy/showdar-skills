@@ -2,189 +2,555 @@
   {
     "id": "internal-variable-rename",
     "description": "Rename an internal variable without changing behavior.",
-    "intent": { "phase": "implementation", "action": "modify", "object": "repository", "mutation": "local-write", "evidence": { "rootCauseKnown": true, "behaviorDefined": true } },
-    "change": { "scope": "small", "filesChangedEstimate": 1 },
+    "intent": {
+      "phase": "implementation",
+      "action": "modify",
+      "object": "repository",
+      "mutation": "local-write",
+      "evidence": {
+        "rootCauseKnown": true,
+        "behaviorDefined": true
+      }
+    },
+    "change": {
+      "scope": "small",
+      "filesChangedEstimate": 1
+    },
     "expectedBudget": "low",
-    "expectedRequired": ["targeted-test"]
+    "expectedRequired": [
+      "targeted-test"
+    ],
+    "primaryCapability": "implement"
   },
   {
     "id": "small-null-check",
     "description": "Fix a small known null-check bug with a targeted regression test.",
-    "intent": { "phase": "implementation", "action": "fix", "object": "backend", "risks": ["regression"], "mutation": "local-write", "evidence": { "rootCauseKnown": true, "behaviorDefined": true } },
-    "change": { "scope": "small", "filesChangedEstimate": 2 },
+    "intent": {
+      "phase": "implementation",
+      "action": "fix",
+      "object": "backend",
+      "risks": [
+        "regression"
+      ],
+      "mutation": "local-write",
+      "evidence": {
+        "rootCauseKnown": true,
+        "behaviorDefined": true
+      }
+    },
+    "change": {
+      "scope": "small",
+      "filesChangedEstimate": 2
+    },
     "expectedBudget": "low",
-    "expectedRequired": ["targeted-test", "regression"]
+    "expectedRequired": [
+      "targeted-test",
+      "regression"
+    ],
+    "primaryCapability": "implement"
   },
   {
     "id": "bounded-feature",
     "description": "Implement a normal feature in one bounded module.",
-    "intent": { "phase": "implementation", "action": "implement", "object": "backend", "mutation": "local-write", "evidence": { "behaviorDefined": true } },
-    "change": { "scope": "medium", "filesChangedEstimate": 6 },
+    "intent": {
+      "phase": "implementation",
+      "action": "implement",
+      "object": "backend",
+      "mutation": "local-write",
+      "evidence": {
+        "behaviorDefined": true
+      }
+    },
+    "change": {
+      "scope": "medium",
+      "filesChangedEstimate": 6
+    },
     "expectedBudget": "medium",
-    "expectedRequired": ["targeted-test", "relevant-suite"]
+    "expectedRequired": [
+      "targeted-test",
+      "relevant-suite"
+    ],
+    "primaryCapability": "implement"
   },
   {
     "id": "stripe-signature-validation",
     "description": "Implement Stripe webhook signature validation.",
-    "intent": { "phase": "implementation", "action": "implement", "object": "api", "risks": ["security", "regression"], "mutation": "local-write", "evidence": { "behaviorDefined": true } },
-    "change": { "scope": "medium", "filesChangedEstimate": 5 },
+    "intent": {
+      "phase": "implementation",
+      "action": "implement",
+      "object": "api",
+      "risks": [
+        "security",
+        "regression"
+      ],
+      "mutation": "local-write",
+      "evidence": {
+        "behaviorDefined": true
+      }
+    },
+    "change": {
+      "scope": "medium",
+      "filesChangedEstimate": 5
+    },
     "expectedBudget": "high",
-    "expectedRequired": ["targeted-test", "relevant-suite", "regression", "security", "typecheck", "build"]
+    "expectedRequired": [
+      "targeted-test",
+      "relevant-suite",
+      "regression",
+      "security",
+      "typecheck",
+      "build"
+    ],
+    "primaryCapability": "implement"
   },
   {
     "id": "react-native-framework-upgrade",
     "description": "Upgrade the React Native framework and handle compatibility changes.",
-    "intent": { "phase": "implementation", "action": "upgrade", "object": "dependency", "risks": ["compatibility"], "mutation": "local-write" },
-    "change": { "scope": "broad", "dependencyChange": true },
+    "intent": {
+      "phase": "implementation",
+      "action": "upgrade",
+      "object": "dependency",
+      "risks": [
+        "compatibility"
+      ],
+      "mutation": "local-write"
+    },
+    "change": {
+      "scope": "broad",
+      "dependencyChange": true
+    },
     "expectedBudget": "high",
-    "expectedRequired": ["targeted-test", "relevant-suite", "compatibility", "typecheck", "build"]
+    "expectedRequired": [
+      "targeted-test",
+      "relevant-suite",
+      "compatibility",
+      "typecheck",
+      "build"
+    ],
+    "primaryCapability": "upgrade"
   },
   {
     "id": "dependency-patch",
     "description": "Apply a dependency patch with no known compatibility surface.",
-    "intent": { "phase": "implementation", "action": "modify", "object": "dependency", "mutation": "local-write" },
-    "change": { "scope": "small", "filesChangedEstimate": 1, "dependencyChange": true },
+    "intent": {
+      "phase": "implementation",
+      "action": "modify",
+      "object": "dependency",
+      "mutation": "local-write"
+    },
+    "change": {
+      "scope": "small",
+      "filesChangedEstimate": 1,
+      "dependencyChange": true
+    },
     "expectedBudget": "medium",
-    "expectedRequired": ["targeted-test", "relevant-suite", "compatibility"]
+    "expectedRequired": [
+      "targeted-test",
+      "relevant-suite",
+      "compatibility"
+    ],
+    "primaryCapability": "implement"
   },
   {
     "id": "database-schema-change",
     "description": "Change the database schema for a new field.",
-    "intent": { "phase": "implementation", "action": "modify", "object": "data", "risks": ["data-integrity"], "mutation": "local-write" },
-    "change": { "scope": "medium", "schemaChange": true },
+    "intent": {
+      "phase": "implementation",
+      "action": "modify",
+      "object": "data",
+      "risks": [
+        "data-integrity"
+      ],
+      "mutation": "local-write"
+    },
+    "change": {
+      "scope": "medium",
+      "schemaChange": true
+    },
     "expectedBudget": "high",
-    "expectedRequired": ["targeted-test", "relevant-suite", "typecheck", "build"]
+    "expectedRequired": [
+      "targeted-test",
+      "relevant-suite",
+      "typecheck",
+      "build"
+    ],
+    "primaryCapability": "implement"
   },
   {
     "id": "public-api-change",
     "description": "Make a breaking public API change.",
-    "intent": { "phase": "implementation", "action": "modify", "object": "api", "mutation": "local-write" },
-    "change": { "scope": "medium", "publicApiChange": true },
+    "intent": {
+      "phase": "implementation",
+      "action": "modify",
+      "object": "api",
+      "mutation": "local-write"
+    },
+    "change": {
+      "scope": "medium",
+      "publicApiChange": true
+    },
     "expectedBudget": "high",
-    "expectedRequired": ["targeted-test", "relevant-suite", "typecheck", "build"]
+    "expectedRequired": [
+      "targeted-test",
+      "relevant-suite",
+      "typecheck",
+      "build"
+    ],
+    "primaryCapability": "implement"
   },
   {
     "id": "oauth-threat-model",
     "description": "Threat-model the OAuth authorization flow without changing code.",
-    "intent": { "phase": "discovery", "action": "assess", "object": "auth", "risks": ["security"], "mutation": "read-only" },
-    "change": { "scope": "medium" },
+    "intent": {
+      "phase": "discovery",
+      "action": "assess",
+      "object": "auth",
+      "risks": [
+        "security"
+      ],
+      "mutation": "read-only"
+    },
+    "change": {
+      "scope": "medium"
+    },
     "expectedBudget": "medium",
-    "expectedRequired": ["security"],
-    "forbiddenChecks": ["build", "package", "deployment-safety"]
+    "expectedRequired": [
+      "security"
+    ],
+    "forbiddenChecks": [
+      "build",
+      "package",
+      "deployment-safety"
+    ],
+    "primaryCapability": "quality"
   },
   {
     "id": "production-deploy",
     "description": "Deploy the container to production.",
-    "intent": { "phase": "operations", "action": "deploy", "object": "deployment", "risks": ["production", "operations"], "mutation": "production-impacting" },
-    "change": { "scope": "medium" },
+    "intent": {
+      "phase": "operations",
+      "action": "deploy",
+      "object": "deployment",
+      "risks": [
+        "production",
+        "operations"
+      ],
+      "mutation": "production-impacting"
+    },
+    "change": {
+      "scope": "medium"
+    },
     "expectedBudget": "high",
-    "expectedRequired": ["relevant-suite", "deployment-safety"]
+    "expectedRequired": [
+      "relevant-suite",
+      "deployment-safety"
+    ],
+    "primaryCapability": "ops"
   },
   {
     "id": "staging-deploy",
     "description": "Deploy the container to staging.",
-    "intent": { "phase": "operations", "action": "deploy", "object": "container", "risks": ["operations"], "mutation": "remote-write" },
-    "change": { "scope": "medium" },
+    "intent": {
+      "phase": "operations",
+      "action": "deploy",
+      "object": "container",
+      "risks": [
+        "operations"
+      ],
+      "mutation": "remote-write"
+    },
+    "change": {
+      "scope": "medium"
+    },
     "expectedBudget": "high",
-    "expectedRequired": ["relevant-suite", "deployment-safety"]
+    "expectedRequired": [
+      "relevant-suite",
+      "deployment-safety"
+    ],
+    "primaryCapability": "ops"
   },
   {
     "id": "release-readiness",
     "description": "Check whether the npm package is ready to publish.",
-    "intent": { "phase": "delivery", "action": "assess", "object": "package", "mutation": "read-only" },
-    "change": { "scope": "medium" },
+    "intent": {
+      "phase": "delivery",
+      "action": "assess",
+      "object": "package",
+      "mutation": "read-only"
+    },
+    "change": {
+      "scope": "medium"
+    },
     "expectedBudget": "high",
-    "expectedRequired": ["relevant-suite", "release-readiness", "package"]
+    "expectedRequired": [
+      "relevant-suite",
+      "release-readiness",
+      "package"
+    ],
+    "primaryCapability": "ship"
   },
   {
     "id": "regression-tests-only",
     "description": "Write automated regression tests without changing production behavior.",
-    "intent": { "phase": "verification", "action": "test", "object": "backend", "risks": ["regression"], "mutation": "local-write" },
-    "change": { "scope": "medium" },
+    "intent": {
+      "phase": "verification",
+      "action": "test",
+      "object": "backend",
+      "risks": [
+        "regression"
+      ],
+      "mutation": "local-write"
+    },
+    "change": {
+      "scope": "medium"
+    },
     "expectedBudget": "medium",
-    "expectedRequired": ["targeted-test", "relevant-suite", "regression"]
+    "expectedRequired": [
+      "targeted-test",
+      "relevant-suite",
+      "regression"
+    ],
+    "primaryCapability": "test"
   },
   {
     "id": "qa-regression-matrix",
     "description": "Create a read-only risk-based regression matrix for checkout.",
-    "intent": { "phase": "verification", "action": "assess", "object": "backend", "risks": ["regression"], "mutation": "read-only" },
-    "change": { "scope": "small" },
+    "intent": {
+      "phase": "verification",
+      "action": "assess",
+      "object": "backend",
+      "risks": [
+        "regression"
+      ],
+      "mutation": "read-only"
+    },
+    "change": {
+      "scope": "small"
+    },
     "expectedBudget": "low",
-    "expectedRequired": ["regression"],
-    "forbiddenChecks": ["targeted-test", "build"]
+    "expectedRequired": [
+      "regression"
+    ],
+    "forbiddenChecks": [
+      "targeted-test",
+      "build"
+    ],
+    "primaryCapability": "quality"
   },
   {
     "id": "maintainability-review",
     "description": "Review a PR for maintainability without changing files.",
-    "intent": { "phase": "verification", "action": "review", "object": "architecture", "mutation": "read-only" },
-    "change": { "scope": "small" },
+    "intent": {
+      "phase": "verification",
+      "action": "review",
+      "object": "architecture",
+      "mutation": "read-only"
+    },
+    "change": {
+      "scope": "small"
+    },
     "expectedBudget": "low",
     "expectedRequired": [],
-    "forbiddenChecks": ["targeted-test", "relevant-suite", "build"]
+    "forbiddenChecks": [
+      "targeted-test",
+      "relevant-suite",
+      "build"
+    ],
+    "primaryCapability": "review"
   },
   {
     "id": "unknown-payment-duplication",
     "description": "Debug an intermittent payment duplication with no known cause.",
-    "intent": { "phase": "diagnosis", "action": "investigate", "object": "data", "risks": ["data-integrity", "regression"], "mutation": "local-write", "evidence": { "failureObserved": true, "rootCauseKnown": false } },
-    "change": { "scope": "medium" },
+    "intent": {
+      "phase": "diagnosis",
+      "action": "investigate",
+      "object": "data",
+      "risks": [
+        "data-integrity",
+        "regression"
+      ],
+      "mutation": "local-write",
+      "evidence": {
+        "failureObserved": true,
+        "rootCauseKnown": false
+      }
+    },
+    "change": {
+      "scope": "medium"
+    },
     "expectedBudget": "high",
-    "expectedRequired": ["targeted-test", "relevant-suite", "regression", "typecheck"]
+    "expectedRequired": [
+      "targeted-test",
+      "relevant-suite",
+      "regression",
+      "typecheck"
+    ],
+    "primaryCapability": "debug"
   },
   {
     "id": "visual-spacing-regression",
     "description": "Debug a small visual spacing regression.",
-    "intent": { "phase": "diagnosis", "action": "investigate", "object": "ui", "risks": ["regression"], "mutation": "local-write", "evidence": { "failureObserved": true, "rootCauseKnown": false } },
-    "change": { "scope": "small", "filesChangedEstimate": 2 },
+    "intent": {
+      "phase": "diagnosis",
+      "action": "investigate",
+      "object": "ui",
+      "risks": [
+        "regression"
+      ],
+      "mutation": "local-write",
+      "evidence": {
+        "failureObserved": true,
+        "rootCauseKnown": false
+      }
+    },
+    "change": {
+      "scope": "small",
+      "filesChangedEstimate": 2
+    },
     "expectedBudget": "low",
-    "expectedRequired": ["targeted-test", "regression"]
+    "expectedRequired": [
+      "targeted-test",
+      "regression"
+    ],
+    "primaryCapability": "debug"
   },
   {
     "id": "git-commit",
     "description": "Commit the completed task files locally.",
-    "intent": { "phase": "repository", "action": "git", "object": "commit", "mutation": "local-write" },
-    "change": { "scope": "small" },
+    "intent": {
+      "phase": "repository",
+      "action": "git",
+      "object": "commit",
+      "mutation": "local-write"
+    },
+    "change": {
+      "scope": "small"
+    },
     "expectedBudget": "low",
     "expectedRequired": [],
-    "forbiddenChecks": ["targeted-test", "relevant-suite", "build"]
+    "forbiddenChecks": [
+      "targeted-test",
+      "relevant-suite",
+      "build"
+    ],
+    "primaryCapability": "git"
   },
   {
     "id": "remote-mutation-boundary",
     "description": "Perform an authorized remote mutation; verification depth must not grant authorization.",
-    "intent": { "phase": "operations", "action": "modify", "object": "deployment", "risks": ["operations"], "mutation": "remote-write" },
-    "change": { "scope": "small" },
+    "intent": {
+      "phase": "operations",
+      "action": "modify",
+      "object": "deployment",
+      "risks": [
+        "operations"
+      ],
+      "mutation": "remote-write"
+    },
+    "change": {
+      "scope": "small"
+    },
     "expectedBudget": "high",
-    "expectedRequired": ["relevant-suite", "deployment-safety"]
+    "expectedRequired": [
+      "relevant-suite",
+      "deployment-safety"
+    ],
+    "primaryCapability": "ops"
   },
   {
     "id": "ambiguous-local-task",
     "description": "Review a local repository change. Phase 6E: explicit review routes decisively (explicit-review rule), so a small read-only review budgets low; low-confidence escalation is covered by discovery/assess unit cases.",
-    "intent": { "phase": "verification", "action": "review", "object": "repository", "risks": ["regression"], "mutation": "read-only" },
-    "change": { "scope": "small" },
+    "intent": {
+      "phase": "verification",
+      "action": "review",
+      "object": "repository",
+      "risks": [
+        "regression"
+      ],
+      "mutation": "read-only"
+    },
+    "change": {
+      "scope": "small"
+    },
     "expectedBudget": "low",
-    "expectedRequired": ["regression"]
+    "expectedRequired": [
+      "regression"
+    ],
+    "primaryCapability": "review"
   },
   {
     "id": "broad-cross-boundary-feature",
     "description": "Implement a feature spanning multiple service boundaries.",
-    "intent": { "phase": "implementation", "action": "implement", "object": "backend", "mutation": "local-write" },
-    "change": { "scope": "broad", "crossBoundary": true, "filesChangedEstimate": 30 },
+    "intent": {
+      "phase": "implementation",
+      "action": "implement",
+      "object": "backend",
+      "mutation": "local-write"
+    },
+    "change": {
+      "scope": "broad",
+      "crossBoundary": true,
+      "filesChangedEstimate": 30
+    },
     "expectedBudget": "high",
-    "expectedRequired": ["targeted-test", "relevant-suite", "typecheck", "build"]
+    "expectedRequired": [
+      "targeted-test",
+      "relevant-suite",
+      "typecheck",
+      "build"
+    ],
+    "primaryCapability": "implement"
   },
   {
     "id": "security-sensitive-login",
     "description": "Implement a security-sensitive login change.",
-    "intent": { "phase": "implementation", "action": "implement", "object": "auth", "risks": ["security"], "mutation": "local-write" },
-    "change": { "scope": "medium" },
+    "intent": {
+      "phase": "implementation",
+      "action": "implement",
+      "object": "auth",
+      "risks": [
+        "security"
+      ],
+      "mutation": "local-write"
+    },
+    "change": {
+      "scope": "medium"
+    },
     "expectedBudget": "high",
-    "expectedRequired": ["targeted-test", "relevant-suite", "security", "typecheck", "build"]
+    "expectedRequired": [
+      "targeted-test",
+      "relevant-suite",
+      "security",
+      "typecheck",
+      "build"
+    ],
+    "primaryCapability": "implement"
   },
   {
     "id": "read-only-data-investigation",
     "description": "Investigate an unexplained data-integrity failure without modifying data.",
-    "intent": { "phase": "diagnosis", "action": "investigate", "object": "data", "risks": ["data-integrity"], "mutation": "read-only", "evidence": { "failureObserved": true, "rootCauseKnown": false } },
-    "change": { "scope": "medium" },
+    "intent": {
+      "phase": "diagnosis",
+      "action": "investigate",
+      "object": "data",
+      "risks": [
+        "data-integrity"
+      ],
+      "mutation": "read-only",
+      "evidence": {
+        "failureObserved": true,
+        "rootCauseKnown": false
+      }
+    },
+    "change": {
+      "scope": "medium"
+    },
     "expectedBudget": "high",
-    "expectedRequired": ["targeted-test", "relevant-suite", "regression"]
+    "expectedRequired": [
+      "targeted-test",
+      "relevant-suite",
+      "regression"
+    ],
+    "primaryCapability": "debug"
   }
 ]

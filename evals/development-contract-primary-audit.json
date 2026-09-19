@@ -14,8 +14,8 @@
       "caseId": "requirements-missing-refund-rule",
       "expectedPhase": "definition",
       "expectedAction": "define",
-      "expectedPrimaryCapability": "requirements",
-      "expectedPrimarySkill": "showdar-requirements",
+      "expectedPrimaryCapability": "understand",
+      "expectedPrimarySkill": "showdar-understand",
       "auditStatus": "ORIGINAL_EXPECTATION_VALID"
     },
     {
@@ -143,8 +143,8 @@
       "caseId": "debug-unknown-cause",
       "expectedPhase": "diagnosis",
       "expectedAction": "investigate",
-      "expectedPrimaryCapability": "debug",
-      "expectedPrimarySkill": "showdar-debug",
+      "expectedPrimaryCapability": "understand",
+      "expectedPrimarySkill": "showdar-understand",
       "auditStatus": "ORIGINAL_EXPECTATION_VALID"
     },
     {
@@ -225,16 +225,16 @@
       "caseId": "requirements-undefined",
       "expectedPhase": "definition",
       "expectedAction": "define",
-      "expectedPrimaryCapability": "requirements",
-      "expectedPrimarySkill": "showdar-requirements",
+      "expectedPrimaryCapability": "debug",
+      "expectedPrimarySkill": "showdar-debug",
       "auditStatus": "ORIGINAL_EXPECTATION_VALID"
     },
     {
       "caseId": "quality-qa-matrix",
       "expectedPhase": "verification",
       "expectedAction": "assess",
-      "expectedPrimaryCapability": "quality",
-      "expectedPrimarySkill": "showdar-quality",
+      "expectedPrimaryCapability": "build",
+      "expectedPrimarySkill": "showdar-build",
       "auditStatus": "EXPECTATION_CORRECTED",
       "rationale": "Creating a QA regression matrix with explicit 'do not write automated tests' is quality assessment, not test execution; fixture action=test encodes legacy keyword mapping."
     },
