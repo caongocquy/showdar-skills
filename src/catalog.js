@@ -16,7 +16,7 @@ export const SKILLS = [
   { id: 'showdar-ops', domain: 'ops', description: 'Use when inspecting or changing CI/CD, containers, environments, deployment, observability, rollback, or runtime operations.' },
 ];
 
-export const AI_TARGETS = ['codex', 'opencode', 'claude', 'universal', 'all'];
+export const AI_TARGETS = ['codex', 'opencode', 'cursor', 'claude', 'universal', 'all'];
 
 const ids = (...values) => values;
 

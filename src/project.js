@@ -2,7 +2,7 @@ import { access, cp, mkdir, readFile, readdir, rename, rm, writeFile } from 'nod
 import { createHash } from 'node:crypto';
 import { homedir } from 'node:os';
 import path from 'node:path';
-import { globalCommandRootFor, globalSkillRootFor, NATIVE_TARGETS, opencodeCommandRoot, resolveTargets, skillRootFor } from './adapters.js';
+import { globalCommandRootFor, globalSkillRootFor, NATIVE_TARGETS, opencodeCommandRoot, resolveTargets, resolveSkillRoot, skillRootFor } from './adapters.js';
 import { assertSafeManagedPath, lstatWithoutSymlink, safeOwnedPath } from './path-safety.js';
 
 const PROJECT_MANIFEST = '.showdar.json';

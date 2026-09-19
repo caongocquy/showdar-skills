@@ -32,14 +32,14 @@ function scopeAfter(args) {
 function printHelp(version, command = null) {
   const scopeUsage = '[--scope <project|global>]';
   if (command === 'init') {
-    console.log(`Showdar Skills ${version}\n\nUsage:\n  showdar init ${scopeUsage} [--profile <name>] [--ai <codex|opencode|claude|universal|all>]\n\nDefaults: scope project, profile full, AI target universal.\nProject scope writes native skills and project .showdar.json. Global scope writes verified user skill directories and ~/.showdar/global.json without project files. Codex and universal use .agents/skills in project scope and ~/.agents/skills in global scope; --ai all writes each shared destination once.\n\nProfiles: ${Object.keys(PROFILES).join(', ')}\nDeprecated aliases: ${Object.entries(PROFILE_ALIASES).map(([alias, target]) => `${alias} -> ${target}`).join(', ')}\nAI targets: ${AI_TARGETS.join(', ')}`);
+    console.log(`Showdar Skills ${version}\n\nUsage:\n  showdar init ${scopeUsage} [--profile <name>] [--ai <universal|codex|opencode|cursor|claude|all>]\n\nDefaults: scope project, profile full, AI target universal.\nProject scope writes native skills and project .showdar.json. Global scope writes verified user skill directories and ~/.showdar/global.json without project files. Codex and universal use .agents/skills in project scope and ~/.agents/skills in global scope; cursor uses .cursor/skills in project scope and ~/.cursor/skills in global scope; --ai all writes each shared destination once.\n\nProfiles: ${Object.keys(PROFILES).join(', ')}\nDeprecated aliases: ${Object.entries(PROFILE_ALIASES).map(([alias, target]) => `${alias} -> ${target}`).join(', ')}\nAI targets: ${AI_TARGETS.join(', ')}`);
     return;
   }
   if (['status', 'doctor', 'remove'].includes(command)) {
     console.log(`Showdar Skills ${version}\n\nUsage:\n  showdar ${command} ${scopeUsage}\n\nDefault scope: project. Use --scope global for the user installation.`);
     return;
   }
-  console.log(`Showdar Skills ${version}\n\nUsage:\n  showdar init ${scopeUsage} [--profile <name>] [--ai <codex|opencode|claude|universal|all>]\n  showdar status ${scopeUsage}\n  showdar doctor ${scopeUsage}\n  showdar validate\n  showdar list\n  showdar remove ${scopeUsage}\n\nDefaults: scope project, profile full, AI target universal.\nProfiles: ${Object.keys(PROFILES).join(', ')}\nDeprecated aliases: ${Object.entries(PROFILE_ALIASES).map(([alias, target]) => `${alias} -> ${target}`).join(', ')}\nAI targets: ${AI_TARGETS.join(', ')}`);
+  console.log(`Showdar Skills ${version}\n\nUsage:\n  showdar init ${scopeUsage} [--profile <name>] [--ai <universal|codex|opencode|cursor|claude|all>]\n  showdar status ${scopeUsage}\n  showdar doctor ${scopeUsage}\n  showdar validate\n  showdar list\n  showdar remove ${scopeUsage}\n\nDefaults: scope project, profile full, AI target universal.\nProfiles: ${Object.keys(PROFILES).join(', ')}\nDeprecated aliases: ${Object.entries(PROFILE_ALIASES).map(([alias, target]) => `${alias} -> ${target}`).join(', ')}\nAI targets: ${AI_TARGETS.join(', ')}`);
 }
 
 async function main() {
@@ -76,7 +76,7 @@ async function main() {
   }
 
   if (command === 'init') {
-    if (args.includes('--agent')) throw new Error('--agent is no longer supported in V0.2. Use --ai <codex|opencode|claude|universal|all>.');
+    if (args.includes('--agent')) throw new Error('--agent is no longer supported in V0.2. Use --ai <universal|codex|opencode|cursor|claude|all>.');
     const requestedProfile = valueAfter(args, '--profile', 'full');
     const profile = canonicalProfile(requestedProfile);
     const ai = valueAfter(args, '--ai', 'universal');
