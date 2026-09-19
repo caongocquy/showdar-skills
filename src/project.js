@@ -71,6 +71,10 @@ function managedBlock(skillIds) {
     ['plan QA scenarios, risk coverage, regression, compatibility, or bug evidence', 'showdar-quality'],
     ['assess threats, attack surface, trust boundaries, auth, secrets, exposure, or exploitability', 'showdar-security'],
     ['inspect or change CI/CD, containers, environments, deployment, observability, rollback, or runtime operations', 'showdar-ops'],
+    ['implement a complete feature end-to-end across multiple lifecycle stages', 'showdar-feature'],
+    ['resolve an observed defect end-to-end', 'showdar-bugfix'],
+    ['prepare, validate, or execute a release lifecycle', 'showdar-release'],
+    ['investigate or recover from an active operational incident', 'showdar-incident'],
   ].filter(([, id]) => skillIds.includes(id));
   const lines = routes.map(([intent, skill]) => `- ${intent} -> \`${skill}\``).join('\n');
   return `${START}\n## Showdar Skills routing\n\nUse the smallest Showdar skill that fully matches the current task. Do not load unrelated Showdar skills.\n\n${lines}\n\nFor debugging, gather evidence before modifying code. For shipping or destructive operations, require explicit user approval and fresh verification. Never print or commit secrets.\n${END}`;
