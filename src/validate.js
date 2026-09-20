@@ -306,26 +306,66 @@ export async function validateRepository(packageRoot) {
     for (const id of text.match(/showdar-[a-z-]+/g) ?? []) if (!known.has(id)) errors.push(`${relative} references unknown skill ${id}`);
   }
 
-  const commandMap = {
-    understand: 'showdar-understand', plan: 'showdar-plan', design: 'showdar-design', build: 'showdar-build',
-    debug: 'showdar-debug', test: 'showdar-test', review: 'showdar-review', upgrade: 'showdar-upgrade',
-    ship: 'showdar-ship', recover: 'showdar-recover', git: 'showdar-git',
-    requirements: 'showdar-requirements', quality: 'showdar-quality', security: 'showdar-security', ops: 'showdar-ops',
-  };
-  for (const [command, skill] of Object.entries(commandMap)) {
-    const relative = `commands/opencode/showdar/${command}.md`;
-    const file = path.join(packageRoot, relative);
-    if (!(await exists(file))) { errors.push(`missing OpenCode command: ${relative}`); continue; }
-    const text = await readFile(file, 'utf8');
-    if (!text.includes('$ARGUMENTS')) errors.push(`${relative} does not accept $ARGUMENTS`);
-    if (!text.includes(skill)) errors.push(`${relative} does not route to ${skill}`);
+  const { ADAPTERS } = await import('./adapters.js');
+  const {
+    renderShowdarInstruction,
+    renderShowdarCommand,
+    renderShowdarAggregator,
+    renderCursorRuleBody,
+    renderManagedBlock,
+  } = await import('./adapter-renderers.js');
+
+  for (const [target, adapter] of Object.entries(ADAPTERS)) {
+    if (!['codex', 'opencode', 'cursor', 'claude', 'universal'].includes(target)) {
+      errors.push(`adapter references unknown AI target: ${target}`);
+    }
+    if (adapter.commands && !Array.isArray(adapter.commands.destination)) {
+      errors.push(`adapter ${target} has invalid command destination`);
+    }
   }
-  const skillCommand = path.join(packageRoot, 'commands', 'opencode', 'showdar', 'skill.md');
-  if (!(await exists(skillCommand))) errors.push('missing OpenCode command: commands/opencode/showdar/skill.md');
-  else {
-    const text = await readFile(skillCommand, 'utf8');
-    if (!text.includes('$ARGUMENTS')) errors.push('commands/opencode/showdar/skill.md does not accept $ARGUMENTS');
-    for (const id of known) if (!text.includes(id)) errors.push(`commands/opencode/showdar/skill.md does not list ${id}`);
+
+  const sampleIds = ['showdar-debug', 'showdar-test'];
+  const instructionA = renderShowdarInstruction(sampleIds);
+  const instructionB = renderShowdarInstruction([...sampleIds].reverse());
+  if (instructionA !== instructionB) errors.push('canonical instruction renderer is not deterministic');
+  if (renderShowdarCommand('showdar-debug') !== renderShowdarCommand('showdar-debug')) {
+    errors.push('canonical command renderer is not deterministic');
+  }
+  const aggregator = renderShowdarAggregator(sampleIds);
+  if (!aggregator.includes('$ARGUMENTS')) errors.push('generated aggregator does not accept $ARGUMENTS');
+  for (const id of sampleIds) if (!aggregator.includes(id)) errors.push(`generated aggregator does not list ${id}`);
+  const commandBody = renderShowdarCommand('showdar-debug');
+  if (!commandBody.includes('$ARGUMENTS')) errors.push('generated command does not accept $ARGUMENTS');
+  if (!commandBody.includes('showdar-debug')) errors.push('generated command does not route to showdar-debug');
+
+  const agentsBlock = renderManagedBlock(sampleIds, 'block');
+  const claudeBlock = renderManagedBlock(sampleIds, 'block');
+  const cursorRule = renderCursorRuleBody(sampleIds);
+  if (!agentsBlock.includes('showdar-skills:start') || !agentsBlock.includes('showdar-skills:end')) {
+    errors.push('AGENTS managed block is missing markers');
+  }
+  if (!claudeBlock.includes('showdar-skills:start') || !claudeBlock.includes('showdar-skills:end')) {
+    errors.push('CLAUDE managed block is missing markers');
+  }
+  if (!cursorRule.includes('alwaysApply: false')) errors.push('Cursor rule must use Apply Intelligently metadata');
+  if (cursorRule.includes('alwaysApply: true')) errors.push('Cursor rule must not use alwaysApply:true');
+
+  const commandDir = path.join(packageRoot, 'commands', 'opencode', 'showdar');
+  if (await exists(commandDir)) {
+    for (const entry of await readdir(commandDir, { withFileTypes: true })) {
+      if (entry.isFile() && entry.name.endsWith('.md')) {
+        const text = await readFile(path.join(commandDir, entry.name), 'utf8');
+        for (const id of text.match(/showdar-[a-z-]+/g) ?? []) {
+          if (!known.has(id)) errors.push(`commands/opencode/showdar/${entry.name} references unknown skill ${id}`);
+        }
+      }
+    }
+  }
+
+  for (const [profile, ids] of Object.entries(PROFILES)) {
+    for (const id of ids) {
+      if (!primitives.has(id)) errors.push(`profile ${profile} must reference only primitive skills (found ${id})`);
+    }
   }
 
   return { ok: errors.length === 0, errors, warnings };

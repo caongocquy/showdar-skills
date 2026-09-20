@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- Native harness adapter layer: per-target instruction surfaces
+  (AGENTS.md for universal/codex/opencode, CLAUDE.md for Claude,
+  `.cursor/rules/showdar.mdc` for Cursor) rendered from one canonical
+  instruction body.
+- Generated native commands for OpenCode
+  (`.opencode/commands/showdar/`) and Claude
+  (`.claude/commands/showdar/`): one direct command per installed skill
+  plus a generic `/showdar/skill` aggregator reflecting the installed set.
+- `--ai all` compatibility policy: skills for all roots, OpenCode+Claude
+  commands, and only the canonical AGENTS.md instruction block.
+- Global installs support skills and native commands where applicable;
+  instruction files are intentionally omitted globally.
+
 ## [0.4.0]
 
 ### Added

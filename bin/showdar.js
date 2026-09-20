@@ -32,7 +32,7 @@ function scopeAfter(args) {
 function printHelp(version, command = null) {
   const scopeUsage = '[--scope <project|global>]';
   if (command === 'init') {
-    console.log(`Showdar Skills ${version}\n\nUsage:\n  showdar init ${scopeUsage} [--profile <name>] [--ai <universal|codex|opencode|cursor|claude|all>]\n\nDefaults: scope project, profile full, AI target universal.\nProject scope writes native skills and project .showdar.json. Global scope writes verified user skill directories and ~/.showdar/global.json without project files. Codex and universal use .agents/skills in project scope and ~/.agents/skills in global scope; cursor uses .cursor/skills in project scope and ~/.cursor/skills in global scope; --ai all writes each shared destination once.\n\nProfiles: ${Object.keys(PROFILES).join(', ')}\nDeprecated aliases: ${Object.entries(PROFILE_ALIASES).map(([alias, target]) => `${alias} -> ${target}`).join(', ')}\nAI targets: ${AI_TARGETS.join(', ')}`);
+    console.log(`Showdar Skills ${version}\n\nUsage:\n  showdar init ${scopeUsage} [--profile <name>] [--ai <universal|codex|opencode|cursor|claude|all>]\n\nDefaults: scope project, profile full, AI target universal.\nProject scope writes native skills, one native instruction surface, and project .showdar.json. Global scope writes verified user skill directories and ~/.showdar/global.json without instruction files. Codex and universal use .agents/skills in project scope and ~/.agents/skills in global scope; cursor uses .cursor/skills in project scope and ~/.cursor/skills in global scope; --ai all writes each shared destination once, generates OpenCode and Claude commands, and writes only the AGENTS.md block.\n\nProfiles: ${Object.keys(PROFILES).join(', ')}\nDeprecated aliases: ${Object.entries(PROFILE_ALIASES).map(([alias, target]) => `${alias} -> ${target}`).join(', ')}\nAI targets: ${AI_TARGETS.join(', ')}`);
     return;
   }
   if (['status', 'doctor', 'remove'].includes(command)) {
@@ -86,10 +86,9 @@ async function main() {
     const ai = valueAfter(args, '--ai', 'universal');
     const skillIds = resolveProfile(requestedProfile);
     if (isDeprecatedProfile(requestedProfile)) console.warn(`Warning: profile "${requestedProfile}" is deprecated; use "${profile}".`);
-    const commandNames = ai === 'opencode' || ai === 'all' ? COMMANDS : [];
     const result = scope === 'global'
-      ? await initGlobal({ homeRoot: homedir(), packageRoot, profile, ai, skillIds, commandNames, packageVersion: version })
-      : await initProject({ projectRoot, packageRoot, profile, ai, skillIds, commandNames, packageVersion: version });
+      ? await initGlobal({ homeRoot: homedir(), packageRoot, profile, ai, skillIds, packageVersion: version })
+      : await initProject({ projectRoot, packageRoot, profile, ai, skillIds, packageVersion: version });
     console.log(`Showdar Skills installed.\nScope: ${scope}\nProfile: ${profile}\nAI: ${ai}\nTargets: ${result.targets.join(', ')}\nSkills: ${result.skills}\nOpenCode commands: ${result.commands}`);
     if (scope === 'project') {
       console.log(`Requested: ${result.requestedSkills}\nInstalled in project: ${result.installedSkills}\nSatisfied by global: ${result.satisfiedByGlobal}\nSkipped duplicate copies: ${result.skippedDuplicates}`);
