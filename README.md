@@ -89,19 +89,96 @@ instructions.
 | Cursor | `.cursor/skills/` | `~/.cursor/skills/` | Supported installation target |
 | Claude Code | `.claude/skills/` | `~/.claude/skills/` | Supported installation target |
 
-Universal uses `.agents/skills/`. Explicit harness targets use their native
-skill directories. Codex and Universal intentionally share `.agents/skills/`.
-OpenCode and Claude Code receive generated `/showdar/...` commands (one per
-installed skill plus `/showdar/skill`) in `.opencode/commands/showdar/` and
-`.claude/commands/showdar/` respectively. Project instruction surfaces are
-`AGENTS.md` (universal/codex/opencode), `CLAUDE.md` (claude), and
-`.cursor/rules/showdar.mdc` (cursor); `--ai all` writes only the `AGENTS.md`
-block. Global installs include skills and commands where supported, with no
-managed instruction files.
-
 "Supported installation target" means skills install to the harness-native
 directory. It does not promise identical implicit invocation, cloud,
 agent/subagent, or MCP behavior across harnesses.
+
+## Adapter model
+
+The portable core (15 primitives + 4 workflows) never changes per harness.
+A thin native adapter layer renders harness-specific entry surfaces only:
+
+```text
+portable Showdar semantics
+  -> canonical renderers
+  -> harness adapter
+  -> native instruction/command surface
+```
+
+Adapters do NOT change routing, grant authority, rewrite `SKILL.md`
+semantics, or fork workflows per harness.
+
+## Native instruction surfaces (project scope)
+
+| Target | Instruction surface |
+| --- | --- |
+| `universal` | `AGENTS.md` managed block |
+| `codex` | `AGENTS.md` managed block |
+| `opencode` | `AGENTS.md` managed block |
+| `claude` | `CLAUDE.md` managed block |
+| `cursor` | `.cursor/rules/showdar.mdc` |
+
+One native instruction surface per explicit target. The Cursor rule uses
+Apply Intelligently metadata (`alwaysApply: false`, no globs) and carries
+the same canonical semantic body as the `AGENTS.md`/`CLAUDE.md` blocks.
+
+## Native command surfaces
+
+| Target | Commands |
+| --- | --- |
+| `opencode` | Native `/showdar/<skill>` |
+| `claude` | Native `/showdar/<skill>` |
+| `codex` | None (skill invocation only) |
+| `cursor` | None (rule discovery only) |
+| `universal` | None (skill discovery only) |
+
+`/showdar/skill` is generated for OpenCode/Claude as generic
+installed-skill discovery. Commands are generated dynamically from the
+installed skill set: `minimal` yields 8 direct commands plus the generic
+entry; adding `feature` yields 9 plus generic. All 19 commands never exist
+unless all 19 skills are installed.
+
+## Native install examples
+
+```bash
+showdar init --ai opencode
+showdar init --ai claude
+showdar init --ai cursor
+showdar add feature --ai claude
+showdar add debug --ai opencode
+```
+
+OpenCode project install produces `.opencode/skills/...`,
+`.opencode/commands/showdar/...`, and the `AGENTS.md` managed block.
+Claude produces `.claude/skills/...`, `.claude/commands/showdar/...`, and
+the `CLAUDE.md` managed block. Cursor produces `.cursor/skills/...` and
+`.cursor/rules/showdar.mdc` with no generated commands.
+
+## `--ai all` compatibility policy
+
+`--ai all` is a compatibility aggregate. It installs all native skill
+roots, generates OpenCode and Claude commands, and writes only the
+canonical `AGENTS.md` instruction block. It does NOT generate the
+`CLAUDE.md` Showdar block or the Cursor rule, avoiding duplicate Showdar
+instruction ingestion across compatibility-aware hosts. For native-optimal
+Claude/Cursor behavior use explicit `--ai claude` or `--ai cursor`.
+
+## Global scope
+
+Global installs provide skills everywhere and OpenCode/Claude commands
+where applicable, with no managed global instruction files. This is
+deliberate in 0.5.0:
+
+| Global target | Contents |
+| --- | --- |
+| `universal` | skills only |
+| `codex` | skills only |
+| `opencode` | skills + commands |
+| `claude` | skills + commands |
+| `cursor` | skills only |
+| `all` | all skill roots + OpenCode/Claude commands |
+
+No global `AGENTS.md`, `CLAUDE.md`, or Cursor rule is managed.
 
 ## Project and global installation
 

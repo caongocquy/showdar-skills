@@ -71,6 +71,8 @@ test('packed package ships 15 primitives plus 4 workflows as 19 installable skil
       assert.ok(files.includes(`skills/${skill.id}/SKILL.md`), `packed package must ship skills/${skill.id}/SKILL.md`);
     }
     assert.ok(files.includes('src/catalog.js'), 'packed package must ship workflow catalog metadata');
+    assert.ok(files.includes('src/adapters.js'), 'packed package must ship native adapter table');
+    assert.ok(files.includes('src/adapter-renderers.js'), 'packed package must ship canonical adapter renderers');
   } finally {
     await rm(sandbox, { recursive: true, force: true });
   }

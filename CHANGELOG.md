@@ -6,20 +6,37 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.5.0]
+
 ### Added
 
-- Native harness adapter layer: per-target instruction surfaces
-  (AGENTS.md for universal/codex/opencode, CLAUDE.md for Claude,
-  `.cursor/rules/showdar.mdc` for Cursor) rendered from one canonical
-  instruction body.
-- Generated native commands for OpenCode
-  (`.opencode/commands/showdar/`) and Claude
+- Native per-harness adapter layer over the unchanged portable core
+  (15 primitives + 4 workflows, 19 total installable skills).
+- Generated OpenCode slash commands
+  (`.opencode/commands/showdar/`): one direct command per installed skill
+  plus a generic `/showdar/skill` aggregator reflecting the installed set.
+- Generated Claude Code slash commands
   (`.claude/commands/showdar/`): one direct command per installed skill
   plus a generic `/showdar/skill` aggregator reflecting the installed set.
-- `--ai all` compatibility policy: skills for all roots, OpenCode+Claude
-  commands, and only the canonical AGENTS.md instruction block.
-- Global installs support skills and native commands where applicable;
-  instruction files are intentionally omitted globally.
+- Claude Code `CLAUDE.md` managed-block integration from the canonical
+  instruction body.
+- Cursor native `.cursor/rules/showdar.mdc` rule (Apply Intelligently,
+  `alwaysApply: false`, no globs) from the canonical instruction body.
+- Canonical adapter renderers (`src/adapter-renderers.js`) for
+  instructions, direct commands, and the generic aggregator.
+- Adapter lifecycle and ownership validation: doctor/status checks for
+  active instruction surfaces, generated commands, and aggregators;
+  stale Showdar-owned artifact cleanup on target switching.
+
+### Changed
+
+- Installer manages harness-native command and instruction artifacts
+  alongside portable skills.
+- Doctor/status validate active adapter artifacts; global installs do not
+  require instruction files and non-command hosts do not require commands.
+- `--ai all` is a compatibility aggregate: all skill roots, OpenCode and
+  Claude commands, and only the canonical `AGENTS.md` instruction block
+  (no `CLAUDE.md` block, no Cursor rule).
 
 ## [0.4.0]
 

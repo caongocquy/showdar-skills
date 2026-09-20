@@ -1,3 +1,28 @@
+# Migrating to 0.5.0
+
+0.5.0 adds a thin native adapter layer over the unchanged portable core.
+Existing 0.4 `.showdar.json` v2 configs remain valid; no schema bump is
+required (adapter metadata is additive and optional).
+
+- Re-running `showdar init ...` may add native adapter artifacts for the
+  selected harness. Existing skill content remains unchanged when hashes
+  match.
+- Claude: 0.5 adds the `CLAUDE.md` managed block plus native Showdar
+  command files under `.claude/commands/showdar/`.
+- Cursor: 0.5 adds `.cursor/rules/showdar.mdc` (Apply Intelligently,
+  `alwaysApply: false`, no globs).
+- OpenCode: existing command behavior is extended through the canonical
+  generated command lifecycle (one direct command per installed skill plus
+  `/showdar/skill`).
+- `--ai all` is a defined compatibility aggregate: all skill roots,
+  OpenCode and Claude commands, and only the `AGENTS.md` block (no
+  `CLAUDE.md` block, no Cursor rule).
+- Global scope installs skills and OpenCode/Claude commands where
+  applicable, with no managed global instruction files.
+- Removal deletes only Showdar-owned adapter artifacts and managed blocks;
+  user content outside Showdar markers remains intact.
+- Portable skill/workflow semantics and Phase 6G authority are unchanged.
+
 # Migrating to 0.4.0
 
 0.4.0 adds four optional workflow skills over the unchanged 15 primitives:
