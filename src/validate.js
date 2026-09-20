@@ -221,6 +221,54 @@ async function validateCsvFiles(skillDir, errors) {
   }
 }
 
+export async function validateWorkflowStatePolicy(packageRoot) {
+  const errors = [];
+  const primitives = new Set(SKILLS.map((skill) => skill.id));
+  let policy;
+  try {
+    policy = await import('./workflow-state.js');
+  } catch (error) {
+    return { ok: false, errors: [`workflow-state policy unavailable: ${error.message}`] };
+  }
+  for (const workflow of WORKFLOW_SKILLS) {
+    const stages = policy.selectableStages(workflow.id);
+    if (!Array.isArray(stages) || !stages.length) {
+      errors.push(`workflow-state: ${workflow.id} has no state policy coverage`);
+      continue;
+    }
+    for (const stage of stages) {
+      if (!primitives.has(stage)) errors.push(`workflow-state: ${workflow.id} policy references unknown stage ${stage}`);
+    }
+    const catalogStages = new Set(workflow.stages);
+    for (const stage of stages) {
+      if (!catalogStages.has(stage)) errors.push(`workflow-state: ${workflow.id} policy stage ${stage} not in catalog`);
+    }
+    for (const stage of workflow.stages) {
+      if (!stages.includes(stage)) errors.push(`workflow-state: ${workflow.id} policy missing catalog stage ${stage}`);
+    }
+  }
+  const moduleText = await readFile(path.join(packageRoot, 'src', 'workflow-state.js'), 'utf8').catch(() => '');
+  const forbiddenPersisted = ['primaryCapability', 'authorizedAction', 'mutationPermission', 'routeAuthority'];
+  for (const forbidden of forbiddenPersisted) {
+    const pattern = new RegExp(`['"]${forbidden}['"]\\s*:|\\b${forbidden}\\b\\s*[:=]`, 'g');
+    const matches = moduleText.match(pattern) ?? [];
+    const rejectionList = (moduleText.match(/FORBIDDEN_AUTHORITY_KEYS[\s\S]{0,400}/) ?? [''])[0];
+    const outsideRejection = matches.filter((m) => !rejectionList.includes(forbidden.toLowerCase()));
+    if (outsideRejection.length) {
+      errors.push(`workflow-state: checkpoint schema must not persist ${forbidden}`);
+    }
+  }
+  for (const harness of ['adapters.js', 'adapter-renderers', '.opencode', '.claude', '.cursor']) {
+    if (moduleText.includes(`from './${harness}`) || moduleText.includes(`from "./${harness}`) || moduleText.includes(`import '${harness}`)) {
+      errors.push(`workflow-state: must not import harness module ${harness}`);
+    }
+  }
+  for (const storage of ['.showdar/state', '~/.showdar', 'sqlite', 'telemetry']) {
+    if (moduleText.toLowerCase().includes(storage.toLowerCase())) errors.push(`workflow-state: no storage layer reference ${storage}`);
+  }
+  return { ok: errors.length === 0, errors };
+}
+
 export async function validateRepository(packageRoot) {
   const errors = [];
   const warnings = [];
@@ -253,6 +301,8 @@ export async function validateRepository(packageRoot) {
     }
     if (new Set(workflow.stages).size !== workflow.stages.length) errors.push(`${workflow.id}: candidate stages contain duplicates`);
   }
+
+  for (const error of (await validateWorkflowStatePolicy(packageRoot)).errors) errors.push(error);
 
   let canonicalRuntime;
   try {
