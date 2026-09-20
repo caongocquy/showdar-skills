@@ -57,8 +57,12 @@ description: Use when investigating and recovering from an active operational in
 
 - Load one primitive at a time; hand off only when its stop condition is met.
 - Each primitive's own SKILL.md governs its stage; do not copy primitive instructions here.
-- Track ephemeral state only: candidate stages, selected stages, active stage, completed evidence, next stage or complete.
-- No persistent checkpoint or resume infrastructure in this version.
+- Track portable workflow state (`src/workflow-state.js`): candidate stages, selected stages, active stage, completed evidence receipts, skipped stages with structured reason plus evidence plus policy, next stage or complete, status, revision.
+- Checkpoint by serializing state to plain JSON; caller or harness owns persistence. No filesystem or backend store is implied.
+- Interrupt explicitly to preserve completed plus skipped plus evidence state without inventing completion.
+- Resume by validating the checkpoint, re-resolving current context through Phase 6G, checking workflow compatibility, then continuing or blocking with replan-required.
+- Stored state never authorizes continuation; severity never grants production mutation, and ops loads only with explicit environment plus action authority.
+- Stage completion comes from primitive evidence and stop conditions; workflow completion requires recovery plus verification per policy, not merely diagnosis.
 
 ## Decision points
 

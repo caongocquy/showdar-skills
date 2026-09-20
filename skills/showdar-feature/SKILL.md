@@ -56,8 +56,12 @@ description: Use when implementing a complete feature end-to-end, adaptively seq
 
 - Load one primitive at a time; hand off only when its stop condition is met.
 - Each primitive's own SKILL.md governs its stage; do not copy primitive instructions here.
-- Track ephemeral state only: candidate stages, selected stages, active stage, completed evidence, next stage or complete.
-- No persistent checkpoint or resume infrastructure in this version.
+- Track portable workflow state (`src/workflow-state.js`): candidate stages, selected stages, active stage, completed evidence receipts, skipped stages with structured reason plus evidence plus policy, next stage or complete, status, revision.
+- Checkpoint by serializing state to plain JSON; caller or harness owns persistence. No filesystem or backend store is implied.
+- Interrupt explicitly to preserve completed plus skipped plus evidence state without inventing completion.
+- Resume by validating the checkpoint, re-resolving current context through Phase 6G, checking workflow compatibility, then continuing or blocking with replan-required.
+- Stored state never authorizes continuation; skip requires policy plus evidence, never severity or wording alone.
+- Stage completion comes from primitive evidence and stop conditions; workflow completion requires every selected stage completed or validly skipped, no blockers, and required verification satisfied.
 
 ## Decision points
 
