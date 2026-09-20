@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- Portable workflow execution state (`src/workflow-state.js`): versioned JSON
+  checkpoint schema with stage selection, evidence receipts, structured skip,
+  interruption, and resume. State never persists authority; resume always
+  re-resolves through Phase 6G. Caller/harness owns persistence.
+- Workflow checkpoint documentation in all four workflow skills
+  (feature, bugfix, release, incident): serialization, interruption/resume,
+  stale-checkpoint blocking, and stage vs workflow completion semantics.
+- Workflow-state policy validation in `src/validate.js`: catalog coverage,
+  no authority fields in checkpoints, no harness or storage coupling.
+
 ## [0.5.0]
 
 ### Added
