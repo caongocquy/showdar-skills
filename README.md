@@ -385,6 +385,64 @@ primitive (`showdar-review`, `showdar-debug`, `showdar-test`). Phase 6G remains
 the authority source; workflows consume it and never mint it. Workflows are
 opt-in through `showdar add <workflow>`; profiles install primitive sets only.
 
+## Workflow execution state (0.6.0)
+
+```text
+portable workflow
+  -> workflow-state
+  -> primitive evidence/stop conditions
+  -> current Phase 6G resolution
+  -> next stage / blocked / complete
+```
+
+Workflow state (`src/workflow-state.js`, schemaVersion 1) is a portable,
+versioned JSON checkpoint: `workflowId`, selected stages, active stage,
+completed stages, skipped stages, evidence receipts, blockers, next stage,
+`status` (`NEW`/`READY`/`ACTIVE`/`COMPLETE`/`INTERRUPTED`/`BLOCKED`), and a
+deterministic monotonic `revision` counter. Timestamps
+(`createdAt`/`updatedAt`/receipt timestamps) are metadata and provenance only.
+
+Workflow state is NOT authority, memory, router intent, or a persistence
+backend. It never persists authority-derived fields
+(`primaryCapability`, `authorizedAction`, `mutationPermission`,
+`routeAuthority` or equivalents). Checkpoint JSON may be stored by a
+caller or harness anywhere; Showdar 0.6 does not choose or manage storage.
+
+Evidence receipts are compact copies of primitive evidence at stage
+completion (`kind`, `quality`, `source`, `detail`, timestamp, optional
+provenance). Quality follows `claimed < observed < verified`; `failed` and
+`missing` remain meaningful negative states. High-sensitivity evidence
+(change, tests, build, package, compatibility, regression proof, release
+readiness) may require re-verification after resume; old evidence is not
+permanently valid.
+
+Safe resume is always:
+
+```text
+checkpoint
+  -> deserialize + validate
+  -> resolve current request/context through Phase 6G
+  -> compatibility/freshness checks
+  -> READY or BLOCKED + replanRequired
+```
+
+A checkpoint alone can never authorize continuation. Previously authorized
+mutation is never restored from a checkpoint. When the current Phase 6G
+resolution no longer matches the checkpoint, resume returns `BLOCKED` with
+`replanRequired` instead of silently continuing.
+
+Per-workflow skip policy (evidence-backed, never severity or wording alone):
+
+- Feature: requirements/plan/design may be skipped only with policy-backed
+  evidence; build, test, and review always run.
+- Bugfix: debug may be skipped only with verified root-cause evidence;
+  symptom description alone is insufficient; investigation-only requests stop
+  without mutation.
+- Release: readiness does not imply deployment; ops loads only with explicit
+  target plus execution authorization.
+- Incident: severity never grants production mutation; recovery and
+  verification remain gated by current authority.
+
 ## A typical software workflow
 
 ```text

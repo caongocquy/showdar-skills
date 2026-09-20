@@ -4,19 +4,36 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## [0.6.0]
 
 ### Added
 
-- Portable workflow execution state (`src/workflow-state.js`): versioned JSON
-  checkpoint schema with stage selection, evidence receipts, structured skip,
-  interruption, and resume. State never persists authority; resume always
-  re-resolves through Phase 6G. Caller/harness owns persistence.
+- Portable workflow execution state (`src/workflow-state.js`): versioned
+  JSON checkpoint schema (schemaVersion 1) with stage selection, evidence
+  receipts, structured skip, interruption, and resume. State never persists
+  authority; resume always re-resolves through Phase 6G. Caller/harness
+  owns persistence; no filesystem store, backend, or telemetry.
 - Workflow checkpoint documentation in all four workflow skills
-  (feature, bugfix, release, incident): serialization, interruption/resume,
-  stale-checkpoint blocking, and stage vs workflow completion semantics.
+  (feature, bugfix, release, incident): serialization,
+  interruption/resume, stale-checkpoint blocking, and stage vs workflow
+  completion semantics.
 - Workflow-state policy validation in `src/validate.js`: catalog coverage,
   no authority fields in checkpoints, no harness or storage coupling.
+
+### Changed
+
+- Four workflow skills now describe adaptive state semantics instead of
+  ephemeral-only tracking.
+- Workflow completion explicitly distinguishes stage completion (primitive
+  evidence and stop conditions) from workflow completion (all selected
+  stages completed or validly skipped, no blockers, required verification
+  satisfied).
+
+### Safety
+
+- Checkpoint state never persists authority-derived fields.
+- Caller owns checkpoint persistence; Showdar chooses no storage.
+- Stale checkpoints block with `replanRequired` rather than continuing.
 
 ## [0.5.0]
 

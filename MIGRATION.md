@@ -1,3 +1,25 @@
+# Migrating to 0.6.0
+
+0.6.0 adds portable workflow execution state (`src/workflow-state.js`,
+schemaVersion 1) over the unchanged 15 primitives, 4 workflows, and Phase 6G
+authority.
+
+- Existing 0.5 installs and configs remain valid; no adapter or config
+  migration is required.
+- The four workflows now support explicit portable execution state:
+  stage selection and progression, evidence-backed skipping, stage vs
+  workflow completion, interruption, and resume.
+- Checkpoints are plain JSON at schemaVersion 1. Persistence is owned by
+  the caller or harness; Showdar 0.6 defines no state directory, backend,
+  session registry, or telemetry.
+- Resume always re-resolves current context through Phase 6G. Stale
+  checkpoints return `BLOCKED` with `replanRequired` instead of silently
+  continuing.
+- Checkpoints never persist authority. No migration of prior route or
+  authority state exists or is needed.
+- No config change is required. Callers that never persist a checkpoint
+  keep the previous ephemeral-only behavior.
+
 # Migrating to 0.5.0
 
 0.5.0 adds a thin native adapter layer over the unchanged portable core.
