@@ -91,9 +91,13 @@ instructions.
 
 Universal uses `.agents/skills/`. Explicit harness targets use their native
 skill directories. Codex and Universal intentionally share `.agents/skills/`.
-OpenCode additionally receives native `/showdar/...` command files in
-`.opencode/commands/showdar/` (project) and
-`~/.config/opencode/commands/showdar/` (global).
+OpenCode and Claude Code receive generated `/showdar/...` commands (one per
+installed skill plus `/showdar/skill`) in `.opencode/commands/showdar/` and
+`.claude/commands/showdar/` respectively. Project instruction surfaces are
+`AGENTS.md` (universal/codex/opencode), `CLAUDE.md` (claude), and
+`.cursor/rules/showdar.mdc` (cursor); `--ai all` writes only the `AGENTS.md`
+block. Global installs include skills and commands where supported, with no
+managed instruction files.
 
 "Supported installation target" means skills install to the harness-native
 directory. It does not promise identical implicit invocation, cloud,
