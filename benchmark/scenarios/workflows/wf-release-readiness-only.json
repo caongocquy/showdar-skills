@@ -1,0 +1,35 @@
+{
+  "id": "wf-release-readiness-only",
+  "workflow": "showdar-release",
+  "selection": {
+    "selectedStages": ["showdar-quality", "showdar-ship"],
+    "candidateStages": ["showdar-quality", "showdar-security", "showdar-ship", "showdar-ops"]
+  },
+  "steps": [
+    { "op": "skip", "stage": "showdar-ops", "reason": "readiness-only", "policy": "readiness-only", "evidence": [] },
+    { "op": "start", "stage": "showdar-quality" },
+    { "op": "complete", "stage": "showdar-quality", "receipts": [{ "kind": "architecture-understood", "quality": "verified", "source": "showdar-quality" }] },
+    { "op": "start", "stage": "showdar-ship" },
+    { "op": "complete", "stage": "showdar-ship", "receipts": [{ "kind": "release-readiness-verified", "quality": "verified", "source": "showdar-ship" }, { "kind": "package-verified", "quality": "verified", "source": "showdar-ship" }] },
+    { "op": "finalize" }
+  ],
+  "resolutionStubs": {},
+  "expected": {
+    "status": "COMPLETE",
+    "nextStage": null,
+    "selectedStages": ["showdar-quality", "showdar-ship"],
+    "completedStages": ["showdar-quality", "showdar-ship"],
+    "skippedStages": ["showdar-ops"],
+    "trace": [
+      { "type": "workflow-created", "stage": null, "detail": { "selectedStages": ["showdar-quality", "showdar-ship"], "candidateStages": ["showdar-quality", "showdar-security", "showdar-ship", "showdar-ops"] } },
+      { "type": "stages-selected", "stage": null, "detail": { "selectedStages": ["showdar-quality", "showdar-ship"] } },
+      { "type": "stage-skipped", "stage": "showdar-ops", "detail": { "reason": "readiness-only", "policy": "readiness-only", "evidence": [] } },
+      { "type": "stage-entered", "stage": "showdar-quality", "detail": {} },
+      { "type": "stage-completed", "stage": "showdar-quality", "detail": { "receiptKinds": ["architecture-understood"], "receiptQualities": ["verified"] } },
+      { "type": "stage-entered", "stage": "showdar-ship", "detail": {} },
+      { "type": "stage-completed", "stage": "showdar-ship", "detail": { "receiptKinds": ["package-verified", "release-readiness-verified"], "receiptQualities": ["verified", "verified"] } },
+      { "type": "workflow-completed", "stage": null, "detail": { "completedStages": ["showdar-quality", "showdar-ship"], "skippedStages": ["showdar-ops"] } },
+      { "type": "workflow-completed", "stage": null, "detail": { "completedStages": ["showdar-quality", "showdar-ship"], "skippedStages": ["showdar-ops"] } }
+    ]
+  }
+}

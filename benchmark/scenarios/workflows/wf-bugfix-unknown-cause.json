@@ -1,0 +1,43 @@
+{
+  "id": "wf-bugfix-unknown-cause",
+  "workflow": "showdar-bugfix",
+  "selection": {
+    "selectedStages": ["showdar-understand", "showdar-debug", "showdar-build", "showdar-test", "showdar-review"]
+  },
+  "steps": [
+    { "op": "start", "stage": "showdar-understand" },
+    { "op": "complete", "stage": "showdar-understand", "receipts": [{ "kind": "architecture-understood", "quality": "verified", "source": "showdar-understand" }] },
+    { "op": "start", "stage": "showdar-debug" },
+    { "op": "complete", "stage": "showdar-debug", "receipts": [{ "kind": "failure-reproduced", "quality": "verified", "source": "showdar-debug" }, { "kind": "root-cause-proven", "quality": "verified", "source": "showdar-debug" }] },
+    { "op": "start", "stage": "showdar-build" },
+    { "op": "complete", "stage": "showdar-build", "receipts": [{ "kind": "change-implemented", "quality": "verified", "source": "showdar-build" }] },
+    { "op": "start", "stage": "showdar-test" },
+    { "op": "complete", "stage": "showdar-test", "receipts": [{ "kind": "targeted-tests-passed", "quality": "verified", "source": "showdar-test" }, { "kind": "regression-proof-added", "quality": "verified", "source": "showdar-test" }] },
+    { "op": "start", "stage": "showdar-review" },
+    { "op": "complete", "stage": "showdar-review", "receipts": [{ "kind": "targeted-tests-passed", "quality": "verified", "source": "showdar-review" }] },
+    { "op": "finalize" }
+  ],
+  "resolutionStubs": {},
+  "expected": {
+    "status": "COMPLETE",
+    "nextStage": null,
+    "selectedStages": ["showdar-understand", "showdar-debug", "showdar-build", "showdar-test", "showdar-review"],
+    "completedStages": ["showdar-understand", "showdar-debug", "showdar-build", "showdar-test", "showdar-review"],
+    "skippedStages": [],
+    "trace": [
+      { "type": "workflow-created", "stage": null, "detail": { "selectedStages": ["showdar-understand", "showdar-debug", "showdar-build", "showdar-test", "showdar-review"], "candidateStages": ["showdar-understand", "showdar-debug", "showdar-build", "showdar-test", "showdar-review"] } },
+      { "type": "stage-entered", "stage": "showdar-understand", "detail": {} },
+      { "type": "stage-completed", "stage": "showdar-understand", "detail": { "receiptKinds": ["architecture-understood"], "receiptQualities": ["verified"] } },
+      { "type": "stage-entered", "stage": "showdar-debug", "detail": {} },
+      { "type": "stage-completed", "stage": "showdar-debug", "detail": { "receiptKinds": ["failure-reproduced", "root-cause-proven"], "receiptQualities": ["verified", "verified"] } },
+      { "type": "stage-entered", "stage": "showdar-build", "detail": {} },
+      { "type": "stage-completed", "stage": "showdar-build", "detail": { "receiptKinds": ["change-implemented"], "receiptQualities": ["verified"] } },
+      { "type": "stage-entered", "stage": "showdar-test", "detail": {} },
+      { "type": "stage-completed", "stage": "showdar-test", "detail": { "receiptKinds": ["regression-proof-added", "targeted-tests-passed"], "receiptQualities": ["verified", "verified"] } },
+      { "type": "stage-entered", "stage": "showdar-review", "detail": {} },
+      { "type": "stage-completed", "stage": "showdar-review", "detail": { "receiptKinds": ["targeted-tests-passed"], "receiptQualities": ["verified"] } },
+      { "type": "workflow-completed", "stage": null, "detail": { "completedStages": ["showdar-understand", "showdar-debug", "showdar-build", "showdar-test", "showdar-review"], "skippedStages": [] } },
+      { "type": "workflow-completed", "stage": null, "detail": { "completedStages": ["showdar-understand", "showdar-debug", "showdar-build", "showdar-test", "showdar-review"], "skippedStages": [] } }
+    ]
+  }
+}

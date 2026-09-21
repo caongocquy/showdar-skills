@@ -1,0 +1,124 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Showdar workflow execution scenario",
+  "type": "object",
+  "required": ["id", "workflow", "selection", "steps", "resolutionStubs", "expected"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "workflow": { "enum": ["showdar-feature", "showdar-bugfix", "showdar-release", "showdar-incident"] },
+    "selection": {
+      "type": "object",
+      "required": ["selectedStages"],
+      "additionalProperties": false,
+      "properties": {
+        "selectedStages": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "candidateStages": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["op"],
+        "additionalProperties": false,
+        "properties": {
+          "op": { "enum": ["start", "complete", "skip", "record", "block", "unblock", "interrupt", "resume", "finalize"] },
+          "stage": { "type": "string" },
+          "receipts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["kind", "quality", "source"],
+              "additionalProperties": false,
+              "properties": {
+                "kind": { "type": "string" },
+                "quality": { "enum": ["claimed", "observed", "verified", "failed", "missing"] },
+                "source": { "type": "string" },
+                "detail": { "type": "string" }
+              }
+            }
+          },
+          "reason": { "type": "string" },
+          "policy": { "type": "string" },
+          "evidence": { "type": "array", "items": { "type": "string" } },
+          "blocker": {
+            "type": "object",
+            "required": ["id", "reason", "type"],
+            "additionalProperties": false,
+            "properties": {
+              "id": { "type": "string" },
+              "reason": { "type": "string" },
+              "type": { "enum": ["authorization", "business-rule", "evidence", "external-decision", "other"] }
+            }
+          },
+          "blockerId": { "type": "string" },
+          "resolution": { "type": "string" },
+          "interruptReason": { "type": "string" },
+          "mustThrow": { "type": "boolean" }
+        }
+      }
+    },
+    "expectCreation": {
+      "type": "object",
+      "required": ["ok"],
+      "additionalProperties": false,
+      "properties": {
+        "ok": { "type": "boolean" },
+        "errorMatch": { "type": "string" }
+      }
+    },
+    "resolutionStubs": {
+      "type": "object",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^[a-z0-9-]+$": {
+          "type": "object",
+          "required": ["primary"],
+          "additionalProperties": false,
+          "properties": {
+            "primary": {
+              "type": "object",
+              "required": ["skill"],
+              "additionalProperties": false,
+              "properties": { "skill": { "type": "string" } }
+            },
+            "verificationPlan": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "required": { "type": "array", "items": { "type": "string" } }
+              }
+            }
+          }
+        }
+      }
+    },
+    "expected": {
+      "type": "object",
+      "required": ["status", "trace"],
+      "additionalProperties": false,
+      "properties": {
+        "status": { "enum": ["NEW", "READY", "ACTIVE", "COMPLETE", "INTERRUPTED", "BLOCKED"] },
+        "nextStage": { "type": ["string", "null"] },
+        "selectedStages": { "type": "array", "items": { "type": "string" } },
+        "completedStages": { "type": "array", "items": { "type": "string" } },
+        "skippedStages": { "type": "array", "items": { "type": "string" } },
+        "replanRequired": { "type": "boolean" },
+        "trace": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["type", "stage", "detail"],
+            "additionalProperties": false,
+            "properties": {
+              "type": { "type": "string" },
+              "stage": { "type": ["string", "null"] },
+              "detail": { "type": "object" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

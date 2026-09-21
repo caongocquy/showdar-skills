@@ -1,0 +1,38 @@
+{
+  "id": "wf-release-no-deploy-authority",
+  "workflow": "showdar-release",
+  "selection": {
+    "selectedStages": ["showdar-quality", "showdar-ship"]
+  },
+  "steps": [
+    { "op": "start", "stage": "showdar-quality" },
+    { "op": "complete", "stage": "showdar-quality", "receipts": [{ "kind": "architecture-understood", "quality": "verified", "source": "showdar-quality" }] },
+    { "op": "start", "stage": "showdar-ship" },
+    { "op": "complete", "stage": "showdar-ship", "receipts": [{ "kind": "release-readiness-verified", "quality": "verified", "source": "showdar-ship" }] },
+    { "op": "interrupt", "interruptReason": "pause before deploy question" },
+    { "op": "resume", "resolution": "ops-requested" }
+  ],
+  "resolutionStubs": {
+    "ops-requested": { "primary": { "skill": "showdar-ops" }, "verificationPlan": { "required": [] } }
+  },
+  "expected": {
+    "status": "BLOCKED",
+    "nextStage": null,
+    "selectedStages": ["showdar-quality", "showdar-ship"],
+    "completedStages": ["showdar-quality", "showdar-ship"],
+    "skippedStages": [],
+    "replanRequired": true,
+    "trace": [
+      { "type": "workflow-created", "stage": null, "detail": { "selectedStages": ["showdar-quality", "showdar-ship"], "candidateStages": ["showdar-quality", "showdar-security", "showdar-ship", "showdar-ops"] } },
+      { "type": "stages-selected", "stage": null, "detail": { "selectedStages": ["showdar-quality", "showdar-ship"] } },
+      { "type": "stage-entered", "stage": "showdar-quality", "detail": {} },
+      { "type": "stage-completed", "stage": "showdar-quality", "detail": { "receiptKinds": ["architecture-understood"], "receiptQualities": ["verified"] } },
+      { "type": "stage-entered", "stage": "showdar-ship", "detail": {} },
+      { "type": "stage-completed", "stage": "showdar-ship", "detail": { "receiptKinds": ["release-readiness-verified"], "receiptQualities": ["verified"] } },
+      { "type": "workflow-completed", "stage": null, "detail": { "completedStages": ["showdar-quality", "showdar-ship"], "skippedStages": [] } },
+      { "type": "workflow-interrupted", "stage": null, "detail": {} },
+      { "type": "workflow-resumed", "stage": null, "detail": { "outcome": "blocked", "staleReason": "primary-skill-shifted" } },
+      { "type": "workflow-blocked", "stage": null, "detail": { "blockerIds": ["stale-checkpoint"], "blockerTypes": ["evidence"] } }
+    ]
+  }
+}

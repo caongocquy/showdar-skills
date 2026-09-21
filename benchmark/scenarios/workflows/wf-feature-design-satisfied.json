@@ -1,0 +1,43 @@
+{
+  "id": "wf-feature-design-satisfied",
+  "workflow": "showdar-feature",
+  "selection": {
+    "selectedStages": ["showdar-understand", "showdar-build", "showdar-test", "showdar-review"],
+    "candidateStages": ["showdar-understand", "showdar-requirements", "showdar-plan", "showdar-design", "showdar-build", "showdar-test", "showdar-review"]
+  },
+  "steps": [
+    { "op": "skip", "stage": "showdar-design", "reason": "no-ux-decision", "policy": "no-ux-decision", "evidence": [] },
+    { "op": "start", "stage": "showdar-understand" },
+    { "op": "complete", "stage": "showdar-understand", "receipts": [{ "kind": "architecture-understood", "quality": "verified", "source": "showdar-understand" }] },
+    { "op": "start", "stage": "showdar-build" },
+    { "op": "complete", "stage": "showdar-build", "receipts": [{ "kind": "change-implemented", "quality": "verified", "source": "showdar-build" }] },
+    { "op": "start", "stage": "showdar-test" },
+    { "op": "complete", "stage": "showdar-test", "receipts": [{ "kind": "targeted-tests-passed", "quality": "verified", "source": "showdar-test" }] },
+    { "op": "start", "stage": "showdar-review" },
+    { "op": "complete", "stage": "showdar-review", "receipts": [{ "kind": "targeted-tests-passed", "quality": "verified", "source": "showdar-review" }] },
+    { "op": "finalize" }
+  ],
+  "resolutionStubs": {},
+  "expected": {
+    "status": "COMPLETE",
+    "nextStage": null,
+    "selectedStages": ["showdar-understand", "showdar-build", "showdar-test", "showdar-review"],
+    "completedStages": ["showdar-understand", "showdar-build", "showdar-test", "showdar-review"],
+    "skippedStages": ["showdar-design"],
+    "trace": [
+      { "type": "workflow-created", "stage": null, "detail": { "selectedStages": ["showdar-understand", "showdar-build", "showdar-test", "showdar-review"], "candidateStages": ["showdar-understand", "showdar-requirements", "showdar-plan", "showdar-design", "showdar-build", "showdar-test", "showdar-review"] } },
+      { "type": "stages-selected", "stage": null, "detail": { "selectedStages": ["showdar-understand", "showdar-build", "showdar-test", "showdar-review"] } },
+      { "type": "stage-skipped", "stage": "showdar-design", "detail": { "reason": "no-ux-decision", "policy": "no-ux-decision", "evidence": [] } },
+      { "type": "stage-entered", "stage": "showdar-understand", "detail": {} },
+      { "type": "stage-completed", "stage": "showdar-understand", "detail": { "receiptKinds": ["architecture-understood"], "receiptQualities": ["verified"] } },
+      { "type": "stage-entered", "stage": "showdar-build", "detail": {} },
+      { "type": "stage-completed", "stage": "showdar-build", "detail": { "receiptKinds": ["change-implemented"], "receiptQualities": ["verified"] } },
+      { "type": "stage-entered", "stage": "showdar-test", "detail": {} },
+      { "type": "stage-completed", "stage": "showdar-test", "detail": { "receiptKinds": ["targeted-tests-passed"], "receiptQualities": ["verified"] } },
+      { "type": "stage-entered", "stage": "showdar-review", "detail": {} },
+      { "type": "stage-completed", "stage": "showdar-review", "detail": { "receiptKinds": ["targeted-tests-passed"], "receiptQualities": ["verified"] } },
+      { "type": "workflow-completed", "stage": null, "detail": { "completedStages": ["showdar-understand", "showdar-build", "showdar-test", "showdar-review"], "skippedStages": ["showdar-design"] } },
+      { "type": "workflow-completed", "stage": null, "detail": { "completedStages": ["showdar-understand", "showdar-build", "showdar-test", "showdar-review"], "skippedStages": ["showdar-design"] } }
+    ]
+  }
+}

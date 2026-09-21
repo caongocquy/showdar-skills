@@ -1,0 +1,27 @@
+{
+  "id": "wf-bugfix-symptom-only-skip",
+  "workflow": "showdar-bugfix",
+  "selection": {
+    "selectedStages": ["showdar-understand", "showdar-build", "showdar-test", "showdar-review"],
+    "candidateStages": ["showdar-understand", "showdar-debug", "showdar-build", "showdar-test", "showdar-review"]
+  },
+  "steps": [
+    { "op": "start", "stage": "showdar-understand" },
+    { "op": "complete", "stage": "showdar-understand", "receipts": [{ "kind": "architecture-understood", "quality": "verified", "source": "showdar-understand" }] },
+    { "op": "skip", "stage": "showdar-debug", "reason": "known-root-cause", "policy": "known-root-cause", "evidence": [], "mustThrow": true }
+  ],
+  "resolutionStubs": {},
+  "expected": {
+    "status": "READY",
+    "nextStage": "showdar-build",
+    "selectedStages": ["showdar-understand", "showdar-build", "showdar-test", "showdar-review"],
+    "completedStages": ["showdar-understand"],
+    "skippedStages": [],
+    "trace": [
+      { "type": "workflow-created", "stage": null, "detail": { "selectedStages": ["showdar-understand", "showdar-build", "showdar-test", "showdar-review"], "candidateStages": ["showdar-understand", "showdar-debug", "showdar-build", "showdar-test", "showdar-review"] } },
+      { "type": "stages-selected", "stage": null, "detail": { "selectedStages": ["showdar-understand", "showdar-build", "showdar-test", "showdar-review"] } },
+      { "type": "stage-entered", "stage": "showdar-understand", "detail": {} },
+      { "type": "stage-completed", "stage": "showdar-understand", "detail": { "receiptKinds": ["architecture-understood"], "receiptQualities": ["verified"] } }
+    ]
+  }
+}

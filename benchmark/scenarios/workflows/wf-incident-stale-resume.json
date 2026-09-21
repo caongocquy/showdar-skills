@@ -1,0 +1,33 @@
+{
+  "id": "wf-incident-stale-resume",
+  "workflow": "showdar-incident",
+  "selection": {
+    "selectedStages": ["showdar-understand", "showdar-debug", "showdar-recover", "showdar-test"]
+  },
+  "steps": [
+    { "op": "start", "stage": "showdar-understand" },
+    { "op": "complete", "stage": "showdar-understand", "receipts": [{ "kind": "architecture-understood", "quality": "verified", "source": "showdar-understand" }] },
+    { "op": "interrupt", "interruptReason": "handoff pause" },
+    { "op": "resume", "resolution": "shifted-to-build" }
+  ],
+  "resolutionStubs": {
+    "shifted-to-build": { "primary": { "skill": "showdar-build" }, "verificationPlan": { "required": [] } }
+  },
+  "expected": {
+    "status": "BLOCKED",
+    "nextStage": "showdar-debug",
+    "selectedStages": ["showdar-understand", "showdar-debug", "showdar-recover", "showdar-test"],
+    "completedStages": ["showdar-understand"],
+    "skippedStages": [],
+    "replanRequired": true,
+    "trace": [
+      { "type": "workflow-created", "stage": null, "detail": { "selectedStages": ["showdar-understand", "showdar-debug", "showdar-recover", "showdar-test"], "candidateStages": ["showdar-understand", "showdar-debug", "showdar-recover", "showdar-test", "showdar-ops"] } },
+      { "type": "stages-selected", "stage": null, "detail": { "selectedStages": ["showdar-understand", "showdar-debug", "showdar-recover", "showdar-test"] } },
+      { "type": "stage-entered", "stage": "showdar-understand", "detail": {} },
+      { "type": "stage-completed", "stage": "showdar-understand", "detail": { "receiptKinds": ["architecture-understood"], "receiptQualities": ["verified"] } },
+      { "type": "workflow-interrupted", "stage": null, "detail": {} },
+      { "type": "workflow-resumed", "stage": null, "detail": { "outcome": "blocked", "staleReason": "workflow-no-longer-applicable" } },
+      { "type": "workflow-blocked", "stage": null, "detail": { "blockerIds": ["stale-checkpoint"], "blockerTypes": ["evidence"] } }
+    ]
+  }
+}

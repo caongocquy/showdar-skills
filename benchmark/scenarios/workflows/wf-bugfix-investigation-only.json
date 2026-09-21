@@ -1,0 +1,14 @@
+{
+  "id": "wf-bugfix-investigation-only",
+  "workflow": "showdar-bugfix",
+  "selection": {
+    "selectedStages": ["showdar-understand", "showdar-debug"]
+  },
+  "steps": [],
+  "expectCreation": { "ok": false, "errorMatch": "required stage" },
+  "resolutionStubs": {},
+  "expected": {
+    "status": "READY",
+    "trace": []
+  }
+}

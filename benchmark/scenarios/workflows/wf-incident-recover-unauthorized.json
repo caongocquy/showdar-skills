@@ -1,0 +1,43 @@
+{
+  "id": "wf-incident-recover-unauthorized",
+  "workflow": "showdar-incident",
+  "selection": {
+    "selectedStages": ["showdar-understand", "showdar-debug", "showdar-recover", "showdar-test"]
+  },
+  "steps": [
+    { "op": "start", "stage": "showdar-understand" },
+    { "op": "complete", "stage": "showdar-understand", "receipts": [{ "kind": "architecture-understood", "quality": "verified", "source": "showdar-understand" }] },
+    { "op": "start", "stage": "showdar-debug" },
+    { "op": "complete", "stage": "showdar-debug", "receipts": [{ "kind": "root-cause-proven", "quality": "verified", "source": "showdar-debug" }] },
+    { "op": "block", "blocker": { "id": "prod-auth", "reason": "production recovery requires explicit authorization", "type": "authorization" } },
+    { "op": "unblock", "blockerId": "prod-auth" },
+    { "op": "start", "stage": "showdar-recover" },
+    { "op": "complete", "stage": "showdar-recover", "receipts": [{ "kind": "change-implemented", "quality": "verified", "source": "showdar-recover" }] },
+    { "op": "start", "stage": "showdar-test" },
+    { "op": "complete", "stage": "showdar-test", "receipts": [{ "kind": "targeted-tests-passed", "quality": "verified", "source": "showdar-test" }] },
+    { "op": "finalize" }
+  ],
+  "resolutionStubs": {},
+  "expected": {
+    "status": "COMPLETE",
+    "nextStage": null,
+    "selectedStages": ["showdar-understand", "showdar-debug", "showdar-recover", "showdar-test"],
+    "completedStages": ["showdar-understand", "showdar-debug", "showdar-recover", "showdar-test"],
+    "skippedStages": [],
+    "trace": [
+      { "type": "workflow-created", "stage": null, "detail": { "selectedStages": ["showdar-understand", "showdar-debug", "showdar-recover", "showdar-test"], "candidateStages": ["showdar-understand", "showdar-debug", "showdar-recover", "showdar-test", "showdar-ops"] } },
+      { "type": "stages-selected", "stage": null, "detail": { "selectedStages": ["showdar-understand", "showdar-debug", "showdar-recover", "showdar-test"] } },
+      { "type": "stage-entered", "stage": "showdar-understand", "detail": {} },
+      { "type": "stage-completed", "stage": "showdar-understand", "detail": { "receiptKinds": ["architecture-understood"], "receiptQualities": ["verified"] } },
+      { "type": "stage-entered", "stage": "showdar-debug", "detail": {} },
+      { "type": "stage-completed", "stage": "showdar-debug", "detail": { "receiptKinds": ["root-cause-proven"], "receiptQualities": ["verified"] } },
+      { "type": "workflow-blocked", "stage": null, "detail": { "blockerIds": ["prod-auth"], "blockerTypes": ["authorization"] } },
+      { "type": "stage-entered", "stage": "showdar-recover", "detail": {} },
+      { "type": "stage-completed", "stage": "showdar-recover", "detail": { "receiptKinds": ["change-implemented"], "receiptQualities": ["verified"] } },
+      { "type": "stage-entered", "stage": "showdar-test", "detail": {} },
+      { "type": "stage-completed", "stage": "showdar-test", "detail": { "receiptKinds": ["targeted-tests-passed"], "receiptQualities": ["verified"] } },
+      { "type": "workflow-completed", "stage": null, "detail": { "completedStages": ["showdar-understand", "showdar-debug", "showdar-recover", "showdar-test"], "skippedStages": [] } },
+      { "type": "workflow-completed", "stage": null, "detail": { "completedStages": ["showdar-understand", "showdar-debug", "showdar-recover", "showdar-test"], "skippedStages": [] } }
+    ]
+  }
+}

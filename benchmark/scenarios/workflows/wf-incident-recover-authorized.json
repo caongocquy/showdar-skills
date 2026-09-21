@@ -1,0 +1,43 @@
+{
+  "id": "wf-incident-recover-authorized",
+  "workflow": "showdar-incident",
+  "selection": {
+    "selectedStages": ["showdar-understand", "showdar-debug", "showdar-recover", "showdar-test", "showdar-ops"]
+  },
+  "steps": [
+    { "op": "start", "stage": "showdar-understand" },
+    { "op": "complete", "stage": "showdar-understand", "receipts": [{ "kind": "architecture-understood", "quality": "verified", "source": "showdar-understand" }] },
+    { "op": "start", "stage": "showdar-debug" },
+    { "op": "complete", "stage": "showdar-debug", "receipts": [{ "kind": "root-cause-proven", "quality": "verified", "source": "showdar-debug" }] },
+    { "op": "start", "stage": "showdar-recover" },
+    { "op": "complete", "stage": "showdar-recover", "receipts": [{ "kind": "change-implemented", "quality": "verified", "source": "showdar-recover" }] },
+    { "op": "start", "stage": "showdar-test" },
+    { "op": "complete", "stage": "showdar-test", "receipts": [{ "kind": "targeted-tests-passed", "quality": "verified", "source": "showdar-test" }] },
+    { "op": "start", "stage": "showdar-ops" },
+    { "op": "complete", "stage": "showdar-ops", "receipts": [{ "kind": "deployment-verified", "quality": "verified", "source": "showdar-ops" }] },
+    { "op": "finalize" }
+  ],
+  "resolutionStubs": {},
+  "expected": {
+    "status": "COMPLETE",
+    "nextStage": null,
+    "selectedStages": ["showdar-understand", "showdar-debug", "showdar-recover", "showdar-test", "showdar-ops"],
+    "completedStages": ["showdar-understand", "showdar-debug", "showdar-recover", "showdar-test", "showdar-ops"],
+    "skippedStages": [],
+    "trace": [
+      { "type": "workflow-created", "stage": null, "detail": { "selectedStages": ["showdar-understand", "showdar-debug", "showdar-recover", "showdar-test", "showdar-ops"], "candidateStages": ["showdar-understand", "showdar-debug", "showdar-recover", "showdar-test", "showdar-ops"] } },
+      { "type": "stage-entered", "stage": "showdar-understand", "detail": {} },
+      { "type": "stage-completed", "stage": "showdar-understand", "detail": { "receiptKinds": ["architecture-understood"], "receiptQualities": ["verified"] } },
+      { "type": "stage-entered", "stage": "showdar-debug", "detail": {} },
+      { "type": "stage-completed", "stage": "showdar-debug", "detail": { "receiptKinds": ["root-cause-proven"], "receiptQualities": ["verified"] } },
+      { "type": "stage-entered", "stage": "showdar-recover", "detail": {} },
+      { "type": "stage-completed", "stage": "showdar-recover", "detail": { "receiptKinds": ["change-implemented"], "receiptQualities": ["verified"] } },
+      { "type": "stage-entered", "stage": "showdar-test", "detail": {} },
+      { "type": "stage-completed", "stage": "showdar-test", "detail": { "receiptKinds": ["targeted-tests-passed"], "receiptQualities": ["verified"] } },
+      { "type": "stage-entered", "stage": "showdar-ops", "detail": {} },
+      { "type": "stage-completed", "stage": "showdar-ops", "detail": { "receiptKinds": ["deployment-verified"], "receiptQualities": ["verified"] } },
+      { "type": "workflow-completed", "stage": null, "detail": { "completedStages": ["showdar-understand", "showdar-debug", "showdar-recover", "showdar-test", "showdar-ops"], "skippedStages": [] } },
+      { "type": "workflow-completed", "stage": null, "detail": { "completedStages": ["showdar-understand", "showdar-debug", "showdar-recover", "showdar-test", "showdar-ops"], "skippedStages": [] } }
+    ]
+  }
+}
