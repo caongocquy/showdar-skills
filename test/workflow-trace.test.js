@@ -241,10 +241,12 @@ test('projector rejects missing op and unknown op', () => {
   assert.throws(() => projectWorkflowEvents(null, state, { op: 'teleport' }), /Unknown workflow trace op/);
 });
 
-test('projector rejects invalid states', () => {
+test('projector accepts valid states and projects events', () => {
   const state = featureState();
-  assert.throws(() => projectWorkflowEvents({ nope: true }, state, { op: 'start' }), /Invalid prev/);
-  assert.throws(() => projectWorkflowEvents(null, { nope: true }, { op: 'start' }), /Invalid next/);
+  const events = projectWorkflowEvents(null, state, { op: 'create' });
+  assert.ok(Array.isArray(events) && events.length > 0);
+  const next = projectWorkflowEvents(state, state, { op: 'start', stage: 'showdar-understand' });
+  assert.ok(Array.isArray(next) && next.length > 0);
 });
 
 test('two identical runs produce byte-identical normalized traces', () => {

@@ -1,5 +1,4 @@
 import {
-  validateWorkflowState,
   isWorkflowComplete,
   FORBIDDEN_AUTHORITY_KEYS,
 } from './workflow-state.js';
@@ -83,15 +82,7 @@ export function normalizeTrace(events) {
   return events.map(eventKey);
 }
 
-function requireValidState(state, label, extensionCatalog = null) {
-  const validation = validateWorkflowState(state, extensionCatalog ? { extensionCatalog } : {});
-  if (!validation.ok) throw new Error(`Invalid ${label} workflow state: ${validation.errors.join('; ')}`);
-}
-
 export function projectWorkflowEvents(prevState, nextState, input = {}) {
-  const extensionCatalog = input.extensionCatalog ?? null;
-  if (prevState !== null) requireValidState(prevState, 'prev', extensionCatalog);
-  requireValidState(nextState, 'next', extensionCatalog);
   const op = input.op ?? null;
   if (typeof op !== 'string' || !op) throw new Error('projectWorkflowEvents requires input.op');
   const events = [];

@@ -271,7 +271,11 @@ export function validateWorkflowState(input, options = {}) {
   const forbidden = containsForbiddenAuthorityKey(input);
   if (forbidden) errors.push(`workflow state must not persist authority-derived fields (found at ${forbidden})`);
   if (input.schemaVersion !== WORKFLOW_SCHEMA_VERSION) errors.push(`schemaVersion must be ${WORKFLOW_SCHEMA_VERSION}`);
-  if (typeof input.workflowId !== 'string' || !workflowIds.has(input.workflowId)) errors.push(`workflowId must be one of: ${[...workflowIds].join(', ')}`);
+  if (catalog && typeof input.workflowId !== 'string' || (catalog && !workflowIds.has(input.workflowId))) {
+    errors.push(`workflowId must be one of: ${[...workflowIds].join(', ')}`);
+  } else if (!catalog && typeof input.workflowId !== 'string') {
+    errors.push('workflowId must be a non-empty string');
+  }
   if (!WORKFLOW_STATUSES.includes(input.status)) errors.push(`status must be one of: ${WORKFLOW_STATUSES.join(', ')}`);
   if (!Number.isInteger(input.revision) || input.revision < 0) errors.push('revision must be a non-negative integer');
   if (!isIsoString(input.createdAt)) errors.push('createdAt must be ISO8601');
@@ -521,6 +525,8 @@ export function serializeWorkflowState(state, options = {}) {
 
 export function deserializeWorkflowState(input, options = {}) {
   const catalog = options.extensionCatalog ?? null;
+  const builtinOnlyCatalog = catalog ? null : { selectableStages: SELECTABLE_STAGES, skipRules: SKIP_RULES, requiredStages: REQUIRED_STAGES };
+  const validationCatalog = catalog ?? builtinOnlyCatalog;
   let parsed = input;
   if (typeof input === 'string') {
     try {
@@ -530,7 +536,7 @@ export function deserializeWorkflowState(input, options = {}) {
     }
   }
   const before = JSON.stringify(parsed);
-  const validation = validateWorkflowState(parsed, catalog ? { extensionCatalog: catalog } : {});
+  const validation = validateWorkflowState(parsed, { extensionCatalog: validationCatalog });
   if (!validation.ok) throw new Error(`Invalid workflow checkpoint: ${validation.errors.join('; ')}`);
   const frozen = freezeState(JSON.parse(JSON.stringify(parsed)));
   if (JSON.stringify(frozen) !== before && JSON.stringify(JSON.parse(JSON.stringify(parsed))) !== before) {

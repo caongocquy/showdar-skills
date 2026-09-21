@@ -148,8 +148,7 @@ export function runWorkflowScenario(scenario, extensionCatalog = null) {
   }
   if (!creation.ok) return { pass: false, failures: [`creation failed: ${creation.errors.join('; ')}`], keys: [] };
   let state = creation.value;
-  const traceCtx = extensionCatalog ? { extensionCatalog } : {};
-  let events = [...projectWorkflowEvents(null, state, { op: 'create', ...traceCtx })];
+  let events = [...projectWorkflowEvents(null, state, { op: 'create' })];
   let replanRequired = false;
   for (const step of scenario.steps ?? []) {
     if (step.mustThrow) {
@@ -170,7 +169,7 @@ export function runWorkflowScenario(scenario, extensionCatalog = null) {
       return { pass: false, failures: [`M8 accepted step ${step.op} did not bump revision exactly once`], keys: normalizeTrace(events) };
     }
     if (stepReplan !== undefined) replanRequired = stepReplan;
-    events = [...events, ...projectWorkflowEvents(prev, next, { ...input, ...traceCtx })];
+    events = [...events, ...projectWorkflowEvents(prev, next, input)];
     state = next;
   }
   const keys = normalizeTrace(events);
