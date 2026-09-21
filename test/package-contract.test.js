@@ -74,6 +74,8 @@ test('packed package ships 15 primitives plus 4 workflows as 19 installable skil
     assert.ok(files.includes('src/evidence-state.js'), 'packed package must ship primitive evidence state');
     assert.ok(files.includes('src/workflow-state.js'), 'packed package must ship portable workflow execution state');
     assert.ok(files.includes('src/workflow-trace.js'), 'packed package must ship workflow trace projection');
+    assert.ok(!files.some((file) => file.startsWith('benchmark/')), 'workflow benchmark assets must stay dev-only');
+    assert.ok(!files.includes('scripts/workflow-observability-eval.mjs'), 'workflow eval driver must stay dev-only');
     assert.ok(files.includes('src/adapters.js'), 'packed package must ship native adapter table');
     assert.ok(files.includes('src/adapter-renderers.js'), 'packed package must ship canonical adapter renderers');
   } finally {

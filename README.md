@@ -454,6 +454,28 @@ authority content. Nothing persists them automatically; the benchmark
 corpus (`npm run eval:workflows`) uses them to verify selection, skip,
 resume, and completion behavior deterministically.
 
+A workflow trace does not mutate workflow state, affect routing or
+authority, persist automatically, or send telemetry. The 10 event
+categories are `workflow-created`, `stages-selected`, `stage-entered`,
+`evidence-recorded`, `stage-completed`, `stage-skipped`,
+`workflow-blocked`, `workflow-interrupted`, `workflow-resumed`, and
+`workflow-completed`.
+
+### Evaluation
+
+```bash
+npm run eval:retrieval  # retrieval evaluation (unchanged behavior)
+npm run eval:workflows  # deterministic workflow semantic benchmark
+npm run eval            # both, sequentially (release-blocking)
+```
+
+Workflow evaluation asserts exact M1–M10 invariants (selection accuracy,
+invalid-skip rejection, verification preservation, stale-resume blocking,
+authority invariance, completion, trace equality, revision monotonicity,
+checkpoint round-trip, skip-evidence backing) with no fuzzy score
+thresholds. `npm run check` (test/validate/pack) does not run the
+benchmark; the release pipeline runs `npm run eval`, gating both suites.
+
 ## A typical software workflow
 
 ```text

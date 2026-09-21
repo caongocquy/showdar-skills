@@ -1,3 +1,20 @@
+# Migrating to 0.7.0
+
+0.7.0 adds deterministic workflow trace projection
+(`src/workflow-trace.js`) and a workflow benchmark corpus over the
+unchanged 0.6 runtime. No user action is required.
+
+- Existing 0.6 installs and configs remain valid: no workflow-state
+  schema migration (still schemaVersion 1), no config migration, no
+  adapter migration, no checkpoint migration.
+- Runtime workflow semantics are unchanged; traces observe released
+  behavior only and never affect execution, routing, or authority.
+- The new `src/workflow-trace.js` module ships in the package; benchmark
+  scenarios, schema, loader, and eval driver are development/release
+  tooling and do not ship.
+- No telemetry, network reporting, automatic storage, or tracking is
+  introduced.
+
 # Migrating to 0.6.0
 
 0.6.0 adds portable workflow execution state (`src/workflow-state.js`,
