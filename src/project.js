@@ -15,6 +15,7 @@ import {
 import { normalizeSkillName, ALL_SKILLS } from './catalog.js';
 import { assertSafeManagedPath, lstatWithoutSymlink, safeOwnedPath } from './path-safety.js';
 import { renderManagedBlock, renderShowdarCommand, renderShowdarAggregator } from './adapter-renderers.js';
+import { validatePack } from './validate-pack.js';
 
 const PROJECT_MANIFEST = '.showdar.json';
 const START = '<!-- showdar-skills:start -->';
@@ -701,3 +702,240 @@ export async function removeProject(projectRoot) {
 export async function removeGlobal({ homeRoot = homedir() } = {}) {
   await removeInstallation({ baseRoot: homeRoot, manifestPath: globalManifestPath(homeRoot), scope: 'global', homeRoot });
 }
+
+export const EXTENSION_DIR = '.showdar/extensions';
+export const OVERRIDES_FILE = '.showdar/overrides.json';
+const SHA_HEX_RE = /^[a-f0-9]{64}$/;
+const REMOTE_SOURCE_RE = /^(https?:\/\/|git:\/\/|ssh:\/\/|git\+|github:|npm:)/i;
+const SCP_LIKE_RE = /^[^/:@\s]+@[^:\s]+:/;
+
+function rejectRemoteSource(source) {
+  if (typeof source !== 'string' || !source.trim()) throw new Error('Extension source must be a non-empty local path.');
+  const value = source.trim();
+  if (REMOTE_SOURCE_RE.test(value) || SCP_LIKE_RE.test(value) || value.includes('://')) {
+    throw new Error(`Remote extension sources are not supported in 0.8: ${source}`);
+  }
+  if (value.endsWith('.tgz') || value.endsWith('.tar.gz') || value.endsWith('.tar')) {
+    throw new Error(`Tarball pack sources are not supported in this build (no safe extractor available): ${source}`);
+  }
+  return value;
+}
+
+export async function resolvePackSource({ cwd, source }) {
+  const value = rejectRemoteSource(source);
+  const resolved = path.resolve(cwd, value);
+  const info = await lstatWithoutSymlink(resolved).catch(() => null);
+  if (!info || !info.isDirectory()) throw new Error(`Pack source is not a local directory: ${source}`);
+  return resolved;
+}
+
+async function readPackManifest(packRoot) {
+  let manifest;
+  try {
+    manifest = JSON.parse(await readFile(path.join(packRoot, 'pack.json'), 'utf8'));
+  } catch (error) {
+    throw new Error(`Invalid pack manifest: ${error.message}`);
+  }
+  return manifest;
+}
+
+async function buildPackFileList(packRoot, manifest) {
+  const files = [{ source: path.join(packRoot, 'pack.json'), relative: 'pack.json' }];
+  for (const skill of manifest.skills ?? []) {
+    const skillDir = path.join(packRoot, skill.path);
+    const entries = await readdir(skillDir, { recursive: true, withFileTypes: true }).catch(() => {
+      throw new Error(`Pack skill path unreadable: ${skill.id} -> ${skill.path}`);
+    });
+    for (const entry of entries) {
+      if (!entry.isFile()) continue;
+      const full = path.join(entry.parentPath ?? skillDir, entry.name);
+      files.push({ source: full, relative: path.relative(packRoot, full).replaceAll(path.sep, '/') });
+    }
+  }
+  for (const workflow of manifest.workflows ?? []) {
+    files.push({ source: path.join(packRoot, workflow.path), relative: workflow.path.replaceAll(path.sep, '/') });
+  }
+  const seen = new Set();
+  for (const file of files) {
+    if (seen.has(file.relative)) throw new Error(`Pack contains duplicate logical path: ${file.relative}`);
+    seen.add(file.relative);
+  }
+  return [...seen].sort().map((relative) => files.find((f) => f.relative === relative));
+}
+
+export async function addPack({ cwd, source, home = homedir(), packageVersion = '0.7.0' }) {
+  const packRoot = await resolvePackSource({ cwd, source });
+  const manifest = await readPackManifest(packRoot);
+  const validation = await validatePack(packRoot);
+  if (!validation.ok) throw new Error(`Invalid pack: ${validation.errors.join('; ')}`);
+  const manifestPath = path.join(cwd, PROJECT_MANIFEST);
+  const existing = await readManifest(manifestPath, cwd);
+  if (!existing) throw new Error('Showdar is not installed in project scope. Run "showdar init" first.');
+  const installed = new Map((existing.extensions?.packs ?? []).map((p) => [p.name, p]));
+  if (installed.has(manifest.name)) throw new Error(`Pack already installed: ${manifest.name}. Remove it first (showdar remove-pack).`);
+  const packHash = await hashTree(packRoot);
+  const fileList = await buildPackFileList(packRoot, manifest);
+  const priorOwned = ownedPathSet(existing);
+  const newFiles = [];
+  const destination = path.join(cwd, EXTENSION_DIR, 'packs', manifest.name);
+  for (const file of fileList) {
+    await assertSafeManagedPath(packRoot, file.source);
+    const dest = path.join(destination, file.relative);
+    await assertSafeManagedPath(cwd, dest);
+    const relative = manifestPathFor(cwd, dest);
+    if ((await exists(dest)) && !priorOwned.has(relative)) {
+      throw new Error(`Refusing to overwrite existing non-Showdar-managed file: ${dest}`);
+    }
+    await mkdir(path.dirname(dest), { recursive: true });
+    await cp(file.source, dest, { recursive: false });
+    newFiles.push({ path: relative, hash: await hashTree(dest), extension: true });
+  }
+  const merged = new Map((existing.files ?? []).map((e) => [e.path, e]));
+  for (const file of newFiles) merged.set(file.path, file);
+  const updated = {
+    ...existing,
+    files: [...merged.values()],
+    extensions: {
+      ...(existing.extensions ?? {}),
+      packs: [...(existing.extensions?.packs ?? []), {
+        name: manifest.name,
+        version: manifest.version,
+        source: path.relative(cwd, packRoot).replaceAll(path.sep, '/'),
+        hash: packHash,
+        installedAt: new Date().toISOString(),
+      }],
+      customWorkflows: [...(existing.extensions?.customWorkflows ?? []), ...((manifest.workflows ?? []).map((w) => ({
+        id: w.id,
+        source: `pack:${manifest.name}`,
+        path: `${EXTENSION_DIR}/packs/${manifest.name}/${w.path}`.replaceAll(path.sep, '/'),
+      })))],
+    },
+  };
+  await writeJsonAtomic(manifestPath, updated);
+  return { pack: manifest.name, version: manifest.version, hash: packHash, files: newFiles.length, destination };
+}
+
+export async function removePack({ cwd, name }) {
+  if (typeof name !== 'string' || !name.trim() || name.includes('/') || name.includes('..')) {
+    throw new Error(`Invalid pack name: ${JSON.stringify(name)}`);
+  }
+  const manifestPath = path.join(cwd, PROJECT_MANIFEST);
+  const existing = await readManifest(manifestPath, cwd);
+  if (!existing) throw new Error('Showdar is not installed in project scope.');
+  const packs = existing.extensions?.packs ?? [];
+  if (!packs.some((p) => p.name === name)) throw new Error(`Pack not installed: ${name}`);
+  const owned = ownedPathSet(existing);
+  const prefix = `${EXTENSION_DIR}/packs/${name}/`;
+  const remaining = [];
+  for (const entry of existing.files ?? []) {
+    if (!entry.path.startsWith(prefix)) { remaining.push(entry); continue; }
+    const target = safeOwnedPath(cwd, entry.path);
+    if (!target || !owned.has(entry.path)) throw new Error(`Refusing to remove non-Showdar-managed path: ${entry.path}`);
+    await assertSafeManagedPath(cwd, target);
+    await rm(target, { recursive: true, force: true });
+  }
+  const packDir = path.join(cwd, EXTENSION_DIR, 'packs', name);
+  await rm(packDir, { recursive: true, force: true }).catch(() => {});
+  const updated = {
+    ...existing,
+    files: remaining,
+    extensions: {
+      ...(existing.extensions ?? {}),
+      packs: packs.filter((p) => p.name !== name),
+      customWorkflows: (existing.extensions?.customWorkflows ?? []).filter((w) => w.source !== `pack:${name}` && !w.path.startsWith(prefix)),
+    },
+  };
+  await writeJsonAtomic(manifestPath, updated);
+  return { pack: name, removed: true };
+}
+
+export async function addWorkflow({ cwd, source }) {
+  const value = rejectRemoteSource(source);
+  const resolved = path.resolve(cwd, value);
+  await lstatWithoutSymlink(resolved);
+  let doc;
+  try {
+    doc = JSON.parse(await readFile(resolved, 'utf8'));
+  } catch (error) {
+    throw new Error(`Invalid workflow file: ${error.message}`);
+  }
+  const { validateCustomWorkflowDoc, validateCustomWorkflowId, containsForbiddenAuthorityKey } = await import('./validate-pack.js');
+  if (!validateCustomWorkflowId(doc.id)) throw new Error(`Workflow id must use custom namespace grammar (vendor-name, never showdar-*): ${JSON.stringify(doc.id)}`);
+  const errors = validateCustomWorkflowDoc(doc, 'workflow');
+  if (errors.length) throw new Error(`Invalid custom workflow: ${errors.join('; ')}`);
+  const authorityHit = containsForbiddenAuthorityKey(doc);
+  if (authorityHit) throw new Error(`Custom workflow contains forbidden authority key at ${authorityHit}`);
+  const manifestPath = path.join(cwd, PROJECT_MANIFEST);
+  const existing = await readManifest(manifestPath, cwd);
+  if (!existing) throw new Error('Showdar is not installed in project scope. Run "showdar init" first.');
+  const known = new Set([...(existing.extensions?.customWorkflows ?? []).map((w) => w.id), ...((existing.extensions?.packs ?? []).flatMap(() => []))]);
+  if (known.has(doc.id)) throw new Error(`Workflow already installed: ${doc.id}`);
+  const priorOwned = ownedPathSet(existing);
+  const destination = path.join(cwd, EXTENSION_DIR, 'workflows', `${doc.id}.json`);
+  await assertSafeManagedPath(cwd, destination);
+  const relative = manifestPathFor(cwd, destination);
+  if ((await exists(destination)) && !priorOwned.has(relative)) {
+    throw new Error(`Refusing to overwrite existing non-Showdar-managed file: ${destination}`);
+  }
+  await mkdir(path.dirname(destination), { recursive: true });
+  await cp(resolved, destination);
+  const newFile = { path: relative, hash: await hashTree(destination), extension: true };
+  const merged = new Map((existing.files ?? []).map((e) => [e.path, e]));
+  merged.set(newFile.path, newFile);
+  const updated = {
+    ...existing,
+    files: [...merged.values()],
+    extensions: {
+      ...(existing.extensions ?? {}),
+      customWorkflows: [...(existing.extensions?.customWorkflows ?? []), {
+        id: doc.id,
+        source: 'standalone',
+        path: relative,
+      }],
+    },
+  };
+  await writeJsonAtomic(manifestPath, updated);
+  return { workflow: doc.id, destination, path: relative };
+}
+
+export async function listExtensions({ cwd }) {
+  const manifestPath = path.join(cwd, PROJECT_MANIFEST);
+  const manifest = await readManifest(manifestPath, cwd);
+  if (!manifest) throw new Error('Showdar is not installed in project scope.');
+  const overridesPath = path.join(cwd, OVERRIDES_FILE);
+  const overridesPresent = await exists(overridesPath);
+  let overridesStatus = 'absent';
+  if (overridesPresent) {
+    try {
+      const { validateProjectOverridesDoc } = await import('./validate-pack.js');
+      const doc = JSON.parse(await readFile(overridesPath, 'utf8'));
+      const result = validateProjectOverridesDoc(doc);
+      overridesStatus = result.ok ? 'valid' : `invalid: ${result.errors.join('; ')}`;
+    } catch (error) {
+      overridesStatus = `invalid: ${error.message}`;
+    }
+  }
+  return {
+    packs: (manifest.extensions?.packs ?? []).map((p) => ({ name: p.name, version: p.version, hash: p.hash })),
+    customWorkflows: (manifest.extensions?.customWorkflows ?? []).map((w) => ({ id: w.id, source: w.source, path: w.path })),
+    overrides: { present: overridesPresent, status: overridesStatus },
+  };
+}
+
+export async function readProjectOverrides({ cwd }) {
+  const overridesPath = path.join(cwd, OVERRIDES_FILE);
+  if (!(await exists(overridesPath))) return null;
+  await assertSafeManagedPath(cwd, overridesPath);
+  let doc;
+  try {
+    doc = JSON.parse(await readFile(overridesPath, 'utf8'));
+  } catch (error) {
+    throw new Error(`Invalid project overrides file: ${error.message}`);
+  }
+  const { validateProjectOverridesDoc } = await import('./validate-pack.js');
+  const result = validateProjectOverridesDoc(doc);
+  if (!result.ok) throw new Error(`Invalid project overrides file: ${result.errors.join('; ')}`);
+  return doc;
+}
+
+export { SHA_HEX_RE };
