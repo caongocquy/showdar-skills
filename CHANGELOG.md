@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Added
+
+- Portable workflow trace projection (`src/workflow-trace.js`): pure
+  state-diff observation over workflow transitions with no timestamps,
+  no authority content, and no automatic persistence.
+- Deterministic workflow benchmark corpus
+  (`benchmark/scenarios/workflows/`, 16 scenarios): exact-match M1–M10
+  invariants covering selection, skip policy, verification preservation,
+  stale-resume blocking, authority invariance, and completion.
+- `npm run eval:workflows` driver
+  (`scripts/workflow-observability-eval.mjs`); `npm run eval` now runs
+  retrieval plus workflow benchmarks sequentially.
+
 ## [0.6.0]
 
 ### Added

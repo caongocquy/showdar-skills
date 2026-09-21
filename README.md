@@ -443,6 +443,17 @@ Per-workflow skip policy (evidence-backed, never severity or wording alone):
 - Incident: severity never grants production mutation; recovery and
   verification remain gated by current authority.
 
+### Workflow traces (observability, benchmark-only)
+
+Workflow traces are pure projections of before/after workflow states
+(`src/workflow-trace.js`): ordered events such as `stage-entered`,
+`stage-completed`, `stage-skipped`, `workflow-blocked`, `workflow-resumed`,
+and `workflow-completed`. Traces carry stage IDs, skip reasons, receipt
+summaries, and statuses only — no timestamps, no prompts, no secrets, no
+authority content. Nothing persists them automatically; the benchmark
+corpus (`npm run eval:workflows`) uses them to verify selection, skip,
+resume, and completion behavior deterministically.
+
 ## A typical software workflow
 
 ```text

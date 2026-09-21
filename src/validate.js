@@ -266,6 +266,64 @@ export async function validateWorkflowStatePolicy(packageRoot) {
   for (const storage of ['.showdar/state', '~/.showdar', 'sqlite', 'telemetry']) {
     if (moduleText.toLowerCase().includes(storage.toLowerCase())) errors.push(`workflow-state: no storage layer reference ${storage}`);
   }
+  for (const error of (await validateWorkflowScenarioCoverage(packageRoot, policy)).errors) errors.push(error);
+  return { ok: errors.length === 0, errors };
+}
+
+export async function validateWorkflowScenarioCoverage(packageRoot, policy = null) {
+  const errors = [];
+  const primitives = new Set(SKILLS.map((skill) => skill.id));
+  const workflows = new Set(WORKFLOW_SKILLS.map((w) => w.id));
+  let trace;
+  try {
+    trace = await import('./workflow-trace.js');
+  } catch (error) {
+    return { ok: false, errors: [`workflow-trace unavailable: ${error.message}`] };
+  }
+  const eventTypes = new Set(trace.WORKFLOW_EVENT_TYPES);
+  let files;
+  try {
+    files = await readdir(path.join(packageRoot, 'benchmark', 'scenarios', 'workflows'));
+  } catch {
+    return { ok: false, errors: ['workflow-scenarios: benchmark/scenarios/workflows missing'] };
+  }
+  const scenarioFiles = files.filter((f) => f.endsWith('.json')).sort();
+  if (!scenarioFiles.length) return { ok: false, errors: ['workflow-scenarios: no scenario files'] };
+  const seenIds = new Set();
+  const coverage = new Map();
+  for (const file of scenarioFiles) {
+    let scenario;
+    try {
+      scenario = JSON.parse(await readFile(path.join(packageRoot, 'benchmark', 'scenarios', 'workflows', file), 'utf8'));
+    } catch (error) {
+      errors.push(`workflow-scenarios: ${file} is not valid JSON (${error.message})`);
+      continue;
+    }
+    if (seenIds.has(scenario.id)) errors.push(`workflow-scenarios: duplicate id ${scenario.id}`);
+    seenIds.add(scenario.id);
+    if (!workflows.has(scenario.workflow)) {
+      errors.push(`workflow-scenarios: ${file} references unknown workflow ${scenario.workflow}`);
+      continue;
+    }
+    coverage.set(scenario.workflow, (coverage.get(scenario.workflow) ?? 0) + 1);
+    const catalogStages = new Set((policy?.selectableStages?.(scenario.workflow)) ?? []);
+    for (const stage of scenario.selection?.selectedStages ?? []) {
+      if (!primitives.has(stage)) errors.push(`workflow-scenarios: ${file} selects unknown stage ${stage}`);
+      else if (catalogStages.size && !catalogStages.has(stage)) errors.push(`workflow-scenarios: ${file} selects non-catalog stage ${stage}`);
+    }
+    for (const step of scenario.steps ?? []) {
+      if (step.stage && !primitives.has(step.stage)) errors.push(`workflow-scenarios: ${file} step references unknown stage ${step.stage}`);
+    }
+    for (const entry of scenario.expected?.trace ?? []) {
+      if (!eventTypes.has(entry.type)) errors.push(`workflow-scenarios: ${file} expects unknown event type ${entry.type}`);
+      if (entry.stage !== null && entry.stage !== undefined && !primitives.has(entry.stage)) {
+        errors.push(`workflow-scenarios: ${file} expects unknown event stage ${entry.stage}`);
+      }
+    }
+  }
+  for (const workflow of WORKFLOW_SKILLS) {
+    if (!coverage.get(workflow.id)) errors.push(`workflow-scenarios: ${workflow.id} has no scenario coverage`);
+  }
   return { ok: errors.length === 0, errors };
 }
 
