@@ -11,12 +11,13 @@
     "eval": "npm run eval:retrieval && npm run eval:workflows",
     "eval:retrieval": "node scripts/retrieval-eval.mjs",
     "eval:workflows": "node scripts/workflow-observability-eval.mjs",
+    "eval:custom-workflows": "node scripts/custom-workflows-eval.mjs",
     "check": "npm test && npm run validate && npm pack --dry-run",
     "smoke": "node scripts/package-smoke.mjs",
     "release:check": "node scripts/check-release-version.mjs"
   },
   "engines": { "node": ">=20" },
-  "files": ["bin", "src", "skills", "commands", "router", "bundles", "profiles", "engine", "README.md", "LICENSE", "CHANGELOG.md", "MIGRATION.md"],
+  "files": ["bin", "src", "config", "skills", "commands", "router", "bundles", "profiles", "engine", "README.md", "LICENSE", "CHANGELOG.md", "MIGRATION.md"],
   "keywords": ["agent-skills", "coding-agents", "codex", "opencode", "claude-code", "software-engineering", "developer-tools", "requirements", "qa", "security", "devops", "workflow"],
   "license": "MIT",
   "repository": {

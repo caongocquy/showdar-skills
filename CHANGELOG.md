@@ -4,6 +4,37 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Added
+
+- Local extensibility for custom workflows, skill packs, and project overrides without weakening Phase 6G authority.
+- Three AJV schemas: `config/pack.schema.json`, `config/custom-workflow.schema.json`, `config/project-overrides.schema.json` — no content hash in pack.json; domains as kebab-case discovery hints only.
+- `src/validate-pack.js` pure validators for packs, custom workflows, project overrides; recursive forbidden-authority guard reusing `FORBIDDEN_AUTHORITY_KEYS`.
+- `src/extension-catalog.js` deterministic immutable extension catalog (`createExtensionCatalog`); no global mutable registry; order-independent duplicate rejection.
+- `src/workflow-state.js` additive optional `extensionCatalog` context; built-in SELECTABLE/SKIP/REQUIRED maps frozen; schemaVersion 1 unchanged.
+- `src/workflow-trace.js` additive catalog pass-through for custom workflow IDs; trace projection unchanged.
+- Manifest v2 `extensions` object: `packs[]` with full-tree `hashTree()` SHA-256, `customWorkflows[]`, `overrides` metadata; no schema bump.
+- User-owned `.showdar/overrides.json` for project-level description/domain/guidance/profile overrides; built-in workflow policy and built-in profile definitions protected.
+- CLI: `showdar add-pack <path>`, `showdar remove-pack <name>`, `showdar add-workflow <path>`, `showdar init --pack <path>`, `showdar list --extensions`; local-only sources (dir/relative), no network/Git/URL.
+- Shared deterministic workflow eval core (`benchmark/lib/workflow-eval-core.js`) preserving built-in 16/16 M1–M10 invariants.
+- Opt-in custom workflow evaluation: `npm run eval:custom-workflows` (separate corpus, never part of `npm run eval` or release gate).
+- Test fixtures for pack install/remove, custom workflow state lifecycle, override precedence, authority fuzz, namespace collisions.
+
+### Changed
+
+- `npm run eval` remains retrieval + built-in workflows only; release gate unchanged.
+- `npm run check` unchanged.
+
+### Security
+
+- Tarball sources rejected (no safe extractor in 0.8); path-safety/symlink ownership enforced; authority-like keys rejected recursively.
+- Project overrides never rewritten by init; never deleted on remove; manifest records metadata only.
+
+### Migration
+
+- No migration required; existing 0.7 manifests, checkpoints, and profiles work unchanged.
+
 ## [0.7.0]
 
 ### Added
