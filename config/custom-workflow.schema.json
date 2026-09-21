@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Showdar custom workflow definition",
+  "description": "Custom workflows compose built-in primitive skills only. Stages, skip enums, completion policy, and state schema are frozen contracts.",
+  "type": "object",
+  "required": ["id", "stages"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9]*-[a-z][a-z0-9-]*$" },
+    "description": { "type": "string", "minLength": 30 },
+    "stages": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^showdar-[a-z][a-z0-9-]*$" }
+    },
+    "allowedSkips": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["stage", "reason", "policy", "evidence"],
+        "additionalProperties": false,
+        "properties": {
+          "stage": { "type": "string", "pattern": "^showdar-[a-z][a-z0-9-]*$" },
+          "reason": { "enum": ["behavior-defined", "local-low-risk", "no-ux-decision", "known-root-cause", "readiness-only", "no-ops-authority", "no-security-risk"] },
+          "policy": { "enum": ["adaptive-skip", "known-root-cause", "readiness-only", "no-ops-authority", "no-security-risk", "behavior-defined", "local-low-risk", "no-ux-decision"] },
+          "evidence": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "requiredStages": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^showdar-[a-z][a-z0-9-]*$" }
+    },
+    "completionPolicy": {
+      "type": "object",
+      "required": ["allSelectedStagesAccounted", "noBlockers", "requiredVerificationSatisfied", "noNegativeEvidence"],
+      "additionalProperties": false,
+      "properties": {
+        "allSelectedStagesAccounted": { "type": "boolean", "const": true },
+        "noBlockers": { "type": "boolean", "const": true },
+        "requiredVerificationSatisfied": { "type": "boolean", "const": true },
+        "noNegativeEvidence": { "type": "boolean", "const": true }
+      }
+    },
+    "workflowStateCompat": {
+      "type": "object",
+      "required": ["schemaVersion", "selectableStages", "skipRules"],
+      "additionalProperties": false,
+      "properties": {
+        "schemaVersion": { "const": 1 },
+        "selectableStages": { "type": "array", "items": { "type": "string" } },
+        "skipRules": { "type": "object" }
+      }
+    }
+  }
+}

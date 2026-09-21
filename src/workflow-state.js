@@ -157,10 +157,30 @@ function validateReceipt(entry) {
   return errors;
 }
 
-function validateSkipped(entry, workflowId, selectedStages) {
+function snapshotStages(catalog, workflowId) {
+  if (catalog && catalog.selectableStages) return catalog.selectableStages[workflowId] ?? [];
+  return SELECTABLE_STAGES[workflowId] ?? [];
+}
+
+function snapshotSkipRule(catalog, workflowId, stage) {
+  if (catalog && catalog.skipRules) return (catalog.skipRules[workflowId] ?? {})[stage] ?? null;
+  return (SKIP_RULES[workflowId] ?? {})[stage] ?? null;
+}
+
+function snapshotRequired(catalog, workflowId) {
+  if (catalog && catalog.requiredStages) return catalog.requiredStages[workflowId] ?? [];
+  return REQUIRED_STAGES[workflowId] ?? [];
+}
+
+function snapshotWorkflowIds(catalog) {
+  if (catalog && catalog.selectableStages) return new Set(Object.keys(catalog.selectableStages));
+  return WORKFLOW_IDS;
+}
+
+function validateSkipped(entry, workflowId, selectedStages, catalog = null) {
   const errors = [];
   if (!isRecord(entry)) return ['skipped stage must be an object'];
-  const catalogStages = SELECTABLE_STAGES[workflowId] ?? [];
+  const catalogStages = snapshotStages(catalog, workflowId);
   if (typeof entry.stage !== 'string' || !catalogStages.includes(entry.stage)) errors.push(`skipped stage must be a catalog stage of ${workflowId}`);
   if (selectedStages.includes(entry.stage)) errors.push(`skipped stage ${entry.stage} must not be selected`);
   if (!SKIP_REASONS.includes(entry.reason)) errors.push(`skip reason must be one of: ${SKIP_REASONS.join(', ')}`);
@@ -243,13 +263,15 @@ function bump(state, patch) {
   return freezeState(next);
 }
 
-export function validateWorkflowState(input) {
+export function validateWorkflowState(input, options = {}) {
   const errors = [];
+  const catalog = options.extensionCatalog ?? null;
+  const workflowIds = snapshotWorkflowIds(catalog);
   if (!isRecord(input)) return { ok: false, errors: ['workflow state must be an object'] };
   const forbidden = containsForbiddenAuthorityKey(input);
   if (forbidden) errors.push(`workflow state must not persist authority-derived fields (found at ${forbidden})`);
   if (input.schemaVersion !== WORKFLOW_SCHEMA_VERSION) errors.push(`schemaVersion must be ${WORKFLOW_SCHEMA_VERSION}`);
-  if (typeof input.workflowId !== 'string' || !WORKFLOW_IDS.has(input.workflowId)) errors.push(`workflowId must be one of: ${[...WORKFLOW_IDS].join(', ')}`);
+  if (typeof input.workflowId !== 'string' || !workflowIds.has(input.workflowId)) errors.push(`workflowId must be one of: ${[...workflowIds].join(', ')}`);
   if (!WORKFLOW_STATUSES.includes(input.status)) errors.push(`status must be one of: ${WORKFLOW_STATUSES.join(', ')}`);
   if (!Number.isInteger(input.revision) || input.revision < 0) errors.push('revision must be a non-negative integer');
   if (!isIsoString(input.createdAt)) errors.push('createdAt must be ISO8601');
@@ -259,7 +281,8 @@ export function validateWorkflowState(input) {
   if (new Set(input.selectedStages ?? []).size !== (input.selectedStages ?? []).length) errors.push('selectedStages must not contain duplicates');
 
   const workflowId = input.workflowId;
-  const catalogStages = workflowId && SELECTABLE_STAGES[workflowId] ? SELECTABLE_STAGES[workflowId] : [];
+  const snapshot = options.extensionCatalog ?? null;
+  const catalogStages = workflowId ? snapshotStages(snapshot, workflowId) : [];
   if (Array.isArray(input.candidateStages) && catalogStages.length) {
     for (const stage of input.candidateStages) {
       if (!catalogStages.includes(stage)) errors.push(`candidate stage ${stage} is not declared by ${workflowId}`);
@@ -279,7 +302,7 @@ export function validateWorkflowState(input) {
   if (!Array.isArray(input.completedStages)) errors.push('completedStages must be an array');
   else for (const entry of input.completedStages) errors.push(...validateCompleted(entry, input.selectedStages ?? []));
   if (!Array.isArray(input.skippedStages)) errors.push('skippedStages must be an array');
-  else for (const entry of input.skippedStages) errors.push(...validateSkipped(entry, workflowId, input.selectedStages ?? []));
+  else for (const entry of input.skippedStages) errors.push(...validateSkipped(entry, workflowId, input.selectedStages ?? [], snapshot));
   if (!Array.isArray(input.evidenceReceipts)) errors.push('evidenceReceipts must be an array');
   else for (const receipt of input.evidenceReceipts) errors.push(...validateReceipt(receipt));
   if (!Array.isArray(input.blockers)) errors.push('blockers must be an array');
@@ -302,8 +325,10 @@ export function validateWorkflowState(input) {
 
 export function createWorkflowState(workflowId, options = {}) {
   const errors = [];
-  if (!WORKFLOW_IDS.has(workflowId)) return { ok: false, errors: [`workflowId must be one of: ${[...WORKFLOW_IDS].join(', ')}`] };
-  const catalogStages = [...SELECTABLE_STAGES[workflowId]];
+  const catalog = options.extensionCatalog ?? null;
+  const workflowIds = snapshotWorkflowIds(catalog);
+  if (!workflowIds.has(workflowId)) return { ok: false, errors: [`workflowId must be one of: ${[...workflowIds].join(', ')}`] };
+  const catalogStages = [...snapshotStages(catalog, workflowId)];
   const candidates = options.candidateStages ?? catalogStages;
   if (!Array.isArray(candidates) || !candidates.length) errors.push('candidateStages must be a non-empty array');
   for (const stage of candidates ?? []) {
@@ -314,7 +339,7 @@ export function createWorkflowState(workflowId, options = {}) {
   for (const stage of selected ?? []) {
     if (!(candidates ?? []).includes(stage)) errors.push(`selected stage ${stage} must be a candidate stage`);
   }
-  for (const required of REQUIRED_STAGES[workflowId]) {
+  for (const required of snapshotRequired(catalog, workflowId)) {
     if (!(selected ?? []).includes(required) && !((options.skippedStages ?? []).some((s) => s.stage === required))) {
       errors.push(`required stage ${required} must be selected or explicitly skipped under policy`);
     }
@@ -339,10 +364,10 @@ export function createWorkflowState(workflowId, options = {}) {
   };
   state.nextStage = computeNext(state.selectedStages, state.completedStages, state.skippedStages);
   for (const skipped of state.skippedStages) {
-    const skippedErrors = validateSkipped({ ...skipped, skippedAt: skipped.skippedAt ?? timestamp }, workflowId, state.selectedStages);
+    const skippedErrors = validateSkipped({ ...skipped, skippedAt: skipped.skippedAt ?? timestamp }, workflowId, state.selectedStages, catalog);
     if (skippedErrors.length) return { ok: false, errors: skippedErrors };
   }
-  const validation = validateWorkflowState(freezeState(state));
+  const validation = validateWorkflowState(freezeState(state), catalog ? { extensionCatalog: catalog } : {});
   if (!validation.ok) return validation;
   return { ok: true, errors: [], value: freezeState({ ...state, status: 'READY', nextStage: state.nextStage }) };
 }
@@ -383,13 +408,14 @@ export function completeStage(state, stage, receipts) {
   });
 }
 
-export function skipStage(state, stage, { reason, evidence = [], policy } = {}) {
+export function skipStage(state, stage, { reason, evidence = [], policy } = {}, options = {}) {
   if (state.status === 'COMPLETE') throw new Error('cannot skip a stage on a COMPLETE workflow');
   if (state.status !== 'READY') throw new Error(`skipStage requires READY status; got ${state.status}`);
-  if (!SELECTABLE_STAGES[state.workflowId]?.includes(stage)) throw new Error(`stage ${stage} is not declared by ${state.workflowId}`);
+  const catalog = options.extensionCatalog ?? null;
+  if (!snapshotStages(catalog, state.workflowId).includes(stage)) throw new Error(`stage ${stage} is not declared by ${state.workflowId}`);
   if (state.selectedStages.includes(stage)) throw new Error(`stage ${stage} is selected and cannot be skipped; remove from selection at creation`);
   if (state.completedStages.some((c) => c.stage === stage) || state.skippedStages.some((s) => s.stage === stage)) throw new Error(`stage ${stage} is already accounted`);
-  const rule = (SKIP_RULES[state.workflowId] ?? {})[stage];
+  const rule = snapshotSkipRule(catalog, state.workflowId, stage);
   if (!rule) throw new Error(`stage ${stage} is not skippable under ${state.workflowId} policy`);
   if (reason !== rule.reason) throw new Error(`skip reason for ${stage} must be ${rule.reason}`);
   if (policy !== rule.policy) throw new Error(`skip policy for ${stage} must be ${rule.policy}`);
@@ -486,13 +512,15 @@ export function finalizeWorkflow(state) {
   return bump({ ...state, nextStage: null }, { status: 'COMPLETE', activeStage: null });
 }
 
-export function serializeWorkflowState(state) {
-  const validation = validateWorkflowState(state);
+export function serializeWorkflowState(state, options = {}) {
+  const catalog = options.extensionCatalog ?? null;
+  const validation = validateWorkflowState(state, catalog ? { extensionCatalog: catalog } : {});
   if (!validation.ok) throw new Error(`Cannot serialize invalid workflow state: ${validation.errors.join('; ')}`);
   return JSON.stringify(state, null, 2);
 }
 
-export function deserializeWorkflowState(input) {
+export function deserializeWorkflowState(input, options = {}) {
+  const catalog = options.extensionCatalog ?? null;
   let parsed = input;
   if (typeof input === 'string') {
     try {
@@ -502,7 +530,7 @@ export function deserializeWorkflowState(input) {
     }
   }
   const before = JSON.stringify(parsed);
-  const validation = validateWorkflowState(parsed);
+  const validation = validateWorkflowState(parsed, catalog ? { extensionCatalog: catalog } : {});
   if (!validation.ok) throw new Error(`Invalid workflow checkpoint: ${validation.errors.join('; ')}`);
   const frozen = freezeState(JSON.parse(JSON.stringify(parsed)));
   if (JSON.stringify(frozen) !== before && JSON.stringify(JSON.parse(JSON.stringify(parsed))) !== before) {
@@ -523,18 +551,19 @@ export function requiresReverification(kind) {
   return HIGH_SENSITIVITY_KINDS.has(kind);
 }
 
-function workflowApplicableSkill(workflowId, primarySkill) {
-  return (SELECTABLE_STAGES[workflowId] ?? []).includes(primarySkill);
+function workflowApplicableSkill(workflowId, primarySkill, catalog = null) {
+  return snapshotStages(catalog, workflowId).includes(primarySkill);
 }
 
-export function checkStaleCheckpoint(state, resolution) {
+export function checkStaleCheckpoint(state, resolution, options = {}) {
+  const catalog = options.extensionCatalog ?? null;
   if (!isRecord(resolution) || !isRecord(resolution.primary) || typeof resolution.primary.skill !== 'string') {
     return { stale: true, reason: 'workflow-no-longer-applicable', detail: 'resolution is missing a primary skill' };
   }
-  if (!workflowApplicableSkill(state.workflowId, resolution.primary.skill)) {
+  if (!workflowApplicableSkill(state.workflowId, resolution.primary.skill, catalog)) {
     return { stale: true, reason: 'workflow-no-longer-applicable', detail: `primary ${resolution.primary.skill} is not a stage of ${state.workflowId}` };
   }
-  const expectedPrimary = state.activeStage ?? state.nextStage ?? SELECTABLE_STAGES[state.workflowId][0];
+  const expectedPrimary = state.activeStage ?? state.nextStage ?? snapshotStages(catalog, state.workflowId)[0];
   if (resolution.primary.skill !== expectedPrimary) {
     return { stale: true, reason: 'primary-skill-shifted', detail: `expected ${expectedPrimary}, got ${resolution.primary.skill}` };
   }
@@ -567,12 +596,13 @@ function checkToEvidence(check) {
   return mapping[check] ?? null;
 }
 
-export function resumeFromCheckpoint(checkpoint, resolution) {
-  const state = deserializeWorkflowState(checkpoint);
+export function resumeFromCheckpoint(checkpoint, resolution, options = {}) {
+  const catalog = options.extensionCatalog ?? null;
+  const state = deserializeWorkflowState(checkpoint, catalog ? { extensionCatalog: catalog } : {});
   if (state.status !== 'INTERRUPTED' && state.status !== 'BLOCKED') {
     throw new Error(`resume requires INTERRUPTED or BLOCKED status; got ${state.status}`);
   }
-  const stale = checkStaleCheckpoint(state, resolution);
+  const stale = checkStaleCheckpoint(state, resolution, catalog ? { extensionCatalog: catalog } : {});
   if (stale.stale) {
     const blocked = bump({ ...state, status: state.status }, {
       status: 'BLOCKED',
@@ -591,19 +621,19 @@ export function resumeFromCheckpoint(checkpoint, resolution) {
   return { state, replanRequired: false };
 }
 
-export function selectableStages(workflowId) {
-  return [...(SELECTABLE_STAGES[workflowId] ?? [])];
+export function selectableStages(workflowId, extensionCatalog = null) {
+  return [...snapshotStages(extensionCatalog, workflowId)];
 }
 
-export function skipRule(workflowId, stage) {
-  return (SKIP_RULES[workflowId] ?? {})[stage] ?? null;
+export function skipRule(workflowId, stage, extensionCatalog = null) {
+  return snapshotSkipRule(extensionCatalog, workflowId, stage);
 }
 
-export function requiredStages(workflowId) {
-  return [...(REQUIRED_STAGES[workflowId] ?? [])];
+export function requiredStages(workflowId, extensionCatalog = null) {
+  return [...snapshotRequired(extensionCatalog, workflowId)];
 }
 
-export { STALE_REASONS, FORBIDDEN_AUTHORITY_KEYS, HIGH_SENSITIVITY_KINDS, MEDIUM_SENSITIVITY_KINDS, SELECTABLE_STAGES, SKIP_RULES, uniqueSortedStages, getWorkflow };
+export { STALE_REASONS, FORBIDDEN_AUTHORITY_KEYS, HIGH_SENSITIVITY_KINDS, MEDIUM_SENSITIVITY_KINDS, SELECTABLE_STAGES, SKIP_RULES, REQUIRED_STAGES, uniqueSortedStages, getWorkflow };
 
 export const workflowStateAPI = {
   createWorkflowState,
