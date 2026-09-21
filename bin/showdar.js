@@ -4,7 +4,7 @@ import { homedir } from 'node:os';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { AI_TARGETS, PRIMITIVE_COUNT, PROFILE_ALIASES, PROFILES, SKILLS, TOTAL_COUNT, WORKFLOW_COUNT, canonicalProfile, isDeprecatedProfile, resolveProfile } from '../src/catalog.js';
-import { addSkill, globalManifestPath, initGlobal, initProject, inspectGlobal, inspectProject, removeGlobal, removeProject } from '../src/project.js';
+import { addPack, addSkill, addWorkflow, globalManifestPath, initGlobal, initProject, inspectGlobal, inspectProject, listExtensions, removeGlobal, removePack, removeProject } from '../src/project.js';
 import { validateRepository } from '../src/validate.js';
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -62,8 +62,41 @@ async function main() {
   const scope = ['init', 'status', 'doctor', 'remove', 'add'].includes(command) ? scopeAfter(args) : null;
 
   if (command === 'list') {
+    if (args.includes('--extensions')) {
+      const result = await listExtensions({ cwd: projectRoot });
+      console.log('Packs:');
+      for (const pack of result.packs) console.log(`  ${pack.name}@${pack.version}  ${pack.hash}`);
+      console.log('Custom workflows:');
+      for (const workflow of result.customWorkflows) console.log(`  ${workflow.id}  [${workflow.source}]  ${workflow.path}`);
+      console.log(`Project overrides: ${result.overrides.present ? result.overrides.status : 'absent'}`);
+      return;
+    }
     console.log(`Profiles: ${Object.keys(PROFILES).join(', ')}\nDeprecated aliases: ${Object.entries(PROFILE_ALIASES).map(([alias, target]) => `${alias} -> ${target}`).join(', ')}\n\nSkills:`);
     for (const skill of SKILLS) console.log(`  ${skill.id}  [${skill.domain}]  ${skill.description}`);
+    return;
+  }
+
+  if (command === 'add-pack') {
+    const packSource = args[1];
+    if (!packSource) throw new Error('Pack source is required. Usage: showdar add-pack <local-path>');
+    const result = await addPack({ cwd: projectRoot, source: packSource, packageVersion: version });
+    console.log(`Showdar pack added.\nPack: ${result.pack}\nFiles: ${result.files}\nHash: ${result.hash}\nPath: ${result.destination}`);
+    return;
+  }
+
+  if (command === 'remove-pack') {
+    const packName = args[1];
+    if (!packName) throw new Error('Pack name is required. Usage: showdar remove-pack <name>');
+    await removePack({ cwd: projectRoot, name: packName });
+    console.log(`Showdar pack removed: ${packName}`);
+    return;
+  }
+
+  if (command === 'add-workflow') {
+    const workflowSource = args[1];
+    if (!workflowSource) throw new Error('Workflow source is required. Usage: showdar add-workflow <local-path>');
+    const result = await addWorkflow({ cwd: projectRoot, source: workflowSource });
+    console.log(`Showdar workflow added.\nWorkflow: ${result.workflow}\nPath: ${result.path}`);
     return;
   }
 
@@ -86,9 +119,15 @@ async function main() {
     const ai = valueAfter(args, '--ai', 'universal');
     const skillIds = resolveProfile(requestedProfile);
     if (isDeprecatedProfile(requestedProfile)) console.warn(`Warning: profile "${requestedProfile}" is deprecated; use "${profile}".`);
+    const packSource = valueAfter(args, '--pack', null);
+    if (packSource && scope === 'global') throw new Error('--pack is only supported with project scope in 0.8.');
     const result = scope === 'global'
       ? await initGlobal({ homeRoot: homedir(), packageRoot, profile, ai, skillIds, packageVersion: version })
       : await initProject({ projectRoot, packageRoot, profile, ai, skillIds, packageVersion: version });
+    if (packSource) {
+      const pack = await addPack({ cwd: projectRoot, source: packSource, packageVersion: version });
+      console.log(`Pack: ${pack.pack}@${pack.version ?? ''}  Hash: ${pack.hash}`);
+    }
     console.log(`Showdar Skills installed.\nScope: ${scope}\nProfile: ${profile}\nAI: ${ai}\nTargets: ${result.targets.join(', ')}\nSkills: ${result.skills}\nOpenCode commands: ${result.commands}`);
     if (scope === 'project') {
       console.log(`Requested: ${result.requestedSkills}\nInstalled in project: ${result.installedSkills}\nSatisfied by global: ${result.satisfiedByGlobal}\nSkipped duplicate copies: ${result.skippedDuplicates}`);
