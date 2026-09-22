@@ -4,14 +4,10 @@ import { addPack, removePack, addWorkflow, listExtensions, readProjectOverrides,
 import { mkdir, rm, writeFile, cp } from 'node:fs/promises';
 import path from 'node:path';
 import { tmpdir } from 'node:os';
-import { fileURLToPath } from 'node:url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const PACK_FIXTURE = path.join(__dirname, 'fixtures', 'acme-pack');
 
 async function ensurePackFixture() {
-  const fixtureDir = path.join(__dirname, 'fixtures', 'acme-pack');
+  const tmp = await mkdir(path.join(tmpdir(), `showdar-pack-fixture-${Date.now()}-${Math.floor(Math.random() * 1e6)}`), { recursive: true });
+  const fixtureDir = path.join(tmp, 'acme-pack');
   await mkdir(path.join(fixtureDir, 'skills', 'acme-lint'), { recursive: true });
   await mkdir(path.join(fixtureDir, 'workflows'), { recursive: true });
   await writeFile(path.join(fixtureDir, 'pack.json'), JSON.stringify({
@@ -76,6 +72,7 @@ This section explains example for the acme lint skill in a few sentences.
 It stays declarative and never executes code.
 ${'Filler line for meaningful length.\n'.repeat(500)}
 `, 'utf8');
+  return fixtureDir;
 }
 
 async function setupProject() {
@@ -94,9 +91,9 @@ async function setupProject() {
 }
 
 test('cli: add-pack local directory', async () => {
-  await ensurePackFixture();
+  const packDir = await ensurePackFixture();
   const proj = await setupProject();
-  const result = await addPack({ cwd: proj, source: PACK_FIXTURE });
+  const result = await addPack({ cwd: proj, source: packDir });
   assert.ok(result.hash.length === 64);
   assert.ok(result.destination.includes('.showdar/extensions/packs/acme'));
   const listed = await listExtensions({ cwd: proj });
@@ -105,17 +102,17 @@ test('cli: add-pack local directory', async () => {
 });
 
 test('cli: duplicate add-pack rejected', async () => {
-  await ensurePackFixture();
+  const packDir = await ensurePackFixture();
   const proj = await setupProject();
-  await addPack({ cwd: proj, source: PACK_FIXTURE });
-  await assert.rejects(addPack({ cwd: proj, source: PACK_FIXTURE }), /already installed/);
+  await addPack({ cwd: proj, source: packDir });
+  await assert.rejects(addPack({ cwd: proj, source: packDir }), /already installed/);
   await rm(proj, { recursive: true, force: true });
 });
 
 test('cli: remove-pack', async () => {
-  await ensurePackFixture();
+  const packDir = await ensurePackFixture();
   const proj = await setupProject();
-  await addPack({ cwd: proj, source: PACK_FIXTURE });
+  await addPack({ cwd: proj, source: packDir });
   await removePack({ cwd: proj, name: 'acme' });
   const listed = await listExtensions({ cwd: proj });
   assert.equal(listed.packs.length, 0);
@@ -123,9 +120,9 @@ test('cli: remove-pack', async () => {
 });
 
 test('cli: add-workflow', async () => {
-  await ensurePackFixture();
+  const packDir = await ensurePackFixture();
   const proj = await setupProject();
-  const wfPath = path.join(PACK_FIXTURE, 'workflows', 'acme-mini.json');
+  const wfPath = path.join(packDir, 'workflows', 'acme-mini.json');
   const result = await addWorkflow({ cwd: proj, source: wfPath });
   assert.ok(result.workflow === 'acme-mini');
   const listed = await listExtensions({ cwd: proj });
@@ -134,7 +131,7 @@ test('cli: add-workflow', async () => {
 });
 
 test('cli: init --pack', async () => {
-  await ensurePackFixture();
+  const packDir = await ensurePackFixture();
   const tmp = await mkdir(path.join(tmpdir(), `showdar-init-test-${Date.now()}`), { recursive: true });
   const proj = path.join(tmp, 'proj');
   await mkdir(proj, { recursive: true });
@@ -150,16 +147,16 @@ test('cli: init --pack', async () => {
   });
   // Now add pack via the function that init would use
   const { addPack } = await import('../src/project.js');
-  await addPack({ cwd: proj, source: PACK_FIXTURE });
+  await addPack({ cwd: proj, source: packDir });
   const listed = await listExtensions({ cwd: proj });
   assert.ok(listed.packs.some(p => p.name === 'acme'));
   await rm(proj, { recursive: true, force: true });
 });
 
 test('cli: list --extensions', async () => {
-  await ensurePackFixture();
+  const packDir = await ensurePackFixture();
   const proj = await setupProject();
-  await addPack({ cwd: proj, source: PACK_FIXTURE });
+  await addPack({ cwd: proj, source: packDir });
   const listed = await listExtensions({ cwd: proj });
   assert.ok(listed.packs.length >= 1);
   assert.ok(listed.customWorkflows.length >= 1);
@@ -180,13 +177,13 @@ test('cli: tarball source rejected', async () => {
 });
 
 test('cli: foreign destination conflict rejected', async () => {
-  await ensurePackFixture();
+  const packDir = await ensurePackFixture();
   const proj = await setupProject();
   // Create a file at the destination that's not Showdar-owned
   const dest = path.join(proj, '.showdar', 'extensions', 'packs', 'acme');
   await mkdir(dest, { recursive: true });
   await writeFile(path.join(dest, 'pack.json'), '{}', 'utf8');
-  await assert.rejects(addPack({ cwd: proj, source: PACK_FIXTURE }), /Refusing to overwrite/);
+  await assert.rejects(addPack({ cwd: proj, source: packDir }), /Refusing to overwrite/);
   await rm(proj, { recursive: true, force: true });
 });
 
@@ -216,7 +213,8 @@ test('cli: overrides preserved through lifecycle', async () => {
   await mkdir(path.join(proj, '.showdar'), { recursive: true });
   await writeFile(path.join(proj, '.showdar', 'overrides.json'), JSON.stringify({ version: 1, skillDescriptions: { 'showdar-debug': 'Keep' } }), 'utf8');
   await listExtensions({ cwd: proj });
-  await addPack({ cwd: proj, source: PACK_FIXTURE }).catch(() => {});
+  const tmpPackDir = await ensurePackFixture();
+  await addPack({ cwd: proj, source: tmpPackDir }).catch(() => {});
   await removePack({ cwd: proj, name: 'acme' }).catch(() => {});
   const { readProjectOverrides } = await import('../src/project.js');
   const doc = await readProjectOverrides({ cwd: proj });
@@ -225,9 +223,9 @@ test('cli: overrides preserved through lifecycle', async () => {
 });
 
 test('cli: manifest remains version 2', async () => {
-  await ensurePackFixture();
+  const packDir = await ensurePackFixture();
   const proj = await setupProject();
-  await addPack({ cwd: proj, source: PACK_FIXTURE });
+  await addPack({ cwd: proj, source: packDir });
   const { readFile } = await import('node:fs/promises');
   const manifest = JSON.parse(await readFile(path.join(proj, '.showdar.json'), 'utf8'));
   assert.equal(manifest.version, 2);
