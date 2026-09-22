@@ -1,3 +1,23 @@
+# Migrating to 0.8.0
+
+0.8.0 adds local declarative extensibility (extension packs, custom
+workflows, user-owned project overrides) over the unchanged 0.7
+runtime. No user action is required.
+
+- Existing 0.7 installs and configs remain valid: manifest stays
+  version 2 (the `extensions` object is optional and additive),
+  workflow state stays schemaVersion 1, and existing checkpoints remain
+  valid.
+- Built-in workflows (`showdar-feature`, `showdar-bugfix`,
+  `showdar-release`, `showdar-incident`), the six built-in profiles,
+  adapters, and Phase 6G authority are unchanged.
+- Extensions are opt-in: `add-pack`, `add-workflow`, `init --pack`,
+  `list --extensions`. Project overrides in `.showdar/overrides.json`
+  are user-owned; Showdar reads and validates the file but never
+  rewrites or deletes it.
+- Pack sources in 0.8 are local directories/workspace paths only;
+  tarball, URL, Git, and npm/registry sources are rejected.
+
 # Migrating to 0.7.0
 
 0.7.0 adds deterministic workflow trace projection

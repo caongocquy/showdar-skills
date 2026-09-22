@@ -557,6 +557,64 @@ is idempotent, preserves the configured profile, supports `--ai`/`--scope`
 overrides, and refuses to overwrite a foreign same-name skill directory that
 Showdar does not own.
 
+## Extensions (0.8.0)
+
+Extension packs are local, static, declarative directories installed from a
+local directory or workspace-relative path. A pack carries `pack.json`
+metadata (name, version, skills, workflows, pack-local profiles), skill
+directories, custom workflow definitions, and docs. Packs contain no
+executable hooks, lifecycle scripts, or remote code.
+
+```bash
+showdar add-pack ../acme-pack
+showdar list --extensions
+showdar remove-pack acme
+```
+
+Pack skill IDs use the `vendor/skill` namespace (for example,
+`acme/lint`); the `showdar-` prefix is reserved for built-ins. Skill
+`domains` are lowercase kebab-case discovery hints only (at most 8 per
+skill) — they never create capabilities, routes, or authority.
+
+Custom workflows compose built-in primitive stages under a `vendor-name`
+ID (for example, `acme-release`). Stages, skip rules, and completion
+policy follow the same frozen contracts as built-in workflows; custom
+workflows cannot define new primitives, authority, evidence kinds, or
+state schemas. Workflow state remains `schemaVersion: 1` and the trace
+projection is unchanged.
+
+```bash
+showdar add-workflow ./workflows/acme-release.json
+showdar init --pack ../acme-pack
+```
+
+Project overrides live in the user-owned `.showdar/overrides.json` file:
+skill descriptions, discovery hints, advisory guidance text, custom
+workflow policy refinement, and new project-owned profiles. Showdar reads
+and validates the file but never rewrites or deletes it; built-in
+workflow semantics and the six built-in profiles cannot be overridden.
+Pack-local profiles select pack-owned skills and workflows only.
+
+Showdar computes a full-tree SHA-256 over the validated pack source at
+install and records it in `.showdar.json` (`extensions.packs[].hash`).
+The hash is source-tree identity — a docs-only edit changes it without
+implying any behavior change. Drift means the source tree differs from
+the recorded installation source.
+
+Extensions cannot create capabilities, grant authority, modify Phase 6G,
+change built-in workflow semantics or profiles, or execute arbitrary
+code. Supported sources are local directories and workspace-relative
+paths; tarball, URL, Git, and npm/registry sources are rejected in 0.8.
+
+Opt-in custom workflow evaluation (never part of the release gate):
+
+```bash
+node scripts/generate-custom-eval-fixture.mjs
+node scripts/custom-workflows-eval.mjs \
+  --scenarios .tmp/custom-eval-fixture/custom-scenarios \
+  --pack .tmp/custom-eval-fixture/acme-pack/pack.json
+```
+
 ## Routing
 
 Showdar routes each request through progressive disclosure: the host discovers
@@ -591,7 +649,11 @@ Product behavior notes:
 ```bash
 showdar init [--scope <project|global>] --ai <target> --profile <profile>
 showdar add <skill> [--ai <target>] [--scope <project|global>]
+showdar add-pack <local-path>
+showdar remove-pack <name>
+showdar add-workflow <local-path>
 showdar list
+showdar list --extensions
 showdar status [--scope <project|global>]
 showdar doctor [--scope <project|global>]
 showdar validate

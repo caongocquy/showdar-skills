@@ -4,36 +4,36 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## [0.8.0]
 
 ### Added
 
-- Local extensibility for custom workflows, skill packs, and project overrides without weakening Phase 6G authority.
-- Three AJV schemas: `config/pack.schema.json`, `config/custom-workflow.schema.json`, `config/project-overrides.schema.json` — no content hash in pack.json; domains as kebab-case discovery hints only.
-- `src/validate-pack.js` pure validators for packs, custom workflows, project overrides; recursive forbidden-authority guard reusing `FORBIDDEN_AUTHORITY_KEYS`.
-- `src/extension-catalog.js` deterministic immutable extension catalog (`createExtensionCatalog`); no global mutable registry; order-independent duplicate rejection.
-- `src/workflow-state.js` additive optional `extensionCatalog` context; built-in SELECTABLE/SKIP/REQUIRED maps frozen; schemaVersion 1 unchanged.
-- `src/workflow-trace.js` additive catalog pass-through for custom workflow IDs; trace projection unchanged.
-- Manifest v2 `extensions` object: `packs[]` with full-tree `hashTree()` SHA-256, `customWorkflows[]`, `overrides` metadata; no schema bump.
-- User-owned `.showdar/overrides.json` for project-level description/domain/guidance/profile overrides; built-in workflow policy and built-in profile definitions protected.
-- CLI: `showdar add-pack <path>`, `showdar remove-pack <name>`, `showdar add-workflow <path>`, `showdar init --pack <path>`, `showdar list --extensions`; local-only sources (dir/relative), no network/Git/URL.
-- Shared deterministic workflow eval core (`benchmark/lib/workflow-eval-core.js`) preserving built-in 16/16 M1–M10 invariants.
-- Opt-in custom workflow evaluation: `npm run eval:custom-workflows` (separate corpus, never part of `npm run eval` or release gate).
-- Test fixtures for pack install/remove, custom workflow state lifecycle, override precedence, authority fuzz, namespace collisions.
+- Local extension packs: static declarative directories (`pack.json` metadata only, no content hash) installed from a local directory or workspace-relative path.
+- Custom workflows composed from built-in primitive stages (`vendor-name` IDs), with canonical skip reasons/policies and the frozen completion contract.
+- Immutable deterministic extension catalog snapshots (`createExtensionCatalog`): no global registry, input-order independent, duplicate/collision rejecting.
+- Pack-local and project-local profiles; the six built-in profiles remain primitive-only and immutable.
+- User-owned `.showdar/overrides.json` for descriptions, discovery hints, guidance, custom-workflow policy refinement, and new project profiles.
+- CLI: `showdar add-pack <path>`, `showdar remove-pack <name>`, `showdar add-workflow <path>`, `showdar init --pack <path>`, `showdar list --extensions`.
+- Full-tree pack hashing: Showdar computes SHA-256 over the validated source tree at install and records it in `.showdar.json` (`extensions.packs[].hash`); docs-only edits change the hash as source identity, not as a behavior claim.
+- Opt-in custom workflow evaluation (`npm run eval:custom-workflows`); never part of `npm run eval` or the release gate.
 
 ### Changed
 
-- `npm run eval` remains retrieval + built-in workflows only; release gate unchanged.
-- `npm run check` unchanged.
+- Workflow-state APIs accept an optional explicit extension-catalog context; omitted context preserves built-in behavior exactly. State schema stays `schemaVersion: 1`.
+- Trace projection accepts `input.extensionCatalog` as validation context only; event types, envelope, and ordering are unchanged.
+- Manifest v2 gains an optional additive `extensions` object (`packs[]`, `customWorkflows[]`, `overrides` metadata). Existing manifests without it remain valid.
 
 ### Security
 
-- Tarball sources rejected (no safe extractor in 0.8); path-safety/symlink ownership enforced; authority-like keys rejected recursively.
-- Project overrides never rewritten by init; never deleted on remove; manifest records metadata only.
+- Built-in workflow policy (stages, required stages, skips, completion, identity) and built-in profile definitions are protected and non-overrideable.
+- Recursive structured authority-key rejection (`primaryCapability`, `authorizedAction`, `mutationPermission`, `routeAuthority` and all canonical `FORBIDDEN_AUTHORITY_KEYS`); ordinary prose is not censored.
+- Path/symlink/ownership protection on pack install, removal, and override reads; foreign files are never silently overwritten or deleted.
+- Local-only source model: no network, Git, npm/registry, or executable hooks. Tarball, URL, and Git pack sources are rejected in 0.8.
+- Extensions cannot create capabilities, grant authority, modify Phase 6G, mutate built-ins, or execute code.
 
 ### Migration
 
-- No migration required; existing 0.7 manifests, checkpoints, and profiles work unchanged.
+- No migration required. Existing 0.7 installs, manifests (v2), checkpoints (schemaVersion 1), profiles, and adapters work unchanged. Extensions and overrides are opt-in; no mandatory action for existing users.
 
 ## [0.7.0]
 
