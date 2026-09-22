@@ -4,11 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## [0.8.1]
 
 ### Fixed
 
-- Custom workflow checkpoints/resume now preserve extension-catalog context when validating skipped stages.
+- Preserve extension-catalog context while validating skipped custom-workflow stages so valid checkpoints can serialize, deserialize, and resume correctly.
 
 ## [0.8.0]
 
