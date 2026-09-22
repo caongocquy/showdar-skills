@@ -249,6 +249,44 @@ test('projector accepts valid states and projects events', () => {
   assert.ok(Array.isArray(next) && next.length > 0);
 });
 
+test('projector rejects invalid states', () => {
+  const state = featureState();
+  assert.throws(() => projectWorkflowEvents({ nope: true }, state, { op: 'start', stage: 'showdar-understand' }), /Invalid prev/);
+  assert.throws(() => projectWorkflowEvents(null, { nope: true }, { op: 'start' }), /Invalid next/);
+});
+
+test('projector validates custom states only against their explicit catalog', async () => {
+  const { createExtensionCatalog } = await import('../src/extension-catalog.js');
+  const catalog = createExtensionCatalog({
+    packs: [{
+      manifest: { name: 'acme', version: '1.0.0', skills: [], workflows: [{ id: 'acme-mini', path: 'w.json' }] },
+      workflows: { 'acme-mini': { description: 'A minimal custom workflow for testing purposes ok', stages: ['showdar-build', 'showdar-test'], requiredStages: ['showdar-build'] } },
+    }],
+  }).value;
+  const created = createWorkflowState('acme-mini', { extensionCatalog: catalog });
+  assert.ok(created.ok);
+  assert.throws(() => projectWorkflowEvents(null, created.value, { op: 'create' }), /Invalid next/);
+  const withCatalog = projectWorkflowEvents(null, created.value, { op: 'create', extensionCatalog: catalog });
+  assert.ok(Array.isArray(withCatalog) && withCatalog.length > 0);
+  for (const event of withCatalog) {
+    assert.ok(!('extensionCatalog' in event.detail));
+  }
+});
+
+test('projector ignores unrelated catalog entries for built-in states', async () => {
+  const { createExtensionCatalog } = await import('../src/extension-catalog.js');
+  const catalog = createExtensionCatalog({
+    packs: [{
+      manifest: { name: 'acme', version: '1.0.0', skills: [], workflows: [{ id: 'acme-mini', path: 'w.json' }] },
+      workflows: { 'acme-mini': { description: 'A minimal custom workflow for testing purposes ok', stages: ['showdar-build', 'showdar-test'], requiredStages: ['showdar-build'] } },
+    }],
+  }).value;
+  const state = featureState();
+  const plain = projectWorkflowEvents(null, state, { op: 'create' });
+  const withCatalog = projectWorkflowEvents(null, state, { op: 'create', extensionCatalog: catalog });
+  assert.deepEqual(withCatalog, plain);
+});
+
 test('two identical runs produce byte-identical normalized traces', () => {
   function run() {
     let state = featureState();

@@ -265,17 +265,13 @@ function bump(state, patch) {
 
 export function validateWorkflowState(input, options = {}) {
   const errors = [];
-  const catalog = options.extensionCatalog ?? null;
+  const catalog = options.extensionCatalog ?? { selectableStages: SELECTABLE_STAGES, skipRules: SKIP_RULES, requiredStages: REQUIRED_STAGES };
   const workflowIds = snapshotWorkflowIds(catalog);
   if (!isRecord(input)) return { ok: false, errors: ['workflow state must be an object'] };
   const forbidden = containsForbiddenAuthorityKey(input);
   if (forbidden) errors.push(`workflow state must not persist authority-derived fields (found at ${forbidden})`);
   if (input.schemaVersion !== WORKFLOW_SCHEMA_VERSION) errors.push(`schemaVersion must be ${WORKFLOW_SCHEMA_VERSION}`);
-  if (catalog && typeof input.workflowId !== 'string' || (catalog && !workflowIds.has(input.workflowId))) {
-    errors.push(`workflowId must be one of: ${[...workflowIds].join(', ')}`);
-  } else if (!catalog && typeof input.workflowId !== 'string') {
-    errors.push('workflowId must be a non-empty string');
-  }
+  if (typeof input.workflowId !== 'string' || !workflowIds.has(input.workflowId)) errors.push(`workflowId must be one of: ${[...workflowIds].join(', ')}`);
   if (!WORKFLOW_STATUSES.includes(input.status)) errors.push(`status must be one of: ${WORKFLOW_STATUSES.join(', ')}`);
   if (!Number.isInteger(input.revision) || input.revision < 0) errors.push('revision must be a non-negative integer');
   if (!isIsoString(input.createdAt)) errors.push('createdAt must be ISO8601');
@@ -285,7 +281,7 @@ export function validateWorkflowState(input, options = {}) {
   if (new Set(input.selectedStages ?? []).size !== (input.selectedStages ?? []).length) errors.push('selectedStages must not contain duplicates');
 
   const workflowId = input.workflowId;
-  const snapshot = options.extensionCatalog ?? null;
+  const snapshot = catalog;
   const catalogStages = workflowId ? snapshotStages(snapshot, workflowId) : [];
   if (Array.isArray(input.candidateStages) && catalogStages.length) {
     for (const stage of input.candidateStages) {
