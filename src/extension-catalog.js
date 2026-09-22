@@ -168,8 +168,10 @@ export function getCatalogSkill(catalog, id) {
   if (!skill) return getBuiltinSkill(id);
   const description = snapshot.overrides?.skillDescriptions?.[id] ?? skill.description;
   const domain = snapshot.overrides?.skillDomains?.[id];
-  if (description === skill.description && domain === undefined) return skill;
-  return { ...skill, ...(description !== skill.description ? { description } : {}), ...(domain !== undefined ? { domain } : {}) };
+  const descChanged = description !== skill.description;
+  const domainChanged = domain !== undefined && domain !== skill.domain;
+  if (!descChanged && !domainChanged) return skill;
+  return { ...skill, ...(descChanged ? { description } : {}), ...(domainChanged ? { domain } : {}) };
 }
 
 export function getCatalogWorkflow(catalog, id) {
