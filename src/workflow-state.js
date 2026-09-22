@@ -190,7 +190,7 @@ function validateSkipped(entry, workflowId, selectedStages, catalog = null) {
   for (const key of Object.keys(entry)) {
     if (!SKIPPED_KEYS.has(key)) errors.push(`skipped stage contains unknown key: ${key}`);
   }
-  const rule = (SKIP_RULES[workflowId] ?? {})[entry.stage];
+  const rule = snapshotSkipRule(catalog, workflowId, entry.stage);
   if (!rule) errors.push(`stage ${entry.stage} is not skippable under ${workflowId} policy`);
   else {
     if (entry.reason !== rule.reason) errors.push(`skip reason for ${entry.stage} must be ${rule.reason}`);
