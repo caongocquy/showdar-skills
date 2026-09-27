@@ -18,86 +18,101 @@ Describe when to use this skill.
 - List specific scenarios where this skill applies
 - Provide concrete examples of applicable situations
 - Explain the context in which this skill is most valuable
+- Document the types of problems this skill solves
 
 ## When not to use
 
 - List scenarios where this skill should not be used
 - Explain limitations and boundaries
 - Note any conflicting approaches
+- Document known incompatibilities
 
 ## Inputs and assumptions
 
 - List required inputs and assumptions
 - Document any prerequisites
 - Specify expected data formats
+- Note any environmental dependencies
 
 ## Non-negotiable rules
 
 - List non-negotiable constraints
 - Document mandatory practices
 - Specify compliance requirements
+- Note any regulatory requirements
 
 ## Workflow
 
 ### Phase 1 - Discovery
 - Step 1: Gather requirements
 - Step 2: Analyze context
+- Step 3: Identify stakeholders
 
 ### Phase 2 - Analysis
 - Step 1: Evaluate options
 - Step 2: Assess trade-offs
+- Step 3: Document findings
 
 ### Phase 3 - Output
 - Step 1: Produce deliverable
 - Step 2: Validate results
+- Step 3: Document outcomes
 
 ## Decision points
 
 - List decision points and criteria
 - Document evaluation criteria
 - Specify escalation paths
+- Note decision deadlines
 
 ## Stack detection
 
 - How to detect if this skill applies
 - Technology stack indicators
 - File pattern matching
+- Configuration indicators
 
 ## Failure modes
 
 - Known failure scenarios
 - Common error patterns
 - Recovery procedures
+- Mitigation strategies
 
 ## Stop conditions
 
 - When to stop using this skill
 - Completion criteria
 - Termination signals
+- Rollback triggers
 
 ## Escalation conditions
 
 - When to escalate
 - Escalation contacts
 - Severity thresholds
+- Communication protocols
 
 ## Verification
 
 - How to verify correct usage
 - Validation checkpoints
 - Quality gates
+- Acceptance criteria
 
 ## Output contract
 
 - What this skill produces
 - Expected deliverables
 - Format specifications
+- Quality standards
 
 ## Anti-patterns
 
 - Common mistakes to avoid
 - Anti-pattern examples
 - Corrective actions
+- Prevention techniques
 
 ## Example
 
@@ -170,7 +185,7 @@ function createPackManifest({ name, version, description, vendor, skillName, wit
 function createWorkflowDoc({ vendor, workflowName, stages, description }) {
   const workflowId = generateWorkflowId(vendor, workflowName);
   const allowedSkips = stages
-    .filter(s => s !== 'showdar-understand') // Don't skip understand by default
+    .filter(s => s !== 'showdar-understand')
     .map(stage => ({
       stage,
       reason: 'no-ux-decision',
@@ -249,9 +264,6 @@ async function createPackScaffold({
     withWorkflow,
     withProfile 
   });
-  
-  const skillId = manifest.skills[0].id;
-  const skillDir = createSkillDir(manifest.skills[0].id);
   
   // Check if destination already exists
   const fs = await import('node:fs/promises');
