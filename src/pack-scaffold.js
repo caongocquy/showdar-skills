@@ -249,11 +249,7 @@ async function createPackScaffold({
   );
   
   // Write skill SKILL.md
-  const skillTitle = toTitleCase(skillName);
-  const skillContent = SKILL_TEMPLATE
-    .replace(/\{\{skillName\}\}/g, skillName)
-    .replace(/\{\{skillTitle\}\}/g, skillTitle)
-    .replace(/\{\{skillDescription\}\}/g, `Custom skill for ${skillName}`);
+  const skillContent = createSkillFile({ vendor: vendorNorm, skillName });
   
   await import('node:fs/promises').then(fs => 
     fs.writeFile(path.join(packDir, 'skills', manifest.skills[0].id, 'SKILL.md'), skillContent, 'utf8')
