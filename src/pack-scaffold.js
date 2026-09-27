@@ -312,7 +312,7 @@ async function createPackScaffold({
   return {
     packDir,
     manifest,
-    skillId,
+    skillId: manifest.skills[0].id,
     workflowId: withWorkflow ? generateWorkflowId(vendorNorm, withWorkflow) : null,
     profileName: withProfile,
   };
