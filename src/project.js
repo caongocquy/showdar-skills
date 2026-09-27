@@ -938,4 +938,84 @@ export async function readProjectOverrides({ cwd }) {
   return doc;
 }
 
-export { SHA_HEX_RE };
+export async function validatePackSource({ cwd, source }) {
+  const { validatePack } = await import('./validate-pack.js');
+  const packRoot = path.resolve(cwd, source);
+  return validatePack(packRoot);
+}
+
+export async function createPack({ cwd, path: packPath, vendor, description, withWorkflow, withProfile }) {
+  const { createPackScaffold } = await import('./pack-scaffold.js');
+  const absolutePath = path.resolve(cwd, packPath);
+  const name = path.basename(absolutePath);
+  return createPackScaffold({ destination: absolutePath, name, vendor, description, withWorkflow, withProfile });
+}
+
+export async function inspectPack({ cwd, source }) {
+  const { inspectPackSource } = await import('./pack-inspect.js');
+  const packRoot = path.resolve(cwd, source);
+  return inspectPackSource(packRoot);
+}
+
+export async function doctor({ cwd }) {
+  const { inspectPackInstalled, inspectCustomWorkflows, inspectOverrides, listExtensionsWithDetails } = await import('./pack-inspect.js');
+  const manifestPath = path.join(cwd, '.showdar.json');
+  const manifest = await readManifest(manifestPath, cwd);
+  if (!manifest) throw new Error('Showdar is not installed in project scope.');
+  
+  const packs = [];
+  for (const pack of manifest.extensions?.packs ?? []) {
+    const installed = await import('./pack-inspect.js').then(m => m.inspectPackInstalled(cwd, pack.name, pack));
+    packs.push({ 
+      name: pack.name, 
+      version: pack.version, 
+      hash: pack.hash, 
+      drift: installed.drift, 
+      driftDetails: installed.driftDetails,
+      validation: installed.validation,
+    });
+  }
+  
+  const customWorkflows = await import('./pack-inspect.js').then(m => m.inspectCustomWorkflows(cwd, manifest));
+  
+  const overrides = await readProjectOverrides({ cwd });
+  const overridesStatus = overrides ? 'valid' : 'absent';
+  
+  const issues = [];
+  const warnings = [];
+  
+  for (const pack of packs) {
+    if (pack.drift !== 'no-drift') {
+      issues.push(`Pack ${pack.name}: ${pack.drift} - ${pack.driftDetails}`);
+    }
+    if (!pack.validation?.ok) {
+      for (const error of pack.validation.errors ?? []) {
+        issues.push(`Pack ${pack.name} validation: ${error}`);
+      }
+    }
+  }
+  
+  for (const wf of customWorkflows) {
+    if (!wf.valid) {
+      issues.push(`Workflow ${wf.id}: ${wf.errors?.join(', ')}`);
+    }
+  }
+  
+  const healthy = issues.length === 0;
+  
+  return {
+    healthy,
+    packs,
+    customWorkflows,
+    overrides: { present: overridesStatus !== 'absent', status: overridesStatus },
+    issues,
+    warnings,
+  };
+}
+
+export async function updatePack({ cwd, source }) {
+  const { updatePack } = await import('./pack-update.js');
+  return updatePack({ cwd, source });
+}
+
+export { SHA_HEX_RE, hashTree, readManifest };

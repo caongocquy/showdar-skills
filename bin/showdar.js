@@ -4,7 +4,7 @@ import { homedir } from 'node:os';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { AI_TARGETS, PRIMITIVE_COUNT, PROFILE_ALIASES, PROFILES, SKILLS, TOTAL_COUNT, WORKFLOW_COUNT, canonicalProfile, isDeprecatedProfile, resolveProfile } from '../src/catalog.js';
-import { addPack, addSkill, addWorkflow, globalManifestPath, initGlobal, initProject, inspectGlobal, inspectProject, listExtensions, removeGlobal, removePack, removeProject } from '../src/project.js';
+import { addPack, addSkill, addWorkflow, globalManifestPath, initGlobal, initProject, inspectGlobal, inspectProject, listExtensions, removeGlobal, removePack, removeProject, validatePackSource, createPack, inspectPack, doctor, updatePack, readProjectOverrides } from '../src/project.js';
 import { validateRepository } from '../src/validate.js';
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -43,7 +43,7 @@ function printHelp(version, command = null) {
     console.log(`Showdar Skills ${version}\n\nUsage:\n  showdar add <skill> [--ai <universal|codex|opencode|cursor|claude>] [--scope <project|global>]\n\nExamples:\n  showdar add debug\n  showdar add showdar-security\n  showdar add test --ai cursor\n  showdar add review --scope global --ai claude\n\nDefault scope: project. Default AI target: universal, or the configured .showdar.json value when present.`);
     return;
   }
-  console.log(`Showdar Skills ${version}\n\nUsage:\n  showdar init ${scopeUsage} [--profile <name>] [--ai <universal|codex|opencode|cursor|claude|all>] [--pack <local-path>]\n  showdar add <skill> [--ai <universal|codex|opencode|cursor|claude>] [--scope <project|global>]\n  showdar add-pack <local-path>\n  showdar remove-pack <name>\n  showdar add-workflow <local-path>\n  showdar status ${scopeUsage}\n  showdar doctor ${scopeUsage}\n  showdar validate\n  showdar list [--extensions]\n  showdar remove ${scopeUsage}\n\nExtension packs accept local directories/workspace paths only; tarball, URL, Git, and registry sources are rejected.\n\nDefaults: scope project, profile full, AI target universal.\nProfiles: ${Object.keys(PROFILES).join(', ')}\nDeprecated aliases: ${Object.entries(PROFILE_ALIASES).map(([alias, target]) => `${alias} -> ${target}`).join(', ')}\nAI targets: ${AI_TARGETS.join(', ')}`);
+  console.log(`Showdar Skills ${version}\n\nUsage:\n  showdar init ${scopeUsage} [--profile <name>] [--ai <universal|codex|opencode|cursor|claude|all>] [--pack <local-path>]\n  showdar add <skill> [--ai <universal|codex|opencode|cursor|claude>] [--scope <project|global>]\n  showdar add-pack <local-path>\n  showdar remove-pack <name>\n  showdar add-workflow <local-path>\n  showdar status ${scopeUsage}\n  showdar doctor ${scopeUsage}\n  showdar validate\n  showdar list [--extensions]\n  showdar remove ${scopeUsage}\n  showdar create-pack <path> [--vendor <vendor>] [--description <text>] [--with-workflow <id>] [--with-profile <name>]\n  showdar validate-pack <local-path> [--json]\n  showdar inspect-pack <local-path> [--json]\n  showdar doctor ${scopeUsage}\n  showdar update-pack <local-path>\n  showdar validate\n  showdar list [--extensions]\n  showdar remove ${scopeUsage}\n\nExtension packs accept local directories/workspace paths only; tarball, URL, Git, and registry sources are rejected.\n\nDefaults: scope project, profile full, AI target universal.\nProfiles: ${Object.keys(PROFILES).join(', ')}\nDeprecated aliases: ${Object.entries(PROFILE_ALIASES).map(([alias, target]) => `${alias} -> ${target}`).join(', ')}\nAI targets: ${AI_TARGETS.join(', ')}`);
 }
 
 async function main() {
@@ -180,7 +180,77 @@ async function main() {
     return;
   }
 
-  throw new Error(`Unknown command "${command}". Run "showdar --help".`);
+  if (command === 'create-pack') {
+    const packPath = args[1];
+    if (!packPath) throw new Error('Pack path is required. Usage: showdar create-pack <path> [--vendor <vendor>] [--description <text>] [--with-workflow <id>] [--with-profile <name>]');
+    const vendor = valueAfter(args, '--vendor', 'custom');
+    const description = valueAfter(args, '--description', null);
+    const withWorkflow = valueAfter(args, '--with-workflow', null);
+    const withProfile = valueAfter(args, '--with-profile', null);
+    const result = await createPack({ cwd: projectRoot, path: packPath, vendor, description, withWorkflow, withProfile });
+    console.log(`Showdar pack scaffolded.\nPack: ${result.manifest.name}\nVersion: ${result.manifest.version}\nSkill: ${result.skillId}${result.workflowId ? `\nWorkflow: ${result.workflowId}` : ''}${result.profileName ? `\nProfile: ${result.profileName}` : ''}\nPath: ${result.packDir}`);
+    return;
+  }
+
+  if (command === 'validate-pack') {
+    const packPath = args[1];
+    if (!packPath) throw new Error('Pack path is required. Usage: showdar validate-pack <local-path> [--json]');
+    const isJson = args.includes('--json');
+    const result = await validatePackSource({ cwd: projectRoot, source: packPath });
+    if (isJson) {
+      console.log(JSON.stringify(result, null, 2));
+    } else {
+      if (result.ok) {
+        console.log(`Pack validation OK`);
+      } else {
+        console.log(`Pack validation FAILED (${result.errors.length} errors).`);
+        for (const error of result.errors) console.log(`- ${error}`);
+        process.exitCode = 1;
+      }
+    }
+    return;
+  }
+
+  if (command === 'inspect-pack') {
+    const packPath = args[1];
+    if (!packPath) throw new Error('Pack path is required. Usage: showdar inspect-pack <local-path> [--json]');
+    const isJson = args.includes('--json');
+    const result = await inspectPack({ cwd: projectRoot, source: packPath });
+    if (isJson) {
+      console.log(JSON.stringify(result, null, 2));
+    } else {
+      if (result.ok) {
+        console.log(`Pack: ${result.name}@${result.version}`);
+        console.log(`Description: ${result.description}`);
+        console.log(`Source: ${result.source}`);
+        console.log(`Full-tree hash: ${result.fullTreeHash}`);
+        console.log(`Skills: ${result.skills.length}`);
+        console.log(`Workflows: ${result.workflows.length}`);
+        console.log(`Profiles: ${Object.keys(result.profiles).length}`);
+        if (result.errors.length > 0) {
+          console.log(`Errors: ${result.errors.length}`);
+          for (const error of result.errors) console.log(`  - ${error}`);
+        }
+        if (result.warnings.length > 0) {
+          console.log(`Warnings: ${result.warnings.length}`);
+          for (const warning of result.warnings) console.log(`  - ${warning}`);
+        }
+      } else {
+        console.log(`Inspection FAILED (${result.errors.length} errors).`);
+        for (const error of result.errors) console.log(`- ${error}`);
+        process.exitCode = 1;
+      }
+    }
+    return;
+  }
+
+  if (command === 'update-pack') {
+    const packSource = args[1];
+    if (!packSource) throw new Error('Pack source is required. Usage: showdar update-pack <local-path>');
+    const result = await updatePack({ cwd: projectRoot, source: packSource });
+    console.log(`Showdar pack ${result.status}.\nPack: ${result.pack}\nVersion: ${result.version}${result.oldHash ? `\nOld hash: ${result.oldHash}\nNew hash: ${result.newHash}` : ''}\nFiles: ${result.files}`);
+    return;
+  }
 }
 
 main().catch((error) => {

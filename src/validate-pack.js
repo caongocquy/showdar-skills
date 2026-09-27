@@ -90,7 +90,7 @@ export function validateCustomWorkflowDoc(doc, field = 'workflow') {
   const known = new Set(['id', 'description', 'stages', 'allowedSkips', 'requiredStages', 'completionPolicy', 'workflowStateCompat']);
   for (const key of Object.keys(doc)) if (!known.has(key)) errors.push(`${field} contains unknown key: ${key}`);
   if (!validateCustomWorkflowId(doc.id)) errors.push(`${field} id must use custom namespace grammar (vendor-name, never showdar-*): ${JSON.stringify(doc.id)}`);
-  if (typeof doc.description !== 'string' || doc.description.trim().length < 30) errors.push(`${field} description must be at least 30 characters`);
+  if (typeof doc.description !== 'string' || doc.description.trim().length < 10) errors.push(`${field} description must be at least 10 characters`);
   if (!Array.isArray(doc.stages) || !doc.stages.length) {
     errors.push(`${field} stages must be a non-empty array`);
   } else {
