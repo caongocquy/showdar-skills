@@ -16,61 +16,88 @@ Describe when to use this skill.
 ## When to use
 
 - List specific scenarios where this skill applies
+- Provide concrete examples of applicable situations
+- Explain the context in which this skill is most valuable
 
 ## When not to use
 
 - List scenarios where this skill should not be used
+- Explain limitations and boundaries
+- Note any conflicting approaches
 
 ## Inputs and assumptions
 
 - List required inputs and assumptions
+- Document any prerequisites
+- Specify expected data formats
 
 ## Non-negotiable rules
 
 - List non-negotiable constraints
+- Document mandatory practices
+- Specify compliance requirements
 
 ## Workflow
 
 ### Phase 1 - Discovery
-- Step 1
+- Step 1: Gather requirements
+- Step 2: Analyze context
 
 ### Phase 2 - Analysis
-- Step 2
+- Step 1: Evaluate options
+- Step 2: Assess trade-offs
 
 ### Phase 3 - Output
-- Step 3
+- Step 1: Produce deliverable
+- Step 2: Validate results
 
 ## Decision points
 
 - List decision points and criteria
+- Document evaluation criteria
+- Specify escalation paths
 
 ## Stack detection
 
 - How to detect if this skill applies
+- Technology stack indicators
+- File pattern matching
 
 ## Failure modes
 
 - Known failure scenarios
+- Common error patterns
+- Recovery procedures
 
 ## Stop conditions
 
 - When to stop using this skill
+- Completion criteria
+- Termination signals
 
 ## Escalation conditions
 
 - When to escalate
+- Escalation contacts
+- Severity thresholds
 
 ## Verification
 
 - How to verify correct usage
+- Validation checkpoints
+- Quality gates
 
 ## Output contract
 
 - What this skill produces
+- Expected deliverables
+- Format specifications
 
 ## Anti-patterns
 
 - Common mistakes to avoid
+- Anti-pattern examples
+- Corrective actions
 
 ## Example
 
