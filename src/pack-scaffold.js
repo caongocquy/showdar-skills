@@ -180,7 +180,7 @@ function createSkillFile({ vendor, skillName }) {
   return SKILL_TEMPLATE
     .replace(/\{\{skillName\}\}/g, skillName)
     .replace(/\{\{skillTitle\}\}/g, title)
-    .replace(/\{\{skillDescription\}\}/g, `Custom skill for ${skillName}`);
+    .replace(/\{\{skillDescription\}\}/g, `Custom ${title} skill providing reusable functionality for ${skillName} tasks across projects.`);
 }
 
 function createSkillDir(skillId) {
