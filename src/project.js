@@ -14,6 +14,7 @@ import {
 } from './adapters.js';
 import { normalizeSkillName, ALL_SKILLS } from './catalog.js';
 import { assertSafeManagedPath, lstatWithoutSymlink, safeOwnedPath } from './path-safety.js';
+export { assertSafeManagedPath, lstatWithoutSymlink, safeOwnedPath } from './path-safety.js';
 import { renderManagedBlock, renderShowdarCommand, renderShowdarAggregator } from './adapter-renderers.js';
 import { validatePack } from './validate-pack.js';
 
@@ -55,11 +56,11 @@ async function readManifest(manifestPath, baseRoot) {
   catch (error) { throw new Error(`Invalid Showdar manifest: ${error.message}`); }
 }
 
-async function writeJsonAtomic(target, value) {
+export async function writeJsonAtomic(target, value) {
   await writeTextAtomic(target, `${JSON.stringify(value, null, 2)}\n`);
 }
 
-async function writeTextAtomic(target, value) {
+export async function writeTextAtomic(target, value) {
   const tmp = `${target}.tmp-${process.pid}-${Date.now()}`;
   await writeFile(tmp, value, { flag: 'wx' });
   await rename(tmp, target);
@@ -108,7 +109,7 @@ async function removeCursorRule(filePath) {
   }
 }
 
-function ownedPathSet(manifest) {
+export function ownedPathSet(manifest) {
   return new Set((manifest?.files ?? []).map((entry) => entry.path));
 }
 
@@ -121,7 +122,7 @@ function uniqueRoots(targets, resolveRoot) {
   return [...roots.values()];
 }
 
-function manifestPathFor(baseRoot, destination) {
+export function manifestPathFor(baseRoot, destination) {
   const relative = path.relative(baseRoot, destination);
   return relative.replaceAll(path.sep, '/');
 }

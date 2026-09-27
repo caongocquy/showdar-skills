@@ -7,45 +7,15 @@ import {
   writeJsonAtomic, 
   ownedPathSet, 
   manifestPathFor, 
-  EXTENSION_DIR, 
-  PROJECT_MANIFEST,
+  EXTENSION_DIR,
   lstatWithoutSymlink,
   assertSafeManagedPath,
 } from './project.js';
 import { validatePack } from './validate-pack.js';
 import { validatePackManifest } from './validate-pack.js';
 import { createExtensionError, EXTENSION_ERROR_CATEGORIES } from './extension-errors.js';
-import { hashTree } from './project.js';
 
 const EXTENSION_PACKS_DIR = path.join(EXTENSION_DIR, 'packs');
-
-function ownedPathSet(manifest) {
-  return new Set((manifest?.files ?? []).map((entry) => entry.path));
-}
-
-function manifestPathFor(baseRoot, destination) {
-  const relative = path.relative(baseRoot, destination);
-  return relative.replaceAll(path.sep, '/');
-}
-
-async function hashTree(target) {
-  const h = createHash('sha256');
-  async function walk(current, relative = '') {
-    const info = await lstatWithoutSymlink(current);
-    if (info.isDirectory()) {
-      const entries = await readdir(current, { withFileTypes: true });
-      entries.sort((a, b) => a.name.localeCompare(b.name));
-      for (const entry of entries) await walk(path.join(current, entry.name), path.join(relative, entry.name));
-      return;
-    }
-    h.update(relative.replaceAll(path.sep, '/'));
-    h.update('\0');
-    h.update(await readFile(current));
-    h.update('\0');
-  }
-  await walk(target);
-  return h.digest('hex');
-}
 
 async function readPackManifest(packRoot) {
   let manifest;
@@ -118,7 +88,7 @@ function compareWorkflowDefinitions(oldManifest, newManifest) {
   return changes;
 }
 
-export async function updatePack({ cwd, source, home = process.cwd() }) {
+async function updatePack({ cwd, source, home = process.cwd() }) {
   const packRoot = await resolvePackSource({ cwd, source });
   const newManifest = await readPackManifest(packRoot);
   const validation = await validatePack(packRoot);
@@ -159,6 +129,7 @@ export async function updatePack({ cwd, source, home = process.cwd() }) {
   }
   
   const newFiles = [];
+  
   for (const file of fileList) {
     await assertSafeManagedPath(packRoot, file.source);
     const dest = path.join(tempDir, file.relative);
@@ -166,9 +137,6 @@ export async function updatePack({ cwd, source, home = process.cwd() }) {
     await mkdir(path.dirname(dest), { recursive: true });
     await cp(file.source, dest, { recursive: true });
   }
-  
-  const priorOwned = ownedPathSet(existing);
-  const newFiles = [];
   
   for (const file of fileList) {
     const dest = path.join(cwd, '.showdar', 'extensions', 'packs', newManifest.name, file.relative);
@@ -237,5 +205,4 @@ function resolvePackSource({ cwd, source }) {
 }
 
 export { updatePack };
-
 export const packUpdateAPI = { updatePack };

@@ -92,8 +92,8 @@ async function inspectPackSource(packRoot) {
     const doc = await readWorkflowDoc(packRoot, workflow.path);
     if (doc) {
       const validation = validateCustomWorkflowDoc(doc, `workflow ${workflow.id}`);
-      if (!validation.ok) {
-        workflows.push({ id: workflow.id, path: workflow.path, valid: false, errors: validation.errors });
+      if (validation.length > 0) {
+        workflows.push({ id: workflow.id, path: workflow.path, valid: false, errors: validation });
       } else {
         workflows.push({ 
           id: workflow.id, 

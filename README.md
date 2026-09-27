@@ -557,7 +557,7 @@ is idempotent, preserves the configured profile, supports `--ai`/`--scope`
 overrides, and refuses to overwrite a foreign same-name skill directory that
 Showdar does not own.
 
-## Extensions (0.8.0)
+## Extensions (0.9.0)
 
 Extension packs are local, static, declarative directories installed from a
 local directory or workspace-relative path. A pack carries `pack.json`
@@ -565,16 +565,41 @@ metadata (name, version, skills, workflows, pack-local profiles), skill
 directories, custom workflow definitions, and docs. Packs contain no
 executable hooks, lifecycle scripts, or remote code.
 
+**Pack authoring & validation**
+
 ```bash
-showdar add-pack ../acme-pack
+showdar create-pack <path> [--vendor <v>] [--description <text>] [--with-workflow <id>] [--with-profile <name>]
+showdar validate-pack <local-path> [--json]
+showdar inspect-pack <local-path> [--json]
+```
+
+**Install & lifecycle**
+
+```bash
+showdar add-pack <local-path>
 showdar list --extensions
-showdar remove-pack acme
+showdar remove-pack <name>
+showdar update-pack <local-path>
+```
+
+**Diagnostics**
+
+```bash
+showdar doctor --extensions
+```
+
+**Pack metadata**
+
+```bash
+showdar add-workflow <local-path>
+showdar init --pack <local-path>
 ```
 
 Pack skill IDs use the `vendor/skill` namespace (for example,
 `acme/lint`); the `showdar-` prefix is reserved for built-ins. Skill
 `domains` are lowercase kebab-case discovery hints only (at most 8 per
 skill) — they never create capabilities, routes, or authority.
+Custom workflow description minimum is 10 characters.
 
 Custom workflows compose built-in primitive stages under a `vendor-name`
 ID (for example, `acme-release`). Stages, skip rules, and completion
@@ -599,12 +624,23 @@ Showdar computes a full-tree SHA-256 over the validated pack source at
 install and records it in `.showdar.json` (`extensions.packs[].hash`).
 The hash is source-tree identity — a docs-only edit changes it without
 implying any behavior change. Drift means the source tree differs from
-the recorded installation source.
+the recorded installation source. Source drift (`source-drift`) and
+workflow incompatibility (`workflow-incompatible`) are separate concerns.
+
+**Checkpoint compatibility**: Custom workflow checkpoints are revalidated
+against the current explicit extension catalog at resume. A valid checkpoint
+resumes normally. A checkpoint with a skip or stage no longer permitted by
+the current workflow definition yields a `workflow-incompatible` outcome
+with `replanRequired=true` — it is never fabricated into a `BLOCKED`
+WorkflowState. Malformed checkpoints remain distinct from workflow
+incompatibility. No pack hash, workflow fingerprint, or catalog snapshot is
+persisted in checkpoints; `schemaVersion` remains 1.
 
 Extensions cannot create capabilities, grant authority, modify Phase 6G,
 change built-in workflow semantics or profiles, or execute arbitrary
 code. Supported sources are local directories and workspace-relative
-paths; tarball, URL, Git, and npm/registry sources are rejected in 0.8.
+paths; tarball, URL, Git, and npm/registry sources are rejected.
+Executable plugins/hooks are not supported.
 
 Opt-in custom workflow evaluation (never part of the release gate):
 
@@ -614,6 +650,22 @@ node scripts/custom-workflows-eval.mjs \
   --scenarios .tmp/custom-eval-fixture/custom-scenarios \
   --pack .tmp/custom-eval-fixture/acme-pack/pack.json
 ```
+
+## Diagnostics (0.9.0)
+
+```bash
+showdar doctor --extensions
+```
+
+Read-only diagnostics for installed extension state:
+- manifest entries valid, installed files exist, ownership intact
+- source drift (`source-drift`, `source-unavailable`, `installed-file-drift`, `ownership-conflict`)
+- invalid overrides, duplicate/collision, broken profile references
+- catalog construction failures
+- source drift vs workflow incompatibility reported separately
+
+Byte-for-byte override preservation is enforced; `.showdar/overrides.json` is
+never rewritten by Showdar during any lifecycle operation.
 
 ## Routing
 
@@ -656,6 +708,13 @@ showdar list
 showdar list --extensions
 showdar status [--scope <project|global>]
 showdar doctor [--scope <project|global>]
+showdar doctor --extensions
+showdar validate
+showdar remove [--scope <project|global>]
+showdar create-pack <path> [--vendor <v>] [--description <text>] [--with-workflow <id>] [--with-profile <name>]
+showdar validate-pack <local-path> [--json]
+showdar inspect-pack <local-path> [--json]
+showdar update-pack <local-path>
 showdar validate
 showdar remove [--scope <project|global>]
 ```

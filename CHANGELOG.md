@@ -4,7 +4,48 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [0.8.1]
+## [Unreleased]
+
+## [0.9.0]
+
+### Added
+
+- Pack authoring CLI: `showdar create-pack <path>` scaffolds a minimal valid extension pack with `--vendor`, `--description`, `--with-workflow`, `--with-profile` flags; no interactive wizard.
+- Pack validation CLI: `showdar validate-pack <path> [--json]` performs dry-run validation without installation; deterministic JSON output.
+- Pack inspection CLI: `showdar inspect-pack <path> [--json]` outputs normalized read-only model (source, identity, skills, workflows, profiles, domains, full-tree hash, drift, compatibility, warnings, errors).
+- Pack diagnostics CLI: `showdar doctor --extensions` read-only diagnostics for installed extensions (source drift, ownership, catalog, overrides, profile refs, catalog build failures, collisions).
+- Pack update CLI: `showdar update-pack <local-path>` safe staged replacement with rollback; validates candidate before replacement; preserves overrides/foreign files; refuses unsafe overwrite; no network access.
+- Checkpoint compatibility assessment layer: `assessCheckpointCompatibility(checkpoint, extensionCatalog)` returns ephemeral `{compatible, replanRequired, reason}`; strict deserialization preserved; invalid checkpoints yield `workflow-incompatible` + `replanRequired` without fabricating BLOCKED WorkflowState; malformed checkpoints distinct from policy incompatibility.
+- Structured extension error model: 12 categories (`schema-invalid`, `namespace-invalid`, `collision`, `protected-field`, `unsafe-path`, `source-unavailable`, `source-unsupported`, `ownership-conflict`, `workflow-incompatible`, `profile-reference-invalid`, `override-invalid`, `drift-detected`) with stable codes and human messages; separate from drift.
+- Custom workflow description minimum lowered from 30 to 10 characters.
+- Source drift vs workflow incompatibility separation: source drift (`source-drift`) is hash-based identity change; workflow incompatibility (`workflow-incompatible`) is current-catalog validation failure; never conflated.
+- `showdar doctor --extensions` reports source drift and workflow compatibility separately (`source.drift`, `workflow.compatibility`); `inspect-pack --json` exposes normalized model; `list --extensions` grouped output with drift status.
+- Override precedence inspection: effective value + source (`built-in`/`pack:<name>`/`project-override`) + `protected` flag via `--json` surfaces.
+- Update-pack safety: staged replacement with rollback; validates candidate before replacement; preserves overrides/foreign files; refuses unsafe overwrite; no network access; fails on ownership conflict/missing managed file; workflow removal validation; manifest updated only after successful replacement.
+- Override precedence inspection via `computePrecedence` in `pack-inspect.js`: per-field effective value, source (`built-in`/`pack:<name>`/`project-override`), protected flag.
+- Custom workflow description minimum lowered from 30 to 10 characters (schema + validator).
+- Domain cap remains 8 with improved validation messages; domains remain discovery-only hints.
+- Error model: 12 structured categories with stable machine-readable codes + human messages; `drift-detected` distinct from `workflow-incompatible`.
+
+### Changed
+
+- `showdar doctor --extensions` now supports `--extensions` flag for extension diagnostics.
+- `showdar list --extensions` output improved: grouped PACKS/WORKFLOWS/PROFILES/OVERRIDES with drift status.
+- Custom workflow description minimum lowered 30 → 10 (schema + validator).
+- `validate-pack` uses existing canonical validation path; `--json` for machine-readable output.
+- `inspect-pack` outputs deterministic normalized model (human + `--json`).
+- Source drift (`source-drift`) and workflow incompatibility (`workflow-incompatible`) are distinct concepts with separate reporting.
+- `update-pack` warns on workflow definition changes: "Existing checkpoints referencing changed custom workflows will be revalidated on resume."
+
+### Security
+
+- `update-pack` refuses unsafe overwrite; validates candidate before replacement; staged replacement with atomic finalization; rollback on failure; overrides and foreign files preserved byte-identical; no network access; no lifecycle scripts/hooks; local directory sources only.
+
+### Fixed
+
+- Custom workflow description minimum lowered from 30 to 10 characters.
+- Extension error categories now structured with stable codes and human messages.
+- Source drift and workflow incompatibility are no longer conflated in reporting.
 
 ### Fixed
 
