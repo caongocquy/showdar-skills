@@ -1014,9 +1014,14 @@ export async function doctor({ cwd }) {
   };
 }
 
-export async function updatePack({ cwd, source }) {
+export async function updatePack({ cwd, source, dryRun = false }) {
   const { updatePack } = await import('./pack-update.js');
-  return updatePack({ cwd, source });
+  return updatePack({ cwd, source, dryRun });
+}
+
+export async function listExtensionsDetailed({ cwd }) {
+  const { listExtensionsWithDetails } = await import('./pack-inspect.js');
+  return listExtensionsWithDetails(cwd);
 }
 
 export { SHA_HEX_RE, hashTree, readManifest };

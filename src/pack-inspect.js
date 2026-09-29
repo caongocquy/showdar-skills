@@ -181,9 +181,9 @@ async function inspectCustomWorkflows(cwd, manifest) {
     try {
       const docPath = path.join(cwd, wf.path);
       const doc = JSON.parse(await readFile(docPath, 'utf8'));
-      const { validateCustomWorkflowDoc, validateCustomWorkflowId } = await import('./validate-pack.js');
-      const validation = validateCustomWorkflowDoc(doc, `workflow ${doc.id}`);
-      results.push({ id: wf.id, path: wf.path, source: wf.source, valid: validation.ok, errors: validation.errors });
+      const { validateCustomWorkflowDoc } = await import('./validate-pack.js');
+      const errors = validateCustomWorkflowDoc(doc, `workflow ${doc.id}`);
+      results.push({ id: wf.id, path: wf.path, source: wf.source, valid: errors.length === 0, errors });
     } catch (error) {
       results.push({ id: wf.id, path: wf.path, source: wf.source, valid: false, errors: [error.message] });
     }
@@ -257,32 +257,105 @@ async function assessWorkflowCompatibility(checkpoint, extensionCatalog) {
 async function listExtensionsWithDetails(cwd) {
   const manifest = await readManifest(path.join(cwd, '.showdar.json'), cwd);
   if (!manifest) return null;
-  
+
   const overrides = await import('./project.js').then(m => m.readProjectOverrides({ cwd })).catch(() => null);
   const overridesStatus = overrides ? 'valid' : 'absent';
-  
+
   const packs = [];
   for (const pack of manifest.extensions?.packs ?? []) {
     const installed = await inspectPackInstalled(cwd, pack.name, pack);
-    packs.push({ name: pack.name, version: pack.version, hash: pack.hash, drift: installed.drift, driftDetails: installed.driftDetails });
+    const status = installed.drift === 'no-drift' ? 'healthy'
+      : installed.drift === 'source-unavailable' ? 'source-unavailable'
+      : installed.drift === 'installed-file-drift' ? 'installed-drift'
+      : installed.drift === 'source-drift' ? 'source-drift'
+      : installed.drift;
+    packs.push({ name: pack.name, version: pack.version, hash: pack.hash, status, drift: installed.drift, driftDetails: installed.driftDetails });
   }
-  
+
   const customWorkflows = [];
   for (const wf of manifest.extensions?.customWorkflows ?? []) {
     customWorkflows.push({ id: wf.id, source: wf.source, path: wf.path });
   }
-  
-  return { packs, customWorkflows, overrides: { present: true, status: overridesStatus } };
+
+  const projectProfiles = [];
+  if (overrides?.profiles) {
+    for (const name of Object.keys(overrides.profiles)) {
+      projectProfiles.push({ name, source: 'project-override', members: overrides.profiles[name] });
+    }
+  }
+  for (const pack of manifest.extensions?.packs ?? []) {
+    const packDir = path.join(cwd, EXTENSION_DIR, 'packs', pack.name);
+    try {
+      const packManifest = JSON.parse(await readFile(path.join(packDir, 'pack.json'), 'utf8'));
+      for (const [name, members] of Object.entries(packManifest.profiles ?? {})) {
+        projectProfiles.push({ name, source: `pack:${pack.name}`, members });
+      }
+    } catch {}
+  }
+
+  return { packs, customWorkflows, profiles: projectProfiles, overrides: { present: overrides !== null, status: overridesStatus } };
 }
 
-export { 
-  inspectPackSource, 
-  inspectPackInstalled, 
-  inspectCustomWorkflows, 
+async function buildCandidateEffectiveCatalog({ cwd, candidatePath }) {
+  const { createExtensionCatalog } = await import('./extension-catalog.js');
+  const manifestPath = path.join(cwd, '.showdar.json');
+  const manifest = await readManifest(manifestPath, cwd).catch(() => null);
+
+  const candidateManifest = await readPackManifest(candidatePath);
+  const candidateWorkflows = {};
+  for (const wf of candidateManifest.workflows ?? []) {
+    try {
+      candidateWorkflows[wf.id] = JSON.parse(await readFile(path.join(candidatePath, wf.path), 'utf8'));
+    } catch {}
+  }
+
+  const packs = [];
+  if (manifest) {
+    for (const pack of manifest.extensions?.packs ?? []) {
+      if (pack.name === candidateManifest.name) continue;
+      const packDir = path.join(cwd, EXTENSION_DIR, 'packs', pack.name);
+      try {
+        const pm = JSON.parse(await readFile(path.join(packDir, 'pack.json'), 'utf8'));
+        const workflows = {};
+        for (const wf of pm.workflows ?? []) {
+          try {
+            workflows[wf.id] = JSON.parse(await readFile(path.join(packDir, wf.path), 'utf8'));
+          } catch {}
+        }
+        packs.push({ manifest: pm, workflows });
+      } catch {}
+    }
+  }
+
+  packs.push({ manifest: candidateManifest, workflows: candidateWorkflows });
+
+  let projectOverrides = null;
+  try {
+    const { readProjectOverrides } = await import('./project.js');
+    projectOverrides = await readProjectOverrides({ cwd });
+  } catch {}
+
+  const result = createExtensionCatalog({ packs, projectOverrides });
+  if (!result.ok) throw new Error(`Candidate catalog invalid: ${result.errors.join('; ')}`);
+  return result.value;
+}
+
+async function assessCheckpointAgainstCandidate({ cwd, candidatePath, checkpoint }) {
+  const { assessCompatibilityReasons } = await import('./pack-compat.js');
+  const catalog = await buildCandidateEffectiveCatalog({ cwd, candidatePath });
+  return assessCompatibilityReasons(checkpoint, catalog);
+}
+
+export {
+  inspectPackSource,
+  inspectPackInstalled,
+  inspectCustomWorkflows,
   inspectOverrides,
   computePrecedence,
   assessWorkflowCompatibility,
   listExtensionsWithDetails,
+  buildCandidateEffectiveCatalog,
+  assessCheckpointAgainstCandidate,
   DRIFT_CATEGORIES,
 };
 
@@ -293,6 +366,8 @@ export const packInspectAPI = {
   computePrecedence,
   assessWorkflowCompatibility,
   listExtensionsWithDetails,
+  buildCandidateEffectiveCatalog,
+  assessCheckpointAgainstCandidate,
 };
 
 export default { inspectPackSource, inspectPackInstalled };

@@ -11,114 +11,118 @@ description: {{skillDescription}}
 
 ## Purpose
 
-Describe when to use this skill.
+Describe when to use this skill, what outcome it produces, and how success is recognized.
 
 ## When to use
 
-- List specific scenarios where this skill applies
-- Provide concrete examples of applicable situations
-- Explain the context in which this skill is most valuable
-- Document the types of problems this skill solves
+- First concrete scenario where this skill applies, with enough context to route correctly
+- Second concrete scenario covering a distinct but related situation for this skill
+- Signals in the task, files, or request that indicate this skill is the right choice
+- Follow-up situation where the initial outcome needs review or refinement
 
 ## When not to use
 
-- List scenarios where this skill should not be used
-- Explain limitations and boundaries
-- Note any conflicting approaches
-- Document known incompatibilities
+- Scenarios where this skill should not be used
+- Known limitations and boundaries of this skill
+- Situations better handled by a different skill or manual review
+- Cases where the available context is too thin to act responsibly
 
 ## Inputs and assumptions
 
-- List required inputs and assumptions
-- Document any prerequisites
-- Specify expected data formats
-- Note any environmental dependencies
+- Required inputs the agent needs before starting this work
+- Assumptions the skill makes about project state and available context
+- Prerequisites that must hold for the guidance below to apply
+- Information to request when inputs are missing or ambiguous
 
 ## Non-negotiable rules
 
-- List non-negotiable constraints
-- Document mandatory practices
-- Specify compliance requirements
-- Note any regulatory requirements
+- Mandatory constraint agents must follow when using this skill
+- Second mandatory practice that keeps usage safe and consistent
+- Requirement that prevents data loss, scope creep, or incorrect output
+- Rule that preserves existing contracts unless change is explicitly required
 
 ## Workflow
 
-### Phase 1 - Discovery
-- Step 1: Gather requirements
-- Step 2: Analyze context
-- Step 3: Identify stakeholders
+### Phase 1 - Understand
 
-### Phase 2 - Analysis
-- Step 1: Evaluate options
-- Step 2: Assess trade-offs
-- Step 3: Document findings
+- Clarify the goal and constraints before acting
+- Gather the minimum context needed to proceed correctly
+- Identify stakeholders or owning files affected by the work
 
-### Phase 3 - Output
-- Step 1: Produce deliverable
-- Step 2: Validate results
-- Step 3: Document outcomes
+### Phase 2 - Act
+
+- Apply the skill's core practice in the smallest coherent step
+- Verify each step before moving to the next one
+- Keep changes local until a broader boundary is truly needed
+
+### Phase 3 - Confirm
+
+- Confirm the outcome matches the stated goal
+- Record what was done and what remains open
+- Note follow-up work instead of expanding scope silently
 
 ## Decision points
 
-- List decision points and criteria
-- Document evaluation criteria
-- Specify escalation paths
-- Note decision deadlines
+- Decision the agent must make before proceeding, and the criteria to use
+- Condition that requires stopping and asking for clarification
+- Escalation path when the available context is insufficient
+- Trade-off to evaluate when more than one valid approach exists
 
 ## Stack detection
 
-- How to detect if this skill applies
-- Technology stack indicators
-- File pattern matching
-- Configuration indicators
+- File patterns or configuration markers indicating this skill applies
+- Technology signals that confirm relevance to the current task
+- Indicators that the task belongs elsewhere
+- Configuration evidence that narrows the applicable scope
 
 ## Failure modes
 
-- Known failure scenarios
-- Common error patterns
-- Recovery procedures
-- Mitigation strategies
+- Known failure scenario and how to recognize it early
+- Recovery procedure when the skill's approach does not fit
+- Mitigation that prevents repeating the same failure
+- Signal that the current plan should be abandoned for a safer one
 
 ## Stop conditions
 
-- When to stop using this skill
-- Completion criteria
-- Termination signals
-- Rollback triggers
+- Completion criteria showing the skill's work is done
+- Termination signal indicating further effort adds no value
+- Rollback trigger when the approach proves wrong
+- Condition where waiting for better input beats acting now
 
 ## Escalation conditions
 
-- When to escalate
-- Escalation contacts
-- Severity thresholds
-- Communication protocols
+- Condition requiring human review before continuing
+- Severity threshold that changes the response path
+- Communication needed when blocked or uncertain
+- Risk level that justifies pausing instead of proceeding
 
 ## Verification
 
-- How to verify correct usage
-- Validation checkpoints
-- Quality gates
-- Acceptance criteria
+- How to verify the skill was applied correctly
+- Validation checkpoint before considering the work complete
+- Acceptance criteria for the produced outcome
+- Evidence to keep showing the result meets the contract
 
 ## Output contract
 
-- What this skill produces
-- Expected deliverables
-- Format specifications
-- Quality standards
+- Deliverable this skill produces and its expected format
+- Quality standard the output must meet
+- Information that must accompany the result
+- Detail level expected for follow-up or review
 
 ## Anti-patterns
 
-- Common mistakes to avoid
-- Anti-pattern examples
-- Corrective actions
-- Prevention techniques
+- Common mistake to avoid when using this skill
+- Incorrect shortcut and the correct alternative
+- Prevention technique that keeps usage on track
+- Over-engineering trap that adds scope without value
 
 ## Example
 
 \`\`\`markdown
 ### Summary
-Example usage summary
+
+Applied the {{skillName}} skill: clarified the goal, followed the workflow phases, verified the outcome, and recorded the result.
 \`\`\`
 `;
 

@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- `showdar update-pack <path> --dry-run` read-only preview using the same canonical planning logic as execution; explicit public projection with deterministic ordering, descriptive change categories, and `executable` status.
+- Canonical internal pack update planning (`src/pack-plan.js`): `planPackUpdate()`, `verifyPlanPreconditions()`, `executePackUpdate()` with TOCTOU fingerprint protection (source, installed owned files, relevant manifest state, overrides bytes). Stale plans abort with zero mutation.
+- `showdar inspect-pack <path> --checkpoint <file>` checkpoint compatibility explanation against the candidate effective catalog (current project + candidate pack + project overrides). Deterministic semantic reason codes with precedence; malformed checkpoints report `schema-invalid` / `malformed-checkpoint`.
+- `showdar list --extensions --json` and `showdar doctor --extensions --json` using the common CLI envelope (`schemaVersion: 1`). Doctor reports `checkpointCompatibility: "not-assessed"` without a checkpoint. Diagnostics exit 0 on successful report.
+- Leaner `create-pack` skill scaffold (full required sections, no filler) with validation guidance output.
+
+### Changed
+
+- `src/pack-update.js` refactored around canonical planning; v0.9 staged replacement and rollback safety preserved.
+- `list --extensions` human output now shows pack health status and pack profiles.
+- v0.9 `validate-pack --json` and plain `inspect-pack --json` shapes unchanged (backward-compat tests added).
+
 ## [0.9.0]
 
 ### Added

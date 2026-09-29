@@ -4,7 +4,9 @@ import { homedir } from 'node:os';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { AI_TARGETS, PRIMITIVE_COUNT, PROFILE_ALIASES, PROFILES, SKILLS, TOTAL_COUNT, WORKFLOW_COUNT, canonicalProfile, isDeprecatedProfile, resolveProfile } from '../src/catalog.js';
-import { addPack, addSkill, addWorkflow, globalManifestPath, initGlobal, initProject, inspectGlobal, inspectProject, listExtensions, removeGlobal, removePack, removeProject, validatePackSource, createPack, inspectPack, doctor, updatePack, readProjectOverrides } from '../src/project.js';
+import { addPack, addSkill, addWorkflow, globalManifestPath, initGlobal, initProject, inspectGlobal, inspectProject, listExtensions, listExtensionsDetailed, removeGlobal, removePack, removeProject, validatePackSource, createPack, inspectPack, doctor, updatePack, readProjectOverrides } from '../src/project.js';
+import { formatPlanPreviewHuman, projectPackUpdatePreview } from '../src/pack-plan.js';
+import { assessCheckpointAgainstCandidate } from '../src/pack-inspect.js';
 import { validateRepository } from '../src/validate.js';
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -43,7 +45,7 @@ function printHelp(version, command = null) {
     console.log(`Showdar Skills ${version}\n\nUsage:\n  showdar add <skill> [--ai <universal|codex|opencode|cursor|claude>] [--scope <project|global>]\n\nExamples:\n  showdar add debug\n  showdar add showdar-security\n  showdar add test --ai cursor\n  showdar add review --scope global --ai claude\n\nDefault scope: project. Default AI target: universal, or the configured .showdar.json value when present.`);
     return;
   }
-  console.log(`Showdar Skills ${version}\n\nUsage:\n  showdar init ${scopeUsage} [--profile <name>] [--ai <universal|codex|opencode|cursor|claude|all>] [--pack <local-path>]\n  showdar add <skill> [--ai <universal|codex|opencode|cursor|claude>] [--scope <project|global>]\n  showdar add-pack <local-path>\n  showdar remove-pack <name>\n  showdar add-workflow <local-path>\n  showdar status ${scopeUsage}\n  showdar doctor ${scopeUsage}\n  showdar validate\n  showdar list [--extensions]\n  showdar remove ${scopeUsage}\n  showdar create-pack <path> [--vendor <vendor>] [--description <text>] [--with-workflow <id>] [--with-profile <name>]\n  showdar validate-pack <local-path> [--json]\n  showdar inspect-pack <local-path> [--json]\n  showdar doctor ${scopeUsage}\n  showdar update-pack <local-path>\n  showdar validate\n  showdar list [--extensions]\n  showdar remove ${scopeUsage}\n\nExtension packs accept local directories/workspace paths only; tarball, URL, Git, and registry sources are rejected.\n\nDefaults: scope project, profile full, AI target universal.\nProfiles: ${Object.keys(PROFILES).join(', ')}\nDeprecated aliases: ${Object.entries(PROFILE_ALIASES).map(([alias, target]) => `${alias} -> ${target}`).join(', ')}\nAI targets: ${AI_TARGETS.join(', ')}`);
+  console.log(`Showdar Skills ${version}\n\nUsage:\n  showdar init ${scopeUsage} [--profile <name>] [--ai <universal|codex|opencode|cursor|claude|all>] [--pack <local-path>]\n  showdar add <skill> [--ai <universal|codex|opencode|cursor|claude>] [--scope <project|global>]\n  showdar add-pack <local-path>\n  showdar remove-pack <name>\n  showdar add-workflow <local-path>\n  showdar status ${scopeUsage}\n  showdar doctor ${scopeUsage}\n  showdar validate\n  showdar list [--extensions]\n  showdar remove ${scopeUsage}\n  showdar create-pack <path> [--vendor <vendor>] [--description <text>] [--with-workflow <id>] [--with-profile <name>]\n  showdar validate-pack <local-path> [--json]\n  showdar inspect-pack <local-path> [--json] [--checkpoint <file>]\n  showdar doctor ${scopeUsage} [--extensions] [--json]\n  showdar update-pack <local-path> [--dry-run] [--json]\n  showdar validate\n  showdar list [--extensions] [--json]\n  showdar remove ${scopeUsage}\n\nExtension packs accept local directories/workspace paths only; tarball, URL, Git, and registry sources are rejected.\n\nDefaults: scope project, profile full, AI target universal.\nProfiles: ${Object.keys(PROFILES).join(', ')}\nDeprecated aliases: ${Object.entries(PROFILE_ALIASES).map(([alias, target]) => `${alias} -> ${target}`).join(', ')}\nAI targets: ${AI_TARGETS.join(', ')}`);
 }
 
 async function main() {
@@ -63,11 +65,20 @@ async function main() {
 
   if (command === 'list') {
     if (args.includes('--extensions')) {
-      const result = await listExtensions({ cwd: projectRoot });
+      const isJson = args.includes('--json');
+      const result = await listExtensionsDetailed({ cwd: projectRoot });
+      if (isJson) {
+        console.log(JSON.stringify({ schemaVersion: 1, command: 'list', ok: true, data: result, warnings: [], errors: [] }, null, 2));
+        return;
+      }
       console.log('Packs:');
-      for (const pack of result.packs) console.log(`  ${pack.name}@${pack.version}  ${pack.hash}`);
+      for (const pack of result.packs) console.log(`  ${pack.name}@${pack.version}  ${pack.status ?? 'healthy'}  ${pack.hash}`);
       console.log('Custom workflows:');
       for (const workflow of result.customWorkflows) console.log(`  ${workflow.id}  [${workflow.source}]  ${workflow.path}`);
+      if (result.profiles?.length) {
+        console.log('Pack profiles:');
+        for (const profile of result.profiles) console.log(`  ${profile.name}  [${profile.source}]  members: ${(profile.members ?? []).join(', ')}`);
+      }
       console.log(`Project overrides: ${result.overrides.present ? result.overrides.status : 'absent'}`);
       return;
     }
@@ -140,6 +151,31 @@ async function main() {
   }
 
   if (command === 'status' || command === 'doctor') {
+    if (command === 'doctor' && args.includes('--extensions')) {
+      const isJson = args.includes('--json');
+      const result = await doctor({ cwd: projectRoot });
+      if (isJson) {
+        console.log(JSON.stringify({
+          schemaVersion: 1,
+          command: 'doctor',
+          ok: true,
+          data: { ...result, checkpointCompatibility: 'not-assessed' },
+          warnings: result.warnings ?? [],
+          errors: [],
+        }, null, 2));
+        return;
+      }
+      console.log(`Extension diagnostics\nHealth: ${result.healthy ? 'OK' : 'BROKEN'}`);
+      for (const pack of result.packs) console.log(`  ${pack.name}@${pack.version}  ${pack.drift}`);
+      for (const wf of result.customWorkflows) console.log(`  workflow ${wf.id}: ${wf.valid ? 'valid' : 'invalid'}`);
+      for (const issue of result.issues) console.log(`- ${issue}`);
+      for (const warning of result.warnings ?? []) console.log(`warning: ${warning}`);
+      if (!result.healthy) {
+        console.log(`Checkpoint compatibility: not-assessed (supply a checkpoint via inspect-pack --checkpoint)`);
+        if (result.customWorkflows.length) console.log(`Note: checkpoints referencing changed workflow definitions will be revalidated on resume.`);
+      }
+      return;
+    }
     const result = scope === 'global' ? await inspectGlobal() : await inspectProject(projectRoot);
     if (!result.installed) {
       console.log(`Showdar Skills is not installed in the ${scope} scope.`);
@@ -213,8 +249,31 @@ async function main() {
 
   if (command === 'inspect-pack') {
     const packPath = args[1];
-    if (!packPath) throw new Error('Pack path is required. Usage: showdar inspect-pack <local-path> [--json]');
+    if (!packPath) throw new Error('Pack path is required. Usage: showdar inspect-pack <local-path> [--json] [--checkpoint <file>]');
     const isJson = args.includes('--json');
+    const checkpointIdx = args.indexOf('--checkpoint');
+    const checkpointFile = checkpointIdx === -1 ? null : args[checkpointIdx + 1];
+    if (checkpointIdx !== -1 && (!checkpointFile || checkpointFile.startsWith('--'))) {
+      throw new Error('--checkpoint requires a file path');
+    }
+    if (checkpointFile) {
+      const { readFile } = await import('node:fs/promises');
+      const checkpoint = await readFile(path.resolve(projectRoot, checkpointFile), 'utf8');
+      const assessment = await assessCheckpointAgainstCandidate({ cwd: projectRoot, candidatePath: path.resolve(projectRoot, packPath), checkpoint });
+      if (isJson) {
+        console.log(JSON.stringify({ schemaVersion: 1, command: 'inspect-pack', ok: true, data: { checkpoint: assessment }, warnings: [], errors: [] }, null, 2));
+        return;
+      }
+      if (assessment.compatible) {
+        console.log(`Checkpoint compatibility: compatible\nReplan required: no`);
+        return;
+      }
+      console.log(`Checkpoint compatibility: ${assessment.category === 'schema-invalid' ? 'malformed' : 'workflow-incompatible'}\nReplan required: ${assessment.replanRequired ? 'yes' : 'no'}\nCategory: ${assessment.category}\nReason: ${assessment.reason}\nDetail: ${assessment.detail}`);
+      if (assessment.affectedWorkflow) console.log(`Affected workflow: ${assessment.affectedWorkflow}`);
+      if (assessment.affectedStage) console.log(`Affected stage: ${assessment.affectedStage}`);
+      console.log(`\nRun \`showdar update-pack <path> --dry-run\` to preview update.`);
+      return;
+    }
     const result = await inspectPack({ cwd: projectRoot, source: packPath });
     if (isJson) {
       console.log(JSON.stringify(result, null, 2));
@@ -246,9 +305,38 @@ async function main() {
 
   if (command === 'update-pack') {
     const packSource = args[1];
-    if (!packSource) throw new Error('Pack source is required. Usage: showdar update-pack <local-path>');
-    const result = await updatePack({ cwd: projectRoot, source: packSource });
-    console.log(`Showdar pack ${result.status}.\nPack: ${result.pack}\nVersion: ${result.version}${result.oldHash ? `\nOld hash: ${result.oldHash}\nNew hash: ${result.newHash}` : ''}\nFiles: ${result.files}`);
+    if (!packSource) throw new Error('Pack source is required. Usage: showdar update-pack <local-path> [--dry-run] [--json]');
+    const dryRun = args.includes('--dry-run');
+    const isJson = args.includes('--json');
+    if (dryRun) {
+      const { planPackUpdate } = await import('../src/pack-plan.js');
+      const plan = await planPackUpdate({ cwd: projectRoot, source: packSource });
+      if (isJson) {
+        console.log(JSON.stringify(projectPackUpdatePreview(plan), null, 2));
+        if (!plan.ok || !plan.executable) process.exitCode = 1;
+        return;
+      }
+      console.log(formatPlanPreviewHuman(plan));
+      if (!plan.ok || !plan.executable) process.exitCode = 1;
+      return;
+    }
+    if (isJson) {
+      try {
+        const result = await updatePack({ cwd: projectRoot, source: packSource });
+        console.log(JSON.stringify({ schemaVersion: 1, command: 'update-pack', ok: true, data: result, warnings: result.plan?.warnings ?? [], errors: [] }, null, 2));
+      } catch (error) {
+        console.log(JSON.stringify({ schemaVersion: 1, command: 'update-pack', ok: false, data: null, warnings: [], errors: [{ category: 'drift-detected', code: 'DRIFT_DETECTED', message: error.message }] }, null, 2));
+        process.exitCode = 1;
+      }
+      return;
+    }
+    try {
+      const result = await updatePack({ cwd: projectRoot, source: packSource });
+      console.log(`Showdar pack ${result.status}.\nPack: ${result.pack}\nVersion: ${result.version}${result.oldHash ? `\nOld hash: ${result.oldHash}\nNew hash: ${result.newHash}` : ''}\nFiles: ${result.files}`);
+    } catch (error) {
+      console.error(`showdar: ${error.message}`);
+      process.exitCode = 1;
+    }
     return;
   }
 }

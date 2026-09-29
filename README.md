@@ -570,23 +570,44 @@ executable hooks, lifecycle scripts, or remote code.
 ```bash
 showdar create-pack <path> [--vendor <v>] [--description <text>] [--with-workflow <id>] [--with-profile <name>]
 showdar validate-pack <local-path> [--json]
-showdar inspect-pack <local-path> [--json]
+showdar inspect-pack <local-path> [--json] [--checkpoint <file>]
 ```
 
 **Install & lifecycle**
 
 ```bash
 showdar add-pack <local-path>
-showdar list --extensions
+showdar list --extensions [--json]
 showdar remove-pack <name>
-showdar update-pack <local-path>
+showdar update-pack <local-path> [--dry-run] [--json]
 ```
 
 **Diagnostics**
 
 ```bash
-showdar doctor --extensions
+showdar doctor --extensions [--json]
 ```
+
+`update-pack --dry-run` previews changes without mutation: file add/replace/remove
+counts, descriptive change categories (`source-only`, `skill-content`,
+`workflow-definition`, `profile-definition`, `metadata`, `reference`,
+`ownership`, `installed-drift`), ownership conflicts, and whether the update is
+currently executable. Categories are descriptive only and never claim checkpoint
+compatibility. If source, installed files, manifest, or overrides change between
+preview and execution, the real update aborts as a stale plan with zero mutation.
+
+`inspect-pack --checkpoint` validates a workflow checkpoint against the candidate
+effective catalog (current project state + candidate pack + project overrides) and
+reports `compatible`, `workflow-incompatible` (with deterministic reason code and
+`replanRequired`), or `malformed`. Malformed checkpoints report `schema-invalid` /
+`malformed-checkpoint`, never `workflow-incompatible`.
+
+`list --extensions --json` and `doctor --extensions --json` use the common CLI
+envelope (`schemaVersion: 1`, `command`, `ok`, `data`, `warnings`, `errors`).
+Existing `validate-pack --json` and plain `inspect-pack --json` shapes are
+unchanged. `doctor` without a checkpoint reports `checkpointCompatibility:
+"not-assessed"`. Diagnostics exit 0 when they successfully report state, even when
+unhealthy; validation and execution failures exit 1.
 
 **Pack metadata**
 
