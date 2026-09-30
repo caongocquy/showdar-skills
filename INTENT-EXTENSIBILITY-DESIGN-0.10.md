@@ -502,11 +502,25 @@ Between `--dry-run` and real execution, the filesystem may change (another proce
 `executePackUpdate(plan)` recomputes all four fingerprint values immediately before mutation. If any differ from the plan's fingerprint:
 
 ```
-Error: Plan is stale (<which-fingerprint> changed since preview).
+Error: Plan is stale (<which-fingerprint> changed since planning).
 Re-run: showdar update-pack <path> --dry-run
 ```
 
 **No partial mutation.** The abort happens before any filesystem write.
+
+### 10.3a TOCTOU Lifecycle (Cross-Invocation Semantics)
+
+`update-pack --dry-run` is a read-only SNAPSHOT/PREVIEW of what the update would do at that moment. It is NOT an executable authorization and is NOT remembered by later invocations.
+
+A later independent `update-pack <path>` creates a NEW canonical plan from current filesystem state. It does NOT detect "the preview is stale" because the preview's fingerprint was never persisted or transferred — PlanFingerprint is internal-only, never written to manifest, state, checkpoints, or disk.
+
+TOCTOU protection applies WITHIN a single update execution lifecycle:
+
+```
+planPackUpdate() → verifyPlanPreconditions() → executePackUpdate(plan)
+```
+
+If state changes between planning and applying THAT SAME plan instance, execution aborts as stale with zero mutation. Preview/execution parity means the same canonical algorithm, not the same persisted plan instance across separate CLI invocations.
 
 ### 10.4 Behavior When Components Disappear
 
@@ -1229,7 +1243,7 @@ Use a generated local pack (not an untracked mandatory fixture).
 | 14 | `doctor --extensions` | Healthy, `checkpointCompatibility: "not-assessed"` |
 | 15 | Move source directory | — |
 | 16 | `doctor --extensions` | Source unavailable |
-| 17 | Edit candidate source, then `update-pack` | Stale plan abort, zero mutation |
+| 17 | Hold a plan instance, mutate candidate source, then execute THAT SAME plan | Stale-plan abort, zero mutation (TOCTOU within one execution lifecycle; a later independent CLI `update-pack` re-plans from current state) |
 | 18 | Add project override for workflow policy, re-run `inspect-pack --checkpoint` | Assessment uses effective candidate catalog including override |
 | 19 | `remove-pack dogfood-pack` | Pack removed |
 

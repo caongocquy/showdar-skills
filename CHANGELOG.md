@@ -19,6 +19,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `src/pack-update.js` refactored around canonical planning; v0.9 staged replacement and rollback safety preserved.
 - `list --extensions` human output now shows pack health status and pack profiles.
 - v0.9 `validate-pack --json` and plain `inspect-pack --json` shapes unchanged (backward-compat tests added).
+- TOCTOU lifecycle clarified: `--dry-run` is a read-only snapshot, not an authorization token. A later `update-pack` re-plans from current state. Stale-plan protection applies within a single execution lifecycle (`planPackUpdate` → `verifyPlanPreconditions` → `executePackUpdate`).
+
+### Fixed
+
+- `inspectCustomWorkflows` read `validateCustomWorkflowDoc` as `{ok, errors}` but the validator returns an error array, so `valid` was always `undefined` and doctor reported every workflow invalid. Now maps `errors.length === 0` to `valid`. Internal helper shape only; public CLI output unchanged.
 
 ## [0.9.0]
 

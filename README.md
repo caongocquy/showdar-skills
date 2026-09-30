@@ -593,8 +593,11 @@ counts, descriptive change categories (`source-only`, `skill-content`,
 `workflow-definition`, `profile-definition`, `metadata`, `reference`,
 `ownership`, `installed-drift`), ownership conflicts, and whether the update is
 currently executable. Categories are descriptive only and never claim checkpoint
-compatibility. If source, installed files, manifest, or overrides change between
-preview and execution, the real update aborts as a stale plan with zero mutation.
+compatibility. The preview is a read-only snapshot, not an authorization token:
+a later `update-pack` re-plans from current state. Within a single update
+execution, if source, installed files, manifest, or overrides change between
+planning and applying that same plan, execution aborts as a stale plan with
+zero mutation.
 
 `inspect-pack --checkpoint` validates a workflow checkpoint against the candidate
 effective catalog (current project state + candidate pack + project overrides) and

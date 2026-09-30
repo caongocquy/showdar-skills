@@ -259,6 +259,173 @@ test('scaffold: no authority keys or executable hooks', async () => {
   assert.ok(!skillContent.includes('primaryCapability'));
 });
 
+test('inspectCustomWorkflows: returns valid/errors contract', async () => {
+  const projectRoot = await setupProject('icw-contract');
+  const packDir = await scaffoldValidPack(path.join(TEST_DIR, 'icw-pack'), 'icw-pack');
+  await installPack(projectRoot, packDir);
+  const { inspectCustomWorkflows } = await import('../src/pack-inspect.js');
+  const manifest = JSON.parse(await fs.readFile(path.join(projectRoot, '.showdar.json'), 'utf8'));
+  const result = await inspectCustomWorkflows(projectRoot, manifest);
+  assert.ok(Array.isArray(result));
+  for (const wf of result) {
+    assert.equal(typeof wf.valid, 'boolean', 'workflow entry must expose boolean valid');
+    assert.ok(Array.isArray(wf.errors), 'workflow entry must expose errors array');
+    assert.ok(!('ok' in wf), 'workflow entry must NOT use ok (regression: validateCustomWorkflowDoc returns array)');
+  }
+});
+
+test('update: executes real update path past manifest write', async () => {
+  const projectRoot = await setupProject('exec-manifest');
+  const packDir = await scaffoldValidPack(path.join(TEST_DIR, 'em-pack'), 'em-pack');
+  await installPack(projectRoot, packDir);
+  await fs.writeFile(path.join(packDir, 'NOTE.md'), 'execute me');
+  const plan = await planPackUpdate({ cwd: projectRoot, source: path.relative(projectRoot, packDir) });
+  assert.equal(plan.ok, true);
+  const before = JSON.parse(await fs.readFile(path.join(projectRoot, '.showdar.json'), 'utf8'));
+  const beforeHash = before.extensions.packs.find((p) => p.name === 'em-pack').hash;
+  const result = await executePackUpdate(plan, { cwd: projectRoot });
+  assert.equal(result.status, 'updated');
+  const after = JSON.parse(await fs.readFile(path.join(projectRoot, '.showdar.json'), 'utf8'));
+  assert.notEqual(after.extensions.packs.find((p) => p.name === 'em-pack').hash, beforeHash);
+});
+
+test('toctou: each precondition mutation aborts same plan with zero mutation', async () => {
+  const mutations = {
+    'installed-changed': async (projectRoot, packDir) => {
+      const target = path.join(projectRoot, '.showdar', 'extensions', 'packs', 'tc2-pack', 'pack.json');
+      await fs.writeFile(target, (await fs.readFile(target, 'utf8')) + '\n');
+    },
+    'manifest-changed': async (projectRoot) => {
+      const mp = path.join(projectRoot, '.showdar.json');
+      const m = JSON.parse(await fs.readFile(mp, 'utf8'));
+      m.extensions.packs[0].version = '9.9.9-tamper';
+      await fs.writeFile(mp, JSON.stringify(m, null, 2));
+    },
+    'overrides-changed': async (projectRoot) => {
+      await fs.mkdir(path.join(projectRoot, '.showdar'), { recursive: true });
+      await fs.writeFile(path.join(projectRoot, '.showdar', 'overrides.json'), JSON.stringify({ version: 1 }));
+    },
+  };
+  for (const [expectedReason, mutate] of Object.entries(mutations)) {
+    const projectRoot = await setupProject(`toctou-${expectedReason}`);
+    const packDir = await scaffoldValidPack(path.join(TEST_DIR, `tcp-${expectedReason}`), 'tc2-pack');
+    await installPack(projectRoot, packDir);
+    const beforeManifest = await fs.readFile(path.join(projectRoot, '.showdar.json'), 'utf8');
+    let beforeOverrides = null;
+    try { beforeOverrides = await fs.readFile(path.join(projectRoot, '.showdar', 'overrides.json'), 'utf8'); } catch {}
+    const plan = await planPackUpdate({ cwd: projectRoot, source: path.relative(projectRoot, packDir) });
+    await mutate(projectRoot, packDir);
+    const verification = await verifyPlanPreconditions(plan, { cwd: projectRoot });
+    assert.equal(verification.ok, false, expectedReason);
+    assert.equal(verification.reason, expectedReason);
+    let postMutationOverrides = null;
+    try { postMutationOverrides = await fs.readFile(path.join(projectRoot, '.showdar', 'overrides.json'), 'utf8'); } catch {}
+    await assert.rejects(executePackUpdate(plan, { cwd: projectRoot }), /stale/);
+    const afterManifest = await fs.readFile(path.join(projectRoot, '.showdar.json'), 'utf8');
+    if (expectedReason === 'manifest-changed') {
+      assert.notEqual(afterManifest, beforeManifest);
+    } else {
+      assert.equal(afterManifest, beforeManifest, `${expectedReason}: manifest must be unchanged by abort`);
+    }
+    let afterOverrides = null;
+    try { afterOverrides = await fs.readFile(path.join(projectRoot, '.showdar', 'overrides.json'), 'utf8'); } catch {}
+    assert.equal(afterOverrides, postMutationOverrides, `${expectedReason}: execution must not touch overrides on abort`);
+  }
+});
+
+test('compat: stage with no skip rule maps to skip-policy-invalid', async () => {
+  const catalog = createExtensionCatalog({
+    packs: [{
+      manifest: { name: 'test', version: '0.1.0', skills: [], workflows: [{ id: 'test-flow', path: 'w.json' }] },
+      workflows: {
+        'test-flow': {
+          description: 'Test workflow with no skip rule for build stage',
+          stages: ['showdar-understand', 'showdar-build', 'showdar-test'],
+          requiredStages: ['showdar-understand'],
+          allowedSkips: [],
+        },
+      },
+    }],
+  }).value;
+  const ts = new Date().toISOString();
+  const cp = JSON.stringify({
+    schemaVersion: 1, workflowId: 'test-flow',
+    candidateStages: ['showdar-understand'],
+    selectedStages: ['showdar-understand'],
+    activeStage: null,
+    completedStages: [], skippedStages: [{ stage: 'showdar-build', reason: 'no-ux-decision', policy: 'no-ux-decision', evidence: [], skippedAt: ts }],
+    evidenceReceipts: [], blockers: [], nextStage: 'showdar-understand', status: 'INTERRUPTED', revision: 0, createdAt: ts, updatedAt: ts,
+  });
+  const result = await assessCompatibilityReasons(cp, catalog);
+  assert.equal(result.category, 'workflow-incompatible');
+  assert.equal(result.reason, 'skip-policy-invalid');
+});
+
+test('compat: recorded skip mismatch maps to recorded-skip-invalid not skip-policy-invalid', async () => {
+  const catalog = createExtensionCatalog({
+    packs: [{
+      manifest: { name: 'test', version: '0.1.0', skills: [], workflows: [{ id: 'test-flow', path: 'w.json' }] },
+      workflows: {
+        'test-flow': {
+          description: 'Test workflow with strict skip rule',
+          stages: ['showdar-understand', 'showdar-build', 'showdar-test'],
+          requiredStages: ['showdar-understand', 'showdar-build'],
+          allowedSkips: [{ stage: 'showdar-test', reason: 'no-ux-decision', policy: 'no-ux-decision', evidence: [] }],
+        },
+      },
+    }],
+  }).value;
+  const ts = new Date().toISOString();
+  const cp = JSON.stringify({
+    schemaVersion: 1, workflowId: 'test-flow',
+    candidateStages: ['showdar-understand', 'showdar-build'],
+    selectedStages: ['showdar-understand', 'showdar-build'],
+    activeStage: null,
+    completedStages: [], skippedStages: [{ stage: 'showdar-test', reason: 'wrong-reason', policy: 'wrong-reason', evidence: [], skippedAt: ts }],
+    evidenceReceipts: [], blockers: [], nextStage: 'showdar-understand', status: 'INTERRUPTED', revision: 0, createdAt: ts, updatedAt: ts,
+  });
+  const result = await assessCompatibilityReasons(cp, catalog);
+  assert.equal(result.category, 'workflow-incompatible');
+  assert.equal(result.reason, 'recorded-skip-invalid');
+  assert.notEqual(result.reason, 'skip-policy-invalid');
+});
+
+test('compat: old checkpoint with valid skip becomes recorded-skip-invalid under changed candidate policy', async () => {
+  const oldWf = {
+    description: 'Workflow with permissive skip policy',
+    stages: ['showdar-understand', 'showdar-build', 'showdar-test'],
+    requiredStages: ['showdar-understand', 'showdar-build'],
+    allowedSkips: [{ stage: 'showdar-test', reason: 'local-low-risk', policy: 'local-low-risk', evidence: [] }],
+  };
+  const oldCatalog = createExtensionCatalog({
+    packs: [{ manifest: { name: 'test', version: '0.1.0', skills: [], workflows: [{ id: 'test-flow', path: 'w.json' }] }, workflows: { 'test-flow': oldWf } }],
+  }).value;
+  const ts = () => new Date().toISOString();
+  let s = createWorkflowState('test-flow', { extensionCatalog: oldCatalog, selectedStages: ['showdar-understand', 'showdar-build'] }).value;
+  s = startStage(s, 'showdar-understand');
+  s = completeStage(s, 'showdar-understand', [{ kind: 'architecture-understood', quality: 'verified', source: 'showdar-understand', detail: 'ok', timestamp: ts() }]);
+  s = interruptWorkflow(s, 'pause');
+  const oldCp = serializeWorkflowState(s, { extensionCatalog: oldCatalog });
+  const oldResult = await assessCompatibilityReasons(oldCp, oldCatalog);
+  assert.equal(oldResult.compatible, true);
+  const newWf = {
+    description: 'Workflow with strict skip policy',
+    stages: ['showdar-understand', 'showdar-build', 'showdar-test'],
+    requiredStages: ['showdar-understand', 'showdar-build'],
+    allowedSkips: [{ stage: 'showdar-test', reason: 'no-ux-decision', policy: 'no-ux-decision', evidence: [] }],
+  };
+  const newCatalog = createExtensionCatalog({
+    packs: [{ manifest: { name: 'test', version: '0.2.0', skills: [], workflows: [{ id: 'test-flow', path: 'w.json' }] }, workflows: { 'test-flow': newWf } }],
+  }).value;
+  const parsed = JSON.parse(oldCp);
+  parsed.skippedStages = [{ stage: 'showdar-test', reason: 'local-low-risk', policy: 'local-low-risk', evidence: [], skippedAt: ts() }];
+  const newResult = await assessCompatibilityReasons(JSON.stringify(parsed), newCatalog);
+  assert.equal(newResult.compatible, false);
+  assert.equal(newResult.category, 'workflow-incompatible');
+  assert.equal(newResult.reason, 'recorded-skip-invalid');
+  assert.equal(newResult.replanRequired, true);
+});
+
 test('cleanup', async () => {
   await fs.rm(TEST_DIR, { recursive: true, force: true });
 });
