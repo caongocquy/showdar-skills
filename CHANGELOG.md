@@ -6,24 +6,33 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.10.0]
+
 ### Added
 
-- `showdar update-pack <path> --dry-run` read-only preview using the same canonical planning logic as execution; explicit public projection with deterministic ordering, descriptive change categories, and `executable` status.
-- Canonical internal pack update planning (`src/pack-plan.js`): `planPackUpdate()`, `verifyPlanPreconditions()`, `executePackUpdate()` with TOCTOU fingerprint protection (source, installed owned files, relevant manifest state, overrides bytes). Stale plans abort with zero mutation.
-- `showdar inspect-pack <path> --checkpoint <file>` checkpoint compatibility explanation against the candidate effective catalog (current project + candidate pack + project overrides). Deterministic semantic reason codes with precedence; malformed checkpoints report `schema-invalid` / `malformed-checkpoint`.
+- `showdar update-pack <path> --dry-run` read-only snapshot preview using the same canonical planning logic as execution; explicit public projection with deterministic ordering, descriptive change categories (`source-only`, `skill-content`, `workflow-definition`, `profile-definition`, `metadata`, `reference`, `ownership`, `installed-drift`), and `executable` status.
+- Canonical internal pack update planning (`src/pack-plan.js`): `planPackUpdate()`, `verifyPlanPreconditions()`, `executePackUpdate()` with same-lifecycle TOCTOU fingerprint protection (source, installed owned files, relevant manifest state, overrides bytes). Stale plans abort with zero mutation.
+- `showdar inspect-pack <path> --checkpoint <file>` checkpoint compatibility explanation against the candidate effective catalog (current project + candidate pack + project overrides). Deterministic semantic reason codes (`workflow-missing`, `workflow-state-compat-unsupported`, `stage-removed`, `selected-stage-invalid`, `required-stage-conflict`, `skip-policy-invalid`, `recorded-skip-invalid`) with fixed precedence; malformed checkpoints report `schema-invalid` / `malformed-checkpoint`.
 - `showdar list --extensions --json` and `showdar doctor --extensions --json` using the common CLI envelope (`schemaVersion: 1`). Doctor reports `checkpointCompatibility: "not-assessed"` without a checkpoint. Diagnostics exit 0 on successful report.
-- Leaner `create-pack` skill scaffold (full required sections, no filler) with validation guidance output.
 
 ### Changed
 
 - `src/pack-update.js` refactored around canonical planning; v0.9 staged replacement and rollback safety preserved.
 - `list --extensions` human output now shows pack health status and pack profiles.
-- v0.9 `validate-pack --json` and plain `inspect-pack --json` shapes unchanged (backward-compat tests added).
+- `create-pack` skill scaffold cleaned up (full required sections, substantive guidance, no filler) with validation guidance output.
 - TOCTOU lifecycle clarified: `--dry-run` is a read-only snapshot, not an authorization token. A later `update-pack` re-plans from current state. Stale-plan protection applies within a single execution lifecycle (`planPackUpdate` → `verifyPlanPreconditions` → `executePackUpdate`).
 
 ### Fixed
 
 - `inspectCustomWorkflows` read `validateCustomWorkflowDoc` as `{ok, errors}` but the validator returns an error array, so `valid` was always `undefined` and doctor reported every workflow invalid. Now maps `errors.length === 0` to `valid`. Internal helper shape only; public CLI output unchanged.
+- `executePackUpdate` referenced undefined `manifestPath`; now resolves the project manifest path before writing. Covered by real update-path regression test.
+
+### Compatibility / Safety
+
+- v0.9 `validate-pack --json` (`{ok, errors}`) and plain `inspect-pack --json` shapes unchanged; backward-compat fixture tests added.
+- No persisted preview plans or tokens. No manifest v3, no workflow-state schema change, no WorkflowState key change.
+- Phase 6G authority, 15 primitives, 4 workflows, 6 profiles, 10 trace events frozen.
+- Dry-run is a snapshot, not a stored plan. No migration required. No tarball, remote registry, or executable plugins.
 
 ## [0.9.0]
 
