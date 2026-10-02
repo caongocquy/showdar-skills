@@ -48,3 +48,11 @@ overlap_matrix:
     boundary: quality plans scenario coverage and confidence; ship decides whether release or handoff evidence is sufficient
   - pair: showdar-upgrade vs showdar-build
     boundary: upgrade changes dependency or platform compatibility; build changes application behavior within the supported stack
+  - pair: showdar-insurance-domain vs showdar-insurance-workflows
+    boundary: insurance-domain resolves terminology and concept mappings; insurance-workflows analyzes scoped business transitions and rules
+  - pair: showdar-insurance-workflows vs showdar-insurance-review
+    boundary: insurance-workflows derives sourced flows and rules; insurance-review checks concrete UI, model, API, and QA mappings against that evidence
+  - pair: showdar-insurance-workflows vs showdar-requirements
+    boundary: insurance-workflows applies insurance concepts to a scoped flow; showdar-requirements owns cross-domain requirement readiness and unresolved stakeholder decisions
+  - pair: showdar-insurance-review vs showdar-review
+    boundary: insurance-review checks business terminology and data mappings; showdar-review checks implementation correctness and maintainability

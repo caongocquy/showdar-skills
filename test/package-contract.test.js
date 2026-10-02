@@ -51,17 +51,25 @@ test('package contract excludes internal docs and is reproducible without them',
     const tarball = path.join(packDir, JSON.parse(packed.stdout)[0].filename);
     const installed = spawnSync('npm', ['install', '--prefix', prefix, '--ignore-scripts', tarball], { cwd: freshRoot, encoding: 'utf8' });
     assert.equal(installed.status, 0, installed.stderr);
-    await access(path.join(prefix, 'node_modules', 'showdar-skills', 'bin', 'showdar.js'));
+    const cli = path.join(prefix, 'node_modules', 'showdar-skills', 'bin', 'showdar.js');
+    await access(cli);
+    const insuranceProject = path.join(sandbox, 'insurance-project');
+    await mkdir(insuranceProject);
+    const add = spawnSync(process.execPath, [cli, 'add', 'insurance-review', '--ai', 'codex'], {
+      cwd: insuranceProject, encoding: 'utf8',
+    });
+    assert.equal(add.status, 0, add.stderr);
+    await access(path.join(insuranceProject, '.agents/skills/showdar-insurance-review/SKILL.md'));
   } finally {
     await rm(sandbox, { recursive: true, force: true });
   }
 });
 
-test('packed package ships 15 primitives plus 4 workflows as 19 installable skills', async () => {
+test('packed package ships 18 primitives plus 4 workflows as 22 installable skills', async () => {
   const { ALL_SKILLS, PRIMITIVE_COUNT, TOTAL_COUNT, WORKFLOW_COUNT } = await import('../src/catalog.js');
-  assert.equal(PRIMITIVE_COUNT, 15);
+  assert.equal(PRIMITIVE_COUNT, 18);
   assert.equal(WORKFLOW_COUNT, 4);
-  assert.equal(TOTAL_COUNT, 19);
+  assert.equal(TOTAL_COUNT, 22);
   const sandbox = await mkdtemp(path.join(tmpdir(), 'showdar-workflow-contract-'));
   const packDir = path.join(sandbox, 'pack');
   await mkdir(packDir, { recursive: true });

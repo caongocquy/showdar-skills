@@ -14,6 +14,9 @@ export const SKILLS = [
   { id: 'showdar-quality', kind: 'primitive', domain: 'quality', description: 'Use when planning QA/QC scenarios, risk coverage, regression scope, compatibility checks, or bug-report evidence.' },
   { id: 'showdar-security', kind: 'primitive', domain: 'security', description: 'Use when assessing threat models, attack surfaces, trust boundaries, auth/authz, secrets, exposure, or exploitability.' },
   { id: 'showdar-ops', kind: 'primitive', domain: 'ops', description: 'Use when inspecting or changing CI/CD, containers, environments, deployment, observability, rollback, or runtime operations.' },
+  { id: 'showdar-insurance-domain', kind: 'primitive', domain: 'insurance', description: 'Use when Vietnamese insurer work involves insurance terminology, product taxonomy, coverage concepts, VI/EN glossary, or insurer/product-specific vocabulary.' },
+  { id: 'showdar-insurance-workflows', kind: 'primitive', domain: 'insurance', description: 'Use when insurer features involve product configuration, underwriting, rating, quotes, issuance, collection, endorsements, renewals, cancellation or claims business flows and validation rules.' },
+  { id: 'showdar-insurance-review', kind: 'primitive', domain: 'insurance', description: 'Use when reviewing insurer UI labels, business models, API/schema mappings, validation, edge cases or Dev/QA scenarios for insurance terminology and business correctness.' },
 ];
 
 export const WORKFLOW_SKILLS = [
@@ -43,6 +46,7 @@ export const PROFILES = {
   backend: ids('showdar-understand', 'showdar-plan', 'showdar-build', 'showdar-debug', 'showdar-test', 'showdar-review', 'showdar-upgrade', 'showdar-ship', 'showdar-recover', 'showdar-git', 'showdar-requirements', 'showdar-quality', 'showdar-security', 'showdar-ops'),
   qa: ids('showdar-understand', 'showdar-requirements', 'showdar-quality', 'showdar-test', 'showdar-debug', 'showdar-review', 'showdar-ship', 'showdar-recover', 'showdar-git'),
   product: ids('showdar-understand', 'showdar-requirements', 'showdar-plan', 'showdar-design', 'showdar-quality', 'showdar-review'),
+  insurance: ids('showdar-insurance-domain', 'showdar-insurance-workflows', 'showdar-insurance-review'),
   full: SKILLS.map((skill) => skill.id),
 };
 
@@ -96,4 +100,3 @@ export function normalizeSkillName(name) {
   }
   return skill.id;
 }
-

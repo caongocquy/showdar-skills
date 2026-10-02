@@ -3,7 +3,7 @@
 [![npm version](https://img.shields.io/npm/v/showdar-skills?logo=npm)](https://www.npmjs.com/package/showdar-skills)
 [![Node >=20](https://img.shields.io/badge/node-%3E%3D20-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue?logo=opensourceinitiative&logoColor=white)](./LICENSE)
-[![19 skills](https://img.shields.io/badge/skills-19-6f42c1)](#skill-catalog)
+[![22 skills](https://img.shields.io/badge/skills-22-6f42c1)](#skill-catalog)
 
 Production-grade software engineering skills for coding agents. Showdar covers
 the full lifecycle—from requirements and planning through implementation, QA,
@@ -42,7 +42,7 @@ you want all capabilities available.
 
 ## Why Showdar?
 
-- **15 focused primitive skills** plus 4 adaptive workflow skills (19 installable) instead of one oversized agent prompt.
+- **18 focused primitive skills** plus 4 adaptive workflow skills (22 installable), including an opt-in insurance domain profile.
 - **Lifecycle coverage** from product rules to implementation, verification,
   security, operations, release readiness, and Git completion.
 - **Intent-based discovery** that selects the workflow matching the request.
@@ -72,7 +72,7 @@ SKILL.md
           only when needed
 ```
 
-The 15 primitive skills are not eagerly loaded as full prompts. Lightweight
+The 18 primitive skills are not eagerly loaded as full prompts. Lightweight
 descriptions help the agent choose one skill; that skill then loads its
 workflow and deeper knowledge progressively. Workflow skills add a portable
 orchestration layer: a workflow selects the lifecycle stages a task actually
@@ -95,7 +95,7 @@ agent/subagent, or MCP behavior across harnesses.
 
 ## Adapter model
 
-The portable core (15 primitives + 4 workflows) never changes per harness.
+The portable core (18 primitives + 4 workflows) never changes per harness.
 A thin native adapter layer renders harness-specific entry surfaces only:
 
 ```text
@@ -135,8 +135,8 @@ the same canonical semantic body as the `AGENTS.md`/`CLAUDE.md` blocks.
 `/showdar/skill` is generated for OpenCode/Claude as generic
 installed-skill discovery. Commands are generated dynamically from the
 installed skill set: `minimal` yields 8 direct commands plus the generic
-entry; adding `feature` yields 9 plus generic. All 19 commands never exist
-unless all 19 skills are installed.
+entry; adding `feature` yields 9 plus generic. All 22 commands never exist
+unless all 22 skills are installed.
 
 ## Native install examples
 
@@ -226,7 +226,8 @@ skill, but still does not eagerly load every skill body.
 | `backend` | 14 | APIs, services, and runtime operations |
 | `qa` | 9 | Testing and quality workflows |
 | `product` | 6 | Product, requirements, and design work |
-| `full` | 15 | All primitive capabilities |
+| `insurance` | 3 | Insurance terminology, business flows, and UI/API review |
+| `full` | 18 | All primitive capabilities |
 
 Legacy aliases remain compatible:
 
@@ -239,7 +240,7 @@ New manifests store the canonical `developer` profile.
 
 ## Skill catalog
 
-All 15 primitive entries are first-class Showdar skills. Four workflow skills
+All 18 primitive entries are first-class Showdar skills. Four workflow skills
 compose them; see [Workflow skills](#workflow-skills).
 
 ### Analysis and planning
@@ -273,6 +274,14 @@ compose them; see [Workflow skills](#workflow-skills).
 | --- | --- |
 | `showdar-security` | Assessing threat models, attack surfaces, trust boundaries, auth/authz, secrets, exposure, or exploitability. |
 | `showdar-ops` | Inspecting or changing CI/CD, containers, environments, deployment, observability, rollback, or runtime operations. |
+
+### Insurance
+
+| Skill | Use when |
+| --- | --- |
+| `showdar-insurance-domain` | Vietnamese insurer terminology, product taxonomy, coverage concepts, and VI/EN glossary. |
+| `showdar-insurance-workflows` | Product configuration, underwriting, pricing, policy lifecycle, collection, or claims flows. |
+| `showdar-insurance-review` | Reviewing insurer UI, domain/API mappings, validations, and QA scenarios. |
 
 ### Delivery and recovery
 
@@ -547,11 +556,27 @@ showdar add feature
 showdar add bugfix --ai cursor
 showdar add release --scope global --ai claude
 showdar add incident
+showdar add insurance-domain
+showdar add insurance-workflows
+showdar add insurance-review
+showdar init --profile insurance
 ```
 
-Accepted names are the short form (`debug`, `feature`) or the canonical form
-(`showdar-debug`, `showdar-feature`). The release ships exactly 15 primitive
-skills plus 4 workflow skills (19 installable total); profiles install
+After a Showdar Skills release containing these entries is published, upgrade the CLI
+and add one insurance skill at a time from the insurer project:
+
+```bash
+npm install -g showdar-skills@latest
+showdar add insurance-domain --ai codex
+```
+
+Use `showdar add insurance-workflows --ai codex` and
+`showdar add insurance-review --ai codex` when those are needed. For a new project
+that wants all three, `showdar init --profile insurance --ai codex` installs the set.
+
+Accepted names are the short form (`debug`, `feature`, `insurance-domain`)
+or the canonical form (`showdar-debug`, `showdar-feature`). The release ships exactly 18 primitive
+skills plus 4 workflow skills (22 installable total); profiles install
 primitive sets only. There is no `showdar workflow ...` command. `showdar add`
 is idempotent, preserves the configured profile, supports `--ai`/`--scope`
 overrides, and refuses to overwrite a foreign same-name skill directory that
@@ -641,7 +666,7 @@ Project overrides live in the user-owned `.showdar/overrides.json` file:
 skill descriptions, discovery hints, advisory guidance text, custom
 workflow policy refinement, and new project-owned profiles. Showdar reads
 and validates the file but never rewrites or deletes it; built-in
-workflow semantics and the six built-in profiles cannot be overridden.
+workflow semantics and the seven built-in profiles cannot be overridden.
 Pack-local profiles select pack-owned skills and workflows only.
 
 Showdar computes a full-tree SHA-256 over the validated pack source at
@@ -746,7 +771,7 @@ showdar remove [--scope <project|global>]
 Main flags are `--ai`, `--profile`, and `--scope`. `--ai` accepts `universal`,
 `codex`, `opencode`, `cursor`, `claude`, or `all` for `init` (single targets
 for `add`). `--scope` accepts `project` or `global` and defaults to `project`;
-`--profile` accepts the six canonical profiles and the deprecated
+`--profile` accepts the seven canonical profiles and the deprecated
 `mobile`/`web` aliases. Run `showdar --help` or a command's `--help` for
 current options.
 

@@ -334,9 +334,9 @@ export async function validateRepository(packageRoot) {
   const primitives = new Set(SKILLS.map((skill) => skill.id));
   const skillsRoot = path.join(packageRoot, 'skills');
 
-  if (SKILLS.length !== PRIMITIVE_COUNT || PRIMITIVE_COUNT !== 15) errors.push(`primitive skill count must remain 15 (found ${SKILLS.length})`);
+  if (SKILLS.length !== PRIMITIVE_COUNT || PRIMITIVE_COUNT !== 18) errors.push(`primitive skill count must remain 18 (found ${SKILLS.length})`);
   if (WORKFLOW_SKILLS.length !== WORKFLOW_COUNT || WORKFLOW_COUNT !== 4) errors.push(`workflow skill count must be 4 (found ${WORKFLOW_SKILLS.length})`);
-  if (ALL_SKILLS.length !== TOTAL_COUNT || TOTAL_COUNT !== 19) errors.push(`total installable skill count must be 19 (found ${ALL_SKILLS.length})`);
+  if (ALL_SKILLS.length !== TOTAL_COUNT || TOTAL_COUNT !== 22) errors.push(`total installable skill count must be 22 (found ${ALL_SKILLS.length})`);
 
   for (const error of validateCapabilities().errors) errors.push(`capabilities: ${error}`);
 

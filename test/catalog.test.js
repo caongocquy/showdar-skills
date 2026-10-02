@@ -23,9 +23,12 @@ const EXPECTED_SKILLS = [
   'showdar-quality',
   'showdar-security',
   'showdar-ops',
+  'showdar-insurance-domain',
+  'showdar-insurance-workflows',
+  'showdar-insurance-review',
 ];
 
-test('catalog contains exactly fifteen first-class skills', () => {
+test('catalog contains exactly eighteen first-class skills', () => {
   assert.deepEqual(SKILLS.map((skill) => skill.id), EXPECTED_SKILLS);
   assert.ok(SKILLS.every((skill) => skill.description?.length >= 30));
 });
@@ -64,13 +67,14 @@ test('legacy mobile and web profiles resolve to the developer profile', () => {
 });
 
 test('profiles represent role-oriented skill bundles', () => {
-  assert.deepEqual(Object.keys(PROFILES), ['minimal', 'developer', 'backend', 'qa', 'product', 'full']);
+  assert.deepEqual(Object.keys(PROFILES), ['minimal', 'developer', 'backend', 'qa', 'product', 'insurance', 'full']);
   assert.equal(PROFILES.minimal.length, 8);
   assert.equal(PROFILES.developer.length, 12);
   assert.equal(PROFILES.backend.length, 14);
   assert.equal(PROFILES.qa.length, 9);
   assert.equal(PROFILES.product.length, 6);
-  assert.equal(PROFILES.full.length, 15);
+  assert.equal(PROFILES.insurance.length, 3);
+  assert.equal(PROFILES.full.length, 18);
   for (const profile of ['minimal', 'developer', 'backend', 'qa', 'full']) {
     assert.ok(PROFILES[profile].includes('showdar-git'));
   }
@@ -87,6 +91,9 @@ test('profiles represent role-oriented skill bundles', () => {
   assert.deepEqual(PROFILES.product, [
     'showdar-understand', 'showdar-requirements', 'showdar-plan', 'showdar-design',
     'showdar-quality', 'showdar-review',
+  ]);
+  assert.deepEqual(PROFILES.insurance, [
+    'showdar-insurance-domain', 'showdar-insurance-workflows', 'showdar-insurance-review',
   ]);
 });
 

@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.11.0]
+
+### Added
+
+- Add three independently installable insurance skills for insurer domain terminology, cross-line-of-business workflows, and terminology/API review, with Vietnamese–English–technical mappings and insurer/product-specific scoping.
+- Add an insurance profile and route insurance-domain requests to the relevant skills without limiting the system to motor insurance or HDInsurance.
+
 ## [0.10.0]
 
 ### Added

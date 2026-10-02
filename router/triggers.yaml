@@ -25,6 +25,10 @@ rules:
   - local Git commit, staging, branch, merge, rebase, conflict, cleanup, and explicit push intent routes to showdar-git
   - explicit rebase, cherry-pick, merge, or Git conflict operations route to showdar-git; interrupted implementation recovery routes to showdar-recover
   - product or business input, missing requirements, business rules, user stories, use cases, acceptance criteria, and requirement readiness route to showdar-requirements
+  - glossary, taxonomy, aliases, and VI/EN insurance concepts route to showdar-insurance-domain
+  - product configuration, underwriting, rating, quote, issuance, collection, endorsement, renewal, cancellation, and claims flows route to showdar-insurance-workflows
+  - concrete insurer UI/domain/API mapping, terminology review, and insurance QA cases route to showdar-insurance-review
+  - generic requirements and QA requests retain their existing routes unless insurance-specific evidence mapping is the task
   - QA scenarios, risk-based coverage, regression scope, compatibility matrices, exploratory checks, and bug-report quality route to showdar-quality
   - explicit security, authz, secrets, exposure, attack-surface, threat, or exploitability intent routes to showdar-security before general review
   - operational CI/CD, container, environment, deployment, observability, rollback, or runtime intent routes to showdar-ops; release readiness remains showdar-ship and Git-only work remains showdar-git

@@ -56,6 +56,21 @@ test('showdar init uses --ai and native destination', async () => {
   await assert.rejects(access(path.join(project, '.codex/skills/showdar-debug/SKILL.md')));
 });
 
+test('insurance skills can be installed individually or as an insurance profile', async () => {
+  const individualProject = await mkdtemp(path.join(tmpdir(), 'showdar-insurance-skill-'));
+  const individual = await run(['add', 'insurance-workflows', '--ai', 'codex'], individualProject);
+  assert.equal(individual.code, 0, individual.stderr);
+  await access(path.join(individualProject, '.agents/skills/showdar-insurance-workflows/SKILL.md'));
+  await assert.rejects(access(path.join(individualProject, '.agents/skills/showdar-insurance-domain/SKILL.md')));
+
+  const profileProject = await mkdtemp(path.join(tmpdir(), 'showdar-insurance-profile-'));
+  const profile = await run(['init', '--profile', 'insurance', '--ai', 'codex'], profileProject);
+  assert.equal(profile.code, 0, profile.stderr);
+  for (const skill of ['domain', 'workflows', 'review']) {
+    await access(path.join(profileProject, `.agents/skills/showdar-insurance-${skill}/SKILL.md`));
+  }
+});
+
 test('showdar accepts legacy profile aliases and writes canonical profile metadata', async () => {
   const project = await mkdtemp(path.join(tmpdir(), 'showdar-cli-profile-alias-'));
   const result = await run(['init', '--profile', 'mobile', '--ai', 'codex'], project);

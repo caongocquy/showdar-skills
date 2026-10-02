@@ -32,17 +32,17 @@ async function workflowText(id) {
   return readFile(path.join(repoRoot, 'skills', id, 'SKILL.md'), 'utf8');
 }
 
-test('primitive count remains exactly fifteen', () => {
-  assert.equal(SKILLS.length, 15);
-  assert.equal(PRIMITIVE_COUNT, 15);
+test('primitive count includes the three insurer domain skills', () => {
+  assert.equal(SKILLS.length, 18);
+  assert.equal(PRIMITIVE_COUNT, 18);
   assert.ok(SKILLS.every((skill) => skill.kind === 'primitive'));
 });
 
-test('workflow count is four and total installable is nineteen', () => {
+test('workflow count is four and total installable is twenty-two', () => {
   assert.deepEqual(WORKFLOW_SKILLS.map((skill) => skill.id), EXPECTED_WORKFLOWS);
   assert.equal(WORKFLOW_COUNT, 4);
-  assert.equal(TOTAL_COUNT, 19);
-  assert.equal(ALL_SKILLS.length, 19);
+  assert.equal(TOTAL_COUNT, 22);
+  assert.equal(ALL_SKILLS.length, 22);
   assert.ok(WORKFLOW_SKILLS.every((skill) => skill.kind === 'workflow'));
 });
 
