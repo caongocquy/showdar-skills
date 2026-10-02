@@ -52,3 +52,12 @@ routes:
   ops:
     triggers: ["CI/CD", "GitHub Actions", "Docker", "container", "deployment", "deploy", "observability", "rollback", "runtime operations", "staging"]
     skill: showdar-ops
+  insurance-domain:
+    triggers: ["insurance terminology", "insurance glossary", "bảo hiểm", "thuật ngữ bảo hiểm", "taxonomy bảo hiểm", "line of business", "coverage term", "sum insured meaning"]
+    skill: showdar-insurance-domain
+  insurance-workflows:
+    triggers: ["insurance business flow", "underwriting", "insurance pricing", "premium rating", "policy issuance", "insurance claim flow", "endorsement flow", "renewal flow", "bồi thường", "thẩm định bảo hiểm", "flow thu phí"]
+    skill: showdar-insurance-workflows
+  insurance-review:
+    triggers: ["insurer API mapping", "insurance UI terminology", "review insurance schema", "insurance QA scenarios", "sub-limit mapping", "coverage validation", "mapping UI API bảo hiểm"]
+    skill: showdar-insurance-review

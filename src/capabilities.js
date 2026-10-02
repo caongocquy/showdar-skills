@@ -20,6 +20,9 @@ export const CAPABILITIES = Object.freeze([
   { skill: 'showdar-upgrade', phases: ['implementation'], actions: ['upgrade', 'modify', 'test'], objects: ['dependency', 'runtime', 'backend', 'api', 'repository'], risks: ['compatibility', 'regression'], mutations: localWrite },
   { skill: 'showdar-ship', phases: ['delivery', 'verification'], actions: ['release', 'review', 'assess'], objects: ['release', 'package', 'repository', 'deployment', 'runtime'], risks: ['production', 'compatibility'], mutations: readOnly },
   { skill: 'showdar-ops', phases: ['operations'], actions: ['deploy', 'modify', 'assess', 'review'], objects: ['deployment', 'container', 'ci', 'runtime', 'network'], risks: ['operations', 'production'], mutations: ['local-write', 'remote-write', 'production-impacting'] },
+  { skill: 'showdar-insurance-domain', phases: ['discovery', 'definition'], actions: ['understand', 'define', 'review', 'assess'], objects: ['product', 'api', 'data'], risks: [], mutations: readOnly },
+  { skill: 'showdar-insurance-workflows', phases: ['definition', 'verification'], actions: ['define', 'review', 'assess', 'test'], objects: ['product', 'api', 'data'], risks: ['data-integrity'], mutations: readOnly },
+  { skill: 'showdar-insurance-review', phases: ['discovery', 'verification'], actions: ['review', 'assess', 'test'], objects: ['ui', 'api', 'data'], risks: ['data-integrity'], mutations: readOnly },
   { skill: 'showdar-recover', phases: ['recovery'], actions: ['recover', 'investigate'], objects: ['repository', 'implementation', 'runtime', 'state'], risks: ['data-integrity', 'regression'], mutations: readAndLocalWrite },
   { skill: 'showdar-git', phases: ['repository'], actions: ['git', 'modify', 'review'], objects: ['repository', 'branch', 'commit'], risks: ['data-integrity', 'operations'], mutations: ['read-only', 'local-write', 'remote-write'] },
 ]);

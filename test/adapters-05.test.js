@@ -119,7 +119,7 @@ test('explicit project targets get exactly one instruction surface', async () =>
   }
 });
 
-test('command counts follow installed set: minimal 8+1, add feature 9+1, full+workflows 19+1', async () => {
+test('command counts follow installed set: minimal 8+1, add feature 9+1, full+workflows 22+1', async () => {
   const allIds = [...resolveProfile('full'), 'showdar-feature', 'showdar-bugfix', 'showdar-release', 'showdar-incident'];
   const { base, packageRoot, projectRoot, homeRoot } = await fixture(allIds);
   try {
@@ -137,7 +137,7 @@ test('command counts follow installed set: minimal 8+1, add feature 9+1, full+wo
 
     await initProject({ projectRoot, homeRoot, packageRoot, profile: 'full', ai: 'opencode', skillIds: allIds, packageVersion: '0.4.0' });
     files = await readDir(path.join(projectRoot, '.opencode/commands/showdar'));
-    assert.equal(files.filter((f) => f !== 'skill.md').length, 19);
+    assert.equal(files.filter((f) => f !== 'skill.md').length, 22);
     assert.ok(files.includes('skill.md'));
     const aggregator = await readFile(path.join(projectRoot, '.opencode/commands/showdar/skill.md'), 'utf8');
     for (const id of allIds) assert.ok(aggregator.includes(id));

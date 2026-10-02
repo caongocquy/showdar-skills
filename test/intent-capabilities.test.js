@@ -65,7 +65,7 @@ test('intent validation rejects invalid phase, risk, mutation, and evidence', ()
 test('the canonical taxonomy covers every catalog skill exactly once', () => {
   const result = validateCapabilities();
   assert.deepEqual(result, { ok: true, errors: [] });
-  assert.equal(new Set(allSkills).size, 15);
+  assert.equal(new Set(allSkills).size, 18);
 });
 
 test('taxonomy validation catches missing, unknown, invalid, duplicate, and malformed entries', () => {

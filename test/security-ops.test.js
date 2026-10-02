@@ -15,12 +15,15 @@ async function text(file) {
 }
 
 test('security and ops are first-class skills with role-aware profile membership', () => {
-  assert.deepEqual(SKILLS.slice(-2).map(({ id }) => id), ['showdar-security', 'showdar-ops']);
+  assert.deepEqual(SKILLS.slice(-5).map(({ id }) => id), [
+    'showdar-security', 'showdar-ops', 'showdar-insurance-domain',
+    'showdar-insurance-workflows', 'showdar-insurance-review',
+  ]);
   assert.equal(PROFILES.developer.length, 12);
   assert.equal(PROFILES.backend.length, 14);
   assert.equal(PROFILES.qa.length, 9);
   assert.equal(PROFILES.product.length, 6);
-  assert.equal(PROFILES.full.length, 15);
+  assert.equal(PROFILES.full.length, 18);
   assert.ok(PROFILES.developer.includes('showdar-security'));
   assert.ok(PROFILES.backend.includes('showdar-security'));
   assert.ok(PROFILES.backend.includes('showdar-ops'));
