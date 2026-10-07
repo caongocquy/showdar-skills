@@ -102,7 +102,7 @@ jobs:
           RELEASE_PLATFORM: ${{ matrix.platform }}
           RELEASE_ARCH: ${{ matrix.arch }}
         run: >-
-          node scripts/package-release-bundle.mjs --tool showdar-skills --bin-name showdar --package-name showdar-skills --package-dir . --entry bin/showdar.js --version ${{ needs.metadata.outputs.version }}
+          node scripts/package-release-bundle.mjs --tool "showdar-skills" --bin-name "showdar" --package-name "showdar-skills" --package-dir "." --entry "bin/showdar.js" --version "${{ needs.metadata.outputs.version }}"
 
       - name: Create tar.gz archive
         if: runner.os != 'Windows'
@@ -164,12 +164,12 @@ jobs:
         run: |
           set -euo pipefail
           found=0
-          for attempt in {1..30}; do
+          for attempt in {1..120}; do
             if gh release view "$TAG" --repo "$GH_REPO" >/dev/null 2>&1; then
               found=1
               break
             fi
-            echo "GitHub Release $TAG is not available yet; retry $attempt/30"
+            echo "GitHub Release $TAG is not available yet; retry $attempt/120"
             sleep 10
           done
           [[ "$found" -eq 1 ]] || {
