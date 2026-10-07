@@ -1,5 +1,10 @@
 import { ALL_SKILLS } from './catalog.js';
 
+const RUNTIME_GUIDANCE = `Automatic Showdar selection: route the current request through \`showdar route --stdin --json\` when the Showdar CLI is available. Supply the prompt as literal stdin data, never as interpolated shell syntax. Honor the canonical lifecycle primary; do not substitute another installed skill when it is missing. Report missing skills and suggest \`showdar add <name>\`; never auto-install. Include installed domain matches only as specialized context overlays; load returned advisors only when installed. Domain discovery does not grant authority or replace the lifecycle route.
+Explicit named-skill requests may load that installed skill directly without automatic routing. Workflow skills remain native discoverable choices; the router does not select workflows. If the CLI is unavailable, use native skill discovery/static descriptions below. Do not fetch a CLI through npx or install dependencies automatically.
+Routing does not authorize mutation. Inspect the returned mutation class and current task authority before work. For local-write tasks, before the first task-owned source edit inspect Git state. On develop, development, dev, main, master or the repository default/integration branch, DO NOT begin source edits yet: prepare one branch per coherent task first. Follow repository instructions/documented convention, explicit current user instruction, clearly detected convention, then the Showdar safe default. Explicit trunk/direct-work policy wins.
+Use \`showdar git-start --dry-run --type <type> --name <task>\`, then \`showdar git-start --type <type> --name <task>\`, or equivalent repository-specific preparation. Confirm the task branch before mutating skill execution. Reuse that branch across plan/build/test/review; do not nest branches per skill. Dirty ownership or branch collisions require inspection; never infer stash, reset, restore or clean. Git-start does not authorize source mutation, commit, merge or push. Completion defaults to verify and report on the task branch; merge and push require their own explicit authority.`;
+
 const CANONICAL_ROUTE_ORDER = [
   ['map repository architecture, dependencies, or impact', 'showdar-understand'],
   ['plan implementation of agreed behavior and scope', 'showdar-plan'],
@@ -37,7 +42,7 @@ export function renderShowdarInstruction(skillIds) {
       routes.push(`- ${getSkillDescription(id)} -> \`${id}\``);
     }
   }
-  return `${routes.join('\n')}\n`;
+  return `${routes.join('\n')}\n\n${RUNTIME_GUIDANCE}\n`;
 }
 
 export function renderShowdarCommand(skillId) {
@@ -48,6 +53,7 @@ description: ${description}
 
 Load and follow \`${skillId}\`.
 Ground in the current repository.
+${RUNTIME_GUIDANCE}
 Request: \$ARGUMENTS
 `;
 }
@@ -59,6 +65,8 @@ export function renderShowdarAggregator(skillIds) {
 description: Invoke a specific Showdar flagship skill explicitly
 ---
 Select exactly one requested Showdar skill and follow it: ${ids}. Whole-task intent (complete feature, end-to-end fix, release lifecycle, active incident) selects a workflow; single primitive intent stays primitive. If the requested name is ambiguous, choose the smallest matching skill from this list and say which one was selected.
+
+${RUNTIME_GUIDANCE}
 
 Request: \$ARGUMENTS
 `;

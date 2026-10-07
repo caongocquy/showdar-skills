@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- Add `showdar route --stdin|--prompt [--json]` as a canonical Phase 6G runtime bridge, with advisory domain discovery and managed installation availability.
+- Add `showdar git-start --type --name [--base] [--dry-run] [--json]` for deterministic safe local task-branch preparation without inferred staging, commit, merge or push.
+
+### Changed
+
+- Managed harness instructions and commands invoke the runtime router with native/static fallback and require task-branch preparation before local-write source edits on integration/default branches.
+- Init/add guidance reflects the complete installed set; add refreshes existing commands and instructions even when the skill is already installed.
+- Showdar Git documents one branch per coherent task, repository-policy priority and explicit completion/integration authority.
+
 ## [0.11.0]
 
 ### Added

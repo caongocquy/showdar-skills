@@ -40,6 +40,88 @@ Claude Code as supported installation targets. Choose `backend`, `qa`, or
 `product` when that gives discovery a more precise context; use `full` when
 you want all capabilities available.
 
+## Runtime routing and task branches (Unreleased)
+
+```bash
+printf '%s\n' 'Implement the approved underwriting form and add tests' | showdar route --stdin --json
+showdar route --prompt "Explain insurance terminology"
+showdar git-start --dry-run --type feature --name "IDP-123 Add pricing form"
+showdar git-start --type feature --name "IDP-123 Add pricing form"
+```
+
+Prefer `--stdin` for arbitrary or multiline prompts. Supply stdin as literal data;
+never interpolate request text into a shell command. Both commands support `--json`
+with a schemaVersion 1 envelope (`command`, `ok`, `data`, `warnings`, `errors`).
+
+`route` is read-only. It consumes the existing Phase 6G authority resolver and thin
+route, projecting exactly the seven public Intent keys plus lifecycle primary and
+advisors. It never exposes internal capabilities, frames or authority diagnostics.
+It neither authorizes work nor creates a branch. It preserves canonical advisor
+semantics: a security-review phrase is not guaranteed to become a security advisor.
+
+Domain discovery is a separate advisory overlay using the canonical
+`router/skill-map.yaml` inline trigger arrays and grouped domain catalog metadata.
+It uses deterministic Unicode phrase matching, not lifecycle scoring. Insurance
+terminology can recommend `showdar-insurance-domain`, underwriting/rating business
+flows `showdar-insurance-workflows`, and insurer API/UI terminology review
+`showdar-insurance-review`. These skills do not replace lifecycle primaryCapability,
+rewrite Intent/mutation, or grant authority. The existing ASCII/token ranking
+helper is unsuitable for Vietnamese phrase discovery. No duplicate trigger table
+or second authority engine is introduced.
+
+When `.showdar.json` exists, availability checks managed native skill files and
+recorded, still-present globally satisfied skills. Missing lifecycle primary,
+advisors and domain matches are reported separately with `showdar add <name>`
+suggestions; another installed skill never substitutes for the canonical route.
+Without a project manifest, `managed` is false and installed/missing fields are
+null (unknown), not fabricated. Invalid manifests fail explicitly. Explicit named
+installed skills may load directly; this adds no mutation authority.
+
+Managed project guidance invokes `showdar route --stdin --json` for automatic
+selection, then loads the installed lifecycle skill, domain overlays and advisors.
+The runtime bridge requires the `showdar` CLI in the harness environment. If it is
+unavailable, native skill descriptions/static discovery are the fallback. No npm
+install, npx fetch, package dependency mutation or remote download happens.
+Projects receive only existing skills/commands/instructions/manifest; no wholesale
+`src/`, `engine/` or `router/` copy. Init and add regenerate complete installed-set
+guidance, including re-adding an existing skill. Global installs keep native discovery
+and do not write project AGENTS.md or CLAUDE.md.
+
+The four workflows remain native discoverable/installable skills; `route` does not
+introduce workflow selection. Profiles remain primitive-only: `full` contains all
+18 primitives, and the insurance profile remains unchanged.
+
+Before the first local-write task source edit on develop/development/dev/main/master
+or the repository default/integration branch, prepare a task branch. Priority is
+repository instructions/documented convention, explicit current user instruction,
+clearly detected convention, then Showdar defaults. Explicit trunk/direct-work policy
+wins. One coherent task uses one branch across plan/build/test/review. Completion
+means verify and report; commit, merge and push need their own authority.
+
+`git-start` prepares local branch state only. Types: feature (new capability), fix
+(defect), refactor (internal structure), test, docs, chore (tooling/config), release,
+hotfix (explicit urgent production repair). Slugs are lowercase, hyphenated, ticket
+preserving and bounded; task text is passed as data and never executed.
+
+Base resolution uses explicit `--base`, repository-local `showdar.gitBase`, established
+local develop/development/dev, then local default/main/master. The helper does not
+parse prose instructions or create develop. Read policy first and supply its base
+when convention differs. Local Git config `showdar.gitBranchPrefix` supports custom
+prefixes; `showdar.gitDirectWork=true` records an explicit direct-work convention.
+Hotfix requires a convention via `--base` or `showdar.gitBase`.
+
+Dry-run validates Git state/type/slug/base/collision and changes no refs. Execution
+revalidates, then creates/switches only a task branch. Already on the matching branch
+is a no-op; another task branch is blocked. An existing target is reused automatically
+only when its tip equals both current HEAD and base; divergent/ambiguous targets stop
+without overwriting history. Detached HEAD and active Git operations stop.
+
+Dirty worktrees are blocked before any switch: the helper cannot prove ownership.
+Confirmed current-task-only changes may use equivalent repository-specific branch
+preparation after explicit ownership inspection. No automatic stash/reset/restore/clean,
+staging, commit, merge or push occurs. Branch preparation itself does not authorize
+source edits.
+
 ## Why Showdar?
 
 - **18 focused primitive skills** plus 4 adaptive workflow skills (22 installable), including an opt-in insurance domain profile.

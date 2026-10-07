@@ -46,6 +46,29 @@ This skill owns repository state transitions, not source-code review or GitHub a
 - Push, tag, remote deletion, pull with mutation, GitHub operations, and release actions require explicit intent.
 - Report exactly what changed after each Git mutation.
 
+## Task branch isolation
+
+Before the first task-owned source edit for a local-write engineering task, inspect Git state (`git status --short`, current branch, branch history and repository policy). Direct develop/main edits are not the default: on develop, development, dev, main, master or the default/integration branch, prepare a dedicated task branch before source mutation.
+
+Priority: repository instructions/documented branching convention; explicit current user instruction; clearly detected existing convention; Showdar safe default. Explicit trunk-based/direct-work policy wins: do not impose GitFlow. Branch preparation does not authorize source mutation.
+
+Use one branch per coherent task across understand, requirements, plan, design, build, test and review. Continue the current task branch; never create a branch per skill or nested branches.
+
+Default types: new user-visible capability → `feature`; observed defect → `fix`; internal restructuring → `refactor`; tests only → `test`; documentation only → `docs`; tooling/config/maintenance → `chore`; release preparation → `release`; explicit urgent production repair → `hotfix`. Names use a bounded lowercase hyphen slug preserving ticket keys.
+
+Prefer established local develop for normal work; otherwise the repository default/integration branch. Do not create develop automatically. Explicit hotfix follows repository convention. Read prose policy yourself; the helper does not parse repository instructions. Supply `--base` or repository-local Git config `showdar.gitBase`, `showdar.gitBranchPrefix`, `showdar.gitDirectWork` for deterministic custom conventions.
+
+```bash
+showdar git-start --dry-run --type feature --name "Task description"
+showdar git-start --type feature --name "Task description"
+```
+
+The helper revalidates before creating/switching and never edits source. A clean worktree can branch. Confirmed current-task changes may be carried only through equivalent repository-specific Git preparation with proven ownership and Git permission; the helper conservatively blocks dirty changes before switching because it cannot prove ownership. Unrelated/ambiguous changes → STOP. No hidden stash, reset, restore or clean.
+
+Existing same-name branches must be inspected. The helper reuses only an unused branch with the same tip as both current HEAD and base; an already-active matching branch is a continue/no-op. Any other collision → STOP; never reset or overwrite branch history. Already on another task branch → inspect task identity before switching.
+
+Default completion: task branch → verify → report. No inferred commit, merge or push. Merge only when explicitly requested or clearly included in current repository/user task authority; push remains independently explicit.
+
 ## Workflow
 
 ### 1. Inspect Git state
@@ -273,7 +296,8 @@ report -> SHA, staged paths, exclusions, and clean/dirty final state
 ### Feature completion without push
 
 ```text
-feature branch -> selective commit -> switch develop -> merge using repository convention -> verify
+task branch -> verify -> report
+selective commit only when requested; merge only with current task authority
 remote -> not touched because no push request was given
 ```
 
