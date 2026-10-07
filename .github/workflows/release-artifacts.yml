@@ -17,7 +17,7 @@ permissions:
 jobs:
   metadata:
     name: Resolve release metadata
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
     outputs:
       tag: ${{ steps.release.outputs.tag }}
       version: ${{ steps.release.outputs.version }}
@@ -65,19 +65,19 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - runner: macos-26
+          - runner: macos-15
             platform: darwin
             arch: arm64
             asset: showdar-skills-darwin-arm64.tar.gz
-          - runner: macos-26-intel
+          - runner: macos-15-intel
             platform: darwin
             arch: x64
             asset: showdar-skills-darwin-x64.tar.gz
-          - runner: ubuntu-24.04
+          - runner: ubuntu-22.04
             platform: linux
             arch: x64
             asset: showdar-skills-linux-x64.tar.gz
-          - runner: windows-2025
+          - runner: windows-2022
             platform: windows
             arch: x64
             asset: showdar-skills-windows-x64.zip
@@ -145,7 +145,7 @@ jobs:
   publish:
     name: Attach assets to GitHub Release
     needs: [metadata, build]
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
     permissions:
       contents: write
     steps:
