@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 import path from 'node:path';
+import { parseArgs } from 'node:util';
+import { startTaskBranch, formatGitStart } from '../src/git-start.js';
+import { routeRequest, formatRoute } from '../src/runtime-route.js';
 import { homedir } from 'node:os';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
@@ -33,6 +36,14 @@ function scopeAfter(args) {
 
 function printHelp(version, command = null) {
   const scopeUsage = '[--scope <project|global>]';
+  if (command === 'route') {
+    console.log('Usage: showdar route (--stdin | --prompt <text>) [--json]');
+    return;
+  }
+  if (command === 'git-start') {
+    console.log('Usage: showdar git-start --type <type> --name <task> [--base <branch>] [--dry-run] [--json]');
+    return;
+  }
   if (command === 'init') {
     console.log(`Showdar Skills ${version}\n\nUsage:\n  showdar init ${scopeUsage} [--profile <name>] [--ai <universal|codex|opencode|cursor|claude|all>]\n\nDefaults: scope project, profile full, AI target universal.\nProject scope writes native skills, one native instruction surface, and project .showdar.json. Global scope writes verified user skill directories and ~/.showdar/global.json without instruction files. Codex and universal use .agents/skills in project scope and ~/.agents/skills in global scope; cursor uses .cursor/skills in project scope and ~/.cursor/skills in global scope; --ai all writes each shared destination once, generates OpenCode and Claude commands, and writes only the AGENTS.md block.\n\nProfiles: ${Object.keys(PROFILES).join(', ')}\nDeprecated aliases: ${Object.entries(PROFILE_ALIASES).map(([alias, target]) => `${alias} -> ${target}`).join(', ')}\nAI targets: ${AI_TARGETS.join(', ')}`);
     return;
@@ -45,7 +56,7 @@ function printHelp(version, command = null) {
     console.log(`Showdar Skills ${version}\n\nUsage:\n  showdar add <skill> [--ai <universal|codex|opencode|cursor|claude>] [--scope <project|global>]\n\nExamples:\n  showdar add debug\n  showdar add showdar-security\n  showdar add test --ai cursor\n  showdar add review --scope global --ai claude\n\nDefault scope: project. Default AI target: universal, or the configured .showdar.json value when present.`);
     return;
   }
-  console.log(`Showdar Skills ${version}\n\nUsage:\n  showdar init ${scopeUsage} [--profile <name>] [--ai <universal|codex|opencode|cursor|claude|all>] [--pack <local-path>]\n  showdar add <skill> [--ai <universal|codex|opencode|cursor|claude>] [--scope <project|global>]\n  showdar add-pack <local-path>\n  showdar remove-pack <name>\n  showdar add-workflow <local-path>\n  showdar status ${scopeUsage}\n  showdar doctor ${scopeUsage}\n  showdar validate\n  showdar list [--extensions]\n  showdar remove ${scopeUsage}\n  showdar create-pack <path> [--vendor <vendor>] [--description <text>] [--with-workflow <id>] [--with-profile <name>]\n  showdar validate-pack <local-path> [--json]\n  showdar inspect-pack <local-path> [--json] [--checkpoint <file>]\n  showdar doctor ${scopeUsage} [--extensions] [--json]\n  showdar update-pack <local-path> [--dry-run] [--json]\n  showdar validate\n  showdar list [--extensions] [--json]\n  showdar remove ${scopeUsage}\n\nExtension packs accept local directories/workspace paths only; tarball, URL, Git, and registry sources are rejected.\n\nDefaults: scope project, profile full, AI target universal.\nProfiles: ${Object.keys(PROFILES).join(', ')}\nDeprecated aliases: ${Object.entries(PROFILE_ALIASES).map(([alias, target]) => `${alias} -> ${target}`).join(', ')}\nAI targets: ${AI_TARGETS.join(', ')}`);
+  console.log(`Showdar Skills ${version}\n\nUsage:\n  showdar init ${scopeUsage} [--profile <name>] [--ai <universal|codex|opencode|cursor|claude|all>] [--pack <local-path>]\n  showdar add <skill> [--ai <universal|codex|opencode|cursor|claude>] [--scope <project|global>]\n  showdar route (--stdin | --prompt <text>) [--json]\n  showdar git-start --type <type> --name <task> [--base <branch>] [--dry-run] [--json]\n  showdar add-pack <local-path>\n  showdar remove-pack <name>\n  showdar add-workflow <local-path>\n  showdar status ${scopeUsage}\n  showdar doctor ${scopeUsage}\n  showdar validate\n  showdar list [--extensions]\n  showdar remove ${scopeUsage}\n  showdar create-pack <path> [--vendor <vendor>] [--description <text>] [--with-workflow <id>] [--with-profile <name>]\n  showdar validate-pack <local-path> [--json]\n  showdar inspect-pack <local-path> [--json] [--checkpoint <file>]\n  showdar doctor ${scopeUsage} [--extensions] [--json]\n  showdar update-pack <local-path> [--dry-run] [--json]\n  showdar validate\n  showdar list [--extensions] [--json]\n  showdar remove ${scopeUsage}\n\nExtension packs accept local directories/workspace paths only; tarball, URL, Git, and registry sources are rejected.\n\nDefaults: scope project, profile full, AI target universal.\nProfiles: ${Object.keys(PROFILES).join(', ')}\nDeprecated aliases: ${Object.entries(PROFILE_ALIASES).map(([alias, target]) => `${alias} -> ${target}`).join(', ')}\nAI targets: ${AI_TARGETS.join(', ')}`);
 }
 
 async function main() {
@@ -59,9 +70,32 @@ async function main() {
     console.log(version);
     return;
   }
-  if (args.includes('--help') || args.includes('-h')) return printHelp(version, command);
+  if (!['route', 'git-start'].includes(command) && (args.includes('--help') || args.includes('-h'))) return printHelp(version, command);
 
   const scope = ['init', 'status', 'doctor', 'remove', 'add'].includes(command) ? scopeAfter(args) : null;
+
+  if (command === 'git-start') {
+    const { values } = parseArgs({ args: args.slice(1), options: { type: { type: 'string' }, name: { type: 'string' }, base: { type: 'string' }, 'dry-run': { type: 'boolean' }, json: { type: 'boolean' }, help: { type: 'boolean', short: 'h' } } });
+    if (values.help) return printHelp(version, command);
+    const data = startTaskBranch({ cwd: projectRoot, type: values.type, name: values.name, base: values.base, dryRun: values['dry-run'] });
+    console.log(values.json ? JSON.stringify({ schemaVersion: 1, command, ok: true, data, warnings: [], errors: [] }, null, 2) : formatGitStart(data));
+    return;
+  }
+
+  if (command === 'route') {
+    const { values } = parseArgs({ args: args.slice(1), options: { stdin: { type: 'boolean' }, prompt: { type: 'string' }, json: { type: 'boolean' }, help: { type: 'boolean', short: 'h' } } });
+    if (values.help) return printHelp(version, command);
+    if (Boolean(values.stdin) === (values.prompt !== undefined)) throw new Error('Select exactly one of --stdin or --prompt.');
+    let prompt = values.prompt;
+    if (values.stdin) {
+      process.stdin.setEncoding('utf8');
+      prompt = '';
+      for await (const chunk of process.stdin) prompt += chunk;
+    }
+    const data = await routeRequest({ prompt, cwd: projectRoot, packageRoot });
+    console.log(values.json ? JSON.stringify({ schemaVersion: 1, command, ok: true, data, warnings: [], errors: [] }, null, 2) : formatRoute(data));
+    return;
+  }
 
   if (command === 'list') {
     if (args.includes('--extensions')) {
@@ -342,6 +376,9 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error(`showdar: ${error.message}`);
+  const command = process.argv[2];
+  if (['route', 'git-start'].includes(command) && process.argv.slice(3).includes('--json')) {
+    console.log(JSON.stringify({ schemaVersion: 1, command, ok: false, data: null, warnings: [], errors: [{ code: 'INVALID_REQUEST', message: error.message }] }, null, 2));
+  } else console.error(`showdar: ${error.message}`);
   process.exitCode = 1;
 });
