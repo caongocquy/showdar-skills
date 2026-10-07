@@ -40,7 +40,7 @@ Claude Code as supported installation targets. Choose `backend`, `qa`, or
 `product` when that gives discovery a more precise context; use `full` when
 you want all capabilities available.
 
-## Runtime routing and task branches (Unreleased)
+## Runtime routing and task branches
 
 ```bash
 printf '%s\n' 'Implement the approved underwriting form and add tests' | showdar route --stdin --json
