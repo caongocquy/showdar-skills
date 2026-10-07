@@ -21,9 +21,12 @@ function parseArgs(argv) {
   return values;
 }
 
+function executable(command) {
+  return process.platform === "win32" && command === "npm" ? "npm.cmd" : command;
+}
+
 function run(command, args, options = {}) {
-  const executable = process.platform === "win32" && command === "npm" ? "npm.cmd" : command;
-  const result = spawnSync(executable, args, {
+  const result = spawnSync(executable(command), args, {
     stdio: "inherit",
     ...options,
   });
@@ -32,8 +35,7 @@ function run(command, args, options = {}) {
 }
 
 function capture(command, args, options = {}) {
-  const executable = process.platform === "win32" && command === "npm" ? "npm.cmd" : command;
-  const result = spawnSync(executable, args, {
+  const result = spawnSync(executable(command), args, {
     encoding: "utf8",
     ...options,
   });
@@ -108,6 +110,13 @@ const packagePath = path.join(bundleDir, "node_modules", ...packageName.split("/
 const entryPath = path.join(packagePath, ...entry.split("/"));
 if (!fs.existsSync(entryPath)) fail(`Packaged CLI entry does not exist: ${entryPath}`);
 
+const runtimeDir = path.join(bundleDir, "runtime");
+fs.mkdirSync(runtimeDir, { recursive: true });
+const runtimeName = process.platform === "win32" ? "node.exe" : "node";
+const runtimePath = path.join(runtimeDir, runtimeName);
+fs.copyFileSync(process.execPath, runtimePath);
+if (process.platform !== "win32") fs.chmodSync(runtimePath, 0o755);
+
 const binDir = path.join(bundleDir, "bin");
 fs.mkdirSync(binDir, { recursive: true });
 
@@ -115,17 +124,17 @@ const unixRelativeEntry = path.relative(binDir, entryPath).split(path.sep).join(
 const unixLauncher = `#!/bin/sh
 set -e
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-exec node "$SCRIPT_DIR/${unixRelativeEntry}" "$@"
+exec "$SCRIPT_DIR/../runtime/node" "$SCRIPT_DIR/${unixRelativeEntry}" "$@"
 `;
 const unixLauncherPath = path.join(binDir, binName);
 fs.writeFileSync(unixLauncherPath, unixLauncher);
 fs.chmodSync(unixLauncherPath, 0o755);
 
 const windowsRelativeEntry = path.relative(binDir, entryPath).split(path.sep).join("\\");
-const windowsLauncher = `@echo off\r\nnode "%~dp0${windowsRelativeEntry}" %*\r\n`;
+const windowsLauncher = `@echo off\r\n"%~dp0..\\runtime\\node.exe" "%~dp0${windowsRelativeEntry}" %*\r\n`;
 fs.writeFileSync(path.join(binDir, `${binName}.cmd`), windowsLauncher);
 
-const smoke = spawnSync(process.execPath, [entryPath, "--version"], {
+const smoke = spawnSync(runtimePath, [entryPath, "--version"], {
   cwd: bundleDir,
   encoding: "utf8",
   env: {
@@ -153,9 +162,10 @@ const metadata = {
   arch,
   node: process.version,
   packageArchive: path.basename(packageArchive),
+  bundledRuntime: runtimeName,
 };
 fs.writeFileSync(path.join(bundleDir, "RELEASE.json"), JSON.stringify(metadata, null, 2) + "\n");
 
 const packageJson = fs.readFileSync(path.join(packagePath, "package.json"));
 const digest = crypto.createHash("sha256").update(packageJson).digest("hex");
-console.log(`Prepared ${tool} ${version} for ${platform}-${arch} (package manifest sha256 ${digest})`);
+console.log(`Prepared ${tool} ${version} for ${platform}-${arch} with bundled ${process.version} runtime (package manifest sha256 ${digest})`);
