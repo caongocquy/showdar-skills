@@ -588,6 +588,23 @@ export async function addSkill({ cwd, skill, ai = null, scope = null, home = hom
   if (effectiveScope !== 'project' && effectiveScope !== 'global') throw new Error(`Unknown scope "${effectiveScope}".`);
 
   if (existingManifest?.skills?.includes(skillId)) {
+    const refreshedFiles = [];
+    const priorOwned = ownedPathSet(existingManifest);
+    for (const target of existingManifest.commandHarness ?? []) {
+      const commandRoot = effectiveScope === 'global' ? globalCommandRootForTarget(target, { homeRoot: home }) : commandRootFor(target, cwd);
+      if (commandRoot) await generateCommandFiles({ baseRoot, skillIds: existingManifest.skills, target, commandRoot, priorOwned, newFiles: refreshedFiles });
+    }
+    if (effectiveScope === 'project' && existingManifest.instructions) {
+      const instruction = existingManifest.instructions;
+      const file = path.join(cwd, instruction.file);
+      if (instruction.kind === 'block') await writeManagedBlock(file, existingManifest.skills);
+      else if (instruction.kind === 'file') await writeCursorRule(file, existingManifest.skills);
+    }
+    if (refreshedFiles.length) {
+      const files = new Map(existingManifest.files.map(f => [f.path, f]));
+      for (const f of refreshedFiles) files.set(f.path, f);
+      await writeJsonAtomic(effectiveScope === 'global' ? globalManifestPath(home) : path.join(cwd, PROJECT_MANIFEST), { ...existingManifest, files: [...files.values()] });
+    }
     return { skill: skillId, root: '', destination: '', added: false, scope: effectiveScope, ai: effectiveAi, profile: existingManifest.profile };
   }
 
@@ -629,41 +646,19 @@ export async function addSkill({ cwd, skill, ai = null, scope = null, home = hom
     }
   }
 
+  const allSkillIds = [...new Set([...(existingManifest?.skills ?? []), skillId])];
   const newCommands = [];
-  for (const { target, root } of commandHarnesses) {
-    const shortName = skillId.replace(/^showdar-/, '');
-    const dest = path.join(root, `${shortName}.md`);
-    const rel = manifestPathFor(baseRoot, dest);
-    if ((await exists(dest)) && !priorOwned.has(rel)) {
-      throw new Error(`Refusing to overwrite existing non-Showdar-managed command: ${dest}`);
-    }
-    await mkdir(path.dirname(dest), { recursive: true });
-    const content = renderShowdarCommand(skillId);
-    await writeTextAtomic(dest, content);
-    files.push({ path: rel, hash: await hashTree(dest) });
-    newCommands.push({ target, name: shortName, path: rel });
-  }
-
-  if (commandHarnesses.length > 0) {
-    for (const { target, root } of commandHarnesses) {
-      const aggregatorDest = path.join(root, 'skill.md');
-      const aggregatorRel = manifestPathFor(baseRoot, aggregatorDest);
-      const addAllSkillIds = [...new Set([...(existingManifest?.skills ?? []), skillId])];
-      const aggregatorContent = renderShowdarAggregator(addAllSkillIds);
-      if ((await exists(aggregatorDest)) && !priorOwned.has(aggregatorRel)) {
-        throw new Error(`Refusing to overwrite existing non-Showdar-managed command: ${aggregatorDest}`);
-      }
-      await mkdir(path.dirname(aggregatorDest), { recursive: true });
-      await writeTextAtomic(aggregatorDest, aggregatorContent);
-      files.push({ path: aggregatorRel, hash: await hashTree(aggregatorDest) });
-      newCommands.push({ target, name: 'skill', path: aggregatorRel });
-    }
+  const harnessTargets = [...new Set([...(existingManifest?.commandHarness ?? []), ...commandHarnesses.map(c => c.target)])];
+  for (const target of harnessTargets) {
+    const root = effectiveScope === 'global' ? globalCommandRootForTarget(target, { homeRoot: home }) : commandRootFor(target, cwd);
+    if (!root) continue;
+    const generated = await generateCommandFiles({ baseRoot, skillIds: allSkillIds, target, commandRoot: root, priorOwned, newFiles: files, managedRoots });
+    newCommands.push(...generated.map(c => ({ target, name: c.shortName, path: manifestPathFor(baseRoot, c.destination) })));
   }
 
   const merged = new Map((existingManifest?.files ?? []).map((e) => [e.path, e]));
   for (const f of files) merged.set(f.path, f);
 
-  const allSkillIds = [...new Set([...(existingManifest?.skills ?? []), skillId])];
   const instructionFile = existingManifest?.instructions ?? (effectiveScope === 'project' ? instructionSurfaceFor(effectiveAi, cwd) : null);
   const commandHarness = [...new Set([...(existingManifest?.commandHarness ?? []), ...commandHarnesses.map((c) => c.target)])];
 
@@ -673,10 +668,10 @@ export async function addSkill({ cwd, skill, ai = null, scope = null, home = hom
     packageVersion,
     profile: existingManifest?.profile ?? null,
     ai: effectiveAi,
-    targets,
+    targets: [...new Set([...(existingManifest?.targets ?? []), ...targets])],
     skills: allSkillIds,
     satisfiedByGlobal: existingManifest?.satisfiedByGlobal ?? [],
-    commands: [...(existingManifest?.commands ?? []), ...newCommands],
+    commands: [...new Map([...(existingManifest?.commands ?? []), ...newCommands].map(c => [c.path, c])).values()],
     files: [...merged.values()],
     instructions: instructionFile ? { file: instructionFile.file, kind: instructionFile.kind } : null,
     commandHarness,

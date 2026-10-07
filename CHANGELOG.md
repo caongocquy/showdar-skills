@@ -6,6 +6,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.12.0]
+
+### Added
+
+- Canonical `showdar route --stdin|--prompt [--json]` runtime bridge projecting lifecycle primary, advisors, the seven public Intent keys, advisory domain matches, and installed/missing skill availability.
+- Specialized domain discovery overlay using deterministic Unicode phrase matching over `router/skill-map.yaml` inline trigger arrays; insurance terminology, underwriting/rating flows, and insurer API/UI review map to `showdar-insurance-domain`, `showdar-insurance-workflows`, and `showdar-insurance-review` without granting authority.
+- `showdar git-start --type --name [--base] [--dry-run] [--json]` for deterministic safe local task-branch preparation without inferred staging, commit, merge, or push.
+- Task branch isolation guidance: branch-before-edit on integration/default branches, repository-policy priority, one branch per coherent task, and conservative dirty-worktree blocking.
+
+### Changed
+
+- Managed harness instructions and commands invoke the canonical runtime router with native/static fallback when the CLI is unavailable.
+- Init/add guidance reflects the complete installed set; add refreshes existing commands and instructions even when the skill is already installed.
+- Showdar Git documents one branch per coherent task, repository-policy priority, and explicit completion/integration authority.
+- Task completion defaults to verify and report; merge and push each require their own explicit authority.
+
+### Safety / Compatibility
+
+- Domain discovery does not grant authority and never replaces the lifecycle primary or rewrites Intent/mutation.
+- Phase 6G authority, state, evidence, trace, and manifest contracts unchanged; no engine vendoring into projects.
+- No implicit branch commit/merge/push; no automatic stash, reset, restore, or clean.
+- Existing v0.11 projects remain compatible; no migration required.
+
 ## [0.11.0]
 
 ### Added

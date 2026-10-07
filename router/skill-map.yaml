@@ -38,7 +38,7 @@ routes:
     triggers: ["resume interrupted implementation", "recover partial work", "session stopped", "continue partial work", "missing context"]
     skill: showdar-recover
   git:
-    triggers: ["commit", "stage only task files", "merge branch", "rebase branch", "cherry-pick commit", "git conflict", "push branch", "clean merged branches", "finish git workflow"]
+    triggers: ["commit", "stage only task files", "merge branch", "rebase branch", "cherry-pick commit", "git conflict", "push branch", "clean merged branches", "finish git workflow", "start task branch", "create feature branch", "create fix branch", "branch for this task"]
     skill: showdar-git
   requirements:
     triggers: ["requirements", "business rules", "acceptance criteria", "user stories", "use cases", "requirement matrix", "missing requirement", "ambiguity"]
