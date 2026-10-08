@@ -40,6 +40,32 @@ Claude Code as supported installation targets. Choose `backend`, `qa`, or
 `product` when that gives discovery a more precise context; use `full` when
 you want all capabilities available.
 
+## Additive installation
+
+`showdar init --profile <name>` **replaces** the Showdar-owned skill selection.
+`showdar add` always **preserves** existing skills and the selected base profile:
+
+```bash
+showdar init --profile developer --ai opencode
+showdar add git                         # same as showdar add showdar-git
+showdar add profile insurance           # union, no deletions
+showdar add workflow feature            # workflow + missing primitive stages
+showdar add workflow ./acme-release.json # standalone custom workflow, project scope
+```
+
+Both `showdar add feature` and `showdar add showdar-feature` are aliases for
+`showdar add workflow feature`, including automatic installation of missing
+primitive stage skills. All built-in profiles are additive via `add profile`;
+`init` remains the explicit replace operation. Existing workflow packs and
+custom workflow definitions are preserved when adding skills. The runtime
+router is included in the Showdar CLI and is automatically referenced by
+updated native guidance; it does not require an additional skill.
+
+Built-in workflow dependency installation does **not** execute the workflow,
+authorize source mutation, commit, merge or push. A custom workflow JSON file
+uses the existing `add-workflow` validation/manifest semantics; remote files
+and arbitrary executable plugins are unsupported.
+
 ## Runtime routing and task branches
 
 ```bash
@@ -845,6 +871,8 @@ Product behavior notes:
 ```bash
 showdar init [--scope <project|global>] --ai <target> --profile <profile>
 showdar add <skill> [--ai <target>] [--scope <project|global>]
+showdar add profile <profile> [--ai <target>] [--scope <project|global>]
+showdar add workflow <builtin-name|local-json-path> [--ai <target>] [--scope <project|global>]
 showdar add-pack <local-path>
 showdar remove-pack <name>
 showdar add-workflow <local-path>
