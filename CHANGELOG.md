@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.15.0]
+
 ### Changed
 
 - Replaced the CLI `showdar wizard` entry point with `showdar setup`, preserving the interactive skills installer flow and `add --interactive` alias.
