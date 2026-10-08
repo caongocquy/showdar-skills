@@ -21,12 +21,18 @@ function parseArgs(argv) {
   return values;
 }
 
-function executable(command) {
-  return process.platform === "win32" && command === "npm" ? "npm.cmd" : command;
+function commandInvocation(command, args) {
+  if (process.platform === "win32" && command === "npm") {
+    const npmCli = path.join(path.dirname(process.execPath), "node_modules", "npm", "bin", "npm-cli.js");
+    if (!fs.existsSync(npmCli)) fail(`npm CLI not found next to Node runtime: ${npmCli}`);
+    return { executable: process.execPath, args: [npmCli, ...args] };
+  }
+  return { executable: command, args };
 }
 
 function run(command, args, options = {}) {
-  const result = spawnSync(executable(command), args, {
+  const invocation = commandInvocation(command, args);
+  const result = spawnSync(invocation.executable, invocation.args, {
     stdio: "inherit",
     ...options,
   });
@@ -35,7 +41,8 @@ function run(command, args, options = {}) {
 }
 
 function capture(command, args, options = {}) {
-  const result = spawnSync(executable(command), args, {
+  const invocation = commandInvocation(command, args);
+  const result = spawnSync(invocation.executable, invocation.args, {
     encoding: "utf8",
     ...options,
   });
