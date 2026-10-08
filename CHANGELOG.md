@@ -6,10 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.12.1]
+
 ### Fixed
 
 - Added read-only `showdar guard --mutation local-write --json` to block task writes on integration branches until task branch preparation, with an explicit repository-local direct-work opt-in.
 - Updated native harness guidance and mutating skills to require automatic branch preparation and a passing guard before agent-controlled file writes; Cursor routing rules now apply automatically.
+- Re-adding an existing Showdar-managed skill refreshes its packaged SKILL.md from the upgraded CLI only when its recorded hash matches; user-modified skill files are preserved and cause an explicit error.
 - This is an agent/tool-instruction gate, not a cross-harness filesystem interceptor, and does not grant source/remote mutation authority.
 
 
