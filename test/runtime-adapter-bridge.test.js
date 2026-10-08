@@ -51,6 +51,29 @@ for (const [ai, surface, commands] of [
   } finally { await rm(base, { recursive: true, force: true }); }
 });
 
+test('re-adding an installed Git skill refreshes owned SKILL.md without replacing the profile', async () => {
+  const base = await mkdtemp(path.join(tmpdir(), 'runtime-git-refresh-'));
+  const projectRoot = path.join(base, 'project');
+  const home = path.join(base, 'home');
+  await mkdir(projectRoot); await mkdir(home);
+  try {
+    await initProject({ projectRoot, homeRoot: home, packageRoot, ai: 'opencode', profile: 'minimal', skillIds: resolveProfile('minimal'), packageVersion: '0.12.0' });
+    const gitSkill = path.join(projectRoot, '.agents/skills/showdar-git/SKILL.md');
+    const old = await readFile(gitSkill, 'utf8');
+    assert.match(old, /showdar guard --mutation local-write --json/);
+    const first = await addSkill({ cwd: projectRoot, home, packageRoot, skill: 'git', packageVersion: '0.12.1' });
+    assert.equal(first.added, false);
+    assert.equal(await readFile(gitSkill, 'utf8'), old);
+    const manifest = JSON.parse(await readFile(path.join(projectRoot, '.showdar.json'), 'utf8'));
+    assert.equal(manifest.profile, 'minimal');
+    assert.equal(manifest.packageVersion, '0.12.1');
+    assert.equal(manifest.skills.length, resolveProfile('minimal').length);
+    await writeFile(gitSkill, old + '\n# Local user modification\n');
+    await assert.rejects(addSkill({ cwd: projectRoot, home, packageRoot, skill: 'git', packageVersion: '0.12.1' }), /refusing to overwrite user changes/i);
+    assert.match(await readFile(gitSkill, 'utf8'), /Local user modification/);
+  } finally { await rm(base, { recursive: true, force: true }); }
+});
+
 test('global install writes no project instructions', async () => {
   const home = await mkdtemp(path.join(tmpdir(), 'runtime-global-'));
   try {
