@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.14.0]
+
+### Added
+
+- Project-aware onboarding through `showdar setup`, including repository inspection, GitHub/GitLab/local tracker detection, package script discovery, read-only `--dry-run --json` planning, and interactive confirmation.
+- Shared project documents under `docs/agents/` for project architecture, issue tracker, verification scripts and domain vocabulary; existing documents are preserved without overwrites, and agent routing guidance consumes them when present.
+- Native `/showdar/setup` entrypoint on command-capable harnesses (OpenCode and Claude), preserving the frozen router semantics and unchanged 22-skill catalog.
+- Interactive multi-select installation wizard (`showdar wizard` or `showdar add --interactive`) for profile, skills, workflows, agent target and project/global scope, with add/replace modes, previews and CI-friendly flags.
+
+### Safety
+
+- Setup edits require the existing Git preflight guard. Path traversal and symlinked output paths are rejected; no speculative glossary or ADR documents are created.
+- The wizard defaults to additive installation and requires explicit `--mode replace` for removing managed skills. Non-interactive installation requires explicit selections and `--yes`.
+
+
 ## [0.13.0]
 
 ### Added
