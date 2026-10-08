@@ -1,9 +1,11 @@
 {
   "name": "showdar-skills",
-  "version": "0.12.0",
+  "version": "0.12.1",
   "description": "Production-grade software engineering lifecycle skills for coding agents.",
   "type": "module",
-  "bin": { "showdar": "./bin/showdar.js" },
+  "bin": {
+    "showdar": "./bin/showdar.js"
+  },
   "scripts": {
     "test": "node --test",
     "validate": "node bin/showdar.js validate",
@@ -16,9 +18,38 @@
     "smoke": "node scripts/package-smoke.mjs",
     "release:check": "node scripts/check-release-version.mjs"
   },
-  "engines": { "node": ">=20" },
-  "files": ["bin", "src", "config", "skills", "commands", "router", "bundles", "profiles", "engine", "README.md", "LICENSE", "CHANGELOG.md", "MIGRATION.md"],
-  "keywords": ["agent-skills", "coding-agents", "codex", "opencode", "claude-code", "software-engineering", "developer-tools", "requirements", "qa", "security", "devops", "workflow"],
+  "engines": {
+    "node": ">=20"
+  },
+  "files": [
+    "bin",
+    "src",
+    "config",
+    "skills",
+    "commands",
+    "router",
+    "bundles",
+    "profiles",
+    "engine",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md",
+    "MIGRATION.md"
+  ],
+  "keywords": [
+    "agent-skills",
+    "coding-agents",
+    "codex",
+    "opencode",
+    "claude-code",
+    "software-engineering",
+    "developer-tools",
+    "requirements",
+    "qa",
+    "security",
+    "devops",
+    "workflow"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",
