@@ -455,8 +455,8 @@ export async function validateRepository(packageRoot) {
   if (!claudeBlock.includes('showdar-skills:start') || !claudeBlock.includes('showdar-skills:end')) {
     errors.push('CLAUDE managed block is missing markers');
   }
-  if (!cursorRule.includes('alwaysApply: false')) errors.push('Cursor rule must use Apply Intelligently metadata');
-  if (cursorRule.includes('alwaysApply: true')) errors.push('Cursor rule must not use alwaysApply:true');
+  if (!cursorRule.includes('alwaysApply: true')) errors.push('Cursor rule must always apply for Git pre-write safety guidance');
+  if (!cursorRule.includes('showdar guard --mutation local-write --json')) errors.push('Cursor rule must include Git pre-write guard');
 
   const commandDir = path.join(packageRoot, 'commands', 'opencode', 'showdar');
   if (await exists(commandDir)) {
