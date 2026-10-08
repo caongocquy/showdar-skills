@@ -1,0 +1,22 @@
+{
+  "format": "blind-holdout",
+  "version": 5,
+  "dataset": "blind-holdout-5",
+  "datasetFile": "evals/blind-holdout-5.json",
+  "caseCount": 60,
+  "clearCount": 51,
+  "ambiguousCount": 9,
+  "singleSecondaryClear": 12,
+  "doubleSecondaryClear": 3,
+  "datasetSha256": "8f2cd4c8860105ca65760ef22e853890b87bc19df2e72c29c0f84a2c52655b4c",
+  "gitCommitSha": "6fbda090235214b7f1a4ac2444a4d8d9f41dbc32",
+  "semanticSourceSha256": "e69b7e6662e5abaa32af4d4ac5523902c91383c925e66ea6336cbd196679eb7d",
+  "freezeTimestamp": "2026-09-13T13:37:44.654Z",
+  "canonicalHashCommand": "node scripts/semantic-source-hash.mjs",
+  "statements": {
+    "expectationsWithoutRuntimeOutput": "All expected labels were authored from the documented semantic contract only, before any resolver execution against Blind #5.",
+    "noImplementationInternals": "Production implementation internals (verb families, scoring weights, keyword lists, special-case regexes, routing tables) were not used to derive expected labels.",
+    "authoringMethod": "Manual expectations-first authoring: 60 novel prompts with contract-derived expected intent, constraints, primary, advisors, and CLEAR/AMBIGUOUS confidence. No resolver invocation, no behavior probing, no known-dataset wording reuse.",
+    "immutability": "After manifest creation the Blind #5 dataset is immutable: no expectation changes, no reruns, no relabeling of historical metrics."
+  }
+}

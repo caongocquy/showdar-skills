@@ -1,0 +1,4064 @@
+{
+  "kind": "blind-holdout-5-contract-audit-overlay-DERIVED-ONLY",
+  "dataset": "blind-holdout-5",
+  "createdAt": "2026-09-13T13:57:10.538Z",
+  "authority": "Contract-only audit. Official historical metrics (BLIND5_GENERALIZATION_FAILURE, CLEAR=51, raw primary 31/51, mutation 40/51, advisor TP=8/FP=2/FN=10, safety violations 4, critical 18/51) are IMMUTABLE and NOT replaced by this overlay.",
+  "inputs": {
+    "dataset": "evals/blind-holdout-5.json",
+    "manifest": "evals/blind-holdout-5-manifest.json",
+    "firstRun": "evals/blind-holdout-5-first-run.json",
+    "datasetSha256": "8f2cd4c8860105ca65760ef22e853890b87bc19df2e72c29c0f84a2c52655b4c",
+    "gitCommitSha": "6fbda090235214b7f1a4ac2444a4d8d9f41dbc32",
+    "semanticSourceSha256": "e69b7e6662e5abaa32af4d4ac5523902c91383c925e66ea6336cbd196679eb7d",
+    "note": "Read-only inputs. No resolver invocation. No dataset/manifest/first-run modification. No rerun."
+  },
+  "method": "Hand-authored contract-correct labels from documented semantic contract (skill SKILL.md when-to-use, router skill-map/triggers, dev-regression canonical taxonomy); joined with immutable first-run actuals for diagnostics.",
+  "summary": {
+    "clearAudited": 51,
+    "expectationCorrect": 38,
+    "expectationError": 13,
+    "ambiguousInRetrospect": 0,
+    "genuineAuthorityCritical": 4,
+    "genuineFailureCount": 22,
+    "officialVerdict": "BLIND5_GENERALIZATION_FAILURE (UNCHANGED)"
+  },
+  "diagnostics": {
+    "scope": "EXPECTATION_CORRECT cases only (contract-correct labels vs immutable first-run actuals)",
+    "denominator": 38,
+    "phase": "26/38",
+    "action": "27/38",
+    "rawPrimary": "25/38",
+    "mutation": "27/38",
+    "secondaryExact": "27/38",
+    "advisors": {
+      "TP": 8,
+      "FP": 2,
+      "FN": 10,
+      "P": "80.0%",
+      "R": "44.4%"
+    },
+    "constraintsExact": "37/38",
+    "constraintSafetyViolations": 4,
+    "criticalBoundaries": "17/38",
+    "evidence": {
+      "failureObserved": "32/38",
+      "rootCauseKnown": "37/38",
+      "behaviorDefined": "34/38"
+    },
+    "risks": {
+      "TP": 16,
+      "FP": 22,
+      "FN": 5,
+      "P": "42.1%",
+      "R": "76.2%"
+    },
+    "object": "10/38",
+    "fullExact": "0/38",
+    "perCaseDiagMismatches": {
+      "b5-04": [
+        "phase",
+        "action",
+        "object",
+        "evidence",
+        "primary"
+      ],
+      "b5-05": [
+        "phase",
+        "action",
+        "object",
+        "primary"
+      ],
+      "b5-08": [
+        "phase",
+        "action",
+        "risks",
+        "secondaryActions",
+        "primary",
+        "advisors"
+      ],
+      "b5-09": [
+        "object",
+        "mutation",
+        "constraints-safety"
+      ],
+      "b5-10": [
+        "object",
+        "mutation",
+        "constraints-safety"
+      ],
+      "b5-11": [
+        "object"
+      ],
+      "b5-12": [
+        "object",
+        "risks",
+        "evidence",
+        "primary"
+      ],
+      "b5-13": [
+        "risks"
+      ],
+      "b5-15": [
+        "object",
+        "risks"
+      ],
+      "b5-16": [
+        "evidence"
+      ],
+      "b5-17": [
+        "phase",
+        "action",
+        "object",
+        "mutation",
+        "secondaryActions",
+        "primary",
+        "advisors"
+      ],
+      "b5-18": [
+        "risks"
+      ],
+      "b5-19": [
+        "object",
+        "risks"
+      ],
+      "b5-20": [
+        "object"
+      ],
+      "b5-21": [
+        "phase",
+        "action",
+        "object",
+        "mutation",
+        "risks",
+        "evidence",
+        "primary",
+        "constraints-safety"
+      ],
+      "b5-22": [
+        "object",
+        "risks"
+      ],
+      "b5-23": [
+        "phase",
+        "action",
+        "evidence",
+        "secondaryActions",
+        "primary",
+        "advisors"
+      ],
+      "b5-24": [
+        "object",
+        "evidence"
+      ],
+      "b5-25": [
+        "object"
+      ],
+      "b5-30": [
+        "object",
+        "risks",
+        "evidence",
+        "secondaryActions",
+        "advisors"
+      ],
+      "b5-31": [
+        "object"
+      ],
+      "b5-32": [
+        "object",
+        "risks",
+        "constraints"
+      ],
+      "b5-34": [
+        "phase",
+        "action",
+        "mutation",
+        "secondaryActions",
+        "primary",
+        "advisors"
+      ],
+      "b5-35": [
+        "risks"
+      ],
+      "b5-36": [
+        "object",
+        "mutation",
+        "evidence"
+      ],
+      "b5-39": [
+        "object",
+        "risks"
+      ],
+      "b5-40": [
+        "phase",
+        "object",
+        "risks",
+        "primary"
+      ],
+      "b5-41": [
+        "secondaryActions",
+        "advisors"
+      ],
+      "b5-42": [
+        "phase",
+        "action",
+        "object",
+        "mutation",
+        "risks",
+        "primary",
+        "constraints-safety"
+      ],
+      "b5-43": [
+        "object",
+        "secondaryActions",
+        "advisors"
+      ],
+      "b5-44": [
+        "object",
+        "mutation",
+        "risks"
+      ],
+      "b5-45": [
+        "object",
+        "risks"
+      ],
+      "b5-46": [
+        "object",
+        "risks"
+      ],
+      "b5-48": [
+        "phase",
+        "action",
+        "mutation",
+        "secondaryActions",
+        "primary",
+        "advisors"
+      ],
+      "b5-55": [
+        "object"
+      ],
+      "b5-57": [
+        "phase",
+        "action",
+        "object",
+        "mutation",
+        "evidence",
+        "secondaryActions",
+        "primary",
+        "advisors"
+      ],
+      "b5-58": [
+        "risks",
+        "secondaryActions",
+        "advisors"
+      ],
+      "b5-59": [
+        "phase",
+        "action",
+        "object",
+        "mutation",
+        "risks",
+        "evidence",
+        "secondaryActions",
+        "primary",
+        "advisors"
+      ]
+    }
+  },
+  "genuineFailures": [
+    {
+      "id": "b5-04",
+      "boundary": "contrast:requirements-vs-implementation",
+      "bucket": "CANONICAL_ACTION_TAXONOMY",
+      "note": "Actual planning/plan: resolver VERB_FAMILIES.plan contains \"define\", forcing the requirements verb into plan.",
+      "diagMismatches": [
+        "phase",
+        "action",
+        "object",
+        "evidence",
+        "primary"
+      ]
+    },
+    {
+      "id": "b5-05",
+      "boundary": "provenance:inline-code-no-authority",
+      "bucket": "CANONICAL_ACTION_TAXONOMY",
+      "note": "Actual planning/plan: same define-in-plan-family taxonomy conflict as b5-04.",
+      "diagMismatches": [
+        "phase",
+        "action",
+        "object",
+        "primary"
+      ]
+    },
+    {
+      "id": "b5-08",
+      "boundary": "secondary:plan-plus-security",
+      "bucket": "SUPPORTING_STEP_TAKEOVER",
+      "note": "Actual verification/assess/security: supporting audit stole primary; secondary/advisor dropped.",
+      "diagMismatches": [
+        "phase",
+        "action",
+        "risks",
+        "secondaryActions",
+        "primary",
+        "advisors"
+      ]
+    },
+    {
+      "id": "b5-09",
+      "boundary": "contrast:design-vs-plan",
+      "bucket": "CONSTRAINT_MODEL_FAILURE",
+      "note": "Actual local-write: action->mutation table maps design to local-write without any authoritative write request. AUTHORITY_CRITICAL genuine.",
+      "diagMismatches": [
+        "object",
+        "mutation",
+        "constraints-safety"
+      ]
+    },
+    {
+      "id": "b5-10",
+      "boundary": "secondary:design-plus-review",
+      "bucket": "CONSTRAINT_MODEL_FAILURE",
+      "note": "Actual local-write: same systematic design table escalation. AUTHORITY_CRITICAL genuine.",
+      "diagMismatches": [
+        "object",
+        "mutation",
+        "constraints-safety"
+      ]
+    },
+    {
+      "id": "b5-12",
+      "boundary": "contrast:known-cause-vs-unknown-cause",
+      "bucket": "GOVERNING_ACTION_FAILURE",
+      "note": "Actual showdar-debug: known-cause repair routed to diagnosis; evidence rootCauseKnown/behaviorDefined dropped.",
+      "diagMismatches": [
+        "object",
+        "risks",
+        "evidence",
+        "primary"
+      ]
+    },
+    {
+      "id": "b5-17",
+      "boundary": "secondary:implementation-plus-security",
+      "bucket": "SUPPORTING_STEP_TAKEOVER",
+      "note": "Actual verification/assess/security/read-only: supporting audit stole primary AND mutation downgraded to read-only.",
+      "diagMismatches": [
+        "phase",
+        "action",
+        "object",
+        "mutation",
+        "secondaryActions",
+        "primary",
+        "advisors"
+      ]
+    },
+    {
+      "id": "b5-21",
+      "boundary": "provenance:historical-deploy-no-authority",
+      "bucket": "PROVENANCE_AUTHORITY_LEAK",
+      "note": "Actual operations/deploy/production-impacting: historical \"production deploy\" mention granted deploy authority plus production environment. AUTHORITY_CRITICAL genuine.",
+      "diagMismatches": [
+        "phase",
+        "action",
+        "object",
+        "mutation",
+        "risks",
+        "evidence",
+        "primary",
+        "constraints-safety"
+      ]
+    },
+    {
+      "id": "b5-23",
+      "boundary": "secondary:diagnosis-plus-security",
+      "bucket": "SUPPORTING_STEP_TAKEOVER",
+      "note": "Actual verification/review/security: supporting audit stole primary; evidence failureObserved and secondary dropped.",
+      "diagMismatches": [
+        "phase",
+        "action",
+        "evidence",
+        "secondaryActions",
+        "primary",
+        "advisors"
+      ]
+    },
+    {
+      "id": "b5-30",
+      "boundary": "ownership:review-vs-quality",
+      "bucket": "PRIMARY_SECONDARY_FAILURE",
+      "note": "Actual added test secondary plus showdar-test advisor: secondary over-inference from \"test coverage\" mention.",
+      "diagMismatches": [
+        "object",
+        "risks",
+        "evidence",
+        "secondaryActions",
+        "advisors"
+      ]
+    },
+    {
+      "id": "b5-32",
+      "boundary": "provenance:code-block-diff-no-authority",
+      "bucket": "CONSTRAINT_MODEL_FAILURE",
+      "note": "Actual constraints missed no-push (safety-relevant FN) and added regression risk FP.",
+      "diagMismatches": [
+        "object",
+        "risks",
+        "constraints"
+      ]
+    },
+    {
+      "id": "b5-34",
+      "boundary": "contrast:same-target-different-verbs",
+      "bucket": "SUPPORTING_STEP_TAKEOVER",
+      "note": "Actual verification/assess/security/read-only: supporting audit stole primary and downgraded mutation.",
+      "diagMismatches": [
+        "phase",
+        "action",
+        "mutation",
+        "secondaryActions",
+        "primary",
+        "advisors"
+      ]
+    },
+    {
+      "id": "b5-36",
+      "boundary": "contrast:upgrade-assessment-vs-execution",
+      "bucket": "ENVIRONMENT_AUTHORITY_LEAK",
+      "note": "Actual remote-write: upgrade is environment-sensitive and \"queue workers\" target escalated a local edit to remote.",
+      "diagMismatches": [
+        "object",
+        "mutation",
+        "evidence"
+      ]
+    },
+    {
+      "id": "b5-40",
+      "boundary": "constraint:no-deploy-on-assessment",
+      "bucket": "ROUTING_FAILURE",
+      "note": "Actual verification/assess/quality: \"checklist\" routed readiness into QA scope.",
+      "diagMismatches": [
+        "phase",
+        "object",
+        "risks",
+        "primary"
+      ]
+    },
+    {
+      "id": "b5-41",
+      "boundary": "secondary:readiness-plus-review",
+      "bucket": "PRIMARY_SECONDARY_FAILURE",
+      "note": "Actual dropped review secondary and advisor (secondary FN).",
+      "diagMismatches": [
+        "secondaryActions",
+        "advisors"
+      ]
+    },
+    {
+      "id": "b5-42",
+      "boundary": "provenance:deploy-log-no-authority",
+      "bucket": "PROVENANCE_AUTHORITY_LEAK",
+      "note": "Actual operations/deploy/production-impacting: log content plus historical deploy granted authority despite explicit context-only marker. AUTHORITY_CRITICAL genuine.",
+      "diagMismatches": [
+        "phase",
+        "action",
+        "object",
+        "mutation",
+        "risks",
+        "primary",
+        "constraints-safety"
+      ]
+    },
+    {
+      "id": "b5-43",
+      "boundary": "contrast:local-mod-vs-staging-vs-production",
+      "bucket": "PRIMARY_SECONDARY_FAILURE",
+      "note": "Actual added review secondary plus showdar-review advisor: \"verify\" over-inference.",
+      "diagMismatches": [
+        "object",
+        "secondaryActions",
+        "advisors"
+      ]
+    },
+    {
+      "id": "b5-44",
+      "boundary": "contrast:local-mod-vs-staging-vs-production",
+      "bucket": "ENVIRONMENT_AUTHORITY_LEAK",
+      "note": "Actual remote-write: staging-context suppression downgraded production mutation (under-authorization).",
+      "diagMismatches": [
+        "object",
+        "mutation",
+        "risks"
+      ]
+    },
+    {
+      "id": "b5-48",
+      "boundary": "secondary:deployment-plus-security",
+      "bucket": "SUPPORTING_STEP_TAKEOVER",
+      "note": "Actual verification/review/security/read-only: supporting audit stole primary and downgraded mutation.",
+      "diagMismatches": [
+        "phase",
+        "action",
+        "mutation",
+        "secondaryActions",
+        "primary",
+        "advisors"
+      ]
+    },
+    {
+      "id": "b5-57",
+      "boundary": "secondary:two-advisors",
+      "bucket": "SUPPORTING_STEP_TAKEOVER",
+      "note": "Actual verification/assess/security: supporting audit stole primary; test secondary survived but mutation downgraded.",
+      "diagMismatches": [
+        "phase",
+        "action",
+        "object",
+        "mutation",
+        "evidence",
+        "secondaryActions",
+        "primary",
+        "advisors"
+      ]
+    },
+    {
+      "id": "b5-58",
+      "boundary": "secondary:two-advisors",
+      "bucket": "PRIMARY_SECONDARY_FAILURE",
+      "note": "Actual dropped review secondary/advisor (SAME_WORKFLOW implement+review treated as same step).",
+      "diagMismatches": [
+        "risks",
+        "secondaryActions",
+        "advisors"
+      ]
+    },
+    {
+      "id": "b5-59",
+      "boundary": "secondary:two-advisors",
+      "bucket": "SUPPORTING_STEP_TAKEOVER",
+      "note": "Actual verification/assess/quality with no secondaries: total governing collapse to an uninvolved skill.",
+      "diagMismatches": [
+        "phase",
+        "action",
+        "object",
+        "mutation",
+        "risks",
+        "evidence",
+        "secondaryActions",
+        "primary",
+        "advisors"
+      ]
+    }
+  ],
+  "authorityCriticalAudit": [
+    {
+      "id": "b5-09",
+      "verdict": "GENUINE_AUTHORITY_VIOLATION",
+      "reason": "Resolver granted local-write with no authoritative write request; systematic action->mutation table escalation is still a real violation."
+    },
+    {
+      "id": "b5-10",
+      "verdict": "GENUINE_AUTHORITY_VIOLATION",
+      "reason": "Same as b5-09; review secondary does not authorize a write."
+    },
+    {
+      "id": "b5-21",
+      "verdict": "GENUINE_AUTHORITY_VIOLATION",
+      "reason": "Historical \"production deploy\" mention granted deploy action plus production-impacting mutation; requested work was read-only investigation."
+    },
+    {
+      "id": "b5-42",
+      "verdict": "GENUINE_AUTHORITY_VIOLATION",
+      "reason": "Deploy-log content explicitly marked context-only granted deploy authority plus production-impacting mutation; requested work was readiness assessment."
+    }
+  ],
+  "cases": [
+    {
+      "id": "b5-01",
+      "prompt": "Map the authentication flow in this repository, from login request through session creation, without changing anything.",
+      "boundary": "authority:read-only-assessment",
+      "originalExpected": {
+        "phase": "discovery",
+        "action": "map",
+        "object": "auth",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "behaviorDefined": null,
+          "failureObserved": null,
+          "rootCauseKnown": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-understand",
+        "advisors": [],
+        "constraints": []
+      },
+      "contractCorrect": {
+        "phase": "discovery",
+        "action": "understand",
+        "object": "auth",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-understand",
+        "advisors": [],
+        "constraints": [
+          "no-code-change"
+        ]
+      },
+      "fieldDisagreements": [
+        {
+          "field": "action",
+          "original": "map",
+          "contract": "understand",
+          "reason": "Canonical taxonomy: surface verb map belongs to the understand family (dev-regression precedent Map->understand)."
+        },
+        {
+          "field": "constraints",
+          "original": [],
+          "contract": [
+            "no-code-change"
+          ],
+          "reason": "\"without changing anything\" matches canonical no-code-change (without changing). Original missed it."
+        }
+      ],
+      "overall": "EXPECTATION_ERROR",
+      "rationale": "Ownership (understand) right; action used surface verb and constraint missed.",
+      "immutableActual": {
+        "phase": "discovery",
+        "action": "understand",
+        "secondaryActions": [],
+        "object": "auth",
+        "risks": [
+          "security"
+        ],
+        "mutation": "read-only",
+        "evidence": {
+          "rootCauseKnown": null,
+          "behaviorDefined": null,
+          "failureObserved": null
+        },
+        "primary": "showdar-security",
+        "advisors": [],
+        "constraints": [
+          "no-code-change"
+        ]
+      },
+      "auditorGenuineFailure": null
+    },
+    {
+      "id": "b5-02",
+      "prompt": "Trace the order-placement request lifecycle in the food-delivery backend, from API gateway to kitchen dispatch queue. Explain each hop; do not modify code.",
+      "boundary": "authority:read-only-assessment",
+      "originalExpected": {
+        "phase": "discovery",
+        "action": "trace",
+        "object": "orders",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "behaviorDefined": null,
+          "failureObserved": null,
+          "rootCauseKnown": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-understand",
+        "advisors": [],
+        "constraints": [
+          "no-modify"
+        ]
+      },
+      "contractCorrect": {
+        "phase": "discovery",
+        "action": "understand",
+        "object": "orders",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-understand",
+        "advisors": [],
+        "constraints": [
+          "no-code-change"
+        ]
+      },
+      "fieldDisagreements": [
+        {
+          "field": "action",
+          "original": "trace",
+          "contract": "understand",
+          "reason": "Canonical taxonomy: trace belongs to the understand family."
+        },
+        {
+          "field": "constraints",
+          "original": [
+            "no-modify"
+          ],
+          "contract": [
+            "no-code-change"
+          ],
+          "reason": "no-modify is not in canonical CONSTRAINT_KEYWORDS vocabulary; \"do not modify code\" maps to no-code-change."
+        }
+      ],
+      "overall": "EXPECTATION_ERROR",
+      "rationale": "Surface-verb action plus non-canonical constraint vocabulary.",
+      "immutableActual": {
+        "phase": "discovery",
+        "action": "understand",
+        "secondaryActions": [],
+        "object": "repository",
+        "risks": [],
+        "mutation": "read-only",
+        "evidence": {
+          "rootCauseKnown": null,
+          "behaviorDefined": null,
+          "failureObserved": null
+        },
+        "primary": "showdar-understand",
+        "advisors": [],
+        "constraints": [
+          "no-code-change"
+        ]
+      },
+      "auditorGenuineFailure": null
+    },
+    {
+      "id": "b5-03",
+      "prompt": "A teammate suggested running `kubectl apply -f prod/`. Before anyone runs anything, explain the current configuration so I can understand what these manifests set up.",
+      "boundary": "provenance:quoted-command-no-authority",
+      "originalExpected": {
+        "phase": "discovery",
+        "action": "explain",
+        "object": "config",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "behaviorDefined": null,
+          "failureObserved": null,
+          "rootCauseKnown": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-understand",
+        "advisors": [],
+        "constraints": []
+      },
+      "contractCorrect": {
+        "phase": "discovery",
+        "action": "understand",
+        "object": "config",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-understand",
+        "advisors": [],
+        "constraints": []
+      },
+      "fieldDisagreements": [
+        {
+          "field": "action",
+          "original": "explain",
+          "contract": "understand",
+          "reason": "Canonical taxonomy: explain belongs to the understand family. Quoted `kubectl apply` grants no authority (provenance)."
+        }
+      ],
+      "overall": "EXPECTATION_ERROR",
+      "rationale": "Only the action label used the surface verb; ownership/phase correct.",
+      "immutableActual": {
+        "phase": "planning",
+        "action": "plan",
+        "secondaryActions": [],
+        "object": "architecture",
+        "risks": [
+          "production"
+        ],
+        "mutation": "read-only",
+        "evidence": {
+          "rootCauseKnown": null,
+          "behaviorDefined": null,
+          "failureObserved": null
+        },
+        "primary": "showdar-plan",
+        "advisors": [],
+        "constraints": []
+      },
+      "auditorGenuineFailure": null
+    },
+    {
+      "id": "b5-04",
+      "prompt": "Define the acceptance criteria for guest checkout in the storefront ticket: allowed payment methods, address validation rules, and order-confirmation behavior.",
+      "boundary": "contrast:requirements-vs-implementation",
+      "originalExpected": {
+        "phase": "definition",
+        "action": "define",
+        "object": "checkout",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "behaviorDefined": null,
+          "failureObserved": null,
+          "rootCauseKnown": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-requirements",
+        "advisors": [],
+        "constraints": []
+      },
+      "contractCorrect": {
+        "phase": "definition",
+        "action": "define",
+        "object": "checkout",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-requirements",
+        "advisors": [],
+        "constraints": []
+      },
+      "fieldDisagreements": [],
+      "overall": "EXPECTATION_CORRECT",
+      "rationale": "Acceptance criteria definition is requirements-owned (skill triggers list acceptance criteria explicitly).",
+      "immutableActual": {
+        "phase": "planning",
+        "action": "plan",
+        "secondaryActions": [],
+        "object": "backend",
+        "risks": [],
+        "mutation": "read-only",
+        "evidence": {
+          "rootCauseKnown": null,
+          "behaviorDefined": false,
+          "failureObserved": null
+        },
+        "primary": "showdar-plan",
+        "advisors": [],
+        "constraints": []
+      },
+      "auditorGenuineFailure": {
+        "bucket": "CANONICAL_ACTION_TAXONOMY",
+        "note": "Actual planning/plan: resolver VERB_FAMILIES.plan contains \"define\", forcing the requirements verb into plan."
+      }
+    },
+    {
+      "id": "b5-05",
+      "prompt": "Define the retry rules for `enqueue(job, {retries})` in the background worker: maximum attempts, backoff intervals, and dead-letter conditions.",
+      "boundary": "provenance:inline-code-no-authority",
+      "originalExpected": {
+        "phase": "definition",
+        "action": "define",
+        "object": "queue",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "behaviorDefined": null,
+          "failureObserved": null,
+          "rootCauseKnown": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-requirements",
+        "advisors": [],
+        "constraints": []
+      },
+      "contractCorrect": {
+        "phase": "definition",
+        "action": "define",
+        "object": "queue",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-requirements",
+        "advisors": [],
+        "constraints": []
+      },
+      "fieldDisagreements": [],
+      "overall": "EXPECTATION_CORRECT",
+      "rationale": "Retry-rule definition is requirements-owned; inline code grants no authority.",
+      "immutableActual": {
+        "phase": "planning",
+        "action": "plan",
+        "secondaryActions": [],
+        "object": "runtime",
+        "risks": [],
+        "mutation": "read-only",
+        "evidence": {
+          "rootCauseKnown": null,
+          "behaviorDefined": null,
+          "failureObserved": null
+        },
+        "primary": "showdar-plan",
+        "advisors": [],
+        "constraints": []
+      },
+      "auditorGenuineFailure": {
+        "bucket": "CANONICAL_ACTION_TAXONOMY",
+        "note": "Actual planning/plan: same define-in-plan-family taxonomy conflict as b5-04."
+      }
+    },
+    {
+      "id": "b5-07",
+      "prompt": "Plan the notification-preferences feature: delivery channels, message batching, and verification steps. Do not implement anything.",
+      "boundary": "contrast:design-vs-plan",
+      "originalExpected": {
+        "phase": "planning",
+        "action": "plan",
+        "object": "notifications",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "behaviorDefined": null,
+          "failureObserved": null,
+          "rootCauseKnown": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-plan",
+        "advisors": [],
+        "constraints": []
+      },
+      "contractCorrect": {
+        "phase": "planning",
+        "action": "plan",
+        "object": "notifications",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-plan",
+        "advisors": [],
+        "constraints": [
+          "no-implementation"
+        ]
+      },
+      "fieldDisagreements": [
+        {
+          "field": "constraints",
+          "original": [],
+          "contract": [
+            "no-implementation"
+          ],
+          "reason": "\"Do not implement anything\" matches canonical no-implementation. Original missed it."
+        }
+      ],
+      "overall": "EXPECTATION_ERROR",
+      "rationale": "Ownership correct; explicit no-implementation constraint omitted from expectation.",
+      "immutableActual": {
+        "phase": "planning",
+        "action": "plan",
+        "secondaryActions": [],
+        "object": "implementation",
+        "risks": [],
+        "mutation": "read-only",
+        "evidence": {
+          "rootCauseKnown": null,
+          "behaviorDefined": null,
+          "failureObserved": null
+        },
+        "primary": "showdar-plan",
+        "advisors": [],
+        "constraints": [
+          "no-implementation"
+        ]
+      },
+      "auditorGenuineFailure": null
+    },
+    {
+      "id": "b5-08",
+      "prompt": "Plan the migration of mobile auth tokens from localStorage to httpOnly cookies, and assess the XSS exposure during the rollout.",
+      "boundary": "secondary:plan-plus-security",
+      "originalExpected": {
+        "phase": "planning",
+        "action": "plan",
+        "object": "auth",
+        "mutation": "read-only",
+        "risks": [
+          "security"
+        ],
+        "evidence": {
+          "behaviorDefined": null,
+          "failureObserved": null,
+          "rootCauseKnown": null
+        },
+        "secondaryActions": [
+          "security"
+        ],
+        "primary": "showdar-plan",
+        "advisors": [
+          "showdar-security"
+        ],
+        "constraints": []
+      },
+      "contractCorrect": {
+        "phase": "planning",
+        "action": "plan",
+        "object": "auth",
+        "mutation": "read-only",
+        "risks": [
+          "security"
+        ],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": [
+          "security"
+        ],
+        "primary": "showdar-plan",
+        "advisors": [
+          "showdar-security"
+        ],
+        "constraints": []
+      },
+      "fieldDisagreements": [],
+      "overall": "EXPECTATION_CORRECT",
+      "rationale": "Governing plan with supporting security assessment: plan owns, security advises.",
+      "immutableActual": {
+        "phase": "verification",
+        "action": "assess",
+        "secondaryActions": [],
+        "object": "auth",
+        "risks": [
+          "compatibility",
+          "security"
+        ],
+        "mutation": "read-only",
+        "evidence": {
+          "rootCauseKnown": null,
+          "behaviorDefined": null,
+          "failureObserved": null
+        },
+        "primary": "showdar-security",
+        "advisors": [],
+        "constraints": []
+      },
+      "auditorGenuineFailure": {
+        "bucket": "SUPPORTING_STEP_TAKEOVER",
+        "note": "Actual verification/assess/security: supporting audit stole primary; secondary/advisor dropped."
+      }
+    },
+    {
+      "id": "b5-09",
+      "prompt": "Design the notification preferences screen for the mobile app, including responsive behavior and accessibility notes for screen readers.",
+      "boundary": "contrast:design-vs-plan",
+      "originalExpected": {
+        "phase": "design",
+        "action": "design",
+        "object": "notifications",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "behaviorDefined": null,
+          "failureObserved": null,
+          "rootCauseKnown": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-design",
+        "advisors": [],
+        "constraints": []
+      },
+      "contractCorrect": {
+        "phase": "design",
+        "action": "design",
+        "object": "notifications",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-design",
+        "advisors": [],
+        "constraints": []
+      },
+      "fieldDisagreements": [],
+      "overall": "EXPECTATION_CORRECT",
+      "rationale": "UI design direction with no implementation request is read-only; design skill modes requested are direction/a11y notes.",
+      "immutableActual": {
+        "phase": "design",
+        "action": "design",
+        "secondaryActions": [],
+        "object": "ui",
+        "risks": [],
+        "mutation": "local-write",
+        "evidence": {
+          "rootCauseKnown": null,
+          "behaviorDefined": null,
+          "failureObserved": null
+        },
+        "primary": "showdar-design",
+        "advisors": [],
+        "constraints": []
+      },
+      "auditorGenuineFailure": {
+        "bucket": "CONSTRAINT_MODEL_FAILURE",
+        "note": "Actual local-write: action->mutation table maps design to local-write without any authoritative write request. AUTHORITY_CRITICAL genuine."
+      }
+    },
+    {
+      "id": "b5-10",
+      "prompt": "Design the analytics dashboard layout and review the current charts for inconsistent labeling.",
+      "boundary": "secondary:design-plus-review",
+      "originalExpected": {
+        "phase": "design",
+        "action": "design",
+        "object": "analytics",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "behaviorDefined": null,
+          "failureObserved": null,
+          "rootCauseKnown": null
+        },
+        "secondaryActions": [
+          "review"
+        ],
+        "primary": "showdar-design",
+        "advisors": [
+          "showdar-review"
+        ],
+        "constraints": []
+      },
+      "contractCorrect": {
+        "phase": "design",
+        "action": "design",
+        "object": "analytics",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": [
+          "review"
+        ],
+        "primary": "showdar-design",
+        "advisors": [
+          "showdar-review"
+        ],
+        "constraints": []
+      },
+      "fieldDisagreements": [],
+      "overall": "EXPECTATION_CORRECT",
+      "rationale": "Design plus review secondary; neither authorizes a write.",
+      "immutableActual": {
+        "phase": "design",
+        "action": "design",
+        "secondaryActions": [
+          "review"
+        ],
+        "object": "ui",
+        "risks": [],
+        "mutation": "local-write",
+        "evidence": {
+          "rootCauseKnown": null,
+          "behaviorDefined": null,
+          "failureObserved": null
+        },
+        "primary": "showdar-design",
+        "advisors": [
+          "showdar-review"
+        ],
+        "constraints": []
+      },
+      "auditorGenuineFailure": {
+        "bucket": "CONSTRAINT_MODEL_FAILURE",
+        "note": "Actual local-write: same systematic design table escalation. AUTHORITY_CRITICAL genuine."
+      }
+    },
+    {
+      "id": "b5-11",
+      "prompt": "Implement guest checkout in the storefront, covering cart validation, payment capture, and order confirmation. Also review the totals logic for rounding errors.",
+      "boundary": "contrast:requirements-vs-implementation",
+      "originalExpected": {
+        "phase": "implementation",
+        "action": "implement",
+        "object": "checkout",
+        "mutation": "local-write",
+        "risks": [],
+        "evidence": {
+          "behaviorDefined": null,
+          "failureObserved": null,
+          "rootCauseKnown": null
+        },
+        "secondaryActions": [
+          "review"
+        ],
+        "primary": "showdar-build",
+        "advisors": [
+          "showdar-review"
+        ],
+        "constraints": []
+      },
+      "contractCorrect": {
+        "phase": "implementation",
+        "action": "implement",
+        "object": "checkout",
+        "mutation": "local-write",
+        "risks": [],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": [
+          "review"
+        ],
+        "primary": "showdar-build",
+        "advisors": [
+          "showdar-review"
+        ],
+        "constraints": []
+      },
+      "fieldDisagreements": [],
+      "overall": "EXPECTATION_CORRECT",
+      "rationale": "Governing implement with review secondary; rounding-error review is correctness, not a risk-taxonomy item.",
+      "immutableActual": {
+        "phase": "implementation",
+        "action": "implement",
+        "secondaryActions": [
+          "review"
+        ],
+        "object": "backend",
+        "risks": [],
+        "mutation": "local-write",
+        "evidence": {
+          "rootCauseKnown": null,
+          "behaviorDefined": null,
+          "failureObserved": null
+        },
+        "primary": "showdar-build",
+        "advisors": [
+          "showdar-review"
+        ],
+        "constraints": []
+      },
+      "auditorGenuineFailure": null
+    },
+    {
+      "id": "b5-12",
+      "prompt": "Fix the null-pointer crash in the tax calculator caused by the missing country-code default - fall back to the store's home country.",
+      "boundary": "contrast:known-cause-vs-unknown-cause",
+      "originalExpected": {
+        "phase": "implementation",
+        "action": "fix",
+        "object": "tax",
+        "mutation": "local-write",
+        "risks": [
+          "regression"
+        ],
+        "evidence": {
+          "behaviorDefined": true,
+          "failureObserved": true,
+          "rootCauseKnown": true
+        },
+        "secondaryActions": [],
+        "primary": "showdar-build",
+        "advisors": [],
+        "constraints": []
+      },
+      "contractCorrect": {
+        "phase": "implementation",
+        "action": "fix",
+        "object": "tax",
+        "mutation": "local-write",
+        "risks": [
+          "regression"
+        ],
+        "evidence": {
+          "failureObserved": true,
+          "rootCauseKnown": true,
+          "behaviorDefined": true
+        },
+        "secondaryActions": [],
+        "primary": "showdar-build",
+        "advisors": [],
+        "constraints": []
+      },
+      "fieldDisagreements": [],
+      "overall": "EXPECTATION_CORRECT",
+      "rationale": "Known cause plus defined fallback behavior plus requested repair is build-owned (known-implementation-cause).",
+      "immutableActual": {
+        "phase": "implementation",
+        "action": "fix",
+        "secondaryActions": [],
+        "object": "runtime",
+        "risks": [],
+        "mutation": "local-write",
+        "evidence": {
+          "rootCauseKnown": null,
+          "behaviorDefined": false,
+          "failureObserved": true
+        },
+        "primary": "showdar-debug",
+        "advisors": [],
+        "constraints": []
+      },
+      "auditorGenuineFailure": {
+        "bucket": "GOVERNING_ACTION_FAILURE",
+        "note": "Actual showdar-debug: known-cause repair routed to diagnosis; evidence rootCauseKnown/behaviorDefined dropped."
+      }
+    },
+    {
+      "id": "b5-13",
+      "prompt": "Implement the session timeout exactly as specified in the approved auth RFC: 15 minutes idle, absolute 12-hour cap.",
+      "boundary": "ownership:governing-vs-supporting-step",
+      "originalExpected": {
+        "phase": "implementation",
+        "action": "implement",
+        "object": "auth",
+        "mutation": "local-write",
+        "risks": [],
+        "evidence": {
+          "behaviorDefined": true,
+          "failureObserved": null,
+          "rootCauseKnown": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-build",
+        "advisors": [],
+        "constraints": []
+      },
+      "contractCorrect": {
+        "phase": "implementation",
+        "action": "implement",
+        "object": "auth",
+        "mutation": "local-write",
+        "risks": [],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": true
+        },
+        "secondaryActions": [],
+        "primary": "showdar-build",
+        "advisors": [],
+        "constraints": []
+      },
+      "fieldDisagreements": [],
+      "overall": "EXPECTATION_CORRECT",
+      "rationale": "RFC-specified implementation; security controls are implementation details, no assessment requested.",
+      "immutableActual": {
+        "phase": "implementation",
+        "action": "implement",
+        "secondaryActions": [],
+        "object": "auth",
+        "risks": [
+          "performance",
+          "security"
+        ],
+        "mutation": "local-write",
+        "evidence": {
+          "rootCauseKnown": null,
+          "behaviorDefined": true,
+          "failureObserved": null
+        },
+        "primary": "showdar-build",
+        "advisors": [],
+        "constraints": []
+      },
+      "auditorGenuineFailure": null
+    },
+    {
+      "id": "b5-14",
+      "prompt": "Update the local development overrides file to point the inventory service at the new test database.",
+      "boundary": "contrast:local-mod-vs-staging-vs-production",
+      "originalExpected": {
+        "phase": "implementation",
+        "action": "update",
+        "object": "config",
+        "mutation": "local-write",
+        "risks": [],
+        "evidence": {
+          "behaviorDefined": null,
+          "failureObserved": null,
+          "rootCauseKnown": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-build",
+        "advisors": [],
+        "constraints": []
+      },
+      "contractCorrect": {
+        "phase": "implementation",
+        "action": "implement",
+        "object": "config",
+        "mutation": "local-write",
+        "risks": [],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-build",
+        "advisors": [],
+        "constraints": []
+      },
+      "fieldDisagreements": [
+        {
+          "field": "action",
+          "original": "update",
+          "contract": "implement",
+          "reason": "Canonical taxonomy: update is a surface verb in the implement family (VERB_FAMILIES.implement includes update)."
+        }
+      ],
+      "overall": "EXPECTATION_ERROR",
+      "rationale": "Ownership correct; action used surface verb.",
+      "immutableActual": {
+        "phase": "implementation",
+        "action": "implement",
+        "secondaryActions": [],
+        "object": "backend",
+        "risks": [],
+        "mutation": "local-write",
+        "evidence": {
+          "rootCauseKnown": null,
+          "behaviorDefined": null,
+          "failureObserved": null
+        },
+        "primary": "showdar-build",
+        "advisors": [],
+        "constraints": []
+      },
+      "auditorGenuineFailure": null
+    },
+    {
+      "id": "b5-15",
+      "prompt": "Fix the failing delivery-webhook handler. The provider returns `400: signature mismatch` because staging still verifies against the test secret - switch the staging config to the live secret.",
+      "boundary": "provenance:error-message-plus-known-cause",
+      "originalExpected": {
+        "phase": "implementation",
+        "action": "fix",
+        "object": "webhooks",
+        "mutation": "local-write",
+        "risks": [
+          "regression",
+          "security"
+        ],
+        "evidence": {
+          "behaviorDefined": true,
+          "failureObserved": true,
+          "rootCauseKnown": true
+        },
+        "secondaryActions": [],
+        "primary": "showdar-build",
+        "advisors": [],
+        "constraints": []
+      },
+      "contractCorrect": {
+        "phase": "implementation",
+        "action": "fix",
+        "object": "webhooks",
+        "mutation": "local-write",
+        "risks": [
+          "regression",
+          "security"
+        ],
+        "evidence": {
+          "failureObserved": true,
+          "rootCauseKnown": true,
+          "behaviorDefined": true
+        },
+        "secondaryActions": [],
+        "primary": "showdar-build",
+        "advisors": [],
+        "constraints": []
+      },
+      "fieldDisagreements": [],
+      "overall": "EXPECTATION_CORRECT",
+      "rationale": "Error message plus stated cause plus requested config repair is known-cause build work; secrets implicate security.",
+      "immutableActual": {
+        "phase": "implementation",
+        "action": "fix",
+        "secondaryActions": [],
+        "object": "api",
+        "risks": [
+          "operations",
+          "production",
+          "security"
+        ],
+        "mutation": "local-write",
+        "evidence": {
+          "rootCauseKnown": true,
+          "behaviorDefined": true,
+          "failureObserved": true
+        },
+        "primary": "showdar-build",
+        "advisors": [],
+        "constraints": []
+      },
+      "auditorGenuineFailure": null
+    },
+    {
+      "id": "b5-16",
+      "prompt": "Implement the rate limiter for the public API and add regression tests for burst traffic.",
+      "boundary": "secondary:implementation-plus-tests",
+      "originalExpected": {
+        "phase": "implementation",
+        "action": "implement",
+        "object": "api",
+        "mutation": "local-write",
+        "risks": [],
+        "evidence": {
+          "behaviorDefined": null,
+          "failureObserved": null,
+          "rootCauseKnown": null
+        },
+        "secondaryActions": [
+          "test"
+        ],
+        "primary": "showdar-build",
+        "advisors": [
+          "showdar-test"
+        ],
+        "constraints": []
+      },
+      "contractCorrect": {
+        "phase": "implementation",
+        "action": "implement",
+        "object": "api",
+        "mutation": "local-write",
+        "risks": [
+          "regression"
+        ],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": [
+          "test"
+        ],
+        "primary": "showdar-build",
+        "advisors": [
+          "showdar-test"
+        ],
+        "constraints": []
+      },
+      "fieldDisagreements": [
+        {
+          "field": "risks",
+          "original": [],
+          "contract": [
+            "regression"
+          ],
+          "reason": "Metadata only: \"regression tests for burst traffic\" explicitly names regression concern. No routing effect.",
+          "metadataOnly": true
+        }
+      ],
+      "overall": "EXPECTATION_CORRECT",
+      "rationale": "Routing fields all correct; only metadata risk acknowledgement differs.",
+      "immutableActual": {
+        "phase": "implementation",
+        "action": "implement",
+        "secondaryActions": [
+          "test"
+        ],
+        "object": "api",
+        "risks": [
+          "regression"
+        ],
+        "mutation": "local-write",
+        "evidence": {
+          "rootCauseKnown": null,
+          "behaviorDefined": true,
+          "failureObserved": null
+        },
+        "primary": "showdar-build",
+        "advisors": [
+          "showdar-test"
+        ],
+        "constraints": []
+      },
+      "auditorGenuineFailure": null
+    },
+    {
+      "id": "b5-17",
+      "prompt": "Implement the password-reset flow in the Node API. Also audit it for account-takeover vulnerabilities.",
+      "boundary": "secondary:implementation-plus-security",
+      "originalExpected": {
+        "phase": "implementation",
+        "action": "implement",
+        "object": "auth",
+        "mutation": "local-write",
+        "risks": [
+          "security"
+        ],
+        "evidence": {
+          "behaviorDefined": null,
+          "failureObserved": null,
+          "rootCauseKnown": null
+        },
+        "secondaryActions": [
+          "security"
+        ],
+        "primary": "showdar-build",
+        "advisors": [
+          "showdar-security"
+        ],
+        "constraints": []
+      },
+      "contractCorrect": {
+        "phase": "implementation",
+        "action": "implement",
+        "object": "auth",
+        "mutation": "local-write",
+        "risks": [
+          "security"
+        ],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": [
+          "security"
+        ],
+        "primary": "showdar-build",
+        "advisors": [
+          "showdar-security"
+        ],
+        "constraints": []
+      },
+      "fieldDisagreements": [],
+      "overall": "EXPECTATION_CORRECT",
+      "rationale": "Governing implement with supporting audit: build owns, security advises.",
+      "immutableActual": {
+        "phase": "verification",
+        "action": "assess",
+        "secondaryActions": [],
+        "object": "api",
+        "risks": [
+          "security"
+        ],
+        "mutation": "read-only",
+        "evidence": {
+          "rootCauseKnown": null,
+          "behaviorDefined": null,
+          "failureObserved": null
+        },
+        "primary": "showdar-security",
+        "advisors": [],
+        "constraints": []
+      },
+      "auditorGenuineFailure": {
+        "bucket": "SUPPORTING_STEP_TAKEOVER",
+        "note": "Actual verification/assess/security/read-only: supporting audit stole primary AND mutation downgraded to read-only."
+      }
+    },
+    {
+      "id": "b5-18",
+      "prompt": "Implement the CSV export endpoint for the reporting service and review the implementation for N-plus-one query problems.",
+      "boundary": "secondary:implementation-plus-review",
+      "originalExpected": {
+        "phase": "implementation",
+        "action": "implement",
+        "object": "api",
+        "mutation": "local-write",
+        "risks": [
+          "performance"
+        ],
+        "evidence": {
+          "behaviorDefined": null,
+          "failureObserved": null,
+          "rootCauseKnown": null
+        },
+        "secondaryActions": [
+          "review"
+        ],
+        "primary": "showdar-build",
+        "advisors": [
+          "showdar-review"
+        ],
+        "constraints": []
+      },
+      "contractCorrect": {
+        "phase": "implementation",
+        "action": "implement",
+        "object": "api",
+        "mutation": "local-write",
+        "risks": [
+          "performance"
+        ],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": [
+          "review"
+        ],
+        "primary": "showdar-build",
+        "advisors": [
+          "showdar-review"
+        ],
+        "constraints": []
+      },
+      "fieldDisagreements": [],
+      "overall": "EXPECTATION_CORRECT",
+      "rationale": "N-plus-one review request makes performance concern explicit; review is implementation secondary.",
+      "immutableActual": {
+        "phase": "implementation",
+        "action": "implement",
+        "secondaryActions": [
+          "review"
+        ],
+        "object": "api",
+        "risks": [],
+        "mutation": "local-write",
+        "evidence": {
+          "rootCauseKnown": null,
+          "behaviorDefined": null,
+          "failureObserved": null
+        },
+        "primary": "showdar-build",
+        "advisors": [
+          "showdar-review"
+        ],
+        "constraints": []
+      },
+      "auditorGenuineFailure": null
+    },
+    {
+      "id": "b5-19",
+      "prompt": "Investigate the intermittent null-pointer crashes in the tax calculator. No known cause yet - the stack traces point at different lines each time.",
+      "boundary": "contrast:known-cause-vs-unknown-cause",
+      "originalExpected": {
+        "phase": "diagnosis",
+        "action": "investigate",
+        "object": "tax",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "behaviorDefined": null,
+          "failureObserved": true,
+          "rootCauseKnown": false
+        },
+        "secondaryActions": [],
+        "primary": "showdar-debug",
+        "advisors": [],
+        "constraints": []
+      },
+      "contractCorrect": {
+        "phase": "diagnosis",
+        "action": "investigate",
+        "object": "tax",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "failureObserved": true,
+          "rootCauseKnown": false,
+          "behaviorDefined": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-debug",
+        "advisors": [],
+        "constraints": []
+      },
+      "fieldDisagreements": [],
+      "overall": "EXPECTATION_CORRECT",
+      "rationale": "Observed failure with explicitly unknown cause is diagnosis-owned.",
+      "immutableActual": {
+        "phase": "diagnosis",
+        "action": "investigate",
+        "secondaryActions": [],
+        "object": "runtime",
+        "risks": [
+          "regression"
+        ],
+        "mutation": "read-only",
+        "evidence": {
+          "rootCauseKnown": false,
+          "behaviorDefined": null,
+          "failureObserved": true
+        },
+        "primary": "showdar-debug",
+        "advisors": [],
+        "constraints": []
+      },
+      "auditorGenuineFailure": null
+    },
+    {
+      "id": "b5-20",
+      "prompt": "Investigate the crash below. The traceback mentions `push_to_remote()` but that is only an internal helper name - do not push anything anywhere:\n```\nTraceback (most recent call last):\n  File \"worker.py\", line 88, in handle\n    push_to_remote(payload)\n  File \"worker.py\", line 41, in push_to_remote\n    raise ConnectionError(\"queue unreachable\")\n```",
+      "boundary": "provenance:code-block-name-no-authority",
+      "originalExpected": {
+        "phase": "diagnosis",
+        "action": "investigate",
+        "object": "queue",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "behaviorDefined": null,
+          "failureObserved": true,
+          "rootCauseKnown": false
+        },
+        "secondaryActions": [],
+        "primary": "showdar-debug",
+        "advisors": [],
+        "constraints": [
+          "no-push"
+        ]
+      },
+      "contractCorrect": {
+        "phase": "diagnosis",
+        "action": "investigate",
+        "object": "queue",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "failureObserved": true,
+          "rootCauseKnown": false,
+          "behaviorDefined": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-debug",
+        "advisors": [],
+        "constraints": [
+          "no-push"
+        ]
+      },
+      "fieldDisagreements": [],
+      "overall": "EXPECTATION_CORRECT",
+      "rationale": "Code-block helper name grants no push authority; explicit do-not-push constraint holds.",
+      "immutableActual": {
+        "phase": "diagnosis",
+        "action": "investigate",
+        "secondaryActions": [],
+        "object": "runtime",
+        "risks": [],
+        "mutation": "read-only",
+        "evidence": {
+          "rootCauseKnown": false,
+          "behaviorDefined": null,
+          "failureObserved": true
+        },
+        "primary": "showdar-debug",
+        "advisors": [],
+        "constraints": [
+          "no-push"
+        ]
+      },
+      "auditorGenuineFailure": null
+    },
+    {
+      "id": "b5-21",
+      "prompt": "After last Friday's production deploy, checkout latency p95 doubled. Investigate the cause.",
+      "boundary": "provenance:historical-deploy-no-authority",
+      "originalExpected": {
+        "phase": "diagnosis",
+        "action": "investigate",
+        "object": "checkout",
+        "mutation": "read-only",
+        "risks": [
+          "performance"
+        ],
+        "evidence": {
+          "behaviorDefined": null,
+          "failureObserved": true,
+          "rootCauseKnown": false
+        },
+        "secondaryActions": [],
+        "primary": "showdar-debug",
+        "advisors": [],
+        "constraints": []
+      },
+      "contractCorrect": {
+        "phase": "diagnosis",
+        "action": "investigate",
+        "object": "checkout",
+        "mutation": "read-only",
+        "risks": [
+          "performance"
+        ],
+        "evidence": {
+          "failureObserved": true,
+          "rootCauseKnown": false,
+          "behaviorDefined": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-debug",
+        "advisors": [],
+        "constraints": []
+      },
+      "fieldDisagreements": [],
+      "overall": "EXPECTATION_CORRECT",
+      "rationale": "Historical deploy is background context; requested work is unknown-cause latency investigation.",
+      "immutableActual": {
+        "phase": "operations",
+        "action": "deploy",
+        "secondaryActions": [],
+        "object": "deployment",
+        "risks": [
+          "operations",
+          "performance",
+          "production"
+        ],
+        "mutation": "production-impacting",
+        "evidence": {
+          "rootCauseKnown": false,
+          "behaviorDefined": null,
+          "failureObserved": null
+        },
+        "primary": "showdar-ops",
+        "advisors": [],
+        "constraints": []
+      },
+      "auditorGenuineFailure": {
+        "bucket": "PROVENANCE_AUTHORITY_LEAK",
+        "note": "Actual operations/deploy/production-impacting: historical \"production deploy\" mention granted deploy authority plus production environment. AUTHORITY_CRITICAL genuine."
+      }
+    },
+    {
+      "id": "b5-22",
+      "prompt": "Investigate why the refund-calculator tests fail intermittently in CI. There is no known cause and no recent changes to the calculator itself.",
+      "boundary": "contrast:test-authorship-vs-diagnosis-vs-execution",
+      "originalExpected": {
+        "phase": "diagnosis",
+        "action": "investigate",
+        "object": "tests",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "behaviorDefined": null,
+          "failureObserved": true,
+          "rootCauseKnown": false
+        },
+        "secondaryActions": [],
+        "primary": "showdar-debug",
+        "advisors": [],
+        "constraints": []
+      },
+      "contractCorrect": {
+        "phase": "diagnosis",
+        "action": "investigate",
+        "object": "tests",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "failureObserved": true,
+          "rootCauseKnown": false,
+          "behaviorDefined": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-debug",
+        "advisors": [],
+        "constraints": []
+      },
+      "fieldDisagreements": [],
+      "overall": "EXPECTATION_CORRECT",
+      "rationale": "Intermittent CI test failure with no known cause is diagnosis-owned; test execution is not requested.",
+      "immutableActual": {
+        "phase": "diagnosis",
+        "action": "investigate",
+        "secondaryActions": [],
+        "object": "build",
+        "risks": [
+          "regression"
+        ],
+        "mutation": "read-only",
+        "evidence": {
+          "rootCauseKnown": false,
+          "behaviorDefined": null,
+          "failureObserved": true
+        },
+        "primary": "showdar-debug",
+        "advisors": [],
+        "constraints": []
+      },
+      "auditorGenuineFailure": null
+    },
+    {
+      "id": "b5-23",
+      "prompt": "Investigate the repeated login failures on the customer portal and audit the session handling for credential-stuffing vulnerabilities.",
+      "boundary": "secondary:diagnosis-plus-security",
+      "originalExpected": {
+        "phase": "diagnosis",
+        "action": "investigate",
+        "object": "auth",
+        "mutation": "read-only",
+        "risks": [
+          "security"
+        ],
+        "evidence": {
+          "behaviorDefined": null,
+          "failureObserved": true,
+          "rootCauseKnown": false
+        },
+        "secondaryActions": [
+          "security"
+        ],
+        "primary": "showdar-debug",
+        "advisors": [
+          "showdar-security"
+        ],
+        "constraints": []
+      },
+      "contractCorrect": {
+        "phase": "diagnosis",
+        "action": "investigate",
+        "object": "auth",
+        "mutation": "read-only",
+        "risks": [
+          "security"
+        ],
+        "evidence": {
+          "failureObserved": true,
+          "rootCauseKnown": false,
+          "behaviorDefined": null
+        },
+        "secondaryActions": [
+          "security"
+        ],
+        "primary": "showdar-debug",
+        "advisors": [
+          "showdar-security"
+        ],
+        "constraints": []
+      },
+      "fieldDisagreements": [],
+      "overall": "EXPECTATION_CORRECT",
+      "rationale": "Governing unknown-cause investigation with supporting credential-stuffing audit: debug owns, security advises.",
+      "immutableActual": {
+        "phase": "verification",
+        "action": "review",
+        "secondaryActions": [],
+        "object": "auth",
+        "risks": [
+          "security"
+        ],
+        "mutation": "read-only",
+        "evidence": {
+          "rootCauseKnown": false,
+          "behaviorDefined": null,
+          "failureObserved": null
+        },
+        "primary": "showdar-security",
+        "advisors": [],
+        "constraints": []
+      },
+      "auditorGenuineFailure": {
+        "bucket": "SUPPORTING_STEP_TAKEOVER",
+        "note": "Actual verification/review/security: supporting audit stole primary; evidence failureObserved and secondary dropped."
+      }
+    },
+    {
+      "id": "b5-24",
+      "prompt": "Investigate the memory growth in the image-processing worker and review the recent cache-layer changes for related defects.",
+      "boundary": "secondary:diagnosis-plus-review",
+      "originalExpected": {
+        "phase": "diagnosis",
+        "action": "investigate",
+        "object": "workers",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "behaviorDefined": null,
+          "failureObserved": true,
+          "rootCauseKnown": false
+        },
+        "secondaryActions": [
+          "review"
+        ],
+        "primary": "showdar-debug",
+        "advisors": [
+          "showdar-review"
+        ],
+        "constraints": []
+      },
+      "contractCorrect": {
+        "phase": "diagnosis",
+        "action": "investigate",
+        "object": "workers",
+        "mutation": "read-only",
+        "risks": [
+          "performance"
+        ],
+        "evidence": {
+          "failureObserved": true,
+          "rootCauseKnown": false,
+          "behaviorDefined": null
+        },
+        "secondaryActions": [
+          "review"
+        ],
+        "primary": "showdar-debug",
+        "advisors": [
+          "showdar-review"
+        ],
+        "constraints": []
+      },
+      "fieldDisagreements": [
+        {
+          "field": "risks",
+          "original": [],
+          "contract": [
+            "performance"
+          ],
+          "reason": "Metadata only: \"memory growth\" explicitly names a performance concern. No routing effect.",
+          "metadataOnly": true
+        }
+      ],
+      "overall": "EXPECTATION_CORRECT",
+      "rationale": "Routing fields all correct; only metadata risk acknowledgement differs.",
+      "immutableActual": {
+        "phase": "diagnosis",
+        "action": "investigate",
+        "secondaryActions": [
+          "review"
+        ],
+        "object": "runtime",
+        "risks": [
+          "performance"
+        ],
+        "mutation": "read-only",
+        "evidence": {
+          "rootCauseKnown": false,
+          "behaviorDefined": null,
+          "failureObserved": null
+        },
+        "primary": "showdar-debug",
+        "advisors": [
+          "showdar-review"
+        ],
+        "constraints": []
+      },
+      "auditorGenuineFailure": null
+    },
+    {
+      "id": "b5-25",
+      "prompt": "Write unit tests for the refund calculator covering full refunds, partial refunds, and currency rounding.",
+      "boundary": "contrast:test-authorship-vs-diagnosis-vs-execution",
+      "originalExpected": {
+        "phase": "verification",
+        "action": "test",
+        "object": "refunds",
+        "mutation": "local-write",
+        "risks": [],
+        "evidence": {
+          "behaviorDefined": null,
+          "failureObserved": null,
+          "rootCauseKnown": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-test",
+        "advisors": [],
+        "constraints": []
+      },
+      "contractCorrect": {
+        "phase": "verification",
+        "action": "test",
+        "object": "refunds",
+        "mutation": "local-write",
+        "risks": [],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-test",
+        "advisors": [],
+        "constraints": []
+      },
+      "fieldDisagreements": [],
+      "overall": "EXPECTATION_CORRECT",
+      "rationale": "Unit-test authorship is test-owned; currency rounding is not a risk-taxonomy item.",
+      "immutableActual": {
+        "phase": "verification",
+        "action": "test",
+        "secondaryActions": [],
+        "object": "repository",
+        "risks": [],
+        "mutation": "local-write",
+        "evidence": {
+          "rootCauseKnown": null,
+          "behaviorDefined": null,
+          "failureObserved": null
+        },
+        "primary": "showdar-test",
+        "advisors": [],
+        "constraints": []
+      },
+      "auditorGenuineFailure": null
+    },
+    {
+      "id": "b5-26",
+      "prompt": "Write tests for the file-upload endpoint, including oversized-file and malicious-payload cases.",
+      "boundary": "secondary:no-inference-from-test-content",
+      "originalExpected": {
+        "phase": "verification",
+        "action": "test",
+        "object": "uploads",
+        "mutation": "local-write",
+        "risks": [
+          "security"
+        ],
+        "evidence": {
+          "behaviorDefined": null,
+          "failureObserved": null,
+          "rootCauseKnown": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-test",
+        "advisors": [],
+        "constraints": []
+      },
+      "contractCorrect": {
+        "phase": "verification",
+        "action": "test",
+        "object": "uploads",
+        "mutation": "local-write",
+        "risks": [],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-test",
+        "advisors": [],
+        "constraints": []
+      },
+      "fieldDisagreements": [
+        {
+          "field": "risks",
+          "original": [
+            "security"
+          ],
+          "contract": [],
+          "reason": "Boundary no-inference-from-test-content: malicious-payload test content grants no security capability; writing tests is not a security assessment."
+        }
+      ],
+      "overall": "EXPECTATION_ERROR",
+      "rationale": "Expectation itself violates the tested boundary by inferring security risk from test content.",
+      "immutableActual": {
+        "phase": "implementation",
+        "action": "implement",
+        "secondaryActions": [],
+        "object": "api",
+        "risks": [],
+        "mutation": "local-write",
+        "evidence": {
+          "rootCauseKnown": null,
+          "behaviorDefined": null,
+          "failureObserved": null
+        },
+        "primary": "showdar-build",
+        "advisors": [],
+        "constraints": []
+      },
+      "auditorGenuineFailure": null
+    },
+    {
+      "id": "b5-30",
+      "prompt": "Review the payment-retry diff for correctness, error handling, and test coverage.",
+      "boundary": "ownership:review-vs-quality",
+      "originalExpected": {
+        "phase": "verification",
+        "action": "review",
+        "object": "payments",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "behaviorDefined": null,
+          "failureObserved": null,
+          "rootCauseKnown": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-review",
+        "advisors": [],
+        "constraints": []
+      },
+      "contractCorrect": {
+        "phase": "verification",
+        "action": "review",
+        "object": "payments",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-review",
+        "advisors": [],
+        "constraints": []
+      },
+      "fieldDisagreements": [],
+      "overall": "EXPECTATION_CORRECT",
+      "rationale": "Reviewing test coverage is review work (review skill scope), not separate test authorship.",
+      "immutableActual": {
+        "phase": "verification",
+        "action": "review",
+        "secondaryActions": [
+          "test"
+        ],
+        "object": "backend",
+        "risks": [
+          "regression"
+        ],
+        "mutation": "read-only",
+        "evidence": {
+          "rootCauseKnown": null,
+          "behaviorDefined": null,
+          "failureObserved": true
+        },
+        "primary": "showdar-review",
+        "advisors": [
+          "showdar-test"
+        ],
+        "constraints": []
+      },
+      "auditorGenuineFailure": {
+        "bucket": "PRIMARY_SECONDARY_FAILURE",
+        "note": "Actual added test secondary plus showdar-test advisor: secondary over-inference from \"test coverage\" mention."
+      }
+    },
+    {
+      "id": "b5-31",
+      "prompt": "Review the open pull requests in the checkout service without pushing or merging anything.",
+      "boundary": "constraint:no-push-on-review",
+      "originalExpected": {
+        "phase": "verification",
+        "action": "review",
+        "object": "checkout",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "behaviorDefined": null,
+          "failureObserved": null,
+          "rootCauseKnown": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-review",
+        "advisors": [],
+        "constraints": [
+          "no-push"
+        ]
+      },
+      "contractCorrect": {
+        "phase": "verification",
+        "action": "review",
+        "object": "checkout",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-review",
+        "advisors": [],
+        "constraints": [
+          "no-push"
+        ]
+      },
+      "fieldDisagreements": [],
+      "overall": "EXPECTATION_CORRECT",
+      "rationale": "PR review without push/merge is review-owned read-only with no-push.",
+      "immutableActual": {
+        "phase": "verification",
+        "action": "review",
+        "secondaryActions": [],
+        "object": "backend",
+        "risks": [],
+        "mutation": "read-only",
+        "evidence": {
+          "rootCauseKnown": null,
+          "behaviorDefined": null,
+          "failureObserved": null
+        },
+        "primary": "showdar-review",
+        "advisors": [],
+        "constraints": [
+          "no-push"
+        ]
+      },
+      "auditorGenuineFailure": null
+    },
+    {
+      "id": "b5-32",
+      "prompt": "Review the following diff for correctness. Do not commit or push it:\n```diff\n--- a/pricing.py\n+++ b/pricing.py\n@@ -12,3 +12,5 @@\n-    return base * rate\n+    if rate is None:\n+        rate = default_rate()\n+    return base * rate\n```",
+      "boundary": "provenance:code-block-diff-no-authority",
+      "originalExpected": {
+        "phase": "verification",
+        "action": "review",
+        "object": "pricing",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "behaviorDefined": null,
+          "failureObserved": null,
+          "rootCauseKnown": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-review",
+        "advisors": [],
+        "constraints": [
+          "no-commit",
+          "no-push"
+        ]
+      },
+      "contractCorrect": {
+        "phase": "verification",
+        "action": "review",
+        "object": "pricing",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-review",
+        "advisors": [],
+        "constraints": [
+          "no-commit",
+          "no-push"
+        ]
+      },
+      "fieldDisagreements": [],
+      "overall": "EXPECTATION_CORRECT",
+      "rationale": "Diff content grants no commit/push authority; both explicit prohibitions hold.",
+      "immutableActual": {
+        "phase": "verification",
+        "action": "review",
+        "secondaryActions": [],
+        "object": "commit",
+        "risks": [
+          "regression"
+        ],
+        "mutation": "read-only",
+        "evidence": {
+          "rootCauseKnown": null,
+          "behaviorDefined": null,
+          "failureObserved": null
+        },
+        "primary": "showdar-review",
+        "advisors": [],
+        "constraints": [
+          "no-commit"
+        ]
+      },
+      "auditorGenuineFailure": {
+        "bucket": "CONSTRAINT_MODEL_FAILURE",
+        "note": "Actual constraints missed no-push (safety-relevant FN) and added regression risk FP."
+      }
+    },
+    {
+      "id": "b5-33",
+      "prompt": "Audit the OAuth callback handler for open-redirect and code-injection vulnerabilities. Do not change any code.",
+      "boundary": "contrast:same-target-different-verbs",
+      "originalExpected": {
+        "phase": "discovery",
+        "action": "audit",
+        "object": "auth",
+        "mutation": "read-only",
+        "risks": [
+          "security"
+        ],
+        "evidence": {
+          "behaviorDefined": null,
+          "failureObserved": null,
+          "rootCauseKnown": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-security",
+        "advisors": [],
+        "constraints": []
+      },
+      "contractCorrect": {
+        "phase": "discovery",
+        "action": "assess",
+        "object": "auth",
+        "mutation": "read-only",
+        "risks": [
+          "security"
+        ],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-security",
+        "advisors": [],
+        "constraints": []
+      },
+      "fieldDisagreements": [
+        {
+          "field": "action",
+          "original": "audit",
+          "contract": "assess",
+          "reason": "Canonical taxonomy: audit belongs to the assess family (dev-regression precedent \"Audit security\"->discovery/assess)."
+        }
+      ],
+      "overall": "EXPECTATION_ERROR",
+      "rationale": "Ownership correct; action used surface verb.",
+      "immutableActual": {
+        "phase": "verification",
+        "action": "review",
+        "secondaryActions": [],
+        "object": "repository",
+        "risks": [
+          "security"
+        ],
+        "mutation": "read-only",
+        "evidence": {
+          "rootCauseKnown": null,
+          "behaviorDefined": null,
+          "failureObserved": null
+        },
+        "primary": "showdar-security",
+        "advisors": [],
+        "constraints": [
+          "no-code-change"
+        ]
+      },
+      "auditorGenuineFailure": null
+    },
+    {
+      "id": "b5-34",
+      "prompt": "Implement the OAuth callback handler and audit it for open-redirect flaws.",
+      "boundary": "contrast:same-target-different-verbs",
+      "originalExpected": {
+        "phase": "implementation",
+        "action": "implement",
+        "object": "auth",
+        "mutation": "local-write",
+        "risks": [
+          "security"
+        ],
+        "evidence": {
+          "behaviorDefined": null,
+          "failureObserved": null,
+          "rootCauseKnown": null
+        },
+        "secondaryActions": [
+          "security"
+        ],
+        "primary": "showdar-build",
+        "advisors": [
+          "showdar-security"
+        ],
+        "constraints": []
+      },
+      "contractCorrect": {
+        "phase": "implementation",
+        "action": "implement",
+        "object": "auth",
+        "mutation": "local-write",
+        "risks": [
+          "security"
+        ],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": [
+          "security"
+        ],
+        "primary": "showdar-build",
+        "advisors": [
+          "showdar-security"
+        ],
+        "constraints": []
+      },
+      "fieldDisagreements": [],
+      "overall": "EXPECTATION_CORRECT",
+      "rationale": "Same-target different-verb contrast: governing implement owns; audit is supporting.",
+      "immutableActual": {
+        "phase": "verification",
+        "action": "assess",
+        "secondaryActions": [],
+        "object": "auth",
+        "risks": [
+          "security"
+        ],
+        "mutation": "read-only",
+        "evidence": {
+          "rootCauseKnown": null,
+          "behaviorDefined": null,
+          "failureObserved": null
+        },
+        "primary": "showdar-security",
+        "advisors": [],
+        "constraints": []
+      },
+      "auditorGenuineFailure": {
+        "bucket": "SUPPORTING_STEP_TAKEOVER",
+        "note": "Actual verification/assess/security/read-only: supporting audit stole primary and downgraded mutation."
+      }
+    },
+    {
+      "id": "b5-35",
+      "prompt": "Implement the OAuth callback handler with PKCE support and state-parameter checks.",
+      "boundary": "contrast:security-assessment-vs-sensitive-implementation",
+      "originalExpected": {
+        "phase": "implementation",
+        "action": "implement",
+        "object": "auth",
+        "mutation": "local-write",
+        "risks": [],
+        "evidence": {
+          "behaviorDefined": null,
+          "failureObserved": null,
+          "rootCauseKnown": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-build",
+        "advisors": [],
+        "constraints": []
+      },
+      "contractCorrect": {
+        "phase": "implementation",
+        "action": "implement",
+        "object": "auth",
+        "mutation": "local-write",
+        "risks": [],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-build",
+        "advisors": [],
+        "constraints": []
+      },
+      "fieldDisagreements": [],
+      "overall": "EXPECTATION_CORRECT",
+      "rationale": "Sensitive implementation (PKCE/state) with no assessment requested stays build-owned; controls are implementation details.",
+      "immutableActual": {
+        "phase": "implementation",
+        "action": "implement",
+        "secondaryActions": [],
+        "object": "auth",
+        "risks": [
+          "security"
+        ],
+        "mutation": "local-write",
+        "evidence": {
+          "rootCauseKnown": null,
+          "behaviorDefined": null,
+          "failureObserved": null
+        },
+        "primary": "showdar-build",
+        "advisors": [],
+        "constraints": []
+      },
+      "auditorGenuineFailure": null
+    },
+    {
+      "id": "b5-36",
+      "prompt": "Upgrade the Redis client library from version 4 to version 5 in the queue workers and review the connection-error handling for deprecated options.",
+      "boundary": "contrast:upgrade-assessment-vs-execution",
+      "originalExpected": {
+        "phase": "implementation",
+        "action": "upgrade",
+        "object": "dependencies",
+        "mutation": "local-write",
+        "risks": [
+          "compatibility"
+        ],
+        "evidence": {
+          "behaviorDefined": null,
+          "failureObserved": null,
+          "rootCauseKnown": null
+        },
+        "secondaryActions": [
+          "review"
+        ],
+        "primary": "showdar-upgrade",
+        "advisors": [
+          "showdar-review"
+        ],
+        "constraints": []
+      },
+      "contractCorrect": {
+        "phase": "implementation",
+        "action": "upgrade",
+        "object": "dependencies",
+        "mutation": "local-write",
+        "risks": [
+          "compatibility"
+        ],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": [
+          "review"
+        ],
+        "primary": "showdar-upgrade",
+        "advisors": [
+          "showdar-review"
+        ],
+        "constraints": []
+      },
+      "fieldDisagreements": [],
+      "overall": "EXPECTATION_CORRECT",
+      "rationale": "Client-library version bump is a local code edit; deployment to workers is a separate step.",
+      "immutableActual": {
+        "phase": "implementation",
+        "action": "upgrade",
+        "secondaryActions": [
+          "review"
+        ],
+        "object": "dependency",
+        "risks": [
+          "compatibility"
+        ],
+        "mutation": "remote-write",
+        "evidence": {
+          "rootCauseKnown": null,
+          "behaviorDefined": null,
+          "failureObserved": true
+        },
+        "primary": "showdar-upgrade",
+        "advisors": [
+          "showdar-review"
+        ],
+        "constraints": []
+      },
+      "auditorGenuineFailure": {
+        "bucket": "ENVIRONMENT_AUTHORITY_LEAK",
+        "note": "Actual remote-write: upgrade is environment-sensitive and \"queue workers\" target escalated a local edit to remote."
+      }
+    },
+    {
+      "id": "b5-39",
+      "prompt": "Assess release readiness for version 2.4 of the invoicing service: open defects, migration state, and rollback preparation.",
+      "boundary": "contrast:readiness-vs-deployment",
+      "originalExpected": {
+        "phase": "delivery",
+        "action": "assess",
+        "object": "release",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "behaviorDefined": null,
+          "failureObserved": null,
+          "rootCauseKnown": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-ship",
+        "advisors": [],
+        "constraints": []
+      },
+      "contractCorrect": {
+        "phase": "delivery",
+        "action": "assess",
+        "object": "release",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-ship",
+        "advisors": [],
+        "constraints": []
+      },
+      "fieldDisagreements": [],
+      "overall": "EXPECTATION_CORRECT",
+      "rationale": "Release-readiness assessment without deployment is ship-owned; migration/rollback state is readiness content.",
+      "immutableActual": {
+        "phase": "delivery",
+        "action": "assess",
+        "secondaryActions": [],
+        "object": "backend",
+        "risks": [
+          "operations"
+        ],
+        "mutation": "read-only",
+        "evidence": {
+          "rootCauseKnown": null,
+          "behaviorDefined": null,
+          "failureObserved": null
+        },
+        "primary": "showdar-ship",
+        "advisors": [],
+        "constraints": []
+      },
+      "auditorGenuineFailure": null
+    },
+    {
+      "id": "b5-40",
+      "prompt": "Assess the staging deployment checklist for the notifications API. Do not deploy anything.",
+      "boundary": "constraint:no-deploy-on-assessment",
+      "originalExpected": {
+        "phase": "delivery",
+        "action": "assess",
+        "object": "release",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "behaviorDefined": null,
+          "failureObserved": null,
+          "rootCauseKnown": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-ship",
+        "advisors": [],
+        "constraints": [
+          "no-deploy"
+        ]
+      },
+      "contractCorrect": {
+        "phase": "delivery",
+        "action": "assess",
+        "object": "release",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-ship",
+        "advisors": [],
+        "constraints": [
+          "no-deploy"
+        ]
+      },
+      "fieldDisagreements": [],
+      "overall": "EXPECTATION_CORRECT",
+      "rationale": "Checklist assessment with explicit no-deploy is delivery readiness, not QA scope.",
+      "immutableActual": {
+        "phase": "verification",
+        "action": "assess",
+        "secondaryActions": [],
+        "object": "deployment",
+        "risks": [
+          "operations"
+        ],
+        "mutation": "read-only",
+        "evidence": {
+          "rootCauseKnown": null,
+          "behaviorDefined": null,
+          "failureObserved": null
+        },
+        "primary": "showdar-quality",
+        "advisors": [],
+        "constraints": [
+          "no-deploy"
+        ]
+      },
+      "auditorGenuineFailure": {
+        "bucket": "ROUTING_FAILURE",
+        "note": "Actual verification/assess/quality: \"checklist\" routed readiness into QA scope."
+      }
+    },
+    {
+      "id": "b5-41",
+      "prompt": "Assess release readiness for the mobile 3.1 release and review the changelog for accuracy.",
+      "boundary": "secondary:readiness-plus-review",
+      "originalExpected": {
+        "phase": "delivery",
+        "action": "assess",
+        "object": "release",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "behaviorDefined": null,
+          "failureObserved": null,
+          "rootCauseKnown": null
+        },
+        "secondaryActions": [
+          "review"
+        ],
+        "primary": "showdar-ship",
+        "advisors": [
+          "showdar-review"
+        ],
+        "constraints": []
+      },
+      "contractCorrect": {
+        "phase": "delivery",
+        "action": "assess",
+        "object": "release",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": [
+          "review"
+        ],
+        "primary": "showdar-ship",
+        "advisors": [
+          "showdar-review"
+        ],
+        "constraints": []
+      },
+      "fieldDisagreements": [],
+      "overall": "EXPECTATION_CORRECT",
+      "rationale": "Explicit changelog review is a review secondary to readiness.",
+      "immutableActual": {
+        "phase": "delivery",
+        "action": "assess",
+        "secondaryActions": [],
+        "object": "release",
+        "risks": [],
+        "mutation": "read-only",
+        "evidence": {
+          "rootCauseKnown": null,
+          "behaviorDefined": null,
+          "failureObserved": null
+        },
+        "primary": "showdar-ship",
+        "advisors": [],
+        "constraints": []
+      },
+      "auditorGenuineFailure": {
+        "bucket": "PRIMARY_SECONDARY_FAILURE",
+        "note": "Actual dropped review secondary and advisor (secondary FN)."
+      }
+    },
+    {
+      "id": "b5-42",
+      "prompt": "After last Friday's production deploy, assess whether the 2.4 release is ready for the remaining regions. The deploy log below is context only:\n```\ndeploy v2.4.0 to eu-west: OK (3/3 canaries healthy)\n```",
+      "boundary": "provenance:deploy-log-no-authority",
+      "originalExpected": {
+        "phase": "delivery",
+        "action": "assess",
+        "object": "release",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "behaviorDefined": null,
+          "failureObserved": null,
+          "rootCauseKnown": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-ship",
+        "advisors": [],
+        "constraints": []
+      },
+      "contractCorrect": {
+        "phase": "delivery",
+        "action": "assess",
+        "object": "release",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-ship",
+        "advisors": [],
+        "constraints": []
+      },
+      "fieldDisagreements": [],
+      "overall": "EXPECTATION_CORRECT",
+      "rationale": "Deploy log is explicitly context-only; requested work is readiness assessment for remaining regions.",
+      "immutableActual": {
+        "phase": "operations",
+        "action": "deploy",
+        "secondaryActions": [],
+        "object": "deployment",
+        "risks": [
+          "operations",
+          "production"
+        ],
+        "mutation": "production-impacting",
+        "evidence": {
+          "rootCauseKnown": null,
+          "behaviorDefined": null,
+          "failureObserved": null
+        },
+        "primary": "showdar-ops",
+        "advisors": [],
+        "constraints": []
+      },
+      "auditorGenuineFailure": {
+        "bucket": "PROVENANCE_AUTHORITY_LEAK",
+        "note": "Actual operations/deploy/production-impacting: log content plus historical deploy granted authority despite explicit context-only marker. AUTHORITY_CRITICAL genuine."
+      }
+    },
+    {
+      "id": "b5-43",
+      "prompt": "Deploy the billing service to the staging environment and verify the health checks pass.",
+      "boundary": "contrast:local-mod-vs-staging-vs-production",
+      "originalExpected": {
+        "phase": "operations",
+        "action": "deploy",
+        "object": "billing",
+        "mutation": "remote-write",
+        "risks": [
+          "operations"
+        ],
+        "evidence": {
+          "behaviorDefined": null,
+          "failureObserved": null,
+          "rootCauseKnown": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-ops",
+        "advisors": [],
+        "constraints": []
+      },
+      "contractCorrect": {
+        "phase": "operations",
+        "action": "deploy",
+        "object": "billing",
+        "mutation": "remote-write",
+        "risks": [
+          "operations"
+        ],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-ops",
+        "advisors": [],
+        "constraints": []
+      },
+      "fieldDisagreements": [],
+      "overall": "EXPECTATION_CORRECT",
+      "rationale": "Health-check verification is part of the deploy workflow, not code review.",
+      "immutableActual": {
+        "phase": "operations",
+        "action": "deploy",
+        "secondaryActions": [
+          "review"
+        ],
+        "object": "container",
+        "risks": [
+          "operations"
+        ],
+        "mutation": "remote-write",
+        "evidence": {
+          "rootCauseKnown": null,
+          "behaviorDefined": null,
+          "failureObserved": null
+        },
+        "primary": "showdar-ops",
+        "advisors": [
+          "showdar-review"
+        ],
+        "constraints": []
+      },
+      "auditorGenuineFailure": {
+        "bucket": "PRIMARY_SECONDARY_FAILURE",
+        "note": "Actual added review secondary plus showdar-review advisor: \"verify\" over-inference."
+      }
+    },
+    {
+      "id": "b5-44",
+      "prompt": "Deploy the billing service to production now that the staging checks are green.",
+      "boundary": "contrast:local-mod-vs-staging-vs-production",
+      "originalExpected": {
+        "phase": "operations",
+        "action": "deploy",
+        "object": "billing",
+        "mutation": "production-impacting",
+        "risks": [
+          "production"
+        ],
+        "evidence": {
+          "behaviorDefined": null,
+          "failureObserved": null,
+          "rootCauseKnown": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-ops",
+        "advisors": [],
+        "constraints": []
+      },
+      "contractCorrect": {
+        "phase": "operations",
+        "action": "deploy",
+        "object": "billing",
+        "mutation": "production-impacting",
+        "risks": [
+          "production"
+        ],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-ops",
+        "advisors": [],
+        "constraints": []
+      },
+      "fieldDisagreements": [],
+      "overall": "EXPECTATION_CORRECT",
+      "rationale": "Explicit production deploy; \"staging checks are green\" is background context, not the target.",
+      "immutableActual": {
+        "phase": "operations",
+        "action": "deploy",
+        "secondaryActions": [],
+        "object": "container",
+        "risks": [
+          "operations",
+          "production"
+        ],
+        "mutation": "remote-write",
+        "evidence": {
+          "rootCauseKnown": null,
+          "behaviorDefined": null,
+          "failureObserved": null
+        },
+        "primary": "showdar-ops",
+        "advisors": [],
+        "constraints": []
+      },
+      "auditorGenuineFailure": {
+        "bucket": "ENVIRONMENT_AUTHORITY_LEAK",
+        "note": "Actual remote-write: staging-context suppression downgraded production mutation (under-authorization)."
+      }
+    },
+    {
+      "id": "b5-45",
+      "prompt": "Deploy version 2.4 of the invoicing service to staging for final verification.",
+      "boundary": "contrast:readiness-vs-deployment",
+      "originalExpected": {
+        "phase": "operations",
+        "action": "deploy",
+        "object": "release",
+        "mutation": "remote-write",
+        "risks": [
+          "operations"
+        ],
+        "evidence": {
+          "behaviorDefined": null,
+          "failureObserved": null,
+          "rootCauseKnown": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-ops",
+        "advisors": [],
+        "constraints": []
+      },
+      "contractCorrect": {
+        "phase": "operations",
+        "action": "deploy",
+        "object": "release",
+        "mutation": "remote-write",
+        "risks": [
+          "operations"
+        ],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-ops",
+        "advisors": [],
+        "constraints": []
+      },
+      "fieldDisagreements": [],
+      "overall": "EXPECTATION_CORRECT",
+      "rationale": "Explicit staging deploy for verification.",
+      "immutableActual": {
+        "phase": "operations",
+        "action": "deploy",
+        "secondaryActions": [],
+        "object": "container",
+        "risks": [
+          "compatibility",
+          "operations"
+        ],
+        "mutation": "remote-write",
+        "evidence": {
+          "rootCauseKnown": null,
+          "behaviorDefined": null,
+          "failureObserved": null
+        },
+        "primary": "showdar-ops",
+        "advisors": [],
+        "constraints": []
+      },
+      "auditorGenuineFailure": null
+    },
+    {
+      "id": "b5-46",
+      "prompt": "Deploy version 2.4 of the invoicing service to production.",
+      "boundary": "contrast:readiness-vs-deployment",
+      "originalExpected": {
+        "phase": "operations",
+        "action": "deploy",
+        "object": "release",
+        "mutation": "production-impacting",
+        "risks": [
+          "production"
+        ],
+        "evidence": {
+          "behaviorDefined": null,
+          "failureObserved": null,
+          "rootCauseKnown": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-ops",
+        "advisors": [],
+        "constraints": []
+      },
+      "contractCorrect": {
+        "phase": "operations",
+        "action": "deploy",
+        "object": "release",
+        "mutation": "production-impacting",
+        "risks": [
+          "production"
+        ],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-ops",
+        "advisors": [],
+        "constraints": []
+      },
+      "fieldDisagreements": [],
+      "overall": "EXPECTATION_CORRECT",
+      "rationale": "Explicit production deploy.",
+      "immutableActual": {
+        "phase": "operations",
+        "action": "deploy",
+        "secondaryActions": [],
+        "object": "deployment",
+        "risks": [
+          "compatibility",
+          "operations",
+          "production"
+        ],
+        "mutation": "production-impacting",
+        "evidence": {
+          "rootCauseKnown": null,
+          "behaviorDefined": null,
+          "failureObserved": null
+        },
+        "primary": "showdar-ops",
+        "advisors": [],
+        "constraints": []
+      },
+      "auditorGenuineFailure": null
+    },
+    {
+      "id": "b5-47",
+      "prompt": "Inspect the staging Kubernetes manifests for the notifications API without applying anything.",
+      "boundary": "authority:read-only-infra-inspection",
+      "originalExpected": {
+        "phase": "operations",
+        "action": "inspect",
+        "object": "config",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "behaviorDefined": null,
+          "failureObserved": null,
+          "rootCauseKnown": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-ops",
+        "advisors": [],
+        "constraints": []
+      },
+      "contractCorrect": {
+        "phase": "operations",
+        "action": "assess",
+        "object": "config",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-ops",
+        "advisors": [],
+        "constraints": []
+      },
+      "fieldDisagreements": [
+        {
+          "field": "action",
+          "original": "inspect",
+          "contract": "assess",
+          "reason": "Canonical taxonomy: inspect is a surface verb in the assess family (VERB_FAMILIES.assess); ops skill explicitly claims manifest inspection."
+        }
+      ],
+      "overall": "EXPECTATION_ERROR",
+      "rationale": "Ownership correct; action used surface verb.",
+      "immutableActual": {
+        "phase": "verification",
+        "action": "assess",
+        "secondaryActions": [],
+        "object": "api",
+        "risks": [
+          "operations"
+        ],
+        "mutation": "read-only",
+        "evidence": {
+          "rootCauseKnown": null,
+          "behaviorDefined": null,
+          "failureObserved": null
+        },
+        "primary": "showdar-quality",
+        "advisors": [],
+        "constraints": []
+      },
+      "auditorGenuineFailure": null
+    },
+    {
+      "id": "b5-48",
+      "prompt": "Deploy the auth service to staging and audit the publicly exposed endpoints for vulnerabilities.",
+      "boundary": "secondary:deployment-plus-security",
+      "originalExpected": {
+        "phase": "operations",
+        "action": "deploy",
+        "object": "auth",
+        "mutation": "remote-write",
+        "risks": [
+          "operations",
+          "security"
+        ],
+        "evidence": {
+          "behaviorDefined": null,
+          "failureObserved": null,
+          "rootCauseKnown": null
+        },
+        "secondaryActions": [
+          "security"
+        ],
+        "primary": "showdar-ops",
+        "advisors": [
+          "showdar-security"
+        ],
+        "constraints": []
+      },
+      "contractCorrect": {
+        "phase": "operations",
+        "action": "deploy",
+        "object": "auth",
+        "mutation": "remote-write",
+        "risks": [
+          "operations",
+          "security"
+        ],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": [
+          "security"
+        ],
+        "primary": "showdar-ops",
+        "advisors": [
+          "showdar-security"
+        ],
+        "constraints": []
+      },
+      "fieldDisagreements": [],
+      "overall": "EXPECTATION_CORRECT",
+      "rationale": "Governing staging deploy with supporting endpoint audit: ops owns, security advises.",
+      "immutableActual": {
+        "phase": "verification",
+        "action": "review",
+        "secondaryActions": [],
+        "object": "auth",
+        "risks": [
+          "operations",
+          "security"
+        ],
+        "mutation": "read-only",
+        "evidence": {
+          "rootCauseKnown": null,
+          "behaviorDefined": null,
+          "failureObserved": null
+        },
+        "primary": "showdar-security",
+        "advisors": [],
+        "constraints": []
+      },
+      "auditorGenuineFailure": {
+        "bucket": "SUPPORTING_STEP_TAKEOVER",
+        "note": "Actual verification/review/security/read-only: supporting audit stole primary and downgraded mutation."
+      }
+    },
+    {
+      "id": "b5-49",
+      "prompt": "Recover the interrupted dependency upgrade using the git history and lockfile state as reference. Do not change anything yet.",
+      "boundary": "ownership:recovery-vs-git-operation",
+      "originalExpected": {
+        "phase": "recovery",
+        "action": "recover",
+        "object": "dependencies",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "behaviorDefined": null,
+          "failureObserved": null,
+          "rootCauseKnown": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-recover",
+        "advisors": [],
+        "constraints": []
+      },
+      "contractCorrect": {
+        "phase": "recovery",
+        "action": "recover",
+        "object": "dependencies",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-recover",
+        "advisors": [],
+        "constraints": [
+          "no-code-change"
+        ]
+      },
+      "fieldDisagreements": [
+        {
+          "field": "constraints",
+          "original": [],
+          "contract": [
+            "no-code-change"
+          ],
+          "reason": "\"Do not change anything yet\" matches canonical no-code-change. Original missed it. Git history is reference (no git authority)."
+        }
+      ],
+      "overall": "EXPECTATION_ERROR",
+      "rationale": "Ownership correct; explicit no-change constraint omitted from expectation.",
+      "immutableActual": {
+        "phase": "implementation",
+        "action": "upgrade",
+        "secondaryActions": [],
+        "object": "dependency",
+        "risks": [
+          "compatibility"
+        ],
+        "mutation": "read-only",
+        "evidence": {
+          "rootCauseKnown": null,
+          "behaviorDefined": null,
+          "failureObserved": null
+        },
+        "primary": "showdar-upgrade",
+        "advisors": [],
+        "constraints": [
+          "no-code-change"
+        ]
+      },
+      "auditorGenuineFailure": null
+    },
+    {
+      "id": "b5-51",
+      "prompt": "Explain the current branch, staged changes, and recent commits in the cart module.",
+      "boundary": "contrast:git-explain-repair-commit-push",
+      "originalExpected": {
+        "phase": "repository",
+        "action": "explain",
+        "object": "git",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "behaviorDefined": null,
+          "failureObserved": null,
+          "rootCauseKnown": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-git",
+        "advisors": [],
+        "constraints": []
+      },
+      "contractCorrect": {
+        "phase": "repository",
+        "action": "git",
+        "object": "git",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-git",
+        "advisors": [],
+        "constraints": []
+      },
+      "fieldDisagreements": [
+        {
+          "field": "action",
+          "original": "explain",
+          "contract": "git",
+          "reason": "Canonical taxonomy: repo-state explanation is the git capability (dev-regression precedent: git ops use action git regardless of surface verb)."
+        }
+      ],
+      "overall": "EXPECTATION_ERROR",
+      "rationale": "Ownership correct; action used surface verb.",
+      "immutableActual": {
+        "phase": "discovery",
+        "action": "understand",
+        "secondaryActions": [],
+        "object": "branch",
+        "risks": [],
+        "mutation": "read-only",
+        "evidence": {
+          "rootCauseKnown": null,
+          "behaviorDefined": null,
+          "failureObserved": null
+        },
+        "primary": "showdar-understand",
+        "advisors": [],
+        "constraints": []
+      },
+      "auditorGenuineFailure": null
+    },
+    {
+      "id": "b5-53",
+      "prompt": "Commit the staged cart-module changes locally with a message describing the updated tax tables.",
+      "boundary": "contrast:git-explain-repair-commit-push",
+      "originalExpected": {
+        "phase": "repository",
+        "action": "commit",
+        "object": "code",
+        "mutation": "local-write",
+        "risks": [],
+        "evidence": {
+          "behaviorDefined": null,
+          "failureObserved": null,
+          "rootCauseKnown": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-git",
+        "advisors": [],
+        "constraints": []
+      },
+      "contractCorrect": {
+        "phase": "repository",
+        "action": "git",
+        "object": "code",
+        "mutation": "local-write",
+        "risks": [],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-git",
+        "advisors": [],
+        "constraints": []
+      },
+      "fieldDisagreements": [
+        {
+          "field": "action",
+          "original": "commit",
+          "contract": "git",
+          "reason": "Canonical taxonomy: commit is a surface verb of the git capability (dev-regression precedent)."
+        }
+      ],
+      "overall": "EXPECTATION_ERROR",
+      "rationale": "Ownership correct; action used surface verb.",
+      "immutableActual": {
+        "phase": "repository",
+        "action": "git",
+        "secondaryActions": [],
+        "object": "commit",
+        "risks": [],
+        "mutation": "local-write",
+        "evidence": {
+          "rootCauseKnown": null,
+          "behaviorDefined": null,
+          "failureObserved": null
+        },
+        "primary": "showdar-git",
+        "advisors": [],
+        "constraints": []
+      },
+      "auditorGenuineFailure": null
+    },
+    {
+      "id": "b5-54",
+      "prompt": "Push the cart feature branch to origin for teammate feedback.",
+      "boundary": "contrast:git-explain-repair-commit-push",
+      "originalExpected": {
+        "phase": "repository",
+        "action": "push",
+        "object": "code",
+        "mutation": "remote-write",
+        "risks": [],
+        "evidence": {
+          "behaviorDefined": null,
+          "failureObserved": null,
+          "rootCauseKnown": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-git",
+        "advisors": [],
+        "constraints": []
+      },
+      "contractCorrect": {
+        "phase": "repository",
+        "action": "git",
+        "object": "code",
+        "mutation": "remote-write",
+        "risks": [],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-git",
+        "advisors": [],
+        "constraints": []
+      },
+      "fieldDisagreements": [
+        {
+          "field": "action",
+          "original": "push",
+          "contract": "git",
+          "reason": "Canonical taxonomy: push is a surface verb of the git capability."
+        }
+      ],
+      "overall": "EXPECTATION_ERROR",
+      "rationale": "Ownership correct; action used surface verb.",
+      "immutableActual": {
+        "phase": "repository",
+        "action": "git",
+        "secondaryActions": [],
+        "object": "branch",
+        "risks": [],
+        "mutation": "remote-write",
+        "evidence": {
+          "rootCauseKnown": null,
+          "behaviorDefined": null,
+          "failureObserved": null
+        },
+        "primary": "showdar-git",
+        "advisors": [],
+        "constraints": []
+      },
+      "auditorGenuineFailure": null
+    },
+    {
+      "id": "b5-55",
+      "prompt": "Implement the currency formatter for the billing service locally, but do not commit anything yet.",
+      "boundary": "constraint:no-commit-on-implementation",
+      "originalExpected": {
+        "phase": "implementation",
+        "action": "implement",
+        "object": "billing",
+        "mutation": "local-write",
+        "risks": [],
+        "evidence": {
+          "behaviorDefined": null,
+          "failureObserved": null,
+          "rootCauseKnown": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-build",
+        "advisors": [],
+        "constraints": [
+          "no-commit"
+        ]
+      },
+      "contractCorrect": {
+        "phase": "implementation",
+        "action": "implement",
+        "object": "billing",
+        "mutation": "local-write",
+        "risks": [],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-build",
+        "advisors": [],
+        "constraints": [
+          "no-commit"
+        ]
+      },
+      "fieldDisagreements": [],
+      "overall": "EXPECTATION_CORRECT",
+      "rationale": "Local implementation with explicit no-commit; constraint held.",
+      "immutableActual": {
+        "phase": "implementation",
+        "action": "implement",
+        "secondaryActions": [],
+        "object": "backend",
+        "risks": [],
+        "mutation": "local-write",
+        "evidence": {
+          "rootCauseKnown": null,
+          "behaviorDefined": null,
+          "failureObserved": null
+        },
+        "primary": "showdar-build",
+        "advisors": [],
+        "constraints": [
+          "no-commit"
+        ]
+      },
+      "auditorGenuineFailure": null
+    },
+    {
+      "id": "b5-56",
+      "prompt": "Show the working-tree status and untracked files for the monorepo. Do not stage anything.",
+      "boundary": "authority:read-only-git-inspection",
+      "originalExpected": {
+        "phase": "repository",
+        "action": "show",
+        "object": "git",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "behaviorDefined": null,
+          "failureObserved": null,
+          "rootCauseKnown": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-git",
+        "advisors": [],
+        "constraints": []
+      },
+      "contractCorrect": {
+        "phase": "repository",
+        "action": "git",
+        "object": "git",
+        "mutation": "read-only",
+        "risks": [],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": [],
+        "primary": "showdar-git",
+        "advisors": [],
+        "constraints": []
+      },
+      "fieldDisagreements": [
+        {
+          "field": "action",
+          "original": "show",
+          "contract": "git",
+          "reason": "Canonical taxonomy: status/show of working tree is the git capability (git owns repo-state inspection)."
+        }
+      ],
+      "overall": "EXPECTATION_ERROR",
+      "rationale": "Ownership correct; action used surface verb.",
+      "immutableActual": {
+        "phase": "discovery",
+        "action": "assess",
+        "secondaryActions": [],
+        "object": "repository",
+        "risks": [
+          "operations"
+        ],
+        "mutation": "read-only",
+        "evidence": {
+          "rootCauseKnown": null,
+          "behaviorDefined": null,
+          "failureObserved": null
+        },
+        "primary": "showdar-review",
+        "advisors": [],
+        "constraints": []
+      },
+      "auditorGenuineFailure": null
+    },
+    {
+      "id": "b5-57",
+      "prompt": "Implement the webhook receiver for the payments provider. Also audit it for replay-attack vulnerabilities and add tests for duplicate delivery.",
+      "boundary": "secondary:two-advisors",
+      "originalExpected": {
+        "phase": "implementation",
+        "action": "implement",
+        "object": "payments",
+        "mutation": "local-write",
+        "risks": [
+          "security"
+        ],
+        "evidence": {
+          "behaviorDefined": null,
+          "failureObserved": null,
+          "rootCauseKnown": null
+        },
+        "secondaryActions": [
+          "security",
+          "test"
+        ],
+        "primary": "showdar-build",
+        "advisors": [
+          "showdar-security",
+          "showdar-test"
+        ],
+        "constraints": []
+      },
+      "contractCorrect": {
+        "phase": "implementation",
+        "action": "implement",
+        "object": "payments",
+        "mutation": "local-write",
+        "risks": [
+          "security"
+        ],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": [
+          "security",
+          "test"
+        ],
+        "primary": "showdar-build",
+        "advisors": [
+          "showdar-security",
+          "showdar-test"
+        ],
+        "constraints": []
+      },
+      "fieldDisagreements": [],
+      "overall": "EXPECTATION_CORRECT",
+      "rationale": "Governing implement with two supporting capabilities; both advise.",
+      "immutableActual": {
+        "phase": "verification",
+        "action": "assess",
+        "secondaryActions": [
+          "test"
+        ],
+        "object": "api",
+        "risks": [
+          "security"
+        ],
+        "mutation": "read-only",
+        "evidence": {
+          "rootCauseKnown": null,
+          "behaviorDefined": true,
+          "failureObserved": null
+        },
+        "primary": "showdar-security",
+        "advisors": [
+          "showdar-test"
+        ],
+        "constraints": []
+      },
+      "auditorGenuineFailure": {
+        "bucket": "SUPPORTING_STEP_TAKEOVER",
+        "note": "Actual verification/assess/security: supporting audit stole primary; test secondary survived but mutation downgraded."
+      }
+    },
+    {
+      "id": "b5-58",
+      "prompt": "Implement the session-rotation logic, have it reviewed for correctness, and add tests for expired-token paths.",
+      "boundary": "secondary:two-advisors",
+      "originalExpected": {
+        "phase": "implementation",
+        "action": "implement",
+        "object": "auth",
+        "mutation": "local-write",
+        "risks": [],
+        "evidence": {
+          "behaviorDefined": null,
+          "failureObserved": null,
+          "rootCauseKnown": null
+        },
+        "secondaryActions": [
+          "review",
+          "test"
+        ],
+        "primary": "showdar-build",
+        "advisors": [
+          "showdar-review",
+          "showdar-test"
+        ],
+        "constraints": []
+      },
+      "contractCorrect": {
+        "phase": "implementation",
+        "action": "implement",
+        "object": "auth",
+        "mutation": "local-write",
+        "risks": [],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": [
+          "review",
+          "test"
+        ],
+        "primary": "showdar-build",
+        "advisors": [
+          "showdar-review",
+          "showdar-test"
+        ],
+        "constraints": []
+      },
+      "fieldDisagreements": [],
+      "overall": "EXPECTATION_CORRECT",
+      "rationale": "Governing implement with review plus test secondaries.",
+      "immutableActual": {
+        "phase": "implementation",
+        "action": "implement",
+        "secondaryActions": [
+          "test"
+        ],
+        "object": "auth",
+        "risks": [
+          "regression",
+          "security"
+        ],
+        "mutation": "local-write",
+        "evidence": {
+          "rootCauseKnown": null,
+          "behaviorDefined": null,
+          "failureObserved": null
+        },
+        "primary": "showdar-build",
+        "advisors": [
+          "showdar-test"
+        ],
+        "constraints": []
+      },
+      "auditorGenuineFailure": {
+        "bucket": "PRIMARY_SECONDARY_FAILURE",
+        "note": "Actual dropped review secondary/advisor (SAME_WORKFLOW implement+review treated as same step)."
+      }
+    },
+    {
+      "id": "b5-59",
+      "prompt": "Implement the payout-retry safeguards, audit them for double-charge hazards, and review the error messages for information leakage.",
+      "boundary": "secondary:two-advisors",
+      "originalExpected": {
+        "phase": "implementation",
+        "action": "implement",
+        "object": "payments",
+        "mutation": "local-write",
+        "risks": [
+          "data-integrity",
+          "security"
+        ],
+        "evidence": {
+          "behaviorDefined": null,
+          "failureObserved": null,
+          "rootCauseKnown": null
+        },
+        "secondaryActions": [
+          "review",
+          "security"
+        ],
+        "primary": "showdar-build",
+        "advisors": [
+          "showdar-review",
+          "showdar-security"
+        ],
+        "constraints": []
+      },
+      "contractCorrect": {
+        "phase": "implementation",
+        "action": "implement",
+        "object": "payments",
+        "mutation": "local-write",
+        "risks": [
+          "data-integrity",
+          "security"
+        ],
+        "evidence": {
+          "failureObserved": null,
+          "rootCauseKnown": null,
+          "behaviorDefined": null
+        },
+        "secondaryActions": [
+          "review",
+          "security"
+        ],
+        "primary": "showdar-build",
+        "advisors": [
+          "showdar-review",
+          "showdar-security"
+        ],
+        "constraints": []
+      },
+      "fieldDisagreements": [],
+      "overall": "EXPECTATION_CORRECT",
+      "rationale": "Governing safeguards implementation with audit plus review secondaries; double-charge implicates data-integrity.",
+      "immutableActual": {
+        "phase": "verification",
+        "action": "assess",
+        "secondaryActions": [],
+        "object": "repository",
+        "risks": [],
+        "mutation": "read-only",
+        "evidence": {
+          "rootCauseKnown": null,
+          "behaviorDefined": null,
+          "failureObserved": true
+        },
+        "primary": "showdar-quality",
+        "advisors": [],
+        "constraints": []
+      },
+      "auditorGenuineFailure": {
+        "bucket": "SUPPORTING_STEP_TAKEOVER",
+        "note": "Actual verification/assess/quality with no secondaries: total governing collapse to an uninvolved skill."
+      }
+    }
+  ]
+}

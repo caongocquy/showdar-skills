@@ -1,0 +1,17 @@
+{
+  "dataset": "blind-holdout-4",
+  "datasetFile": "evals/blind-holdout-4.json",
+  "caseCount": 50,
+  "clearCount": 44,
+  "ambiguousCount": 6,
+  "creationTimestamp": "2026-09-13T16:30:00.000Z",
+  "datasetSha256": "5f177fcfdd7008b66c774d3ee81e6ae00953a0490c33d830e4517a0240b0cda2",
+  "gitCommitSha": "0ad5b1ff3ab5f2d433d5f1ceb69db35257077b63",
+  "semanticSourceSha256": "57b96666ea6668bd4202415ec4e052e8194d65338e4d9c32f2c0ba0bbaacf0d3",
+  "canonicalHashCommand": "node scripts/semantic-source-hash.mjs",
+  "statements": {
+    "expectationsWithoutRuntimeOutput": "All expected labels were authored from the documented semantic contract only, before any resolver execution against Blind #4.",
+    "noImplementationInternals": "Production implementation internals (verb families, scoring weights, keyword lists, special-case regexes, routing tables) were not used to derive expected labels.",
+    "immutability": "After manifest creation the Blind #4 dataset is immutable: no expectation changes, no reruns, no relabeling of historical metrics."
+  }
+}
