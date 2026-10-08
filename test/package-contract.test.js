@@ -21,7 +21,7 @@ function packManifest(cwd, destination) {
 
 async function makePackageInputCopy(destination, packageFiles) {
   for (const encoded of packageFiles) {
-    if (encoded === 'docs' || encoded.startsWith('docs/')) continue;
+    if (encoded.startsWith('docs/') && encoded !== 'docs/REFERENCE.md') continue;
     try { await access(path.join(root, encoded)); } catch { continue; }
     const target = path.join(destination, encoded);
     await mkdir(path.dirname(target), { recursive: true });
@@ -29,7 +29,7 @@ async function makePackageInputCopy(destination, packageFiles) {
   }
 }
 
-test('package contract excludes internal docs and is reproducible without them', async () => {
+test('package contract includes only public reference docs and is reproducible', async () => {
   const sandbox = await mkdtemp(path.join(tmpdir(), 'showdar-package-contract-'));
   const freshRoot = path.join(sandbox, 'fresh');
   const packDir = path.join(sandbox, 'pack');
@@ -37,14 +37,15 @@ test('package contract excludes internal docs and is reproducible without them',
   await mkdir(packDir, { recursive: true });
   try {
     const workspaceFiles = packManifest(root, packDir);
-    assert.ok(!workspaceFiles.some((file) => file.startsWith('docs/')), 'workspace package must exclude docs/');
+    assert.ok(workspaceFiles.includes('docs/REFERENCE.md'), 'public reference must be packaged for README links');
+    assert.ok(!workspaceFiles.some((file) => file.startsWith('docs/') && file !== 'docs/REFERENCE.md'), 'internal docs must stay out of the npm package');
     assert.ok(!workspaceFiles.includes('RELEASING.md'), 'maintainer release notes must stay out of the npm package');
     assert.ok(!workspaceFiles.some((file) => file.startsWith('.github/')), 'workflow files must stay out of the npm package');
     assert.ok(!workspaceFiles.some((file) => file.startsWith('scripts/')), 'development scripts must stay out of the npm package');
 
     await makePackageInputCopy(freshRoot, workspaceFiles);
     const freshFiles = packManifest(freshRoot, packDir);
-    assert.deepEqual(freshFiles, workspaceFiles, 'workspace and docs-free package inputs must produce the same file list');
+    assert.deepEqual(freshFiles, workspaceFiles, 'workspace and minimal package inputs must produce the same file list');
 
     const packed = spawnSync('npm', ['pack', '--json', '--pack-destination', packDir], { cwd: freshRoot, encoding: 'utf8' });
     assert.equal(packed.status, 0, packed.stderr);
