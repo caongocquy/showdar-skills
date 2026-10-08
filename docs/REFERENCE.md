@@ -1,3 +1,5 @@
+> **Legacy CLI reference (historical):** This document preserves detailed pre-agent-onboarding documentation. The `showdar setup` CLI command described below was removed; use agent-driven `/showdar/setup` on OpenCode/Claude or ask the agent to audit project context in Cursor/Codex. `showdar wizard` remains the interactive skills installer. For current quick start, use the [README](../README.md).
+
 # Showdar Skills
 
 [![npm version](https://img.shields.io/npm/v/showdar-skills?logo=npm)](https://www.npmjs.com/package/showdar-skills)
