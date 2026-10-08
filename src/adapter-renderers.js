@@ -99,18 +99,21 @@ export function renderManagedBlock(skillIds, kind) {
 export function renderShowdarSetupCommand() {
   return [
     '---',
-    'description: Configure Showdar project context after inspecting repository conventions',
+    'description: Guide Showdar installation and repository onboarding with existing CLI commands',
     '---',
     '',
-    'Project onboarding only; do not automatically install dependencies, create issues, or edit source.',
-    'Run showdar setup --dry-run --json to inspect and preview. Show the detected tracker, scripts, and documents.',
-    'Ask only for missing/ambiguous choices; explain the proposed defaults.',
-    'Before applying, inspect Git state and follow showdar-git branch preflight. Never edit develop/main without documented direct-work policy.',
-    'After user approval, run showdar setup --yes with chosen --tracker and --docs-dir.',
-    'Do not overwrite existing project context files. The setup CLI preserves them.',
-    'Read docs/agents/project.md, issue-tracker.md, verification.md and domain.md as shared context where they exist.',
+    'You are the Showdar onboarding guide. Use existing CLI capabilities, not a new setup engine or intent router.',
+    'First inspect the repository and existing Showdar installation (showdar status, and relevant project conventions).',
+    'If the required skills are absent or the user wants to change the selection, explain wizard vs init/add. Recommend showdar wizard for interactive selection. Do not silently install, replace, or remove skills. Ask for approval before any installer write.',
+    'If skills are already installed and sufficient, skip wizard. Do not reinstall merely because this command was invoked.',
+    'For project context, run showdar setup --dry-run --json and show the detected Git host, stack, scripts, existing documents, and exact proposed file actions.',
+    'Ask only about ambiguous or missing decisions. Do not invent architectural, domain, tracker, or verification conventions.',
+    'Before any local write (including installer/setup configuration changes), inspect Git state and project branch policy; use showdar git-start when on an integration branch and allowed, then require showdar guard --mutation local-write --json with ok=true and data.allowed=true.',
+    'Only after explicit approval apply the selected installation step (if needed) and run showdar setup --yes with confirmed --tracker and --docs-dir. Avoid unnecessary interactive commands in non-TTY environments.',
+    'Do not overwrite user-owned files. The setup CLI only creates missing context documents. Never edit source code, create remote issues, commit, merge, or push as part of onboarding.',
+    'Run showdar doctor, report the installed skills, context documents, verification results, unresolved warnings, and a short example of how to request a task.',
     '',
     'Request: $ARGUMENTS',
     '',
-  ].join('\n');
+  ].join('\\n');
 }
