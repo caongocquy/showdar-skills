@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.13.0]
+
+### Added
+
+- `showdar add profile <profile>`: additive union of built-in profile primitives without replacing an existing base profile or other installed skills.
+- `showdar add workflow <name>`: install built-in workflow skills and any missing stage primitives; `showdar add feature` / `showdar add showdar-feature` remain equivalent aliases.
+- `showdar add workflow ./local.json`: convenient spelling for existing project-scoped custom workflow installation.
+
+### Changed
+
+- Additive installation preserves existing extension metadata and supports projects initialized with `--ai all`.
+- `showdar init --profile ...` retains its explicit replace semantics; existing standalone `showdar add-workflow` remains supported.
+- Added installer regression coverage for existing-skill preservation, aliases, workflow stage closure, custom workflows, foreign-path safety and re-init replacement.
+
+
 ## [0.12.1]
 
 ### Fixed
