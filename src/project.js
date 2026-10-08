@@ -164,14 +164,14 @@ async function generateCommandFiles({ baseRoot, skillIds, target, commandRoot, p
   await writeTextAtomic(aggregatorDest, aggregatorContent);
   newFiles.push({ path: aggregatorRel, hash: await hashTree(aggregatorDest) });
   files.push({ destination: aggregatorDest, skillId: 'aggregator', shortName: 'skill' });
-  const setupDest = path.join(commandRoot, 'setup.md');
+  const setupDest = path.join(path.dirname(commandRoot), 'showdar-setup.md');
   const setupRel = manifestPathFor(baseRoot, setupDest);
   if ((await exists(setupDest)) && !priorOwned.has(setupRel)) {
     throw new Error('Refusing to overwrite existing non-Showdar-managed command: ' + setupDest);
   }
   await writeTextAtomic(setupDest, renderShowdarSetupCommand());
   newFiles.push({ path: setupRel, hash: await hashTree(setupDest) });
-  files.push({ destination: setupDest, skillId: 'setup', shortName: 'setup' });
+  files.push({ destination: setupDest, skillId: 'setup', shortName: 'showdar-setup' });
   return files;
 }
 
@@ -239,6 +239,7 @@ async function initInstallation({
           desiredPaths.add(manifestPathFor(baseRoot, path.join(root, `${shortName}.md`)));
         }
         desiredPaths.add(manifestPathFor(baseRoot, path.join(root, 'skill.md')));
+        desiredPaths.add(manifestPathFor(baseRoot, path.join(path.dirname(root), 'showdar-setup.md')));
         commandHarnesses.push({ target, root });
       }
     }
@@ -475,7 +476,7 @@ async function inspectInstallation({
       if (!commandRoot) continue;
       for (const cmd of manifest.commands ?? []) {
         if (cmd.target !== harness) continue;
-        const dest = path.join(commandRoot, `${cmd.name}.md`);
+        const dest = cmd.name === 'showdar-setup' ? path.join(path.dirname(commandRoot), 'showdar-setup.md') : path.join(commandRoot, `${cmd.name}.md`);
         const rel = manifestPathFor(baseRoot, dest);
         const owned = projectOwned.has(rel);
         if (!(await exists(dest))) {
