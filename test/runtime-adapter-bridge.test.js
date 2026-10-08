@@ -58,7 +58,7 @@ test('re-adding an installed Git skill refreshes owned SKILL.md without replacin
   await mkdir(projectRoot); await mkdir(home);
   try {
     await initProject({ projectRoot, homeRoot: home, packageRoot, ai: 'opencode', profile: 'minimal', skillIds: resolveProfile('minimal'), packageVersion: '0.12.0' });
-    const gitSkill = path.join(projectRoot, '.agents/skills/showdar-git/SKILL.md');
+    const gitSkill = path.join(projectRoot, '.opencode/skills/showdar-git/SKILL.md');
     const old = await readFile(gitSkill, 'utf8');
     assert.match(old, /showdar guard --mutation local-write --json/);
     const first = await addSkill({ cwd: projectRoot, home, packageRoot, skill: 'git', packageVersion: '0.12.1' });
