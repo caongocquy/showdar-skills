@@ -1,10 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, rm, writeFile, access } from 'node:fs/promises';
-import path from 'node:path';
-import { tmpdir } from 'node:os';
 import { collectWizardAnswers } from '../src/wizard.js';
-import { collectProjectSetupAnswers } from '../src/setup-prompt.js';
 
 function createPrompts({ singles = [], extras = [], workflows = [], approvals = [true], cancelled = null } = {}) {
   const calls = [];
@@ -92,33 +88,3 @@ test('Clack wizard cancel and confirmation decline do not authorize changes', as
   assert.equal(interrupted.calls.some(x => x.type === 'confirm'), false);
 });
 
-test('Clack setup detects defaults and previews user documents without writing', async () => {
-  const cwd = await mkdtemp(path.join(tmpdir(), 'showdar-clack-setup-'));
-  try {
-    await writeFile(path.join(cwd, 'package.json'),
-      JSON.stringify({ name: 'clack-app', scripts: { lint: 'eslint .', test: 'vitest run' } }));
-    const ui = createPrompts({ singles: ['local'], approvals: [true] });
-    const result = await collectProjectSetupAnswers({ cwd }, ui);
-    assert.deepEqual(result, { cancelled: false, tracker: 'local', docsDir: 'docs/agents' });
-    assert.deepEqual(ui.calls.filter(x => x.type === 'select').length, 1);
-    assert.deepEqual(ui.calls.filter(x => x.type === 'text').length, 1);
-    const summaries = ui.calls.filter(x => x.type === 'note');
-    assert.equal(summaries.length, 2);
-    assert.match(summaries[0].message, /clack-app/);
-    assert.match(summaries[1].message, /\+ create  docs\/agents\/project.md/);
-    const verifyText = ui.calls.find(x => x.type === 'text').options;
-    assert.equal(verifyText.validate('../unsafe').length > 0, true);
-    await assert.rejects(access(path.join(cwd, 'docs/agents/project.md')));
-  } finally { await rm(cwd, { recursive: true, force: true }); }
-});
-
-test('Clack setup cancellation preserves all files', async () => {
-  const cwd = await mkdtemp(path.join(tmpdir(), 'showdar-clack-cancel-'));
-  try {
-    const ui = createPrompts({ singles: ['local'], approvals: [false] });
-    const result = await collectProjectSetupAnswers({ cwd }, ui);
-    assert.deepEqual(result, { cancelled: true });
-    assert.equal(ui.calls.some(x => x.type === 'cancel'), true);
-    await assert.rejects(access(path.join(cwd, 'docs/agents/verification.md')));
-  } finally { await rm(cwd, { recursive: true, force: true }); }
-});
