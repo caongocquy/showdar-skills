@@ -175,6 +175,22 @@ async function generateCommandFiles({ baseRoot, skillIds, target, commandRoot, p
   return files;
 }
 
+async function generateCursorSetupCommand({ baseRoot, scope, homeRoot, priorOwned, newFiles }) {
+  const root = scope === 'global'
+    ? path.join(homeRoot, '.cursor', 'commands')
+    : path.join(baseRoot, '.cursor', 'commands');
+  const destination = path.join(root, 'showdar-setup.md');
+  await assertSafeManagedPath(baseRoot, destination);
+  const relative = manifestPathFor(baseRoot, destination);
+  if ((await exists(destination)) && !priorOwned.has(relative)) {
+    throw new Error('Refusing to overwrite existing non-Showdar-managed command: ' + destination);
+  }
+  await mkdir(root, { recursive: true });
+  await writeTextAtomic(destination, renderShowdarSetupCommand());
+  newFiles.push({ path: relative, hash: await hashTree(destination) });
+  return { destination, skillId: 'setup', shortName: 'showdar-setup', target: 'cursor' };
+}
+
 async function initInstallation({
   baseRoot, manifestPath, packageRoot, profile, ai, skillIds, packageVersion = '0.2.0',
   scope, homeRoot = homedir(),
@@ -246,6 +262,11 @@ async function initInstallation({
     }
   }
 
+  if (targets.includes('cursor')) {
+    const cursorRoot = scope === 'global' ? homeRoot : baseRoot;
+    desiredPaths.add(manifestPathFor(baseRoot, path.join(cursorRoot, '.cursor', 'commands', 'showdar-setup.md')));
+  }
+
   const staleTargets = [];
   for (const entry of prior?.files ?? []) {
     const targetPath = safeOwnedPath(baseRoot, entry.path, managedRoots);
@@ -264,6 +285,9 @@ async function initInstallation({
   }
 
   const commandsGenerated = [];
+  if (targets.includes('cursor')) {
+    commandsGenerated.push(await generateCursorSetupCommand({ baseRoot, scope, homeRoot, priorOwned, newFiles: files }));
+  }
   for (const { target, root } of commandHarnesses) {
     const generated = await generateCommandFiles({
       baseRoot,
@@ -627,6 +651,10 @@ export async function addSkill({ cwd, skill, ai = null, scope = null, home = hom
     for (const destination of destinations) {
       await copyOwned({ baseRoot, source, destination, priorOwned, newFiles: refreshedFiles });
     }
+    if ((existingManifest.targets ?? []).includes('cursor')) {
+      refreshedFiles.push(await generateCursorSetupCommand({ baseRoot, scope: effectiveScope, homeRoot: home, priorOwned, newFiles: refreshedFiles }));
+      refreshedFiles.pop(); // The helper already recorded the generated file entry.
+    }
     for (const target of existingManifest.commandHarness ?? []) {
       const commandRoot = effectiveScope === 'global' ? globalCommandRootForTarget(target, { homeRoot: home }) : commandRootFor(target, cwd);
       if (commandRoot) await generateCommandFiles({ baseRoot, skillIds: existingManifest.skills, target, commandRoot, priorOwned, newFiles: refreshedFiles });
@@ -689,6 +717,9 @@ export async function addSkill({ cwd, skill, ai = null, scope = null, home = hom
 
   const allSkillIds = [...new Set([...(existingManifest?.skills ?? []), skillId])];
   const newCommands = [];
+  if (targets.includes('cursor')) {
+    newCommands.push(await generateCursorSetupCommand({ baseRoot, scope: effectiveScope, homeRoot: home, priorOwned, newFiles: files }));
+  }
   const harnessTargets = [...new Set([...(existingManifest?.commandHarness ?? []), ...commandHarnesses.map(c => c.target)])];
   for (const target of harnessTargets) {
     const root = effectiveScope === 'global' ? globalCommandRootForTarget(target, { homeRoot: home }) : commandRootFor(target, cwd);
