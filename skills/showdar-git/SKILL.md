@@ -48,6 +48,12 @@ This skill owns repository state transitions, not source-code review or GitHub a
 
 ## Task branch isolation
 
+**Mandatory pre-write gate:** Installing `showdar-git` adds project-wide branch guidance. For every task-owned source/config/test/docs change, including tasks executed by another primitive, inspect current Git state, then run `showdar guard --mutation local-write --json` before file-writing tools. Require `ok=true` and `data.allowed=true`; if blocked, STOP without editing.
+
+On integration/default branches proactively run `showdar git-start --type <type> --name "<task>"` after repository/user convention inspection, then rerun guard. On an existing task branch, run guard without creating a nested branch. If the CLI is unavailable, use equivalent manual safe Git branch preparation and verify branch before editing. Explicit direct-work policy is a reviewed repo-local opt-in (`showdar.gitDirectWork=true`); never silently set it to bypass the gate.
+
+This gate is enforced by agent/tool instructions, not a filesystem interceptor; arbitrary writes outside Showdar remain possible. Neither guard nor git-start authorizes edits, commits, merges, or pushes.
+
 Before the first task-owned source edit for a local-write engineering task, inspect Git state (`git status --short`, current branch, branch history and repository policy). Direct develop/main edits are not the default: on develop, development, dev, main, master or the default/integration branch, prepare a dedicated task branch before source mutation.
 
 Priority: repository instructions/documented branching convention; explicit current user instruction; clearly detected existing convention; Showdar safe default. Explicit trunk-based/direct-work policy wins: do not impose GitFlow. Branch preparation does not authorize source mutation.
