@@ -23,14 +23,14 @@ async function fixture(branch = 'feature/setup') {
 }
 const manifest = async cwd => JSON.parse(await readFile(path.join(cwd, '.showdar.json'), 'utf8'));
 
-test('CLI project setup is removed; agents own project context', async () => {
+test('CLI setup retains installer flow while agent setup is distinct', async () => {
   const { cwd, cleanup } = await fixture();
   try {
     const result = run(cwd, 'setup', '--dry-run', '--json');
-    assert.notEqual(result.status, 0, 'removed CLI command must not silently succeed');
+    assert.equal(result.status, 1, 'installer preview requires explicit selection');
     await assert.rejects(access(path.join(cwd, 'docs/agents/project.md')));
     const help = run(cwd, '--help');
-    assert.doesNotMatch(help.stdout, /showdar setup \[/);
+    assert.match(help.stdout, /showdar setup \[/);
   } finally { await cleanup(); }
 });
 
@@ -39,20 +39,20 @@ test('wizard previews combined selections without mutating project and adds the 
   try {
     const args = ['--profile', 'developer', '--skills', 'insurance-domain,git',
       '--workflow', 'feature', '--ai', 'opencode'];
-    const preview = run(cwd, 'wizard', '--dry-run', '--json', ...args);
+    const preview = run(cwd, 'setup', '--dry-run', '--json', ...args);
     assert.equal(preview.status, 0, preview.stderr);
     const plan = JSON.parse(preview.stdout).data;
     assert.equal(plan.action, 'union');
     assert.ok(plan.skills.includes('showdar-feature'));
     for (const stage of getWorkflow('showdar-feature').stages) assert.ok(plan.skills.includes(stage));
     await assert.rejects(access(path.join(cwd, '.showdar.json')));
-    const applied = run(cwd, 'wizard', '--yes', ...args);
+    const applied = run(cwd, 'setup', '--yes', ...args);
     assert.equal(applied.status, 0, applied.stderr);
     const m = await manifest(cwd);
     for (const name of plan.skills) assert.ok(m.skills.includes(name), name);
     assert.equal(m.ai, 'opencode');
     assert.equal(run(cwd, 'doctor').status, 0);
-    const setupCommand = await readFile(path.join(cwd, '.opencode/commands/showdar/setup.md'), 'utf8');
+    const setupCommand = await readFile(path.join(cwd, '.opencode/commands/showdar-setup.md'), 'utf8');
     assert.match(setupCommand, /Audit architecture and module boundaries/);
     assert.match(setupCommand, /proposed file-by-file diff/);
     const addAgain = run(cwd, 'add', '--interactive', '--yes', ...args);
@@ -64,12 +64,12 @@ test('wizard previews combined selections without mutating project and adds the 
 test('wizard replace honors profile and does not silently choose defaults in non-interactive mode', async () => {
   const { cwd, cleanup } = await fixture();
   try {
-    const unattended = run(cwd, 'wizard');
+    const unattended = run(cwd, 'setup');
     assert.equal(unattended.status, 1);
-    const noChoice = run(cwd, 'wizard', '--yes');
+    const noChoice = run(cwd, 'setup', '--yes');
     assert.equal(noChoice.status, 1);
-    assert.equal(run(cwd, 'wizard', '--yes', '--profile', 'developer', '--ai', 'codex').status, 0);
-    const replace = run(cwd, 'wizard', '--yes', '--mode', 'replace', '--profile', 'insurance', '--ai', 'codex');
+    assert.equal(run(cwd, 'setup', '--yes', '--profile', 'developer', '--ai', 'codex').status, 0);
+    const replace = run(cwd, 'setup', '--yes', '--mode', 'replace', '--profile', 'insurance', '--ai', 'codex');
     assert.equal(replace.status, 0, replace.stderr);
     const m = await manifest(cwd);
     assert.deepEqual(m.skills, resolveProfile('insurance'));
@@ -84,8 +84,8 @@ test('context discovery guidance is in generated OpenCode commands without chang
     assert.equal(run(cwd, 'init', '--profile', 'minimal', '--ai', 'opencode').status, 0);
     const instruction = await readFile(path.join(cwd, 'AGENTS.md'), 'utf8');
     assert.match(instruction, /docs\/agents/);
-    const command = await readFile(path.join(cwd, '.opencode/commands/showdar/setup.md'), 'utf8');
-    assert.match(command, /Do not call showdar setup/);
+    const command = await readFile(path.join(cwd, '.opencode/commands/showdar-setup.md'), 'utf8');
+    assert.match(command, /interactive skill installer/);
     assert.match(command, /Git state/);
   } finally { await cleanup(); }
 });
