@@ -66,6 +66,44 @@ authorize source mutation, commit, merge or push. A custom workflow JSON file
 uses the existing `add-workflow` validation/manifest semantics; remote files
 and arbitrary executable plugins are unsupported.
 
+## Guided onboarding and project context
+
+Showdar also offers repo-aware onboarding after installing the CLI and selected
+skills. It detects Git host, package scripts, stack and documentation, then
+previews the files it would create:
+
+```bash
+showdar setup --dry-run --json
+showdar setup                       # interactive terminal questionnaire
+showdar setup --yes --tracker gitlab # non-interactive, requires safe task branch
+```
+
+Run `showdar guard --mutation local-write --json` before applying setup changes.
+On an integration branch, use `showdar git-start` first. Setup never writes
+code or silently overwrites existing user docs. It creates only missing
+`docs/agents/project.md`, `issue-tracker.md`, `verification.md`, and
+`domain.md`. A glossary and ADRs are referenced if present, not created
+unnecessarily. Installed native guidance asks skills to consult relevant
+shared context when it exists. OpenCode/Claude expose `/showdar/setup`;
+other agents can run `showdar setup` from their terminal.
+
+The installer also has an interactive selector:
+
+```bash
+showdar wizard
+showdar add --interactive                 # additive wizard alias
+showdar wizard --profile developer --skills git,insurance-domain --workflow feature --ai opencode --dry-run
+showdar wizard --profile developer --skills git --ai opencode --yes
+showdar wizard --mode replace --profile insurance --ai codex --yes
+```
+
+The wizard chooses install mode (add or replace), profile, additional skills,
+built-in workflows, AI target, and scope. It previews the deduplicated skill
+set and confirms before changing files. Non-interactive executions require
+explicit skill selection and `--yes`, unless using `--dry-run`. The default
+mode is additive, preserving the current installation; replace mode uses
+the same semantics as `showdar init`. No downloads or remote writes occur.
+
 ## Runtime routing and task branches
 
 ```bash
@@ -871,6 +909,8 @@ Product behavior notes:
 ```bash
 showdar init [--scope <project|global>] --ai <target> --profile <profile>
 showdar add <skill> [--ai <target>] [--scope <project|global>]
+showdar setup [--dry-run|--yes] [--tracker github|gitlab|local] [--docs-dir docs/agents]
+showdar wizard [--mode add|replace] [--profile name] [--skills list] [--workflow list] [--ai target] [--scope project|global] [--yes|--dry-run]
 showdar add profile <profile> [--ai <target>] [--scope <project|global>]
 showdar add workflow <builtin-name|local-json-path> [--ai <target>] [--scope <project|global>]
 showdar add-pack <local-path>
