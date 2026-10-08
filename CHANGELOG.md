@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.14.2]
+
+### Changed
+
+- Streamlined the README around quick start and common commands, preserving detailed documentation in `docs/REFERENCE.md`.
+- Extended the generated `/showdar/setup` guidance to coordinate skill selection (when needed) with project context setup, explicit approvals and Git preflight.
+- Included `docs/REFERENCE.md` in the npm package so its README documentation link works after publishing.
+
 ## [0.14.1]
 
 ### Changed
