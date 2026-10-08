@@ -26,7 +26,9 @@ for (const [ai, surface, commands] of [
     assert.match(text, /showdar-insurance-workflows/);
     assert.match(text, /before the first task-owned source edit/i);
     assert.match(text, /develop.*main/i);
-    assert.match(text, /showdar git-start --dry-run/);
+    assert.match(text, /showdar git-start --type/);
+    assert.match(text, /showdar guard --mutation local-write --json/);
+    if (ai === 'cursor') assert.match(text, /alwaysApply: true/);
     assert.match(text, /does not authorize mutation/i);
     assert.match(text, /CLI.*unavailable.*native/i);
     assert.match(text, /explicit.*named.*skill/i);
@@ -34,7 +36,8 @@ for (const [ai, surface, commands] of [
       for (const name of ['build', 'insurance-workflows', 'skill']) {
         const command = await readFile(path.join(projectRoot, commands, 'commands/showdar', `${name}.md`), 'utf8');
         assert.match(command, /showdar route --stdin --json/);
-        assert.match(command, /showdar git-start --dry-run/);
+        assert.match(command, /showdar git-start --type/);
+        assert.match(command, /showdar guard --mutation local-write --json/);
       }
       assert.match(await readFile(path.join(projectRoot, commands, 'commands/showdar/skill.md'), 'utf8'), /showdar-build.*showdar-insurance-workflows/);
     }
@@ -42,6 +45,7 @@ for (const [ai, surface, commands] of [
     for (const dir of ['src', 'engine', 'router']) await assert.rejects(access(path.join(projectRoot, dir)), { code: 'ENOENT' });
     const skill = await readFile(path.join(packageRoot, 'skills/showdar-git/SKILL.md'), 'utf8');
     assert.match(skill, /Task branch isolation/);
+    assert.match(skill, /showdar guard --mutation local-write --json/);
     assert.match(skill, /before the first task-owned source edit/i);
     assert.match(skill, /one branch per coherent task/i);
   } finally { await rm(base, { recursive: true, force: true }); }
