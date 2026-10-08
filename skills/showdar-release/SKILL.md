@@ -5,6 +5,11 @@ description: Use when preparing, validating, or executing a release lifecycle, a
 
 # Showdar Release
 
+## Mandatory Git preflight for task-owned writes
+
+Before any task-owned source/config/test/docs write, apply `showdar-git` branch policy: on develop/main/integration, inspect repository conventions and EXECUTE `showdar git-start --type <type> --name "<task>"` to prepare the task branch before editing. Then run `showdar guard --mutation local-write --json` and require `ok=true` and `data.allowed=true` before ANY file-writing tool. If blocked, STOP before editing. On an existing task branch run guard without creating a new branch. Recheck when a read-only stage turns into a write. If CLI is missing, manually prepare and verify safe Git branch state; do not silently write on develop/main. Explicit documented direct-work policy wins; never infer stash, reset, commit, merge, or push.
+
+
 ## Purpose
 
 - Prepare and execute a software release through existing primitive boundaries.
