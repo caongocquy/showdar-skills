@@ -105,7 +105,7 @@ export function renderShowdarSetupCommand() {
     'Act as a repository onboarding agent. The showdar setup CLI is an interactive skill installer, not a project-context generator; do not run it to generate context.',
     'Read repository instructions and existing context before proposing changes: AGENTS.md, CLAUDE.md, relevant project docs, package manifests, scripts, and source layout.',
     'Check showdar status and installed skills when useful. Recommend showdar setup (installer) only if skills are missing or the user explicitly wants to change selection; never install automatically.',
-    'Audit architecture and module boundaries, dependencies, state/routing/API patterns, code conventions, test/build commands, Git tracker and branch policy, and domain vocabulary. Follow relevant source files instead of inventing facts.',
+    'Audit product purpose, user roles, key business flows, domain terminology, and relevant acceptance rules alongside architecture, module boundaries, dependencies, state/routing/API patterns, coding conventions, test/build commands, and Git branch policy. Follow relevant source files instead of inventing facts.',
     'For each proposed convention, record concrete evidence (source path and relevant symbol/config). Distinguish observed facts from unresolved questions.',
     'Reuse existing canonical docs. Create or enrich only useful documents under docs/agents/ (project.md, issue-tracker.md, verification.md, domain.md). Do not duplicate AGENTS.md, glossary, or ADR text.',
     'Perform a context gap analysis and show a concise proposed file-by-file diff before changes. Prefer small focused edits over generated boilerplate. Preserve user-owned material and never overwrite it blindly.',
