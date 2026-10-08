@@ -1,4 +1,4 @@
-> **Legacy CLI reference (historical):** This document preserves detailed pre-agent-onboarding documentation. The `showdar setup` CLI command described below was removed; use agent-driven `/showdar/setup` on OpenCode/Claude or ask the agent to audit project context in Cursor/Codex. `showdar wizard` remains the interactive skills installer. For current quick start, use the [README](../README.md).
+> **Historical reference:** This document contains older CLI descriptions. Current commands: `showdar setup` is the interactive skills installer (formerly `showdar wizard`); `/showdar-setup` is the agent-driven project-context audit on OpenCode/Claude. See [README](../README.md) for the current quick start.
 
 # Showdar Skills
 
