@@ -3,7 +3,7 @@ import { ALL_SKILLS } from './catalog.js';
 const RUNTIME_GUIDANCE = `Automatic Showdar selection: route the current request through \`showdar route --stdin --json\` when the Showdar CLI is available. Supply the prompt as literal stdin data, never as interpolated shell syntax. Honor the canonical lifecycle primary; do not substitute another installed skill when it is missing. Report missing skills and suggest \`showdar add <name>\`; never auto-install. Include installed domain matches only as specialized context overlays; load returned advisors only when installed. Domain discovery does not grant authority or replace the lifecycle route.
 Explicit named-skill requests may load that installed skill directly without automatic routing. Workflow skills remain native discoverable choices; the router does not select workflows. If the CLI is unavailable, use native skill discovery/static descriptions below. Do not fetch a CLI through npx or install dependencies automatically.
 Routing does not authorize mutation. Inspect the returned mutation class and current task authority before work. For local-write tasks, before the first task-owned source edit inspect Git state. On develop, development, dev, main, master or the repository default/integration branch, DO NOT begin source edits yet: prepare one branch per coherent task first. Follow repository instructions/documented convention, explicit current user instruction, clearly detected convention, then the Showdar safe default. Explicit trunk/direct-work policy wins.
-Use \`showdar git-start --dry-run --type <type> --name <task>\`, then \`showdar git-start --type <type> --name <task>\`, or equivalent repository-specific preparation. Confirm the task branch before mutating skill execution. Reuse that branch across plan/build/test/review; do not nest branches per skill. Dirty ownership or branch collisions require inspection; never infer stash, reset, restore or clean. Git-start does not authorize source mutation, commit, merge or push. Completion defaults to verify and report on the task branch; merge and push require their own explicit authority.`;
+Before ANY task-owned source/config/test/docs write, execute Git preflight even if the router selected build directly. On integration/default branches inspect repository policy and EXECUTE \`showdar git-start --type <type> --name <task>\` (not just --dry-run), or equivalent repository-safe branch preparation. Then EXECUTE \`showdar guard --mutation local-write --json\` and require ok=true AND data.allowed=true BEFORE invoking any file-writing tool. If blocked, STOP before editing. On a matching task branch run guard without creating a new branch. Recheck before each later mutating stage. Do not infer permission from \`showdar route\`. If the CLI is unavailable, manually inspect Git and confirm the appropriate task branch or documented direct-work policy; never silently write on develop/main. Dirty ownership/branch collisions require inspection; never infer stash/reset/restore/clean. Guard and git-start do not authorize source edits, commit, merge or push. Completion means verify and report.`;
 
 const CANONICAL_ROUTE_ORDER = [
   ['map repository architecture, dependencies, or impact', 'showdar-understand'],
@@ -76,7 +76,7 @@ export function renderCursorRuleBody(skillIds) {
   const body = renderShowdarInstruction(skillIds).trimEnd();
   return `---
 description: Showdar skill and workflow routing guidance for software-engineering tasks
-alwaysApply: false
+alwaysApply: true
 ---
 
 ${body}

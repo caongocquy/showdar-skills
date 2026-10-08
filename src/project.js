@@ -590,6 +590,32 @@ export async function addSkill({ cwd, skill, ai = null, scope = null, home = hom
   if (existingManifest?.skills?.includes(skillId)) {
     const refreshedFiles = [];
     const priorOwned = ownedPathSet(existingManifest);
+    const source = path.join(packageRoot, 'skills', skillId);
+    if (!(await exists(path.join(source, 'SKILL.md')))) throw new Error(`Packaged skill source missing: ${skillId}`);
+
+    // Refresh all still-managed native copies, not only generated instructions.
+    // Preflight every destination before changing any of them.
+    const roots = [...new Set((existingManifest.targets ?? [effectiveAi]).map(target =>
+      effectiveScope === 'global'
+        ? globalSkillRootFor(target, { homeRoot: home })
+        : skillRootFor(target, cwd)))];
+    const destinations = [];
+    for (const root of roots) {
+      const destination = path.join(root, skillId);
+      const relative = manifestPathFor(baseRoot, destination);
+      const recorded = (existingManifest.files ?? []).find(file => file.path === relative);
+      if (!recorded) continue; // A skill satisfied by global does not own a project copy.
+      await assertSafeManagedPath(baseRoot, destination);
+      if (!(await exists(destination))) throw new Error(`Managed skill missing; refusing partial refresh: ${relative}`);
+      if (await hashTree(destination) !== recorded.hash) {
+        throw new Error(`Modified Showdar-owned skill; refusing to overwrite user changes: ${relative}`);
+      }
+      destinations.push(destination);
+    }
+
+    for (const destination of destinations) {
+      await copyOwned({ baseRoot, source, destination, priorOwned, newFiles: refreshedFiles });
+    }
     for (const target of existingManifest.commandHarness ?? []) {
       const commandRoot = effectiveScope === 'global' ? globalCommandRootForTarget(target, { homeRoot: home }) : commandRootFor(target, cwd);
       if (commandRoot) await generateCommandFiles({ baseRoot, skillIds: existingManifest.skills, target, commandRoot, priorOwned, newFiles: refreshedFiles });
@@ -600,11 +626,10 @@ export async function addSkill({ cwd, skill, ai = null, scope = null, home = hom
       if (instruction.kind === 'block') await writeManagedBlock(file, existingManifest.skills);
       else if (instruction.kind === 'file') await writeCursorRule(file, existingManifest.skills);
     }
-    if (refreshedFiles.length) {
-      const files = new Map(existingManifest.files.map(f => [f.path, f]));
-      for (const f of refreshedFiles) files.set(f.path, f);
-      await writeJsonAtomic(effectiveScope === 'global' ? globalManifestPath(home) : path.join(cwd, PROJECT_MANIFEST), { ...existingManifest, files: [...files.values()] });
-    }
+    const files = new Map((existingManifest.files ?? []).map(f => [f.path, f]));
+    for (const f of refreshedFiles) files.set(f.path, f);
+    await writeJsonAtomic(effectiveScope === 'global' ? globalManifestPath(home) : path.join(cwd, PROJECT_MANIFEST),
+      { ...existingManifest, packageVersion, files: [...files.values()] });
     return { skill: skillId, root: '', destination: '', added: false, scope: effectiveScope, ai: effectiveAi, profile: existingManifest.profile };
   }
 

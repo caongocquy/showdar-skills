@@ -47,6 +47,7 @@ printf '%s\n' 'Implement the approved underwriting form and add tests' | showdar
 showdar route --prompt "Explain insurance terminology"
 showdar git-start --dry-run --type feature --name "IDP-123 Add pricing form"
 showdar git-start --type feature --name "IDP-123 Add pricing form"
+showdar guard --mutation local-write --json
 ```
 
 Prefer `--stdin` for arbitrary or multiline prompts. Supply stdin as literal data;
@@ -90,6 +91,18 @@ and do not write project AGENTS.md or CLAUDE.md.
 The four workflows remain native discoverable/installable skills; `route` does not
 introduce workflow selection. Profiles remain primitive-only: `full` contains all
 18 primitives, and the insurance profile remains unchanged.
+
+Before the first local-write task source edit, the coding agent must run
+`showdar guard --mutation local-write --json` and require `ok=true` and
+`data.allowed=true`. When on develop/main/integration, it must execute
+`showdar git-start` (not only suggest it), confirm the branch, and rerun guard.
+This is an instruction-level agent preflight, **not an OS/filesystem hook**:
+tools that ignore Showdar can still write files. Cursor's generated rule now
+uses `alwaysApply: true` so the Git preflight isn't limited to manually
+activated skill calls. Existing project guidance must be refreshed after the
+package update (for example by running `showdar add git` with the new CLI).
+Re-adding an installed skill refreshes its managed SKILL.md and guidance only
+if the owned copy has not been locally modified; drift refuses to overwrite.
 
 Before the first local-write task source edit on develop/development/dev/main/master
 or the repository default/integration branch, prepare a task branch. Priority is

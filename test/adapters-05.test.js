@@ -78,8 +78,8 @@ test('AGENTS/CLAUDE/Cursor share identical semantic body after wrapper removal',
   assert.ok(stripBlock(agentsBlock).includes(canonical.split('\n')[0]));
   assert.ok(stripBlock(claudeBlock).includes(canonical.split('\n')[0]));
   assert.ok(stripCursor(cursorRule).includes(canonical.split('\n')[0]));
-  assert.match(cursorRule, /alwaysApply: false/);
-  assert.doesNotMatch(cursorRule, /alwaysApply: true/);
+  assert.match(cursorRule, /alwaysApply: true/);
+  assert.doesNotMatch(cursorRule, /alwaysApply: false/);
   assert.doesNotMatch(cursorRule, /globs/);
 });
 
