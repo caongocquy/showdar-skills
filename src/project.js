@@ -226,6 +226,7 @@ async function initInstallation({
     ? [...new Set([
         ...NATIVE_TARGETS.map((t) => globalSkillRootFor(t, { homeRoot })),
         ...NATIVE_TARGETS.filter((t) => globalCommandRootForTarget(t, { homeRoot })).map((t) => globalCommandRootForTarget(t, { homeRoot })),
+        ...NATIVE_TARGETS.filter((t) => globalCommandRootForTarget(t, { homeRoot })).map((t) => path.dirname(globalCommandRootForTarget(t, { homeRoot }))),
       ])]
     : [];
   const commandHarnesses = [];
@@ -528,6 +529,7 @@ async function removeInstallation({ baseRoot, manifestPath, scope, homeRoot = ho
     ? [...new Set([
         ...NATIVE_TARGETS.map((t) => globalSkillRootFor(t, { homeRoot })),
         ...NATIVE_TARGETS.filter((t) => globalCommandRootForTarget(t, { homeRoot })).map((t) => globalCommandRootForTarget(t, { homeRoot })),
+        ...NATIVE_TARGETS.filter((t) => globalCommandRootForTarget(t, { homeRoot })).map((t) => path.dirname(globalCommandRootForTarget(t, { homeRoot }))),
       ])]
     : [];
 
