@@ -1,6 +1,7 @@
 import { createInterface } from 'node:readline/promises';
 import { stdin, stdout } from 'node:process';
-import { PROFILES, ALL_SKILLS, NATIVE_TARGETS, resolveProfile, normalizeSkillName, getWorkflow } from './catalog.js';
+import { PROFILES, ALL_SKILLS, resolveProfile, normalizeSkillName, getWorkflow } from './catalog.js';
+import { NATIVE_TARGETS } from './adapters.js';
 import { addSkills, initGlobal, initProject } from './project.js';
 
 const split = value => typeof value === 'string' ? value.split(',').map(x => x.trim()).filter(Boolean) : [];
