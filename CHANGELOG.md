@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.14.1]
+
+### Changed
+
+- Replaced readline-based interactive installer with keyboard-driven TUI powered by `@clack/prompts`: arrow-key menus for mode, agent, scope and profile; searchable multi-select for skills; checkbox multi-select for workflows; explicit preview and confirmation.
+- Upgraded interactive `showdar setup` to show repository inspection, tracker selection, safe document-path input and an explicit create/preserve preview.
+- Kept non-interactive `--yes`, `--dry-run`, `--json` paths and existing add/replace semantics unchanged.
+
+
 ## [0.14.0]
 
 ### Added
