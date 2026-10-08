@@ -24,7 +24,7 @@ showdar doctor
 | Agent setup | Analyze the repository, propose grounded shared context, and update docs after approval. |
 | `doctor` | Check the installation and flag problems. |
 
-**OpenCode / Claude Code:** after installation, use `/showdar-setup` to audit the codebase and prepare project context. The agent previews a diff and requests approval before changes. **Cursor / Codex:** ask the agent to audit this repository and set up Showdar project context; there is no native Showdar slash command on those targets.
+**OpenCode / Claude Code:** after installation, use `/showdar-setup` to audit the codebase and prepare project context. The agent previews a diff and requests approval before changes. **Cursor:** use `/showdar-setup` as a project slash command. **Codex:** ask the agent to audit this repository and set up Showdar project context.
 
 Already configured? Just give the coding agent a normal task, such as *"Fix the checkout validation bug and add regression tests."* Showdar guidance routes requests to the relevant installed skills; you do not need to call each skill manually.
 
