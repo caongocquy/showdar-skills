@@ -652,8 +652,7 @@ export async function addSkill({ cwd, skill, ai = null, scope = null, home = hom
       await copyOwned({ baseRoot, source, destination, priorOwned, newFiles: refreshedFiles });
     }
     if ((existingManifest.targets ?? []).includes('cursor')) {
-      refreshedFiles.push(await generateCursorSetupCommand({ baseRoot, scope: effectiveScope, homeRoot: home, priorOwned, newFiles: refreshedFiles }));
-      refreshedFiles.pop(); // The helper already recorded the generated file entry.
+      await generateCursorSetupCommand({ baseRoot, scope: effectiveScope, homeRoot: home, priorOwned, newFiles: refreshedFiles });
     }
     for (const target of existingManifest.commandHarness ?? []) {
       const commandRoot = effectiveScope === 'global' ? globalCommandRootForTarget(target, { homeRoot: home }) : commandRootFor(target, cwd);
@@ -718,7 +717,8 @@ export async function addSkill({ cwd, skill, ai = null, scope = null, home = hom
   const allSkillIds = [...new Set([...(existingManifest?.skills ?? []), skillId])];
   const newCommands = [];
   if (targets.includes('cursor')) {
-    newCommands.push(await generateCursorSetupCommand({ baseRoot, scope: effectiveScope, homeRoot: home, priorOwned, newFiles: files }));
+    const generated = await generateCursorSetupCommand({ baseRoot, scope: effectiveScope, homeRoot: home, priorOwned, newFiles: files });
+    newCommands.push({ target: 'cursor', name: 'showdar-setup', path: manifestPathFor(baseRoot, generated.destination) });
   }
   const harnessTargets = [...new Set([...(existingManifest?.commandHarness ?? []), ...commandHarnesses.map(c => c.target)])];
   for (const target of harnessTargets) {
