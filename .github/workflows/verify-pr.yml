@@ -1,0 +1,39 @@
+name: Verify PR
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Check out PR
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        run: npm install --ignore-scripts --no-audit --no-fund --package-lock=false
+
+      - name: Check release version
+        run: npm run release:check -- v0.12.1
+
+      - name: Test, validate and pack
+        run: npm run check
+
+      - name: Evaluate retrieval and workflows
+        run: npm run eval
+
+      - name: Smoke test package
+        run: npm run smoke
+
+      - name: Verify whitespace
+        run: git diff --check
