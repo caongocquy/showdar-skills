@@ -53,7 +53,7 @@ test('wizard previews combined selections without mutating project and adds the 
     assert.equal(m.ai, 'opencode');
     assert.equal(run(cwd, 'doctor').status, 0);
     const setupCommand = await readFile(path.join(cwd, '.opencode/commands/showdar-setup.md'), 'utf8');
-    assert.match(setupCommand, /Audit architecture and module boundaries/);
+    assert.match(setupCommand, /Audit product purpose, user roles, key business flows/);
     assert.match(setupCommand, /proposed file-by-file diff/);
     const addAgain = run(cwd, 'add', '--interactive', '--yes', ...args);
     assert.equal(addAgain.status, 0, addAgain.stderr);
