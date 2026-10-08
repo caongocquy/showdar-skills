@@ -7,8 +7,8 @@ import { routeRequest, formatRoute } from '../src/runtime-route.js';
 import { homedir } from 'node:os';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { AI_TARGETS, PRIMITIVE_COUNT, PROFILE_ALIASES, PROFILES, SKILLS, TOTAL_COUNT, WORKFLOW_COUNT, canonicalProfile, isDeprecatedProfile, resolveProfile } from '../src/catalog.js';
-import { addPack, addSkill, addWorkflow, globalManifestPath, initGlobal, initProject, inspectGlobal, inspectProject, listExtensions, listExtensionsDetailed, removeGlobal, removePack, removeProject, validatePackSource, createPack, inspectPack, doctor, updatePack, readProjectOverrides } from '../src/project.js';
+import { AI_TARGETS, PRIMITIVE_COUNT, PROFILE_ALIASES, PROFILES, SKILLS, TOTAL_COUNT, WORKFLOW_COUNT, canonicalProfile, isDeprecatedProfile, resolveProfile, getWorkflow, normalizeSkillName } from '../src/catalog.js';
+import { addPack, addSkill, addSkills, addWorkflow, globalManifestPath, initGlobal, initProject, inspectGlobal, inspectProject, listExtensions, listExtensionsDetailed, removeGlobal, removePack, removeProject, validatePackSource, createPack, inspectPack, doctor, updatePack, readProjectOverrides } from '../src/project.js';
 import { formatPlanPreviewHuman, projectPackUpdatePreview } from '../src/pack-plan.js';
 import { assessCheckpointAgainstCandidate } from '../src/pack-inspect.js';
 import { validateRepository } from '../src/validate.js';
@@ -58,10 +58,10 @@ function printHelp(version, command = null) {
     return;
   }
   if (command === 'add') {
-    console.log(`Showdar Skills ${version}\n\nUsage:\n  showdar add <skill> [--ai <universal|codex|opencode|cursor|claude>] [--scope <project|global>]\n\nExamples:\n  showdar add debug\n  showdar add showdar-security\n  showdar add test --ai cursor\n  showdar add review --scope global --ai claude\n\nDefault scope: project. Default AI target: universal, or the configured .showdar.json value when present.`);
+    console.log(`Showdar Skills ${version}\n\nUsage:\n  showdar add <skill> [--ai <target>] [--scope <project|global>]\n  showdar add profile <profile> [--ai <target>] [--scope <project|global>]\n  showdar add workflow <builtin-name|local-json-path> [--ai <target>] [--scope <project|global>]\n\nExamples:\n  showdar add git\n  showdar add showdar-git\n  showdar add profile insurance\n  showdar add workflow feature\n  showdar add workflow ./workflows/acme-release.json\n\nAdd preserves installed skills; init replaces the managed set. Built-in workflows add required stages.`);
     return;
   }
-  console.log(`Showdar Skills ${version}\n\nUsage:\n  showdar init ${scopeUsage} [--profile <name>] [--ai <universal|codex|opencode|cursor|claude|all>] [--pack <local-path>]\n  showdar add <skill> [--ai <universal|codex|opencode|cursor|claude>] [--scope <project|global>]\n  showdar route (--stdin | --prompt <text>) [--json]\n  showdar git-start --type <type> --name <task> [--base <branch>] [--dry-run] [--json]\n  showdar guard --mutation <read-only|local-write> [--json]\n  showdar add-pack <local-path>\n  showdar remove-pack <name>\n  showdar add-workflow <local-path>\n  showdar status ${scopeUsage}\n  showdar doctor ${scopeUsage}\n  showdar validate\n  showdar list [--extensions]\n  showdar remove ${scopeUsage}\n  showdar create-pack <path> [--vendor <vendor>] [--description <text>] [--with-workflow <id>] [--with-profile <name>]\n  showdar validate-pack <local-path> [--json]\n  showdar inspect-pack <local-path> [--json] [--checkpoint <file>]\n  showdar doctor ${scopeUsage} [--extensions] [--json]\n  showdar update-pack <local-path> [--dry-run] [--json]\n  showdar validate\n  showdar list [--extensions] [--json]\n  showdar remove ${scopeUsage}\n\nExtension packs accept local directories/workspace paths only; tarball, URL, Git, and registry sources are rejected.\n\nDefaults: scope project, profile full, AI target universal.\nProfiles: ${Object.keys(PROFILES).join(', ')}\nDeprecated aliases: ${Object.entries(PROFILE_ALIASES).map(([alias, target]) => `${alias} -> ${target}`).join(', ')}\nAI targets: ${AI_TARGETS.join(', ')}`);
+  console.log(`Showdar Skills ${version}\n\nUsage:\n  showdar init ${scopeUsage} [--profile <name>] [--ai <universal|codex|opencode|cursor|claude|all>] [--pack <local-path>]\n  showdar add <skill> [--ai <target>] [--scope <project|global>]\n  showdar add profile <profile> [--ai <target>] [--scope <project|global>]\n  showdar add workflow <builtin-name|local-json-path> [--ai <target>] [--scope <project|global>]\n  showdar route (--stdin | --prompt <text>) [--json]\n  showdar git-start --type <type> --name <task> [--base <branch>] [--dry-run] [--json]\n  showdar guard --mutation <read-only|local-write> [--json]\n  showdar add-pack <local-path>\n  showdar remove-pack <name>\n  showdar add-workflow <local-path>\n  showdar status ${scopeUsage}\n  showdar doctor ${scopeUsage}\n  showdar validate\n  showdar list [--extensions]\n  showdar remove ${scopeUsage}\n  showdar create-pack <path> [--vendor <vendor>] [--description <text>] [--with-workflow <id>] [--with-profile <name>]\n  showdar validate-pack <local-path> [--json]\n  showdar inspect-pack <local-path> [--json] [--checkpoint <file>]\n  showdar doctor ${scopeUsage} [--extensions] [--json]\n  showdar update-pack <local-path> [--dry-run] [--json]\n  showdar validate\n  showdar list [--extensions] [--json]\n  showdar remove ${scopeUsage}\n\nExtension packs accept local directories/workspace paths only; tarball, URL, Git, and registry sources are rejected.\n\nDefaults: scope project, profile full, AI target universal.\nProfiles: ${Object.keys(PROFILES).join(', ')}\nDeprecated aliases: ${Object.entries(PROFILE_ALIASES).map(([alias, target]) => `${alias} -> ${target}`).join(', ')}\nAI targets: ${AI_TARGETS.join(', ')}`);
 }
 
 async function main() {
@@ -242,20 +242,49 @@ async function main() {
   }
 
   if (command === 'add') {
-    const positional = args.filter((a, i) => i > 0 && !a.startsWith('--') && args[i - 1] !== '--ai' && args[i - 1] !== '--scope');
-    const skillArg = positional[0];
-    if (!skillArg) throw new Error('Skill name is required. Usage: showdar add <skill> [--ai <target>] [--scope <project|global>]');
+    const positional = args.filter((arg, index) => index > 0 && !arg.startsWith('--') && args[index - 1] !== '--ai' && args[index - 1] !== '--scope');
+    const kind = positional[0];
+    if (!kind) throw new Error('Usage: showdar add <skill> | profile <profile> | workflow <builtin-name|local-json-path>');
     const hasAiFlag = args.includes('--ai');
     const hasScopeFlag = args.includes('--scope');
-    const result = await addSkill({
+    const options = {
       cwd: projectRoot,
-      skill: skillArg,
       ai: hasAiFlag ? valueAfter(args, '--ai', 'universal') : null,
       scope: hasScopeFlag ? scope : null,
       home: homedir(),
       packageRoot,
       packageVersion: version,
-    });
+    };
+    if (kind === 'profile') {
+      if (positional.length !== 2) throw new Error('Usage: showdar add profile <profile> [--ai <target>] [--scope <project|global>]');
+      const profileName = positional[1];
+      const selected = resolveProfile(profileName);
+      const result = await addSkills({ ...options, skills: selected });
+      if (isDeprecatedProfile(profileName)) console.warn(`Warning: profile "${profileName}" is deprecated; use "${canonicalProfile(profileName)}".`);
+      console.log(`Showdar profile added.\nAdded profile: ${canonicalProfile(profileName)}\nNew skills: ${result.added}\nAlready installed: ${result.alreadyInstalled}\nTotal requested: ${result.skills.length}\nExisting profile preserved: ${result.profile ?? '(none)'}\nScope: ${result.scope}\nAI: ${result.ai}`);
+      return;
+    }
+    const installBuiltinWorkflow = async workflow => {
+      const result = await addSkills({ ...options, skills: [workflow.id, ...workflow.stages] });
+      console.log(`Showdar workflow added.\nWorkflow: ${workflow.id}\nNew skills: ${result.added}\nAlready installed: ${result.alreadyInstalled}\nRequired stage skills: ${workflow.stages.join(', ')}\nScope: ${result.scope}\nAI: ${result.ai}`);
+    };
+    if (kind === 'workflow') {
+      if (positional.length !== 2) throw new Error('Usage: showdar add workflow <builtin-name|local-json-path>');
+      const name = positional[1];
+      const builtin = getWorkflow(name.startsWith('showdar-') ? name : `showdar-${name}`);
+      if (builtin) return installBuiltinWorkflow(builtin);
+      if (!name.endsWith('.json')) throw new Error(`Unknown built-in workflow "${name}". For custom workflows provide a local JSON file.`);
+      if (hasAiFlag || (hasScopeFlag && scope !== 'project')) {
+        throw new Error('Custom workflow files support project scope only and do not accept --ai.');
+      }
+      const result = await addWorkflow({ cwd: projectRoot, source: name });
+      console.log(`Showdar custom workflow added.\nWorkflow: ${result.workflow}\nPath: ${result.path}`);
+      return;
+    }
+    if (positional.length !== 1) throw new Error('Usage: showdar add <skill> [--ai <target>] [--scope <project|global>]');
+    const workflow = getWorkflow(normalizeSkillName(kind));
+    if (workflow) return installBuiltinWorkflow(workflow);
+    const result = await addSkill({ ...options, skill: kind });
     console.log(`Showdar skill ${result.added ? 'added' : 'already installed'}.\nSkill: ${result.skill}\nScope: ${result.scope}\nAI: ${result.ai}\nPath: ${result.destination}`);
     return;
   }
