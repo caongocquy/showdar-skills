@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import path from 'node:path';
 import { parseArgs } from 'node:util';
-import { createInterface } from 'node:readline/promises';
+import { collectProjectSetupAnswers } from '../src/setup-prompt.js';
 import { planProjectSetup, applyProjectSetup } from '../src/setup.js';
 import { buildWizardPlan, applyWizardPlan, collectWizardAnswers } from '../src/wizard.js';
 import { startTaskBranch, formatGitStart } from '../src/git-start.js';
@@ -100,18 +100,10 @@ async function main() {
     let tracker = values.tracker ?? null;
     let docsDir = values['docs-dir'] ?? 'docs/agents';
     if (!values.yes && !values['dry-run']) {
-      if (!process.stdin.isTTY || !process.stdout.isTTY)
-        throw new Error('Setup needs an interactive TTY, --dry-run, or --yes.');
-      const initial = await planProjectSetup({ cwd: projectRoot, tracker, docsDir });
-      const rl = createInterface({ input: process.stdin, output: process.stdout });
-      try {
-        tracker = (await rl.question('Issue tracker (github/gitlab/local) [' + initial.tracker + ']: ')).trim() || initial.tracker;
-        docsDir = (await rl.question('Shared docs path [docs/agents]: ')).trim() || docsDir;
-        const preview = await planProjectSetup({ cwd: projectRoot, tracker, docsDir });
-        console.log('Preview: ' + preview.files.map(f => f.action + ' ' + f.path).join(', '));
-        const approved = (await rl.question('Apply? Type yes: ')).trim() === 'yes';
-        if (!approved) { console.log('Setup cancelled without changes.'); return; }
-      } finally { rl.close(); }
+      const answers = await collectProjectSetupAnswers({ cwd: projectRoot, tracker, docsDir });
+      if (answers.cancelled) return;
+      tracker = answers.tracker;
+      docsDir = answers.docsDir;
     }
     const plan = await planProjectSetup({ cwd: projectRoot, tracker, docsDir });
     if (values['dry-run']) {
