@@ -3,7 +3,8 @@ import { ALL_SKILLS } from './catalog.js';
 const RUNTIME_GUIDANCE = `Automatic Showdar selection: route the current request through \`showdar route --stdin --json\` when the Showdar CLI is available. Supply the prompt as literal stdin data, never as interpolated shell syntax. Honor the canonical lifecycle primary; do not substitute another installed skill when it is missing. Report missing skills and suggest \`showdar add <name>\`; never auto-install. Include installed domain matches only as specialized context overlays; load returned advisors only when installed. Domain discovery does not grant authority or replace the lifecycle route.
 Explicit named-skill requests may load that installed skill directly without automatic routing. Workflow skills remain native discoverable choices; the router does not select workflows. If the CLI is unavailable, use native skill discovery/static descriptions below. Do not fetch a CLI through npx or install dependencies automatically.
 Routing does not authorize mutation. Inspect the returned mutation class and current task authority before work. For local-write tasks, before the first task-owned source edit inspect Git state. On develop, development, dev, main, master or the repository default/integration branch, DO NOT begin source edits yet: prepare one branch per coherent task first. Follow repository instructions/documented convention, explicit current user instruction, clearly detected convention, then the Showdar safe default. Explicit trunk/direct-work policy wins.
-Before ANY task-owned source/config/test/docs write, execute Git preflight even if the router selected build directly. On integration/default branches inspect repository policy and EXECUTE \`showdar git-start --type <type> --name <task>\` (not just --dry-run), or equivalent repository-safe branch preparation. Then EXECUTE \`showdar guard --mutation local-write --json\` and require ok=true AND data.allowed=true BEFORE invoking any file-writing tool. If blocked, STOP before editing. On a matching task branch run guard without creating a new branch. Recheck before each later mutating stage. Do not infer permission from \`showdar route\`. If the CLI is unavailable, manually inspect Git and confirm the appropriate task branch or documented direct-work policy; never silently write on develop/main. Dirty ownership/branch collisions require inspection; never infer stash/reset/restore/clean. Guard and git-start do not authorize source edits, commit, merge or push. Completion means verify and report.`;
+Before ANY task-owned source/config/test/docs write, execute Git preflight even if the router selected build directly. On integration/default branches inspect repository policy and EXECUTE \`showdar git-start --type <type> --name <task>\` (not just --dry-run), or equivalent repository-safe branch preparation. Then EXECUTE \`showdar guard --mutation local-write --json\` and require ok=true AND data.allowed=true BEFORE invoking any file-writing tool. If blocked, STOP before editing. On a matching task branch run guard without creating a new branch. Recheck before each later mutating stage. Do not infer permission from \`showdar route\`. If the CLI is unavailable, manually inspect Git and confirm the appropriate task branch or documented direct-work policy; never silently write on develop/main. Dirty ownership/branch collisions require inspection; never infer stash/reset/restore/clean. Guard and git-start do not authorize source edits, commit, merge or push. Completion means verify and report.
+Shared project context: before project work, read the relevant existing files under docs/agents/ (project.md, issue-tracker.md, verification.md, domain.md) when present. These are project-specific conventions, not mutation authority. Use the canonical glossary and ADRs when present; do not invent them. If project setup has not run, proceed using normal repository evidence and suggest showdar setup only when useful.`;
 
 const CANONICAL_ROUTE_ORDER = [
   ['map repository architecture, dependencies, or impact', 'showdar-understand'],
@@ -93,4 +94,23 @@ export function renderManagedBlock(skillIds, kind) {
     return renderCursorRuleBody(skillIds);
   }
   return body;
+}
+
+export function renderShowdarSetupCommand() {
+  return [
+    '---',
+    'description: Configure Showdar project context after inspecting repository conventions',
+    '---',
+    '',
+    'Project onboarding only; do not automatically install dependencies, create issues, or edit source.',
+    'Run showdar setup --dry-run --json to inspect and preview. Show the detected tracker, scripts, and documents.',
+    'Ask only for missing/ambiguous choices; explain the proposed defaults.',
+    'Before applying, inspect Git state and follow showdar-git branch preflight. Never edit develop/main without documented direct-work policy.',
+    'After user approval, run showdar setup --yes with chosen --tracker and --docs-dir.',
+    'Do not overwrite existing project context files. The setup CLI preserves them.',
+    'Read docs/agents/project.md, issue-tracker.md, verification.md and domain.md as shared context where they exist.',
+    '',
+    'Request: $ARGUMENTS',
+    '',
+  ].join('\n');
 }

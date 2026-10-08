@@ -119,7 +119,7 @@ test('explicit project targets get exactly one instruction surface', async () =>
   }
 });
 
-test('command counts follow installed set: minimal 8+1, add feature 9+1, full+workflows 22+1', async () => {
+test('command counts include built-in setup: minimal 8+2, add feature 9+2, full+workflows 22+2', async () => {
   const allIds = [...resolveProfile('full'), 'showdar-feature', 'showdar-bugfix', 'showdar-release', 'showdar-incident'];
   const { base, packageRoot, projectRoot, homeRoot } = await fixture(allIds);
   try {
@@ -127,17 +127,18 @@ test('command counts follow installed set: minimal 8+1, add feature 9+1, full+wo
     await initProject({ projectRoot, homeRoot, packageRoot, profile: 'minimal', ai: 'opencode', skillIds: minimal, packageVersion: '0.4.0' });
     const readDir = async (dir) => (await import('node:fs/promises')).readdir(dir);
     let files = await readDir(path.join(projectRoot, '.opencode/commands/showdar'));
-    assert.equal(files.filter((f) => f !== 'skill.md').length, 8);
+    assert.equal(files.filter((f) => f !== 'skill.md').length, 9);
     assert.ok(files.includes('skill.md'));
+    assert.ok(files.includes('setup.md'));
 
     await addSkill({ cwd: projectRoot, skill: 'feature', packageRoot, home: homeRoot, packageVersion: '0.4.0' });
     files = await readDir(path.join(projectRoot, '.opencode/commands/showdar'));
-    assert.equal(files.filter((f) => f !== 'skill.md').length, 9);
+    assert.equal(files.filter((f) => f !== 'skill.md').length, 10);
     assert.ok(files.includes('feature.md'));
 
     await initProject({ projectRoot, homeRoot, packageRoot, profile: 'full', ai: 'opencode', skillIds: allIds, packageVersion: '0.4.0' });
     files = await readDir(path.join(projectRoot, '.opencode/commands/showdar'));
-    assert.equal(files.filter((f) => f !== 'skill.md').length, 22);
+    assert.equal(files.filter((f) => f !== 'skill.md').length, 23);
     assert.ok(files.includes('skill.md'));
     const aggregator = await readFile(path.join(projectRoot, '.opencode/commands/showdar/skill.md'), 'utf8');
     for (const id of allIds) assert.ok(aggregator.includes(id));

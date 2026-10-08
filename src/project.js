@@ -15,7 +15,7 @@ import {
 import { normalizeSkillName, ALL_SKILLS } from './catalog.js';
 import { assertSafeManagedPath, lstatWithoutSymlink, safeOwnedPath } from './path-safety.js';
 export { assertSafeManagedPath, lstatWithoutSymlink, safeOwnedPath } from './path-safety.js';
-import { renderManagedBlock, renderShowdarCommand, renderShowdarAggregator } from './adapter-renderers.js';
+import { renderManagedBlock, renderShowdarCommand, renderShowdarAggregator, renderShowdarSetupCommand } from './adapter-renderers.js';
 import { validatePack } from './validate-pack.js';
 
 const PROJECT_MANIFEST = '.showdar.json';
@@ -164,6 +164,14 @@ async function generateCommandFiles({ baseRoot, skillIds, target, commandRoot, p
   await writeTextAtomic(aggregatorDest, aggregatorContent);
   newFiles.push({ path: aggregatorRel, hash: await hashTree(aggregatorDest) });
   files.push({ destination: aggregatorDest, skillId: 'aggregator', shortName: 'skill' });
+  const setupDest = path.join(commandRoot, 'setup.md');
+  const setupRel = manifestPathFor(baseRoot, setupDest);
+  if ((await exists(setupDest)) && !priorOwned.has(setupRel)) {
+    throw new Error('Refusing to overwrite existing non-Showdar-managed command: ' + setupDest);
+  }
+  await writeTextAtomic(setupDest, renderShowdarSetupCommand());
+  newFiles.push({ path: setupRel, hash: await hashTree(setupDest) });
+  files.push({ destination: setupDest, skillId: 'setup', shortName: 'setup' });
   return files;
 }
 

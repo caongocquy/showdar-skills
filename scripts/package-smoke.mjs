@@ -52,9 +52,10 @@ try {
     for (const id of skillIds) await mustExist(path.join(project, skillRoot, id, 'SKILL.md'));
   }
   const commands = await readdir(path.join(project, '.opencode', 'commands', 'showdar'));
-  if (commands.filter((name) => name.endsWith('.md')).length !== 19) throw new Error(`expected 19 OpenCode commands (18 direct + skill.md), got ${commands.length}`);
+  if (commands.filter((name) => name.endsWith('.md')).length !== 20) throw new Error(`expected 20 OpenCode commands (18 direct + skill.md + setup.md), got ${commands.length}`);
+  await mustExist(path.join(project, '.opencode', 'commands', 'showdar', 'setup.md'));
   const claudeCommands = await readdir(path.join(project, '.claude', 'commands', 'showdar'));
-  if (claudeCommands.filter((name) => name.endsWith('.md')).length !== 19) throw new Error(`expected 19 Claude commands (18 direct + skill.md), got ${claudeCommands.length}`);
+  if (claudeCommands.filter((name) => name.endsWith('.md')).length !== 20) throw new Error(`expected 20 Claude commands (18 direct + skill.md + setup.md), got ${claudeCommands.length}`);
 
   // Prove installed skills are self-contained: their helper imports must work outside the source package.
   const searchOut = run(process.execPath, [path.join(project, '.agents/skills/showdar-design/scripts/search.mjs'), '--query', 'wedding editorial elegant', '--domain', 'products', '--limit', '1'], { cwd: project });
