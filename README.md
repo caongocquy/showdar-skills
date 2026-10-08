@@ -100,7 +100,9 @@ This is an instruction-level agent preflight, **not an OS/filesystem hook**:
 tools that ignore Showdar can still write files. Cursor's generated rule now
 uses `alwaysApply: true` so the Git preflight isn't limited to manually
 activated skill calls. Existing project guidance must be refreshed after the
-package update (for example by re-adding an already installed skill).
+package update (for example by running `showdar add git` with the new CLI).
+Re-adding an installed skill refreshes its managed SKILL.md and guidance only
+if the owned copy has not been locally modified; drift refuses to overwrite.
 
 Before the first local-write task source edit on develop/development/dev/main/master
 or the repository default/integration branch, prepare a task branch. Priority is
