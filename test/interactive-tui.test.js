@@ -41,6 +41,14 @@ function createPrompts({ singles = [], extras = [], workflows = [], approvals = 
   return prompts;
 }
 
+test('installed Clack runtime exposes real keyboard and searchable multi-select primitives', async () => {
+  const prompts = await import('@clack/prompts');
+  for (const name of ['intro', 'outro', 'note', 'select', 'multiselect',
+    'autocompleteMultiselect', 'text', 'confirm', 'isCancel', 'cancel']) {
+    assert.equal(typeof prompts[name], 'function', name + ' must be available at runtime');
+  }
+});
+
 test('Clack wizard uses arrows/selection prompts with searchable multi-select and a preview', async () => {
   const ui = createPrompts({
     singles: ['add', 'opencode', 'project', 'developer'],
