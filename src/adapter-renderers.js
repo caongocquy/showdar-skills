@@ -115,5 +115,5 @@ export function renderShowdarSetupCommand() {
     '',
     'Request: $ARGUMENTS',
     '',
-  ].join('\\n');
+  ].join('\n');
 }
