@@ -24,7 +24,9 @@ jobs:
         run: npm install --ignore-scripts --no-audit --no-fund --package-lock=false
 
       - name: Check release version
-        run: npm run release:check -- v0.12.1
+        run: |
+          version=$(node -p "require('./package.json').version")
+          npm run release:check -- "v${version}"
 
       - name: Test, validate and pack
         run: npm run check
