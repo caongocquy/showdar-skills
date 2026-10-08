@@ -1,0 +1,907 @@
+{
+  "dataset": "blind-holdout-4",
+  "kind": "blind-generalization",
+  "method": "Expectations authored from the documented semantic contract only, before any resolver execution. No runtime output or implementation internals used.",
+  "cases": [
+    {
+      "id": "b4-understand-repo-scheduler",
+      "prompt": "Walk me through how this repository handles background job scheduling",
+      "boundary": ["direct-action-vs-domain-noun"],
+      "expectedIntent": {
+        "phase": "discovery",
+        "action": "understand",
+        "secondaryActions": [],
+        "object": "repository",
+        "risks": [],
+        "mutation": "read-only",
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      },
+      "expectedConstraints": [],
+      "expectedPrimary": "showdar-understand",
+      "expectedAdvisors": [],
+      "expectationConfidence": "CLEAR"
+    },
+    {
+      "id": "b4-understand-invoice-proration",
+      "prompt": "Explain how the invoices endpoint calculates proration",
+      "boundary": ["verb-governed-target"],
+      "expectedIntent": {
+        "phase": "discovery",
+        "action": "understand",
+        "secondaryActions": [],
+        "object": "api",
+        "risks": [],
+        "mutation": "read-only",
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      },
+      "expectedConstraints": [],
+      "expectedPrimary": "showdar-understand",
+      "expectedAdvisors": [],
+      "expectationConfidence": "CLEAR"
+    },
+    {
+      "id": "b4-requirements-trial-rules",
+      "prompt": "Define the business rules for trial expiry and seat overage",
+      "boundary": ["requirements-vs-implementation"],
+      "expectedIntent": {
+        "phase": "definition",
+        "action": "define",
+        "secondaryActions": [],
+        "object": "data",
+        "risks": [],
+        "mutation": "read-only",
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      },
+      "expectedConstraints": [],
+      "expectedPrimary": "showdar-requirements",
+      "expectedAdvisors": [],
+      "expectationConfidence": "CLEAR"
+    },
+    {
+      "id": "b4-requirements-kiosk-undecided",
+      "prompt": "Define the requirements for the self-service kiosk; the refund windows are still undecided",
+      "boundary": ["requirements-vs-implementation"],
+      "expectedIntent": {
+        "phase": "definition",
+        "action": "define",
+        "secondaryActions": [],
+        "object": "data",
+        "risks": [],
+        "mutation": "read-only",
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": false }
+      },
+      "expectedConstraints": [],
+      "expectedPrimary": "showdar-requirements",
+      "expectedAdvisors": [],
+      "expectationConfidence": "CLEAR"
+    },
+    {
+      "id": "b4-requirements-retention-unknown",
+      "prompt": "The retention policy for archived recordings is not known yet",
+      "boundary": ["requirements-vs-implementation"],
+      "expectedIntent": {
+        "phase": "definition",
+        "action": "define",
+        "secondaryActions": [],
+        "object": "data",
+        "risks": [],
+        "mutation": "read-only",
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": false }
+      },
+      "expectedConstraints": [],
+      "expectedPrimary": "showdar-requirements",
+      "expectedAdvisors": [],
+      "expectationConfidence": "CLEAR"
+    },
+    {
+      "id": "b4-plan-cache-migration",
+      "prompt": "Draft the migration plan for moving the cache layer to managed Redis",
+      "boundary": ["plan-vs-execution"],
+      "expectedIntent": {
+        "phase": "planning",
+        "action": "plan",
+        "secondaryActions": [],
+        "object": "state",
+        "risks": ["compatibility"],
+        "mutation": "read-only",
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      },
+      "expectedConstraints": [],
+      "expectedPrimary": "showdar-plan",
+      "expectedAdvisors": [],
+      "expectationConfidence": "CLEAR"
+    },
+    {
+      "id": "b4-plan-rollout-noexec",
+      "prompt": "Outline the rollout phases for the alerting service, but don't execute anything yet",
+      "boundary": ["plan-vs-execution", "negated-operations"],
+      "expectedIntent": {
+        "phase": "planning",
+        "action": "plan",
+        "secondaryActions": [],
+        "object": "backend",
+        "risks": [],
+        "mutation": "read-only",
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      },
+      "expectedConstraints": [],
+      "expectedPrimary": "showdar-plan",
+      "expectedAdvisors": [],
+      "expectationConfidence": "CLEAR"
+    },
+    {
+      "id": "b4-design-empty-playlist",
+      "prompt": "Design the empty-state layout for the playlist screen",
+      "boundary": ["design-vs-plan"],
+      "expectedIntent": {
+        "phase": "design",
+        "action": "design",
+        "secondaryActions": [],
+        "object": "ui",
+        "risks": [],
+        "mutation": "local-write",
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      },
+      "expectedConstraints": [],
+      "expectedPrimary": "showdar-design",
+      "expectedAdvisors": [],
+      "expectationConfidence": "CLEAR"
+    },
+    {
+      "id": "b4-design-keyboard-form-scoped",
+      "prompt": "Design a keyboard-navigable settings form without touching the API",
+      "boundary": ["scoped-no-modify", "design-vs-plan"],
+      "expectedIntent": {
+        "phase": "design",
+        "action": "design",
+        "secondaryActions": [],
+        "object": "ui",
+        "risks": [],
+        "mutation": "local-write",
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      },
+      "expectedConstraints": ["no-modify:api"],
+      "expectedPrimary": "showdar-design",
+      "expectedAdvisors": [],
+      "expectationConfidence": "AMBIGUOUS"
+    },
+    {
+      "id": "b4-build-double-booking-known",
+      "prompt": "Fix the double-booking bug; the root cause is confirmed in the availability check and the retry policy is documented",
+      "boundary": ["known-cause-vs-unknown-cause", "diagnosis-vs-repair"],
+      "expectedIntent": {
+        "phase": "implementation",
+        "action": "fix",
+        "secondaryActions": [],
+        "object": "backend",
+        "risks": [],
+        "mutation": "local-write",
+        "evidence": { "failureObserved": true, "rootCauseKnown": true, "behaviorDefined": true }
+      },
+      "expectedConstraints": [],
+      "expectedPrimary": "showdar-build",
+      "expectedAdvisors": [],
+      "expectationConfidence": "CLEAR"
+    },
+    {
+      "id": "b4-build-receipt-signature-spec",
+      "prompt": "Implement the receipt signature check according to the approved spec",
+      "boundary": ["requirements-vs-implementation", "domain-risk-without-secondary"],
+      "expectedIntent": {
+        "phase": "implementation",
+        "action": "implement",
+        "secondaryActions": [],
+        "object": "api",
+        "risks": ["security"],
+        "mutation": "local-write",
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": true }
+      },
+      "expectedConstraints": [],
+      "expectedPrimary": "showdar-build",
+      "expectedAdvisors": [],
+      "expectationConfidence": "CLEAR"
+    },
+    {
+      "id": "b4-build-pdf-export-tests",
+      "prompt": "Implement the PDF export endpoint and add regression tests",
+      "boundary": ["explicit-secondary-work", "multiple-coordinated-actions"],
+      "expectedIntent": {
+        "phase": "implementation",
+        "action": "implement",
+        "secondaryActions": ["test"],
+        "object": "api",
+        "risks": ["regression"],
+        "mutation": "local-write",
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      },
+      "expectedConstraints": [],
+      "expectedPrimary": "showdar-build",
+      "expectedAdvisors": ["showdar-test"],
+      "expectationConfidence": "CLEAR"
+    },
+    {
+      "id": "b4-build-typo-pricing",
+      "prompt": "Fix the typo on the pricing page",
+      "boundary": ["review-vs-implementation"],
+      "expectedIntent": {
+        "phase": "implementation",
+        "action": "fix",
+        "secondaryActions": [],
+        "object": "ui",
+        "risks": [],
+        "mutation": "local-write",
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      },
+      "expectedConstraints": [],
+      "expectedPrimary": "showdar-build",
+      "expectedAdvisors": [],
+      "expectationConfidence": "CLEAR"
+    },
+    {
+      "id": "b4-build-subscription-patch-known",
+      "prompt": "The memory growth is caused by the unclosed subscription; patch the feed listener",
+      "boundary": ["known-cause-vs-unknown-cause", "diagnosis-vs-repair"],
+      "expectedIntent": {
+        "phase": "implementation",
+        "action": "fix",
+        "secondaryActions": [],
+        "object": "runtime",
+        "risks": ["performance"],
+        "mutation": "local-write",
+        "evidence": { "failureObserved": true, "rootCauseKnown": true, "behaviorDefined": null }
+      },
+      "expectedConstraints": [],
+      "expectedPrimary": "showdar-build",
+      "expectedAdvisors": [],
+      "expectationConfidence": "CLEAR"
+    },
+    {
+      "id": "b4-build-changelog-notes",
+      "prompt": "Add the 2.4 entry to the changelog. Create the release notes file.",
+      "boundary": ["independent-requests"],
+      "expectedIntent": {
+        "phase": "implementation",
+        "action": "implement",
+        "secondaryActions": [],
+        "object": "repository",
+        "risks": [],
+        "mutation": "local-write",
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      },
+      "expectedConstraints": [],
+      "expectedPrimary": "showdar-build",
+      "expectedAdvisors": [],
+      "expectationConfidence": "CLEAR"
+    },
+    {
+      "id": "b4-debug-digest-unknown",
+      "prompt": "Diagnose why the digest worker silently drops messages; the trigger is still unknown",
+      "boundary": ["unknown-cause-vs-known-cause"],
+      "expectedIntent": {
+        "phase": "diagnosis",
+        "action": "investigate",
+        "secondaryActions": [],
+        "object": "runtime",
+        "risks": [],
+        "mutation": "read-only",
+        "evidence": { "failureObserved": true, "rootCauseKnown": false, "behaviorDefined": null }
+      },
+      "expectedConstraints": [],
+      "expectedPrimary": "showdar-debug",
+      "expectedAdvisors": [],
+      "expectationConfidence": "CLEAR"
+    },
+    {
+      "id": "b4-debug-calendar-repro",
+      "prompt": "Reproduce the calendar-sync duplication locally and isolate the trigger",
+      "boundary": ["unknown-cause-vs-known-cause"],
+      "expectedIntent": {
+        "phase": "diagnosis",
+        "action": "investigate",
+        "secondaryActions": [],
+        "object": "backend",
+        "risks": [],
+        "mutation": "read-only",
+        "evidence": { "failureObserved": true, "rootCauseKnown": null, "behaviorDefined": null }
+      },
+      "expectedConstraints": [],
+      "expectedPrimary": "showdar-debug",
+      "expectedAdvisors": [],
+      "expectationConfidence": "CLEAR"
+    },
+    {
+      "id": "b4-debug-edge-503-cause",
+      "prompt": "The edge function returns 503; determine what is causing it",
+      "boundary": ["unknown-cause-vs-known-cause", "root-cause-investigation"],
+      "expectedIntent": {
+        "phase": "diagnosis",
+        "action": "investigate",
+        "secondaryActions": [],
+        "object": "runtime",
+        "risks": [],
+        "mutation": "read-only",
+        "evidence": { "failureObserved": true, "rootCauseKnown": null, "behaviorDefined": null }
+      },
+      "expectedConstraints": [],
+      "expectedPrimary": "showdar-debug",
+      "expectedAdvisors": [],
+      "expectationConfidence": "CLEAR"
+    },
+    {
+      "id": "b4-debug-null-cursor-fix",
+      "prompt": "The null cursor is a confirmed cause; fix the pagination query",
+      "boundary": ["known-cause-vs-unknown-cause", "diagnosis-vs-repair"],
+      "expectedIntent": {
+        "phase": "implementation",
+        "action": "fix",
+        "secondaryActions": [],
+        "object": "backend",
+        "risks": [],
+        "mutation": "local-write",
+        "evidence": { "failureObserved": true, "rootCauseKnown": true, "behaviorDefined": null }
+      },
+      "expectedConstraints": [],
+      "expectedPrimary": "showdar-build",
+      "expectedAdvisors": [],
+      "expectationConfidence": "CLEAR"
+    },
+    {
+      "id": "b4-debug-export-stall-why",
+      "prompt": "Establish why the nightly export job stalls after midnight",
+      "boundary": ["unknown-cause-vs-known-cause", "root-cause-investigation"],
+      "expectedIntent": {
+        "phase": "diagnosis",
+        "action": "investigate",
+        "secondaryActions": [],
+        "object": "runtime",
+        "risks": [],
+        "mutation": "read-only",
+        "evidence": { "failureObserved": true, "rootCauseKnown": null, "behaviorDefined": null }
+      },
+      "expectedConstraints": [],
+      "expectedPrimary": "showdar-debug",
+      "expectedAdvisors": [],
+      "expectationConfidence": "CLEAR"
+    },
+    {
+      "id": "b4-test-unit-scheduler",
+      "prompt": "Write unit tests for the scheduler",
+      "boundary": ["test-authoring", "test-vs-quality"],
+      "expectedIntent": {
+        "phase": "verification",
+        "action": "test",
+        "secondaryActions": [],
+        "object": "backend",
+        "risks": [],
+        "mutation": "local-write",
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      },
+      "expectedConstraints": [],
+      "expectedPrimary": "showdar-test",
+      "expectedAdvisors": [],
+      "expectationConfidence": "CLEAR"
+    },
+    {
+      "id": "b4-test-integration-retries",
+      "prompt": "Add integration tests covering payment retries",
+      "boundary": ["test-authoring", "test-vs-quality"],
+      "expectedIntent": {
+        "phase": "verification",
+        "action": "test",
+        "secondaryActions": [],
+        "object": "backend",
+        "risks": [],
+        "mutation": "local-write",
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      },
+      "expectedConstraints": [],
+      "expectedPrimary": "showdar-test",
+      "expectedAdvisors": [],
+      "expectationConfidence": "CLEAR"
+    },
+    {
+      "id": "b4-test-run-suite-summarize",
+      "prompt": "Run the search regression suite and summarize the outcome",
+      "boundary": ["test-vs-quality"],
+      "expectedIntent": {
+        "phase": "verification",
+        "action": "test",
+        "secondaryActions": [],
+        "object": "repository",
+        "risks": ["regression"],
+        "mutation": "read-only",
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      },
+      "expectedConstraints": [],
+      "expectedPrimary": "showdar-test",
+      "expectedAdvisors": [],
+      "expectationConfidence": "CLEAR"
+    },
+    {
+      "id": "b4-test-diagnose-mobile-fail",
+      "prompt": "Diagnose why the mobile test run keeps failing",
+      "boundary": ["test-failure-diagnosis-vs-authoring"],
+      "expectedIntent": {
+        "phase": "diagnosis",
+        "action": "investigate",
+        "secondaryActions": [],
+        "object": "runtime",
+        "risks": [],
+        "mutation": "read-only",
+        "evidence": { "failureObserved": true, "rootCauseKnown": null, "behaviorDefined": null }
+      },
+      "expectedConstraints": [],
+      "expectedPrimary": "showdar-debug",
+      "expectedAdvisors": [],
+      "expectationConfidence": "CLEAR"
+    },
+    {
+      "id": "b4-test-review-snapshots",
+      "prompt": "Review the existing snapshot tests for the design system",
+      "boundary": ["test-vs-quality", "review-vs-implementation"],
+      "expectedIntent": {
+        "phase": "verification",
+        "action": "review",
+        "secondaryActions": [],
+        "object": "ui",
+        "risks": [],
+        "mutation": "read-only",
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      },
+      "expectedConstraints": [],
+      "expectedPrimary": "showdar-review",
+      "expectedAdvisors": [],
+      "expectationConfidence": "CLEAR"
+    },
+    {
+      "id": "b4-quality-offline-coverage",
+      "prompt": "Assess QA coverage for offline playlists including conflict resolution",
+      "boundary": ["test-vs-quality", "assessment-vs-execution"],
+      "expectedIntent": {
+        "phase": "verification",
+        "action": "assess",
+        "secondaryActions": [],
+        "object": "repository",
+        "risks": [],
+        "mutation": "read-only",
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      },
+      "expectedConstraints": [],
+      "expectedPrimary": "showdar-quality",
+      "expectedAdvisors": [],
+      "expectationConfidence": "CLEAR"
+    },
+    {
+      "id": "b4-quality-billing-scope-nocode",
+      "prompt": "Assess the regression scope for the billing revamp without writing code",
+      "boundary": ["test-vs-quality", "no-modify"],
+      "expectedIntent": {
+        "phase": "verification",
+        "action": "assess",
+        "secondaryActions": [],
+        "object": "implementation",
+        "risks": ["regression"],
+        "mutation": "read-only",
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      },
+      "expectedConstraints": ["no-code-change"],
+      "expectedPrimary": "showdar-quality",
+      "expectedAdvisors": [],
+      "expectationConfidence": "CLEAR"
+    },
+    {
+      "id": "b4-review-cache-diff",
+      "prompt": "Review this diff for the cache eviction change",
+      "boundary": ["review-vs-implementation"],
+      "expectedIntent": {
+        "phase": "verification",
+        "action": "review",
+        "secondaryActions": [],
+        "object": "state",
+        "risks": [],
+        "mutation": "read-only",
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      },
+      "expectedConstraints": [],
+      "expectedPrimary": "showdar-review",
+      "expectedAdvisors": [],
+      "expectationConfidence": "CLEAR"
+    },
+    {
+      "id": "b4-review-token-refresh-flaws",
+      "prompt": "Review the token refresh diff for security flaws",
+      "boundary": ["security-review-vs-sensitive-implementation", "risk-without-secondary"],
+      "expectedIntent": {
+        "phase": "verification",
+        "action": "review",
+        "secondaryActions": [],
+        "object": "auth",
+        "risks": ["security"],
+        "mutation": "read-only",
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      },
+      "expectedConstraints": [],
+      "expectedPrimary": "showdar-review",
+      "expectedAdvisors": [],
+      "expectationConfidence": "CLEAR"
+    },
+    {
+      "id": "b4-review-export-diff-fix",
+      "prompt": "Review the export diff and fix the off-by-one error",
+      "boundary": ["review-vs-implementation", "multiple-coordinated-actions"],
+      "expectedIntent": {
+        "phase": "implementation",
+        "action": "fix",
+        "secondaryActions": [],
+        "object": "api",
+        "risks": [],
+        "mutation": "local-write",
+        "evidence": { "failureObserved": true, "rootCauseKnown": null, "behaviorDefined": null }
+      },
+      "expectedConstraints": [],
+      "expectedPrimary": "showdar-build",
+      "expectedAdvisors": [],
+      "expectationConfidence": "AMBIGUOUS"
+    },
+    {
+      "id": "b4-security-threat-upload",
+      "prompt": "Threat-model the avatar upload flow before any code is written",
+      "boundary": ["security-review-vs-sensitive-implementation"],
+      "expectedIntent": {
+        "phase": "discovery",
+        "action": "assess",
+        "secondaryActions": [],
+        "object": "api",
+        "risks": [],
+        "mutation": "read-only",
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      },
+      "expectedConstraints": [],
+      "expectedPrimary": "showdar-security",
+      "expectedAdvisors": [],
+      "expectationConfidence": "CLEAR"
+    },
+    {
+      "id": "b4-security-audit-session-nopatch",
+      "prompt": "Audit session inactivity handling for hijack risks; do not change code",
+      "boundary": ["security-review-vs-sensitive-implementation", "no-modify"],
+      "expectedIntent": {
+        "phase": "discovery",
+        "action": "assess",
+        "secondaryActions": [],
+        "object": "auth",
+        "risks": ["security"],
+        "mutation": "read-only",
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      },
+      "expectedConstraints": ["no-code-change"],
+      "expectedPrimary": "showdar-security",
+      "expectedAdvisors": [],
+      "expectationConfidence": "CLEAR"
+    },
+    {
+      "id": "b4-upgrade-chart-library",
+      "prompt": "Upgrade the charting library to 5.2.0 in the analytics dashboard",
+      "boundary": ["local-write-vs-remote-write"],
+      "expectedIntent": {
+        "phase": "implementation",
+        "action": "upgrade",
+        "secondaryActions": [],
+        "object": "dependency",
+        "risks": ["compatibility"],
+        "mutation": "local-write",
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      },
+      "expectedConstraints": [],
+      "expectedPrimary": "showdar-upgrade",
+      "expectedAdvisors": [],
+      "expectationConfidence": "CLEAR"
+    },
+    {
+      "id": "b4-upgrade-push-provider",
+      "prompt": "Migrate the push provider from legacy tokens to the new API in the same window",
+      "boundary": ["explicit-secondary-work"],
+      "expectedIntent": {
+        "phase": "implementation",
+        "action": "upgrade",
+        "secondaryActions": [],
+        "object": "dependency",
+        "risks": ["compatibility"],
+        "mutation": "local-write",
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      },
+      "expectedConstraints": [],
+      "expectedPrimary": "showdar-upgrade",
+      "expectedAdvisors": [],
+      "expectationConfidence": "CLEAR"
+    },
+    {
+      "id": "b4-upgrade-queue-driver-tests",
+      "prompt": "Upgrade the queue driver and add migration tests",
+      "boundary": ["explicit-secondary-work", "multiple-coordinated-actions"],
+      "expectedIntent": {
+        "phase": "implementation",
+        "action": "implement",
+        "secondaryActions": ["test"],
+        "object": "dependency",
+        "risks": ["compatibility"],
+        "mutation": "local-write",
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      },
+      "expectedConstraints": [],
+      "expectedPrimary": "showdar-build",
+      "expectedAdvisors": ["showdar-test"],
+      "expectationConfidence": "AMBIGUOUS"
+    },
+    {
+      "id": "b4-ship-release-readiness",
+      "prompt": "Check whether the 2.4 release is ready to publish",
+      "boundary": ["ship-vs-ops-execution"],
+      "expectedIntent": {
+        "phase": "delivery",
+        "action": "assess",
+        "secondaryActions": [],
+        "object": "release",
+        "risks": [],
+        "mutation": "read-only",
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      },
+      "expectedConstraints": [],
+      "expectedPrimary": "showdar-ship",
+      "expectedAdvisors": [],
+      "expectationConfidence": "CLEAR"
+    },
+    {
+      "id": "b4-ship-artifact-gates",
+      "prompt": "Confirm the build artifact passes all quality gates",
+      "boundary": ["ship-vs-ops-execution"],
+      "expectedIntent": {
+        "phase": "delivery",
+        "action": "assess",
+        "secondaryActions": [],
+        "object": "release",
+        "risks": [],
+        "mutation": "read-only",
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      },
+      "expectedConstraints": [],
+      "expectedPrimary": "showdar-ship",
+      "expectedAdvisors": [],
+      "expectationConfidence": "CLEAR"
+    },
+    {
+      "id": "b4-ops-staging-rollout",
+      "prompt": "Roll out the recommendations engine to the staging cluster",
+      "boundary": ["staging-vs-production", "local-write-vs-remote-write"],
+      "expectedIntent": {
+        "phase": "operations",
+        "action": "deploy",
+        "secondaryActions": [],
+        "object": "deployment",
+        "risks": [],
+        "mutation": "remote-write",
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      },
+      "expectedConstraints": [],
+      "expectedPrimary": "showdar-ops",
+      "expectedAdvisors": [],
+      "expectationConfidence": "CLEAR"
+    },
+    {
+      "id": "b4-ops-prod-deploy",
+      "prompt": "Deploy the recommendations engine to production",
+      "boundary": ["staging-vs-production"],
+      "expectedIntent": {
+        "phase": "operations",
+        "action": "deploy",
+        "secondaryActions": [],
+        "object": "deployment",
+        "risks": ["production"],
+        "mutation": "production-impacting",
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      },
+      "expectedConstraints": [],
+      "expectedPrimary": "showdar-ops",
+      "expectedAdvisors": [],
+      "expectationConfidence": "CLEAR"
+    },
+    {
+      "id": "b4-ops-cutover-noexec",
+      "prompt": "Prepare the production cutover checklist but do not execute it",
+      "boundary": ["plan-vs-execution", "no-deploy"],
+      "expectedIntent": {
+        "phase": "planning",
+        "action": "plan",
+        "secondaryActions": [],
+        "object": "deployment",
+        "risks": ["operations"],
+        "mutation": "read-only",
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      },
+      "expectedConstraints": ["no-deploy"],
+      "expectedPrimary": "showdar-plan",
+      "expectedAdvisors": [],
+      "expectationConfidence": "AMBIGUOUS"
+    },
+    {
+      "id": "b4-ops-parser-conformance-review",
+      "prompt": "Merge the parser fix and perform a conformance review of the import pipeline",
+      "boundary": ["explicit-secondary-actions", "generic-verb-governed-target", "multiple-coordinated-actions"],
+      "expectedIntent": {
+        "phase": "implementation",
+        "action": "fix",
+        "secondaryActions": ["review"],
+        "object": "backend",
+        "risks": [],
+        "mutation": "local-write",
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      },
+      "expectedConstraints": [],
+      "expectedPrimary": "showdar-build",
+      "expectedAdvisors": ["showdar-review"],
+      "expectationConfidence": "CLEAR"
+    },
+    {
+      "id": "b4-ops-queue-compat-testing",
+      "prompt": "Roll out the queue change to staging and carry out compatibility testing for the legacy consumer",
+      "boundary": ["explicit-secondary-actions", "generic-verb-governed-target", "staging-vs-production", "multiple-coordinated-actions"],
+      "expectedIntent": {
+        "phase": "operations",
+        "action": "deploy",
+        "secondaryActions": ["test"],
+        "object": "deployment",
+        "risks": ["compatibility"],
+        "mutation": "remote-write",
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      },
+      "expectedConstraints": [],
+      "expectedPrimary": "showdar-ops",
+      "expectedAdvisors": ["showdar-test"],
+      "expectationConfidence": "CLEAR"
+    },
+    {
+      "id": "b4-recover-failed-rollout",
+      "prompt": "Reconstruct what happened in the failed 2.3 rollout",
+      "boundary": ["recover-vs-git"],
+      "expectedIntent": {
+        "phase": "recovery",
+        "action": "recover",
+        "secondaryActions": [],
+        "object": "deployment",
+        "risks": ["operations"],
+        "mutation": "read-only",
+        "evidence": { "failureObserved": true, "rootCauseKnown": null, "behaviorDefined": null }
+      },
+      "expectedConstraints": [],
+      "expectedPrimary": "showdar-recover",
+      "expectedAdvisors": [],
+      "expectationConfidence": "CLEAR"
+    },
+    {
+      "id": "b4-recover-interrupted-search",
+      "prompt": "Pick up the interrupted search revamp where the last session ended",
+      "boundary": ["recover-vs-git"],
+      "expectedIntent": {
+        "phase": "recovery",
+        "action": "recover",
+        "secondaryActions": [],
+        "object": "implementation",
+        "risks": [],
+        "mutation": "local-write",
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      },
+      "expectedConstraints": [],
+      "expectedPrimary": "showdar-recover",
+      "expectedAdvisors": [],
+      "expectationConfidence": "AMBIGUOUS"
+    },
+    {
+      "id": "b4-git-stage-commit-local",
+      "prompt": "Stage the config edits and commit them locally",
+      "boundary": ["local-write-vs-remote-write", "recover-vs-git"],
+      "expectedIntent": {
+        "phase": "repository",
+        "action": "git",
+        "secondaryActions": [],
+        "object": "commit",
+        "risks": [],
+        "mutation": "local-write",
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      },
+      "expectedConstraints": [],
+      "expectedPrimary": "showdar-git",
+      "expectedAdvisors": [],
+      "expectationConfidence": "CLEAR"
+    },
+    {
+      "id": "b4-git-rebase-conflicts",
+      "prompt": "Rebase the feature branch onto main and resolve the conflicts",
+      "boundary": ["local-write-vs-remote-write"],
+      "expectedIntent": {
+        "phase": "repository",
+        "action": "git",
+        "secondaryActions": [],
+        "object": "branch",
+        "risks": [],
+        "mutation": "local-write",
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      },
+      "expectedConstraints": [],
+      "expectedPrimary": "showdar-git",
+      "expectedAdvisors": [],
+      "expectationConfidence": "CLEAR"
+    },
+    {
+      "id": "b4-git-hotfix-nopush",
+      "prompt": "Commit the hotfix locally without pushing to origin",
+      "boundary": ["local-write-vs-remote-write", "no-push"],
+      "expectedIntent": {
+        "phase": "repository",
+        "action": "git",
+        "secondaryActions": [],
+        "object": "commit",
+        "risks": [],
+        "mutation": "local-write",
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      },
+      "expectedConstraints": ["no-push"],
+      "expectedPrimary": "showdar-git",
+      "expectedAdvisors": [],
+      "expectationConfidence": "AMBIGUOUS"
+    },
+    {
+      "id": "b4-quoted-kubectl-rollout",
+      "prompt": "What does \"kubectl rollout restart deploy/api\" do? I have not run it",
+      "boundary": ["quoted-commands", "direct-action-vs-inline-content"],
+      "expectedIntent": {
+        "phase": "discovery",
+        "action": "understand",
+        "secondaryActions": [],
+        "object": "deployment",
+        "risks": [],
+        "mutation": "read-only",
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      },
+      "expectedConstraints": [],
+      "expectedPrimary": "showdar-understand",
+      "expectedAdvisors": [],
+      "expectationConfidence": "CLEAR"
+    },
+    {
+      "id": "b4-inline-git-stash",
+      "prompt": "Explain what `git stash push -m wip` does before I run it",
+      "boundary": ["inline-code", "direct-action-vs-inline-content"],
+      "expectedIntent": {
+        "phase": "discovery",
+        "action": "understand",
+        "secondaryActions": [],
+        "object": "repository",
+        "risks": [],
+        "mutation": "read-only",
+        "evidence": { "failureObserved": null, "rootCauseKnown": null, "behaviorDefined": null }
+      },
+      "expectedConstraints": [],
+      "expectedPrimary": "showdar-understand",
+      "expectedAdvisors": [],
+      "expectationConfidence": "CLEAR"
+    },
+    {
+      "id": "b4-log-exit-137-oom",
+      "prompt": "Exit 137 during the nightly import; find why the worker ran out of memory",
+      "boundary": ["log-output", "unknown-cause-vs-known-cause", "root-cause-investigation"],
+      "expectedIntent": {
+        "phase": "diagnosis",
+        "action": "investigate",
+        "secondaryActions": [],
+        "object": "runtime",
+        "risks": ["performance"],
+        "mutation": "read-only",
+        "evidence": { "failureObserved": true, "rootCauseKnown": null, "behaviorDefined": null }
+      },
+      "expectedConstraints": [],
+      "expectedPrimary": "showdar-debug",
+      "expectedAdvisors": [],
+      "expectationConfidence": "CLEAR"
+    }
+  ]
+}

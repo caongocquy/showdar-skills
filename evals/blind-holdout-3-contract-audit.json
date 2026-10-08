@@ -1,0 +1,3870 @@
+{
+ "dataset": "blind-holdout-3",
+ "kind": "contract-audit-overlay-DERIVED-ONLY",
+ "createdAt": "2026-09-13T09:10:00.000Z",
+ "inputs": {
+  "dataset": "evals/blind-holdout-3.json",
+  "firstRun": "evals/blind-holdout-3-first-run.json",
+  "note": "Read-only inputs. No resolver invocation. No dataset modification."
+ },
+ "method": "Hand-authored contract-correct values + field verdicts from Phase 6C contract semantics; joined with immutable first-run actuals.",
+ "cases": [
+  {
+   "id": "blind3-understand-login-retry",
+   "prompt": "Explain how the login retry flow works",
+   "criticalBoundary": [
+    "direct-action-vs-domain-noun"
+   ],
+   "originalExpected": {
+    "phase": "discovery",
+    "action": "understand",
+    "object": "auth",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-understand",
+    "advisors": [],
+    "constraints": []
+   },
+   "contractCorrect": {
+    "phase": "discovery",
+    "action": "understand",
+    "object": "auth",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-understand",
+    "advisors": [],
+    "constraints": []
+   },
+   "fieldVerdicts": {
+    "phase": "CORRECT",
+    "action": "CORRECT",
+    "object": "CORRECT",
+    "mutation": "CORRECT",
+    "risks": "CORRECT",
+    "evidence": "CORRECT",
+    "secondaryActions": "CORRECT",
+    "primary": "CORRECT",
+    "advisors": "CORRECT",
+    "constraints": "CORRECT"
+   },
+   "overall": "EXPECTATION_CORRECT",
+   "rationale": "Re-derived from contract; matches implementation semantics on all fields.",
+   "actual": {
+    "phase": "discovery",
+    "action": "understand",
+    "object": "auth",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-understand",
+    "advisors": [],
+    "constraints": []
+   },
+   "genuineFailureFields": []
+  },
+  {
+   "id": "blind3-understand-request-lifecycle",
+   "prompt": "Trace the request lifecycle through the gateway service",
+   "criticalBoundary": [
+    "direct-action-vs-domain-noun"
+   ],
+   "originalExpected": {
+    "phase": "discovery",
+    "action": "understand",
+    "object": "repository",
+    "mutation": "read-only",
+    "risks": [
+     "security"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-understand",
+    "advisors": [],
+    "constraints": []
+   },
+   "contractCorrect": {
+    "phase": "discovery",
+    "action": "understand",
+    "object": "repository",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-understand",
+    "advisors": [],
+    "constraints": []
+   },
+   "fieldVerdicts": {
+    "phase": "CORRECT",
+    "action": "CORRECT",
+    "object": "CORRECT",
+    "mutation": "CORRECT",
+    "risks": "ERROR",
+    "evidence": "CORRECT",
+    "secondaryActions": "CORRECT",
+    "primary": "CORRECT",
+    "advisors": "CORRECT",
+    "constraints": "CORRECT"
+   },
+   "overall": "EXPECTATION_ERROR",
+   "rationale": "'gateway' is a runtime/object signal, not a member of RISK_KEYWORDS.security; no other security keyword present.",
+   "actual": {
+    "phase": "discovery",
+    "action": "understand",
+    "object": "repository",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-understand",
+    "advisors": [],
+    "constraints": []
+   },
+   "genuineFailureFields": []
+  },
+  {
+   "id": "blind3-understand-quoted-rebase",
+   "prompt": "Explain what `git rebase --onto` does before I run it",
+   "criticalBoundary": [
+    "direct-action-vs-inline-code"
+   ],
+   "originalExpected": {
+    "phase": "discovery",
+    "action": "understand",
+    "object": "repository",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-understand",
+    "advisors": [],
+    "constraints": []
+   },
+   "contractCorrect": {
+    "phase": "discovery",
+    "action": "understand",
+    "object": "repository",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-understand",
+    "advisors": [],
+    "constraints": []
+   },
+   "fieldVerdicts": {
+    "phase": "CORRECT",
+    "action": "CORRECT",
+    "object": "CORRECT",
+    "mutation": "CORRECT",
+    "risks": "CORRECT",
+    "evidence": "CORRECT",
+    "secondaryActions": "CORRECT",
+    "primary": "CORRECT",
+    "advisors": "CORRECT",
+    "constraints": "CORRECT"
+   },
+   "overall": "EXPECTATION_CORRECT",
+   "rationale": "Re-derived from contract; matches implementation semantics on all fields.",
+   "actual": {
+    "phase": "discovery",
+    "action": "understand",
+    "object": "repository",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-understand",
+    "advisors": [],
+    "constraints": []
+   },
+   "genuineFailureFields": []
+  },
+  {
+   "id": "blind3-understand-invoice-dataflow",
+   "prompt": "Map the data flow for invoice settlement",
+   "criticalBoundary": [
+    "verb-governed-target"
+   ],
+   "originalExpected": {
+    "phase": "discovery",
+    "action": "understand",
+    "object": "data",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-understand",
+    "advisors": [],
+    "constraints": []
+   },
+   "contractCorrect": {
+    "phase": "discovery",
+    "action": "understand",
+    "object": "data",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-understand",
+    "advisors": [],
+    "constraints": []
+   },
+   "fieldVerdicts": {
+    "phase": "CORRECT",
+    "action": "CORRECT",
+    "object": "CORRECT",
+    "mutation": "CORRECT",
+    "risks": "CORRECT",
+    "evidence": "CORRECT",
+    "secondaryActions": "CORRECT",
+    "primary": "CORRECT",
+    "advisors": "CORRECT",
+    "constraints": "CORRECT"
+   },
+   "overall": "EXPECTATION_CORRECT",
+   "rationale": "Re-derived from contract; matches implementation semantics on all fields.",
+   "actual": {
+    "phase": "discovery",
+    "action": "understand",
+    "object": "data",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-understand",
+    "advisors": [],
+    "constraints": []
+   },
+   "genuineFailureFields": []
+  },
+  {
+   "id": "blind3-requirements-password-rules",
+   "prompt": "Define the business rules for password-reset expiry and lockout",
+   "criticalBoundary": [
+    "requirements-vs-implementation"
+   ],
+   "originalExpected": {
+    "phase": "definition",
+    "action": "define",
+    "object": "data",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-requirements",
+    "advisors": [],
+    "constraints": []
+   },
+   "contractCorrect": {
+    "phase": "definition",
+    "action": "define",
+    "object": "data",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-requirements",
+    "advisors": [],
+    "constraints": []
+   },
+   "fieldVerdicts": {
+    "phase": "CORRECT",
+    "action": "CORRECT",
+    "object": "CORRECT",
+    "mutation": "CORRECT",
+    "risks": "CORRECT",
+    "evidence": "CORRECT",
+    "secondaryActions": "CORRECT",
+    "primary": "CORRECT",
+    "advisors": "CORRECT",
+    "constraints": "CORRECT"
+   },
+   "overall": "EXPECTATION_CORRECT",
+   "rationale": "Re-derived from contract; matches implementation semantics on all fields.",
+   "actual": {
+    "phase": "definition",
+    "action": "define",
+    "object": "data",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-requirements",
+    "advisors": [],
+    "constraints": []
+   },
+   "genuineFailureFields": []
+  },
+  {
+   "id": "blind3-requirements-guest-checkout",
+   "prompt": "Define the requirements for guest checkout; several fields are still missing",
+   "criticalBoundary": [
+    "requirements-vs-implementation"
+   ],
+   "originalExpected": {
+    "phase": "definition",
+    "action": "define",
+    "object": "data",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": false
+    },
+    "secondaryActions": [],
+    "primary": "showdar-requirements",
+    "advisors": [],
+    "constraints": []
+   },
+   "contractCorrect": {
+    "phase": "definition",
+    "action": "define",
+    "object": "data",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": false
+    },
+    "secondaryActions": [],
+    "primary": "showdar-requirements",
+    "advisors": [],
+    "constraints": []
+   },
+   "fieldVerdicts": {
+    "phase": "CORRECT",
+    "action": "CORRECT",
+    "object": "CORRECT",
+    "mutation": "CORRECT",
+    "risks": "CORRECT",
+    "evidence": "CORRECT",
+    "secondaryActions": "CORRECT",
+    "primary": "CORRECT",
+    "advisors": "CORRECT",
+    "constraints": "CORRECT"
+   },
+   "overall": "EXPECTATION_CORRECT",
+   "rationale": "Re-derived from contract; matches implementation semantics on all fields.",
+   "actual": {
+    "phase": "definition",
+    "action": "define",
+    "object": "data",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": false
+    },
+    "secondaryActions": [],
+    "primary": "showdar-requirements",
+    "advisors": [],
+    "constraints": []
+   },
+   "genuineFailureFields": []
+  },
+  {
+   "id": "blind3-requirements-refund-policy",
+   "prompt": "Define the billing rules for refund proration; several edge cases are still undecided",
+   "criticalBoundary": [
+    "requirements-vs-implementation"
+   ],
+   "originalExpected": {
+    "phase": "definition",
+    "action": "define",
+    "object": "data",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-requirements",
+    "advisors": [],
+    "constraints": []
+   },
+   "contractCorrect": {
+    "phase": "definition",
+    "action": "define",
+    "object": "data",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-requirements",
+    "advisors": [],
+    "constraints": []
+   },
+   "fieldVerdicts": {
+    "phase": "CORRECT",
+    "action": "CORRECT",
+    "object": "CORRECT",
+    "mutation": "CORRECT",
+    "risks": "CORRECT",
+    "evidence": "CORRECT",
+    "secondaryActions": "CORRECT",
+    "primary": "CORRECT",
+    "advisors": "CORRECT",
+    "constraints": "CORRECT"
+   },
+   "overall": "EXPECTATION_CORRECT",
+   "rationale": "Re-derived from contract; matches implementation semantics on all fields.",
+   "actual": {
+    "phase": "definition",
+    "action": "define",
+    "object": "data",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-requirements",
+    "advisors": [],
+    "constraints": []
+   },
+   "genuineFailureFields": []
+  },
+  {
+   "id": "blind3-plan-session-migration",
+   "prompt": "Draft the migration plan for moving sessions to Redis, ordered by risk",
+   "criticalBoundary": [
+    "plan-vs-execution"
+   ],
+   "originalExpected": {
+    "phase": "planning",
+    "action": "plan",
+    "object": "backend",
+    "mutation": "read-only",
+    "risks": [
+     "compatibility"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-plan",
+    "advisors": [],
+    "constraints": []
+   },
+   "contractCorrect": {
+    "phase": "planning",
+    "action": "plan",
+    "object": "backend",
+    "mutation": "read-only",
+    "risks": [
+     "compatibility"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-plan",
+    "advisors": [],
+    "constraints": []
+   },
+   "fieldVerdicts": {
+    "phase": "CORRECT",
+    "action": "CORRECT",
+    "object": "CORRECT",
+    "mutation": "CORRECT",
+    "risks": "CORRECT",
+    "evidence": "CORRECT",
+    "secondaryActions": "CORRECT",
+    "primary": "CORRECT",
+    "advisors": "CORRECT",
+    "constraints": "CORRECT"
+   },
+   "overall": "EXPECTATION_CORRECT",
+   "rationale": "Re-derived from contract; matches implementation semantics on all fields.",
+   "actual": {
+    "phase": "planning",
+    "action": "plan",
+    "object": "backend",
+    "mutation": "read-only",
+    "risks": [
+     "compatibility"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-plan",
+    "advisors": [],
+    "constraints": []
+   },
+   "genuineFailureFields": []
+  },
+  {
+   "id": "blind3-plan-rollout-phases",
+   "prompt": "Outline the rollout phases for the notification service, but don't execute anything yet",
+   "criticalBoundary": [
+    "negated-operations",
+    "plan-vs-execution"
+   ],
+   "originalExpected": {
+    "phase": "planning",
+    "action": "plan",
+    "object": "backend",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-plan",
+    "advisors": [],
+    "constraints": []
+   },
+   "contractCorrect": {
+    "phase": "planning",
+    "action": "plan",
+    "object": "backend",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-plan",
+    "advisors": [],
+    "constraints": []
+   },
+   "fieldVerdicts": {
+    "phase": "CORRECT",
+    "action": "CORRECT",
+    "object": "CORRECT",
+    "mutation": "CORRECT",
+    "risks": "CORRECT",
+    "evidence": "CORRECT",
+    "secondaryActions": "CORRECT",
+    "primary": "CORRECT",
+    "advisors": "CORRECT",
+    "constraints": "CORRECT"
+   },
+   "overall": "EXPECTATION_CORRECT",
+   "rationale": "Re-derived from contract; matches implementation semantics on all fields.",
+   "actual": {
+    "phase": "planning",
+    "action": "plan",
+    "object": "backend",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-plan",
+    "advisors": [],
+    "constraints": []
+   },
+   "genuineFailureFields": []
+  },
+  {
+   "id": "blind3-plan-checkout-breakdown",
+   "prompt": "Provide a scoped breakdown of the approved checkout revamp",
+   "criticalBoundary": [
+    "verb-governed-target"
+   ],
+   "originalExpected": {
+    "phase": "planning",
+    "action": "plan",
+    "object": "architecture",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": true
+    },
+    "secondaryActions": [],
+    "primary": "showdar-plan",
+    "advisors": [],
+    "constraints": []
+   },
+   "contractCorrect": {
+    "phase": "planning",
+    "action": "plan",
+    "object": "ui",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": true
+    },
+    "secondaryActions": [],
+    "primary": "showdar-plan",
+    "advisors": [],
+    "constraints": []
+   },
+   "fieldVerdicts": {
+    "phase": "CORRECT",
+    "action": "CORRECT",
+    "object": "ERROR",
+    "mutation": "CORRECT",
+    "risks": "CORRECT",
+    "evidence": "CORRECT",
+    "secondaryActions": "CORRECT",
+    "primary": "CORRECT",
+    "advisors": "CORRECT",
+    "constraints": "CORRECT"
+   },
+   "overall": "EXPECTATION_ERROR",
+   "rationale": "object.js architecture special-case requires the literal 'approved feature'; 'checkout' matches ui keywords (count wins).",
+   "actual": {
+    "phase": "planning",
+    "action": "plan",
+    "object": "ui",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": true
+    },
+    "secondaryActions": [],
+    "primary": "showdar-plan",
+    "advisors": [],
+    "constraints": []
+   },
+   "genuineFailureFields": []
+  },
+  {
+   "id": "blind3-plan-rollback-migration",
+   "prompt": "Draft the rollback plan for the catalog migration",
+   "criticalBoundary": [
+    "plan-vs-execution"
+   ],
+   "originalExpected": {
+    "phase": "planning",
+    "action": "plan",
+    "object": "deployment",
+    "mutation": "read-only",
+    "risks": [
+     "operations"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-plan",
+    "advisors": [],
+    "constraints": []
+   },
+   "contractCorrect": {
+    "phase": "planning",
+    "action": "plan",
+    "object": "deployment",
+    "mutation": "read-only",
+    "risks": [
+     "operations"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-plan",
+    "advisors": [],
+    "constraints": []
+   },
+   "fieldVerdicts": {
+    "phase": "CORRECT",
+    "action": "CORRECT",
+    "object": "CORRECT",
+    "mutation": "CORRECT",
+    "risks": "CORRECT",
+    "evidence": "CORRECT",
+    "secondaryActions": "CORRECT",
+    "primary": "CORRECT",
+    "advisors": "CORRECT",
+    "constraints": "CORRECT"
+   },
+   "overall": "EXPECTATION_CORRECT",
+   "rationale": "Re-derived from contract; matches implementation semantics on all fields.",
+   "actual": {
+    "phase": "planning",
+    "action": "plan",
+    "object": "deployment",
+    "mutation": "read-only",
+    "risks": [
+     "operations"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-plan",
+    "advisors": [],
+    "constraints": []
+   },
+   "genuineFailureFields": []
+  },
+  {
+   "id": "blind3-design-empty-state",
+   "prompt": "Design the empty-state layout for the mobile onboarding flow",
+   "criticalBoundary": [],
+   "originalExpected": {
+    "phase": "design",
+    "action": "design",
+    "object": "ui",
+    "mutation": "local-write",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-design",
+    "advisors": [],
+    "constraints": []
+   },
+   "contractCorrect": {
+    "phase": "design",
+    "action": "design",
+    "object": "ui",
+    "mutation": "local-write",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-design",
+    "advisors": [],
+    "constraints": []
+   },
+   "fieldVerdicts": {
+    "phase": "CORRECT",
+    "action": "CORRECT",
+    "object": "CORRECT",
+    "mutation": "CORRECT",
+    "risks": "CORRECT",
+    "evidence": "CORRECT",
+    "secondaryActions": "CORRECT",
+    "primary": "CORRECT",
+    "advisors": "CORRECT",
+    "constraints": "CORRECT"
+   },
+   "overall": "EXPECTATION_CORRECT",
+   "rationale": "Re-derived from contract; matches implementation semantics on all fields.",
+   "actual": {
+    "phase": "design",
+    "action": "design",
+    "object": "ui",
+    "mutation": "local-write",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-design",
+    "advisors": [],
+    "constraints": []
+   },
+   "genuineFailureFields": []
+  },
+  {
+   "id": "blind3-design-checkout-form",
+   "prompt": "Design a screen-reader-friendly checkout form without altering the API",
+   "criticalBoundary": [
+    "direct-action-vs-domain-noun"
+   ],
+   "originalExpected": {
+    "phase": "design",
+    "action": "design",
+    "object": "ui",
+    "mutation": "local-write",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-design",
+    "advisors": [],
+    "constraints": []
+   },
+   "contractCorrect": {
+    "phase": "design",
+    "action": "design",
+    "object": "ui",
+    "mutation": "local-write",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-design",
+    "advisors": [],
+    "constraints": []
+   },
+   "fieldVerdicts": {
+    "phase": "CORRECT",
+    "action": "CORRECT",
+    "object": "CORRECT",
+    "mutation": "CORRECT",
+    "risks": "CORRECT",
+    "evidence": "CORRECT",
+    "secondaryActions": "CORRECT",
+    "primary": "CORRECT",
+    "advisors": "CORRECT",
+    "constraints": "CORRECT"
+   },
+   "overall": "EXPECTATION_CORRECT",
+   "rationale": "Re-derived from contract; matches implementation semantics on all fields.",
+   "actual": {
+    "phase": "design",
+    "action": "design",
+    "object": "ui",
+    "mutation": "local-write",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-design",
+    "advisors": [],
+    "constraints": []
+   },
+   "genuineFailureFields": []
+  },
+  {
+   "id": "blind3-design-settings-layout",
+   "prompt": "Design the responsive layout for the settings page covering mobile and desktop",
+   "criticalBoundary": [],
+   "originalExpected": {
+    "phase": "design",
+    "action": "design",
+    "object": "ui",
+    "mutation": "local-write",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-design",
+    "advisors": [],
+    "constraints": []
+   },
+   "contractCorrect": {
+    "phase": "design",
+    "action": "design",
+    "object": "ui",
+    "mutation": "local-write",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-design",
+    "advisors": [],
+    "constraints": []
+   },
+   "fieldVerdicts": {
+    "phase": "CORRECT",
+    "action": "CORRECT",
+    "object": "CORRECT",
+    "mutation": "CORRECT",
+    "risks": "CORRECT",
+    "evidence": "CORRECT",
+    "secondaryActions": "CORRECT",
+    "primary": "CORRECT",
+    "advisors": "CORRECT",
+    "constraints": "CORRECT"
+   },
+   "overall": "EXPECTATION_CORRECT",
+   "rationale": "Re-derived from contract; matches implementation semantics on all fields.",
+   "actual": {
+    "phase": "design",
+    "action": "design",
+    "object": "ui",
+    "mutation": "local-write",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-design",
+    "advisors": [],
+    "constraints": []
+   },
+   "genuineFailureFields": []
+  },
+  {
+   "id": "blind3-build-idempotency-fix",
+   "prompt": "Fix the duplicate-charge bug; the root cause is confirmed in the idempotency guard; retry handling is specified in the design doc",
+   "criticalBoundary": [
+    "domain-risk-without-secondary",
+    "known-cause-vs-unknown-cause"
+   ],
+   "originalExpected": {
+    "phase": "implementation",
+    "action": "fix",
+    "object": "repository",
+    "mutation": "local-write",
+    "risks": [
+     "regression"
+    ],
+    "evidence": {
+     "failureObserved": true,
+     "rootCauseKnown": true,
+     "behaviorDefined": true
+    },
+    "secondaryActions": [],
+    "primary": "showdar-build",
+    "advisors": [],
+    "constraints": []
+   },
+   "contractCorrect": {
+    "phase": "implementation",
+    "action": "fix",
+    "object": "repository",
+    "mutation": "local-write",
+    "risks": [
+     "regression"
+    ],
+    "evidence": {
+     "failureObserved": true,
+     "rootCauseKnown": true,
+     "behaviorDefined": true
+    },
+    "secondaryActions": [],
+    "primary": "showdar-build",
+    "advisors": [],
+    "constraints": []
+   },
+   "fieldVerdicts": {
+    "phase": "CORRECT",
+    "action": "CORRECT",
+    "object": "CORRECT",
+    "mutation": "CORRECT",
+    "risks": "CORRECT",
+    "evidence": "CORRECT",
+    "secondaryActions": "CORRECT",
+    "primary": "CORRECT",
+    "advisors": "CORRECT",
+    "constraints": "CORRECT"
+   },
+   "overall": "EXPECTATION_CORRECT",
+   "rationale": "Re-derived from contract; matches implementation semantics on all fields.",
+   "actual": {
+    "phase": "implementation",
+    "action": "fix",
+    "object": "repository",
+    "mutation": "local-write",
+    "risks": [
+     "regression"
+    ],
+    "evidence": {
+     "failureObserved": true,
+     "rootCauseKnown": true,
+     "behaviorDefined": true
+    },
+    "secondaryActions": [],
+    "primary": "showdar-build",
+    "advisors": [],
+    "constraints": []
+   },
+   "genuineFailureFields": []
+  },
+  {
+   "id": "blind3-build-webhook-signature",
+   "prompt": "Implement the webhook signature check according to the approved spec",
+   "criticalBoundary": [
+    "domain-risk-without-secondary",
+    "requirements-vs-implementation"
+   ],
+   "originalExpected": {
+    "phase": "implementation",
+    "action": "implement",
+    "object": "api",
+    "mutation": "local-write",
+    "risks": [
+     "regression",
+     "security"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": true
+    },
+    "secondaryActions": [],
+    "primary": "showdar-build",
+    "advisors": [],
+    "constraints": []
+   },
+   "contractCorrect": {
+    "phase": "implementation",
+    "action": "implement",
+    "object": "api",
+    "mutation": "local-write",
+    "risks": [
+     "regression",
+     "security"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": true
+    },
+    "secondaryActions": [],
+    "primary": "showdar-build",
+    "advisors": [],
+    "constraints": []
+   },
+   "fieldVerdicts": {
+    "phase": "CORRECT",
+    "action": "CORRECT",
+    "object": "CORRECT",
+    "mutation": "CORRECT",
+    "risks": "CORRECT",
+    "evidence": "CORRECT",
+    "secondaryActions": "CORRECT",
+    "primary": "CORRECT",
+    "advisors": "CORRECT",
+    "constraints": "CORRECT"
+   },
+   "overall": "EXPECTATION_CORRECT",
+   "rationale": "Re-derived from contract; matches implementation semantics on all fields.",
+   "actual": {
+    "phase": "implementation",
+    "action": "implement",
+    "object": "api",
+    "mutation": "local-write",
+    "risks": [
+     "regression",
+     "security"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": true
+    },
+    "secondaryActions": [],
+    "primary": "showdar-build",
+    "advisors": [],
+    "constraints": []
+   },
+   "genuineFailureFields": []
+  },
+  {
+   "id": "blind3-build-export-with-tests",
+   "prompt": "Implement the CSV export endpoint and add regression tests",
+   "criticalBoundary": [
+    "explicit-secondary-work"
+   ],
+   "originalExpected": {
+    "phase": "implementation",
+    "action": "implement",
+    "object": "api",
+    "mutation": "local-write",
+    "risks": [
+     "regression"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": true
+    },
+    "secondaryActions": [
+     "test"
+    ],
+    "primary": "showdar-build",
+    "advisors": [
+     "showdar-test"
+    ],
+    "constraints": []
+   },
+   "contractCorrect": {
+    "phase": "implementation",
+    "action": "implement",
+    "object": "api",
+    "mutation": "local-write",
+    "risks": [
+     "regression"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": true
+    },
+    "secondaryActions": [
+     "test"
+    ],
+    "primary": "showdar-build",
+    "advisors": [
+     "showdar-test"
+    ],
+    "constraints": []
+   },
+   "fieldVerdicts": {
+    "phase": "CORRECT",
+    "action": "CORRECT",
+    "object": "CORRECT",
+    "mutation": "CORRECT",
+    "risks": "CORRECT",
+    "evidence": "CORRECT",
+    "secondaryActions": "CORRECT",
+    "primary": "CORRECT",
+    "advisors": "CORRECT",
+    "constraints": "CORRECT"
+   },
+   "overall": "EXPECTATION_CORRECT",
+   "rationale": "Re-derived from contract; matches implementation semantics on all fields.",
+   "actual": {
+    "phase": "implementation",
+    "action": "implement",
+    "object": "api",
+    "mutation": "local-write",
+    "risks": [
+     "regression"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": true
+    },
+    "secondaryActions": [
+     "test"
+    ],
+    "primary": "showdar-build",
+    "advisors": [
+     "showdar-test"
+    ],
+    "constraints": []
+   },
+   "genuineFailureFields": []
+  },
+  {
+   "id": "blind3-build-typo-footer",
+   "prompt": "Fix the typo on the homepage. Update the footer year.",
+   "criticalBoundary": [
+    "independent-requests"
+   ],
+   "originalExpected": {
+    "phase": "implementation",
+    "action": "implement",
+    "object": "repository",
+    "mutation": "local-write",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-build",
+    "advisors": [],
+    "constraints": []
+   },
+   "contractCorrect": {
+    "phase": "implementation",
+    "action": "implement",
+    "object": "repository",
+    "mutation": "local-write",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-build",
+    "advisors": [],
+    "constraints": []
+   },
+   "fieldVerdicts": {
+    "phase": "CORRECT",
+    "action": "CORRECT",
+    "object": "CORRECT",
+    "mutation": "CORRECT",
+    "risks": "CORRECT",
+    "evidence": "CORRECT",
+    "secondaryActions": "CORRECT",
+    "primary": "CORRECT",
+    "advisors": "CORRECT",
+    "constraints": "CORRECT"
+   },
+   "overall": "EXPECTATION_CORRECT",
+   "rationale": "Re-derived from contract; matches implementation semantics on all fields.",
+   "actual": {
+    "phase": "implementation",
+    "action": "implement",
+    "object": "repository",
+    "mutation": "local-write",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-build",
+    "advisors": [],
+    "constraints": []
+   },
+   "genuineFailureFields": []
+  },
+  {
+   "id": "blind3-debug-checkout-502",
+   "prompt": "Find the root cause of the checkout 502; no confirmed cause yet",
+   "criticalBoundary": [
+    "known-cause-vs-unknown-cause"
+   ],
+   "originalExpected": {
+    "phase": "diagnosis",
+    "action": "investigate",
+    "object": "runtime",
+    "mutation": "read-only",
+    "risks": [
+     "regression"
+    ],
+    "evidence": {
+     "failureObserved": true,
+     "rootCauseKnown": false,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-debug",
+    "advisors": [],
+    "constraints": []
+   },
+   "contractCorrect": {
+    "phase": "diagnosis",
+    "action": "investigate",
+    "object": "runtime",
+    "mutation": "read-only",
+    "risks": [
+     "regression"
+    ],
+    "evidence": {
+     "failureObserved": true,
+     "rootCauseKnown": false,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-debug",
+    "advisors": [],
+    "constraints": []
+   },
+   "fieldVerdicts": {
+    "phase": "CORRECT",
+    "action": "CORRECT",
+    "object": "CORRECT",
+    "mutation": "CORRECT",
+    "risks": "CORRECT",
+    "evidence": "CORRECT",
+    "secondaryActions": "CORRECT",
+    "primary": "CORRECT",
+    "advisors": "CORRECT",
+    "constraints": "CORRECT"
+   },
+   "overall": "EXPECTATION_CORRECT",
+   "rationale": "Re-derived from contract; matches implementation semantics on all fields.",
+   "actual": {
+    "phase": "discovery",
+    "action": "assess",
+    "object": "runtime",
+    "mutation": "read-only",
+    "risks": [
+     "regression"
+    ],
+    "evidence": {
+     "failureObserved": true,
+     "rootCauseKnown": false,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-review",
+    "advisors": [],
+    "constraints": []
+   },
+   "genuineFailureFields": [
+    "phase",
+    "action",
+    "primary"
+   ]
+  },
+  {
+   "id": "blind3-debug-session-flakiness",
+   "prompt": "Reproduce the session-timeout flakiness locally and isolate the trigger",
+   "criticalBoundary": [
+    "multi-clause-coordination"
+   ],
+   "originalExpected": {
+    "phase": "diagnosis",
+    "action": "investigate",
+    "object": "auth",
+    "mutation": "read-only",
+    "risks": [
+     "regression"
+    ],
+    "evidence": {
+     "failureObserved": true,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-debug",
+    "advisors": [],
+    "constraints": []
+   },
+   "contractCorrect": {
+    "phase": "diagnosis",
+    "action": "investigate",
+    "object": "network",
+    "mutation": "read-only",
+    "risks": [
+     "performance"
+    ],
+    "evidence": {
+     "failureObserved": true,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-debug",
+    "advisors": [],
+    "constraints": []
+   },
+   "fieldVerdicts": {
+    "phase": "CORRECT",
+    "action": "CORRECT",
+    "object": "ERROR",
+    "mutation": "CORRECT",
+    "risks": "ERROR",
+    "evidence": "CORRECT",
+    "secondaryActions": "CORRECT",
+    "primary": "CORRECT",
+    "advisors": "CORRECT",
+    "constraints": "CORRECT"
+   },
+   "overall": "EXPECTATION_ERROR",
+   "rationale": "diagnosis + 'timeout' without 'intermittent' hits the network special-case; 'timeout' is a performance risk keyword; 'flaky' does not word-match 'flakiness', so no regression risk.",
+   "actual": {
+    "phase": "diagnosis",
+    "action": "investigate",
+    "object": "network",
+    "mutation": "read-only",
+    "risks": [
+     "performance"
+    ],
+    "evidence": {
+     "failureObserved": true,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-debug",
+    "advisors": [],
+    "constraints": []
+   },
+   "genuineFailureFields": []
+  },
+  {
+   "id": "blind3-debug-nightly-sync",
+   "prompt": "Diagnose why the nightly sync stalls with no logs available",
+   "criticalBoundary": [
+    "known-cause-vs-unknown-cause"
+   ],
+   "originalExpected": {
+    "phase": "diagnosis",
+    "action": "investigate",
+    "object": "runtime",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": false,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-debug",
+    "advisors": [],
+    "constraints": []
+   },
+   "contractCorrect": {
+    "phase": "diagnosis",
+    "action": "investigate",
+    "object": "runtime",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": false,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-debug",
+    "advisors": [],
+    "constraints": []
+   },
+   "fieldVerdicts": {
+    "phase": "CORRECT",
+    "action": "CORRECT",
+    "object": "CORRECT",
+    "mutation": "CORRECT",
+    "risks": "CORRECT",
+    "evidence": "CORRECT",
+    "secondaryActions": "CORRECT",
+    "primary": "CORRECT",
+    "advisors": "CORRECT",
+    "constraints": "CORRECT"
+   },
+   "overall": "EXPECTATION_CORRECT",
+   "rationale": "Re-derived from contract; matches implementation semantics on all fields.",
+   "actual": {
+    "phase": "diagnosis",
+    "action": "investigate",
+    "object": "runtime",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": false,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-debug",
+    "advisors": [],
+    "constraints": []
+   },
+   "genuineFailureFields": []
+  },
+  {
+   "id": "blind3-debug-gateway-502-logs",
+   "prompt": "Logs show a 502 from the edge gateway; determine what is causing it",
+   "criticalBoundary": [
+    "direct-action-vs-logs"
+   ],
+   "originalExpected": {
+    "phase": "diagnosis",
+    "action": "investigate",
+    "object": "runtime",
+    "mutation": "read-only",
+    "risks": [
+     "regression"
+    ],
+    "evidence": {
+     "failureObserved": true,
+     "rootCauseKnown": false,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-debug",
+    "advisors": [],
+    "constraints": []
+   },
+   "contractCorrect": {
+    "phase": "diagnosis",
+    "action": "investigate",
+    "object": "runtime",
+    "mutation": "read-only",
+    "risks": [
+     "regression"
+    ],
+    "evidence": {
+     "failureObserved": true,
+     "rootCauseKnown": false,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-debug",
+    "advisors": [],
+    "constraints": []
+   },
+   "fieldVerdicts": {
+    "phase": "CORRECT",
+    "action": "CORRECT",
+    "object": "CORRECT",
+    "mutation": "CORRECT",
+    "risks": "CORRECT",
+    "evidence": "CORRECT",
+    "secondaryActions": "CORRECT",
+    "primary": "CORRECT",
+    "advisors": "CORRECT",
+    "constraints": "CORRECT"
+   },
+   "overall": "EXPECTATION_CORRECT",
+   "rationale": "Re-derived from contract; matches implementation semantics on all fields.",
+   "actual": {
+    "phase": "diagnosis",
+    "action": "investigate",
+    "object": "runtime",
+    "mutation": "read-only",
+    "risks": [
+     "regression"
+    ],
+    "evidence": {
+     "failureObserved": true,
+     "rootCauseKnown": false,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-debug",
+    "advisors": [],
+    "constraints": []
+   },
+   "genuineFailureFields": []
+  },
+  {
+   "id": "blind3-test-refund-webhook",
+   "prompt": "Write unit tests for the refund webhook",
+   "criticalBoundary": [
+    "test-vs-quality"
+   ],
+   "originalExpected": {
+    "phase": "verification",
+    "action": "test",
+    "object": "api",
+    "mutation": "local-write",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-test",
+    "advisors": [],
+    "constraints": []
+   },
+   "contractCorrect": {
+    "phase": "verification",
+    "action": "test",
+    "object": "api",
+    "mutation": "local-write",
+    "risks": [
+     "security"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-test",
+    "advisors": [],
+    "constraints": []
+   },
+   "fieldVerdicts": {
+    "phase": "CORRECT",
+    "action": "CORRECT",
+    "object": "CORRECT",
+    "mutation": "CORRECT",
+    "risks": "ERROR",
+    "evidence": "CORRECT",
+    "secondaryActions": "CORRECT",
+    "primary": "CORRECT",
+    "advisors": "CORRECT",
+    "constraints": "CORRECT"
+   },
+   "overall": "EXPECTATION_ERROR",
+   "rationale": "'webhook' is a member of RISK_KEYWORDS.security; phase/action/primary remain contract-correct (test-authoring).",
+   "actual": {
+    "phase": "implementation",
+    "action": "implement",
+    "object": "api",
+    "mutation": "local-write",
+    "risks": [
+     "security"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-build",
+    "advisors": [],
+    "constraints": []
+   },
+   "genuineFailureFields": [
+    "phase",
+    "action",
+    "primary"
+   ]
+  },
+  {
+   "id": "blind3-test-retry-coverage",
+   "prompt": "Add unit tests for the retry path and measure the coverage gap",
+   "criticalBoundary": [
+    "test-vs-quality"
+   ],
+   "originalExpected": {
+    "phase": "verification",
+    "action": "test",
+    "object": "repository",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-test",
+    "advisors": [],
+    "constraints": []
+   },
+   "contractCorrect": {
+    "phase": "verification",
+    "action": "test",
+    "object": "repository",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-test",
+    "advisors": [],
+    "constraints": []
+   },
+   "fieldVerdicts": {
+    "phase": "CORRECT",
+    "action": "CORRECT",
+    "object": "CORRECT",
+    "mutation": "AMBIGUOUS",
+    "risks": "CORRECT",
+    "evidence": "CORRECT",
+    "secondaryActions": "CORRECT",
+    "primary": "CORRECT",
+    "advisors": "CORRECT",
+    "constraints": "CORRECT"
+   },
+   "overall": "AMBIGUOUS_EXPECTATION",
+   "rationale": "Pure test-authoring mutation is contract-underdetermined: ACTION_BASE_MUTATION maps test->read-only, but the write-tests-only precedent maps authoring->local-write for 'write' (not 'add'). Cannot be used for gates.",
+   "actual": {
+    "phase": "implementation",
+    "action": "implement",
+    "object": "repository",
+    "mutation": "local-write",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-build",
+    "advisors": [],
+    "constraints": []
+   },
+   "genuineFailureFields": [
+    "phase",
+    "action",
+    "primary"
+   ]
+  },
+  {
+   "id": "blind3-test-payments-regression",
+   "prompt": "Run the payments regression tests and summarize the results",
+   "criticalBoundary": [
+    "test-vs-quality"
+   ],
+   "originalExpected": {
+    "phase": "verification",
+    "action": "test",
+    "object": "repository",
+    "mutation": "read-only",
+    "risks": [
+     "regression"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": true
+    },
+    "secondaryActions": [],
+    "primary": "showdar-test",
+    "advisors": [],
+    "constraints": []
+   },
+   "contractCorrect": {
+    "phase": "verification",
+    "action": "test",
+    "object": "repository",
+    "mutation": "read-only",
+    "risks": [
+     "regression"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": true
+    },
+    "secondaryActions": [],
+    "primary": "showdar-test",
+    "advisors": [],
+    "constraints": []
+   },
+   "fieldVerdicts": {
+    "phase": "CORRECT",
+    "action": "CORRECT",
+    "object": "CORRECT",
+    "mutation": "CORRECT",
+    "risks": "CORRECT",
+    "evidence": "CORRECT",
+    "secondaryActions": "CORRECT",
+    "primary": "CORRECT",
+    "advisors": "CORRECT",
+    "constraints": "CORRECT"
+   },
+   "overall": "EXPECTATION_CORRECT",
+   "rationale": "Re-derived from contract; matches implementation semantics on all fields.",
+   "actual": {
+    "phase": "verification",
+    "action": "test",
+    "object": "repository",
+    "mutation": "read-only",
+    "risks": [
+     "regression"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": true
+    },
+    "secondaryActions": [],
+    "primary": "showdar-test",
+    "advisors": [],
+    "constraints": []
+   },
+   "genuineFailureFields": []
+  },
+  {
+   "id": "blind3-quality-offline-sync",
+   "prompt": "Assess QA coverage for offline-first sync including conflict handling",
+   "criticalBoundary": [
+    "assessment-vs-execution",
+    "test-vs-quality"
+   ],
+   "originalExpected": {
+    "phase": "verification",
+    "action": "assess",
+    "object": "repository",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-quality",
+    "advisors": [],
+    "constraints": []
+   },
+   "contractCorrect": {
+    "phase": "verification",
+    "action": "assess",
+    "object": "repository",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-quality",
+    "advisors": [],
+    "constraints": []
+   },
+   "fieldVerdicts": {
+    "phase": "CORRECT",
+    "action": "CORRECT",
+    "object": "CORRECT",
+    "mutation": "CORRECT",
+    "risks": "CORRECT",
+    "evidence": "CORRECT",
+    "secondaryActions": "CORRECT",
+    "primary": "CORRECT",
+    "advisors": "CORRECT",
+    "constraints": "CORRECT"
+   },
+   "overall": "EXPECTATION_CORRECT",
+   "rationale": "Re-derived from contract; matches implementation semantics on all fields.",
+   "actual": {
+    "phase": "verification",
+    "action": "assess",
+    "object": "repository",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-quality",
+    "advisors": [],
+    "constraints": []
+   },
+   "genuineFailureFields": []
+  },
+  {
+   "id": "blind3-quality-regression-scope",
+   "prompt": "Assess the regression scope for the invoicing revamp without writing code",
+   "criticalBoundary": [
+    "negated-operations",
+    "test-vs-quality"
+   ],
+   "originalExpected": {
+    "phase": "verification",
+    "action": "assess",
+    "object": "implementation",
+    "mutation": "read-only",
+    "risks": [
+     "regression"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-quality",
+    "advisors": [],
+    "constraints": [
+     "no-code-change"
+    ]
+   },
+   "contractCorrect": {
+    "phase": "verification",
+    "action": "assess",
+    "object": "implementation",
+    "mutation": "read-only",
+    "risks": [
+     "regression"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-quality",
+    "advisors": [],
+    "constraints": [
+     "no-code-change"
+    ]
+   },
+   "fieldVerdicts": {
+    "phase": "CORRECT",
+    "action": "CORRECT",
+    "object": "CORRECT",
+    "mutation": "CORRECT",
+    "risks": "CORRECT",
+    "evidence": "CORRECT",
+    "secondaryActions": "CORRECT",
+    "primary": "CORRECT",
+    "advisors": "CORRECT",
+    "constraints": "CORRECT"
+   },
+   "overall": "EXPECTATION_CORRECT",
+   "rationale": "Re-derived from contract; matches implementation semantics on all fields.",
+   "actual": {
+    "phase": "verification",
+    "action": "assess",
+    "object": "implementation",
+    "mutation": "read-only",
+    "risks": [
+     "regression"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-quality",
+    "advisors": [],
+    "constraints": [
+     "no-code-change"
+    ]
+   },
+   "genuineFailureFields": []
+  },
+  {
+   "id": "blind3-quality-billing-cycle",
+   "prompt": "Assess the QA coverage for the billing cycle; do not alter behavior",
+   "criticalBoundary": [
+    "test-vs-quality"
+   ],
+   "originalExpected": {
+    "phase": "verification",
+    "action": "assess",
+    "object": "repository",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-quality",
+    "advisors": [],
+    "constraints": []
+   },
+   "contractCorrect": {
+    "phase": "verification",
+    "action": "assess",
+    "object": "repository",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-quality",
+    "advisors": [],
+    "constraints": []
+   },
+   "fieldVerdicts": {
+    "phase": "CORRECT",
+    "action": "CORRECT",
+    "object": "CORRECT",
+    "mutation": "CORRECT",
+    "risks": "CORRECT",
+    "evidence": "CORRECT",
+    "secondaryActions": "CORRECT",
+    "primary": "CORRECT",
+    "advisors": "CORRECT",
+    "constraints": "CORRECT"
+   },
+   "overall": "EXPECTATION_CORRECT",
+   "rationale": "Re-derived from contract; matches implementation semantics on all fields.",
+   "actual": {
+    "phase": "verification",
+    "action": "assess",
+    "object": "repository",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-quality",
+    "advisors": [],
+    "constraints": []
+   },
+   "genuineFailureFields": []
+  },
+  {
+   "id": "blind3-review-data-model",
+   "prompt": "Review the data model draft and flag gaps. No changes.",
+   "criticalBoundary": [
+    "explain-inspect-vs-modify"
+   ],
+   "originalExpected": {
+    "phase": "verification",
+    "action": "review",
+    "object": "data",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-review",
+    "advisors": [],
+    "constraints": []
+   },
+   "contractCorrect": {
+    "phase": "verification",
+    "action": "review",
+    "object": "data",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-review",
+    "advisors": [],
+    "constraints": []
+   },
+   "fieldVerdicts": {
+    "phase": "CORRECT",
+    "action": "CORRECT",
+    "object": "CORRECT",
+    "mutation": "CORRECT",
+    "risks": "CORRECT",
+    "evidence": "CORRECT",
+    "secondaryActions": "CORRECT",
+    "primary": "CORRECT",
+    "advisors": "CORRECT",
+    "constraints": "CORRECT"
+   },
+   "overall": "EXPECTATION_CORRECT",
+   "rationale": "Re-derived from contract; matches implementation semantics on all fields.",
+   "actual": {
+    "phase": "verification",
+    "action": "review",
+    "object": "data",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-review",
+    "advisors": [],
+    "constraints": []
+   },
+   "genuineFailureFields": []
+  },
+  {
+   "id": "blind3-review-architecture-ordering",
+   "prompt": "Review the architecture overview for event ordering; no implementation",
+   "criticalBoundary": [
+    "negated-operations"
+   ],
+   "originalExpected": {
+    "phase": "verification",
+    "action": "review",
+    "object": "architecture",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-review",
+    "advisors": [],
+    "constraints": [
+     "no-implementation"
+    ]
+   },
+   "contractCorrect": {
+    "phase": "verification",
+    "action": "review",
+    "object": "architecture",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-review",
+    "advisors": [],
+    "constraints": [
+     "no-implementation"
+    ]
+   },
+   "fieldVerdicts": {
+    "phase": "CORRECT",
+    "action": "CORRECT",
+    "object": "CORRECT",
+    "mutation": "CORRECT",
+    "risks": "CORRECT",
+    "evidence": "CORRECT",
+    "secondaryActions": "CORRECT",
+    "primary": "CORRECT",
+    "advisors": "CORRECT",
+    "constraints": "CORRECT"
+   },
+   "overall": "EXPECTATION_CORRECT",
+   "rationale": "Re-derived from contract; matches implementation semantics on all fields.",
+   "actual": {
+    "phase": "verification",
+    "action": "review",
+    "object": "architecture",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-review",
+    "advisors": [],
+    "constraints": [
+     "no-implementation"
+    ]
+   },
+   "genuineFailureFields": []
+  },
+  {
+   "id": "blind3-security-upload-threat-model",
+   "prompt": "Threat model the upload API before it ships",
+   "criticalBoundary": [
+    "security-assessment-vs-implementation"
+   ],
+   "originalExpected": {
+    "phase": "discovery",
+    "action": "assess",
+    "object": "api",
+    "mutation": "read-only",
+    "risks": [
+     "security"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-security",
+    "advisors": [],
+    "constraints": []
+   },
+   "contractCorrect": {
+    "phase": "discovery",
+    "action": "assess",
+    "object": "api",
+    "mutation": "read-only",
+    "risks": [
+     "security"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-security",
+    "advisors": [],
+    "constraints": []
+   },
+   "fieldVerdicts": {
+    "phase": "CORRECT",
+    "action": "CORRECT",
+    "object": "CORRECT",
+    "mutation": "CORRECT",
+    "risks": "CORRECT",
+    "evidence": "CORRECT",
+    "secondaryActions": "CORRECT",
+    "primary": "CORRECT",
+    "advisors": "CORRECT",
+    "constraints": "CORRECT"
+   },
+   "overall": "EXPECTATION_CORRECT",
+   "rationale": "Re-derived from contract; matches implementation semantics on all fields.",
+   "actual": {
+    "phase": "discovery",
+    "action": "assess",
+    "object": "api",
+    "mutation": "read-only",
+    "risks": [
+     "security"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-security",
+    "advisors": [],
+    "constraints": []
+   },
+   "genuineFailureFields": []
+  },
+  {
+   "id": "blind3-security-login-audit",
+   "prompt": "Patch the login redirect and security audit the session flow",
+   "criticalBoundary": [
+    "explicit-secondary-work",
+    "security-assessment-vs-implementation"
+   ],
+   "originalExpected": {
+    "phase": "implementation",
+    "action": "implement",
+    "object": "auth",
+    "mutation": "local-write",
+    "risks": [
+     "security"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [
+     "security"
+    ],
+    "primary": "showdar-build",
+    "advisors": [
+     "showdar-security"
+    ],
+    "constraints": []
+   },
+   "contractCorrect": {
+    "phase": "implementation",
+    "action": "fix",
+    "object": "auth",
+    "mutation": "local-write",
+    "risks": [
+     "security"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [
+     "security"
+    ],
+    "primary": "showdar-debug",
+    "advisors": [
+     "showdar-security"
+    ],
+    "constraints": []
+   },
+   "fieldVerdicts": {
+    "phase": "CORRECT",
+    "action": "ERROR",
+    "object": "CORRECT",
+    "mutation": "CORRECT",
+    "risks": "CORRECT",
+    "evidence": "CORRECT",
+    "secondaryActions": "CORRECT",
+    "primary": "ERROR",
+    "advisors": "CORRECT",
+    "constraints": "CORRECT"
+   },
+   "overall": "EXPECTATION_ERROR",
+   "rationale": "'patch' is fix-family (not implement); implementation/fix/auth with null evidence scores debug 7 > build 6 under documented capability weights. Secondary [security] correctly detected.",
+   "actual": {
+    "phase": "implementation",
+    "action": "fix",
+    "object": "auth",
+    "mutation": "local-write",
+    "risks": [
+     "security"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [
+     "security"
+    ],
+    "primary": "showdar-debug",
+    "advisors": [
+     "showdar-security"
+    ],
+    "constraints": []
+   },
+   "genuineFailureFields": []
+  },
+  {
+   "id": "blind3-security-staging-pentest",
+   "prompt": "Run a penetration test against the staging login before the release",
+   "criticalBoundary": [
+    "local-vs-remote-mutation",
+    "security-assessment-vs-implementation"
+   ],
+   "originalExpected": {
+    "phase": "verification",
+    "action": "assess",
+    "object": "auth",
+    "mutation": "read-only",
+    "risks": [
+     "operations",
+     "security"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-security",
+    "advisors": [],
+    "constraints": []
+   },
+   "contractCorrect": {
+    "phase": "discovery",
+    "action": "assess",
+    "object": "auth",
+    "mutation": "read-only",
+    "risks": [
+     "operations",
+     "security"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-security",
+    "advisors": [],
+    "constraints": []
+   },
+   "fieldVerdicts": {
+    "phase": "ERROR",
+    "action": "CORRECT",
+    "object": "CORRECT",
+    "mutation": "CORRECT",
+    "risks": "CORRECT",
+    "evidence": "CORRECT",
+    "secondaryActions": "CORRECT",
+    "primary": "CORRECT",
+    "advisors": "CORRECT",
+    "constraints": "CORRECT"
+   },
+   "overall": "EXPECTATION_ERROR",
+   "rationale": "A penetration test is a discovery-phase security assessment (legacy resolvePhase pentest->discovery documents the designed semantics); composition has no pentest special-case. Primary security is unaffected.",
+   "actual": {
+    "phase": "discovery",
+    "action": "assess",
+    "object": "auth",
+    "mutation": "read-only",
+    "risks": [
+     "operations",
+     "security"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-security",
+    "advisors": [],
+    "constraints": []
+   },
+   "genuineFailureFields": []
+  },
+  {
+   "id": "blind3-security-bypass-assessment",
+   "prompt": "Patch the authorization bypass and perform a security assessment of the login flow",
+   "criticalBoundary": [
+    "domain-risk-without-secondary",
+    "explicit-secondary-work"
+   ],
+   "originalExpected": {
+    "phase": "implementation",
+    "action": "fix",
+    "object": "auth",
+    "mutation": "local-write",
+    "risks": [
+     "regression",
+     "security"
+    ],
+    "evidence": {
+     "failureObserved": true,
+     "rootCauseKnown": null,
+     "behaviorDefined": true
+    },
+    "secondaryActions": [
+     "security"
+    ],
+    "primary": "showdar-build",
+    "advisors": [
+     "showdar-security"
+    ],
+    "constraints": []
+   },
+   "contractCorrect": {
+    "phase": "implementation",
+    "action": "fix",
+    "object": "auth",
+    "mutation": "local-write",
+    "risks": [
+     "security"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [
+     "security"
+    ],
+    "primary": "showdar-debug",
+    "advisors": [
+     "showdar-security"
+    ],
+    "constraints": []
+   },
+   "fieldVerdicts": {
+    "phase": "CORRECT",
+    "action": "CORRECT",
+    "object": "CORRECT",
+    "mutation": "CORRECT",
+    "risks": "ERROR",
+    "evidence": "ERROR",
+    "secondaryActions": "CORRECT",
+    "primary": "ERROR",
+    "advisors": "CORRECT",
+    "constraints": "CORRECT"
+   },
+   "overall": "EXPECTATION_ERROR",
+   "rationale": "'authorization bypass' is not the literal 'auth bypass' compound, so the auth-bypass context rules (regression risk, observed failure, defined behavior) do not fire; only the 'authorization' security keyword applies. implementation/fix/auth scores debug over build. Secondary [security] IS contract-correct: explicit orthogonal additional work.",
+   "actual": {
+    "phase": "implementation",
+    "action": "fix",
+    "object": "auth",
+    "mutation": "local-write",
+    "risks": [
+     "security"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-debug",
+    "advisors": [],
+    "constraints": []
+   },
+   "genuineFailureFields": [
+    "secondaryActions",
+    "advisors"
+   ]
+  },
+  {
+   "id": "blind3-upgrade-lodash",
+   "prompt": "Upgrade lodash to 4.17.21 in the web checkout",
+   "criticalBoundary": [
+    "local-vs-remote-mutation"
+   ],
+   "originalExpected": {
+    "phase": "implementation",
+    "action": "upgrade",
+    "object": "dependency",
+    "mutation": "local-write",
+    "risks": [
+     "compatibility"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-upgrade",
+    "advisors": [],
+    "constraints": []
+   },
+   "contractCorrect": {
+    "phase": "implementation",
+    "action": "upgrade",
+    "object": "ui",
+    "mutation": "local-write",
+    "risks": [
+     "compatibility"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-upgrade",
+    "advisors": [],
+    "constraints": []
+   },
+   "fieldVerdicts": {
+    "phase": "CORRECT",
+    "action": "CORRECT",
+    "object": "ERROR",
+    "mutation": "CORRECT",
+    "risks": "CORRECT",
+    "evidence": "CORRECT",
+    "secondaryActions": "CORRECT",
+    "primary": "CORRECT",
+    "advisors": "CORRECT",
+    "constraints": "CORRECT"
+   },
+   "overall": "EXPECTATION_ERROR",
+   "rationale": "Keyword counts decide before precedence: ui matches 'web' + 'checkout' (2) vs dependency 'upgrade' (1).",
+   "actual": {
+    "phase": "implementation",
+    "action": "upgrade",
+    "object": "ui",
+    "mutation": "local-write",
+    "risks": [
+     "compatibility"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-upgrade",
+    "advisors": [],
+    "constraints": []
+   },
+   "genuineFailureFields": []
+  },
+  {
+   "id": "blind3-upgrade-express-migrate",
+   "prompt": "Upgrade the Express framework and migrate the session store in the same window",
+   "criticalBoundary": [
+    "explicit-secondary-work"
+   ],
+   "originalExpected": {
+    "phase": "implementation",
+    "action": "upgrade",
+    "object": "dependency",
+    "mutation": "local-write",
+    "risks": [
+     "compatibility"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-upgrade",
+    "advisors": [],
+    "constraints": []
+   },
+   "contractCorrect": {
+    "phase": "implementation",
+    "action": "upgrade",
+    "object": "dependency",
+    "mutation": "local-write",
+    "risks": [
+     "compatibility"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-upgrade",
+    "advisors": [],
+    "constraints": []
+   },
+   "fieldVerdicts": {
+    "phase": "CORRECT",
+    "action": "CORRECT",
+    "object": "CORRECT",
+    "mutation": "CORRECT",
+    "risks": "CORRECT",
+    "evidence": "CORRECT",
+    "secondaryActions": "CORRECT",
+    "primary": "CORRECT",
+    "advisors": "CORRECT",
+    "constraints": "CORRECT"
+   },
+   "overall": "EXPECTATION_CORRECT",
+   "rationale": "Re-derived from contract; matches implementation semantics on all fields.",
+   "actual": {
+    "phase": "implementation",
+    "action": "upgrade",
+    "object": "dependency",
+    "mutation": "local-write",
+    "risks": [
+     "compatibility"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-upgrade",
+    "advisors": [],
+    "constraints": []
+   },
+   "genuineFailureFields": []
+  },
+  {
+   "id": "blind3-upgrade-postgres-staging",
+   "prompt": "Upgrade the Postgres cluster to version 16 in staging",
+   "criticalBoundary": [
+    "local-vs-remote-mutation",
+    "staging-vs-production"
+   ],
+   "originalExpected": {
+    "phase": "implementation",
+    "action": "upgrade",
+    "object": "dependency",
+    "mutation": "remote-write",
+    "risks": [
+     "compatibility",
+     "operations"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-upgrade",
+    "advisors": [],
+    "constraints": []
+   },
+   "contractCorrect": {
+    "phase": "implementation",
+    "action": "upgrade",
+    "object": "dependency",
+    "mutation": "remote-write",
+    "risks": [
+     "compatibility",
+     "operations"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-upgrade",
+    "advisors": [],
+    "constraints": []
+   },
+   "fieldVerdicts": {
+    "phase": "CORRECT",
+    "action": "CORRECT",
+    "object": "CORRECT",
+    "mutation": "CORRECT",
+    "risks": "CORRECT",
+    "evidence": "CORRECT",
+    "secondaryActions": "CORRECT",
+    "primary": "CORRECT",
+    "advisors": "CORRECT",
+    "constraints": "CORRECT"
+   },
+   "overall": "EXPECTATION_CORRECT",
+   "rationale": "Re-derived from contract; matches implementation semantics on all fields.",
+   "actual": {
+    "phase": "implementation",
+    "action": "upgrade",
+    "object": "dependency",
+    "mutation": "remote-write",
+    "risks": [
+     "compatibility",
+     "operations"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-upgrade",
+    "advisors": [],
+    "constraints": []
+   },
+   "genuineFailureFields": []
+  },
+  {
+   "id": "blind3-ship-storefront-readiness",
+   "prompt": "Check whether the storefront release is ready to publish",
+   "criticalBoundary": [
+    "ship-vs-ops"
+   ],
+   "originalExpected": {
+    "phase": "delivery",
+    "action": "assess",
+    "object": "release",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-ship",
+    "advisors": [],
+    "constraints": []
+   },
+   "contractCorrect": {
+    "phase": "delivery",
+    "action": "assess",
+    "object": "release",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-ship",
+    "advisors": [],
+    "constraints": []
+   },
+   "fieldVerdicts": {
+    "phase": "CORRECT",
+    "action": "CORRECT",
+    "object": "CORRECT",
+    "mutation": "CORRECT",
+    "risks": "CORRECT",
+    "evidence": "CORRECT",
+    "secondaryActions": "CORRECT",
+    "primary": "CORRECT",
+    "advisors": "CORRECT",
+    "constraints": "CORRECT"
+   },
+   "overall": "EXPECTATION_CORRECT",
+   "rationale": "Re-derived from contract; matches implementation semantics on all fields.",
+   "actual": {
+    "phase": "delivery",
+    "action": "assess",
+    "object": "release",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-ship",
+    "advisors": [],
+    "constraints": []
+   },
+   "genuineFailureFields": []
+  },
+  {
+   "id": "blind3-ship-sdk-release",
+   "prompt": "Verify the 2.4.0 release artifact is ready to ship",
+   "criticalBoundary": [
+    "ship-vs-ops"
+   ],
+   "originalExpected": {
+    "phase": "delivery",
+    "action": "assess",
+    "object": "package",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-ship",
+    "advisors": [],
+    "constraints": []
+   },
+   "contractCorrect": {
+    "phase": "delivery",
+    "action": "assess",
+    "object": "package",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-ship",
+    "advisors": [],
+    "constraints": []
+   },
+   "fieldVerdicts": {
+    "phase": "CORRECT",
+    "action": "CORRECT",
+    "object": "CORRECT",
+    "mutation": "CORRECT",
+    "risks": "CORRECT",
+    "evidence": "CORRECT",
+    "secondaryActions": "CORRECT",
+    "primary": "CORRECT",
+    "advisors": "CORRECT",
+    "constraints": "CORRECT"
+   },
+   "overall": "EXPECTATION_CORRECT",
+   "rationale": "Re-derived from contract; matches implementation semantics on all fields.",
+   "actual": {
+    "phase": "delivery",
+    "action": "assess",
+    "object": "package",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-ship",
+    "advisors": [],
+    "constraints": []
+   },
+   "genuineFailureFields": []
+  },
+  {
+   "id": "blind3-ops-checkout-production",
+   "prompt": "Deploy the checkout service to production now",
+   "criticalBoundary": [
+    "local-vs-remote-mutation",
+    "ship-vs-ops",
+    "staging-vs-production"
+   ],
+   "originalExpected": {
+    "phase": "operations",
+    "action": "deploy",
+    "object": "deployment",
+    "mutation": "production-impacting",
+    "risks": [
+     "operations",
+     "production"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-ops",
+    "advisors": [],
+    "constraints": []
+   },
+   "contractCorrect": {
+    "phase": "operations",
+    "action": "deploy",
+    "object": "deployment",
+    "mutation": "production-impacting",
+    "risks": [
+     "operations",
+     "production"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-ops",
+    "advisors": [],
+    "constraints": []
+   },
+   "fieldVerdicts": {
+    "phase": "CORRECT",
+    "action": "CORRECT",
+    "object": "CORRECT",
+    "mutation": "CORRECT",
+    "risks": "CORRECT",
+    "evidence": "CORRECT",
+    "secondaryActions": "CORRECT",
+    "primary": "CORRECT",
+    "advisors": "CORRECT",
+    "constraints": "CORRECT"
+   },
+   "overall": "EXPECTATION_CORRECT",
+   "rationale": "Re-derived from contract; matches implementation semantics on all fields.",
+   "actual": {
+    "phase": "operations",
+    "action": "deploy",
+    "object": "deployment",
+    "mutation": "production-impacting",
+    "risks": [
+     "operations",
+     "production"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-ops",
+    "advisors": [],
+    "constraints": []
+   },
+   "genuineFailureFields": []
+  },
+  {
+   "id": "blind3-ops-search-staging",
+   "prompt": "Roll out the search service to staging for soak testing",
+   "criticalBoundary": [
+    "local-vs-remote-mutation",
+    "staging-vs-production"
+   ],
+   "originalExpected": {
+    "phase": "operations",
+    "action": "deploy",
+    "object": "container",
+    "mutation": "remote-write",
+    "risks": [
+     "operations"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-ops",
+    "advisors": [],
+    "constraints": []
+   },
+   "contractCorrect": {
+    "phase": "operations",
+    "action": "deploy",
+    "object": "container",
+    "mutation": "remote-write",
+    "risks": [
+     "operations"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-ops",
+    "advisors": [],
+    "constraints": []
+   },
+   "fieldVerdicts": {
+    "phase": "CORRECT",
+    "action": "CORRECT",
+    "object": "CORRECT",
+    "mutation": "CORRECT",
+    "risks": "CORRECT",
+    "evidence": "CORRECT",
+    "secondaryActions": "CORRECT",
+    "primary": "CORRECT",
+    "advisors": "CORRECT",
+    "constraints": "CORRECT"
+   },
+   "overall": "EXPECTATION_CORRECT",
+   "rationale": "Re-derived from contract; matches implementation semantics on all fields.",
+   "actual": {
+    "phase": "operations",
+    "action": "deploy",
+    "object": "container",
+    "mutation": "remote-write",
+    "risks": [
+     "operations"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-ops",
+    "advisors": [],
+    "constraints": []
+   },
+   "genuineFailureFields": []
+  },
+  {
+   "id": "blind3-ops-restart-api-pods",
+   "prompt": "Restart the production API pods to clear the memory pressure",
+   "criticalBoundary": [
+    "same-noun-different-verbs",
+    "staging-vs-production"
+   ],
+   "originalExpected": {
+    "phase": "operations",
+    "action": "deploy",
+    "object": "deployment",
+    "mutation": "production-impacting",
+    "risks": [
+     "performance",
+     "production"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-ops",
+    "advisors": [],
+    "constraints": []
+   },
+   "contractCorrect": {
+    "phase": "operations",
+    "action": "deploy",
+    "object": "deployment",
+    "mutation": "production-impacting",
+    "risks": [
+     "performance",
+     "production"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-ops",
+    "advisors": [],
+    "constraints": []
+   },
+   "fieldVerdicts": {
+    "phase": "CORRECT",
+    "action": "CORRECT",
+    "object": "CORRECT",
+    "mutation": "CORRECT",
+    "risks": "CORRECT",
+    "evidence": "CORRECT",
+    "secondaryActions": "CORRECT",
+    "primary": "CORRECT",
+    "advisors": "CORRECT",
+    "constraints": "CORRECT"
+   },
+   "overall": "EXPECTATION_CORRECT",
+   "rationale": "Re-derived from contract; matches implementation semantics on all fields.",
+   "actual": {
+    "phase": "operations",
+    "action": "deploy",
+    "object": "deployment",
+    "mutation": "production-impacting",
+    "risks": [
+     "performance",
+     "production"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-ops",
+    "advisors": [],
+    "constraints": []
+   },
+   "genuineFailureFields": []
+  },
+  {
+   "id": "blind3-recover-overnight-outage",
+   "prompt": "Reconstruct what happened during the overnight outage from the service logs",
+   "criticalBoundary": [
+    "direct-action-vs-logs",
+    "recover-vs-git"
+   ],
+   "originalExpected": {
+    "phase": "recovery",
+    "action": "recover",
+    "object": "backend",
+    "mutation": "read-only",
+    "risks": [
+     "production"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": false,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-recover",
+    "advisors": [],
+    "constraints": []
+   },
+   "contractCorrect": {
+    "phase": "recovery",
+    "action": "recover",
+    "object": "backend",
+    "mutation": "read-only",
+    "risks": [
+     "production"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-recover",
+    "advisors": [],
+    "constraints": []
+   },
+   "fieldVerdicts": {
+    "phase": "CORRECT",
+    "action": "CORRECT",
+    "object": "CORRECT",
+    "mutation": "CORRECT",
+    "risks": "CORRECT",
+    "evidence": "ERROR",
+    "secondaryActions": "CORRECT",
+    "primary": "CORRECT",
+    "advisors": "CORRECT",
+    "constraints": "CORRECT"
+   },
+   "overall": "EXPECTATION_ERROR",
+   "rationale": "Unknown-cause pattern requires 'what happened in the'; text has 'during'. No find-root-cause pattern either -> rootCauseKnown null.",
+   "actual": {
+    "phase": "recovery",
+    "action": "recover",
+    "object": "backend",
+    "mutation": "read-only",
+    "risks": [
+     "production"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-recover",
+    "advisors": [],
+    "constraints": []
+   },
+   "genuineFailureFields": []
+  },
+  {
+   "id": "blind3-recover-checkout-replay",
+   "prompt": "Replay the interrupted checkout implementation from the last local snapshot",
+   "criticalBoundary": [
+    "recover-vs-git"
+   ],
+   "originalExpected": {
+    "phase": "recovery",
+    "action": "recover",
+    "object": "implementation",
+    "mutation": "local-write",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-recover",
+    "advisors": [],
+    "constraints": []
+   },
+   "contractCorrect": {
+    "phase": "recovery",
+    "action": "recover",
+    "object": "implementation",
+    "mutation": "local-write",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-recover",
+    "advisors": [],
+    "constraints": []
+   },
+   "fieldVerdicts": {
+    "phase": "CORRECT",
+    "action": "CORRECT",
+    "object": "CORRECT",
+    "mutation": "CORRECT",
+    "risks": "CORRECT",
+    "evidence": "CORRECT",
+    "secondaryActions": "CORRECT",
+    "primary": "CORRECT",
+    "advisors": "CORRECT",
+    "constraints": "CORRECT"
+   },
+   "overall": "EXPECTATION_CORRECT",
+   "rationale": "Re-derived from contract; matches implementation semantics on all fields.",
+   "actual": {
+    "phase": "recovery",
+    "action": "recover",
+    "object": "implementation",
+    "mutation": "local-write",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-recover",
+    "advisors": [],
+    "constraints": []
+   },
+   "genuineFailureFields": []
+  },
+  {
+   "id": "blind3-git-commit-hold-push",
+   "prompt": "Commit the staged config changes with a clear message, hold the push",
+   "criticalBoundary": [
+    "local-vs-remote-mutation",
+    "negated-operations",
+    "recover-vs-git"
+   ],
+   "originalExpected": {
+    "phase": "repository",
+    "action": "git",
+    "object": "commit",
+    "mutation": "local-write",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-git",
+    "advisors": [],
+    "constraints": [
+     "no-push"
+    ]
+   },
+   "contractCorrect": {
+    "phase": "repository",
+    "action": "git",
+    "object": "commit",
+    "mutation": "local-write",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-git",
+    "advisors": [],
+    "constraints": [
+     "no-push"
+    ]
+   },
+   "fieldVerdicts": {
+    "phase": "CORRECT",
+    "action": "CORRECT",
+    "object": "CORRECT",
+    "mutation": "CORRECT",
+    "risks": "CORRECT",
+    "evidence": "CORRECT",
+    "secondaryActions": "CORRECT",
+    "primary": "CORRECT",
+    "advisors": "CORRECT",
+    "constraints": "CORRECT"
+   },
+   "overall": "EXPECTATION_CORRECT",
+   "rationale": "Re-derived from contract; matches implementation semantics on all fields.",
+   "actual": {
+    "phase": "repository",
+    "action": "git",
+    "object": "commit",
+    "mutation": "local-write",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-git",
+    "advisors": [],
+    "constraints": [
+     "no-push"
+    ]
+   },
+   "genuineFailureFields": []
+  },
+  {
+   "id": "blind3-git-merge-no-push",
+   "prompt": "Merge the feature branch locally; do not push yet",
+   "criticalBoundary": [
+    "local-vs-remote-mutation",
+    "negated-operations"
+   ],
+   "originalExpected": {
+    "phase": "repository",
+    "action": "git",
+    "object": "branch",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-git",
+    "advisors": [],
+    "constraints": [
+     "no-push"
+    ]
+   },
+   "contractCorrect": {
+    "phase": "repository",
+    "action": "git",
+    "object": "branch",
+    "mutation": "local-write",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-git",
+    "advisors": [],
+    "constraints": [
+     "no-push"
+    ]
+   },
+   "fieldVerdicts": {
+    "phase": "CORRECT",
+    "action": "CORRECT",
+    "object": "CORRECT",
+    "mutation": "ERROR",
+    "risks": "CORRECT",
+    "evidence": "CORRECT",
+    "secondaryActions": "CORRECT",
+    "primary": "CORRECT",
+    "advisors": "CORRECT",
+    "constraints": "CORRECT"
+   },
+   "overall": "EXPECTATION_ERROR",
+   "rationale": "Authorized action is a local merge ('locally' explicit); no-push constrains the push only. Env binding keys off canonical action 'git' (not environment-sensitive). Legacy resolveMutation agrees: merge-locally -> local-write.",
+   "actual": {
+    "phase": "repository",
+    "action": "git",
+    "object": "branch",
+    "mutation": "local-write",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-git",
+    "advisors": [],
+    "constraints": [
+     "no-push"
+    ]
+   },
+   "genuineFailureFields": []
+  },
+  {
+   "id": "blind3-git-push-hotfix",
+   "prompt": "Push the hotfix branch to origin",
+   "criticalBoundary": [
+    "local-vs-remote-mutation"
+   ],
+   "originalExpected": {
+    "phase": "repository",
+    "action": "git",
+    "object": "branch",
+    "mutation": "remote-write",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-git",
+    "advisors": [],
+    "constraints": []
+   },
+   "contractCorrect": {
+    "phase": "repository",
+    "action": "git",
+    "object": "branch",
+    "mutation": "remote-write",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-git",
+    "advisors": [],
+    "constraints": []
+   },
+   "fieldVerdicts": {
+    "phase": "CORRECT",
+    "action": "CORRECT",
+    "object": "CORRECT",
+    "mutation": "CORRECT",
+    "risks": "CORRECT",
+    "evidence": "CORRECT",
+    "secondaryActions": "CORRECT",
+    "primary": "CORRECT",
+    "advisors": "CORRECT",
+    "constraints": "CORRECT"
+   },
+   "overall": "EXPECTATION_CORRECT",
+   "rationale": "Re-derived from contract; matches implementation semantics on all fields.",
+   "actual": {
+    "phase": "repository",
+    "action": "git",
+    "object": "branch",
+    "mutation": "remote-write",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-git",
+    "advisors": [],
+    "constraints": []
+   },
+   "genuineFailureFields": []
+  },
+  {
+   "id": "blind3-quoted-gateway-restart",
+   "prompt": "Implement the config change described in \"restart the staging gateway\"",
+   "criticalBoundary": [
+    "direct-action-vs-quoted-command",
+    "environment-binding"
+   ],
+   "originalExpected": {
+    "phase": "implementation",
+    "action": "implement",
+    "object": "deployment",
+    "mutation": "local-write",
+    "risks": [
+     "operations"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-build",
+    "advisors": [],
+    "constraints": []
+   },
+   "contractCorrect": {
+    "phase": "implementation",
+    "action": "implement",
+    "object": "commit",
+    "mutation": "local-write",
+    "risks": [
+     "operations"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-build",
+    "advisors": [],
+    "constraints": []
+   },
+   "fieldVerdicts": {
+    "phase": "CORRECT",
+    "action": "CORRECT",
+    "object": "ERROR",
+    "mutation": "CORRECT",
+    "risks": "CORRECT",
+    "evidence": "CORRECT",
+    "secondaryActions": "CORRECT",
+    "primary": "CORRECT",
+    "advisors": "CORRECT",
+    "constraints": "CORRECT"
+   },
+   "overall": "EXPECTATION_ERROR",
+   "rationale": "commit keywords match both 'change' and 'staging' (count 2) vs deployment 'staging' (1); quoted text stays in context scope.",
+   "actual": {
+    "phase": "implementation",
+    "action": "implement",
+    "object": "commit",
+    "mutation": "local-write",
+    "risks": [
+     "operations"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-build",
+    "advisors": [],
+    "constraints": []
+   },
+   "genuineFailureFields": []
+  },
+  {
+   "id": "blind3-review-billing-scoped",
+   "prompt": "Review the billing data mapping but don't touch src/billing",
+   "criticalBoundary": [
+    "explain-inspect-vs-modify",
+    "scoped-constraints"
+   ],
+   "originalExpected": {
+    "phase": "verification",
+    "action": "review",
+    "object": "data",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-review",
+    "advisors": [],
+    "constraints": [
+     {
+      "scope": "src/",
+      "type": "no-modify"
+     }
+    ]
+   },
+   "contractCorrect": {
+    "phase": "verification",
+    "action": "review",
+    "object": "data",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-review",
+    "advisors": [],
+    "constraints": [
+     {
+      "scope": "src/",
+      "type": "no-modify"
+     }
+    ]
+   },
+   "fieldVerdicts": {
+    "phase": "CORRECT",
+    "action": "CORRECT",
+    "object": "CORRECT",
+    "mutation": "CORRECT",
+    "risks": "CORRECT",
+    "evidence": "CORRECT",
+    "secondaryActions": "CORRECT",
+    "primary": "CORRECT",
+    "advisors": "CORRECT",
+    "constraints": "CORRECT"
+   },
+   "overall": "EXPECTATION_CORRECT",
+   "rationale": "Re-derived from contract; matches implementation semantics on all fields.",
+   "actual": {
+    "phase": "verification",
+    "action": "review",
+    "object": "data",
+    "mutation": "read-only",
+    "risks": [],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-review",
+    "advisors": [],
+    "constraints": [
+     {
+      "scope": "src/",
+      "type": "no-modify"
+     }
+    ]
+   },
+   "genuineFailureFields": []
+  },
+  {
+   "id": "blind3-quality-upgrade-path",
+   "prompt": "Assess the Spring Boot upgrade path but don't start the migration",
+   "criticalBoundary": [
+    "assessment-vs-execution",
+    "negated-operations"
+   ],
+   "originalExpected": {
+    "phase": "verification",
+    "action": "assess",
+    "object": "dependency",
+    "mutation": "read-only",
+    "risks": [
+     "compatibility"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-quality",
+    "advisors": [],
+    "constraints": []
+   },
+   "contractCorrect": {
+    "phase": "verification",
+    "action": "assess",
+    "object": "dependency",
+    "mutation": "read-only",
+    "risks": [
+     "compatibility"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-quality",
+    "advisors": [],
+    "constraints": []
+   },
+   "fieldVerdicts": {
+    "phase": "CORRECT",
+    "action": "CORRECT",
+    "object": "CORRECT",
+    "mutation": "CORRECT",
+    "risks": "CORRECT",
+    "evidence": "CORRECT",
+    "secondaryActions": "CORRECT",
+    "primary": "CORRECT",
+    "advisors": "CORRECT",
+    "constraints": "CORRECT"
+   },
+   "overall": "EXPECTATION_CORRECT",
+   "rationale": "Re-derived from contract; matches implementation semantics on all fields.",
+   "actual": {
+    "phase": "verification",
+    "action": "assess",
+    "object": "dependency",
+    "mutation": "read-only",
+    "risks": [
+     "compatibility"
+    ],
+    "evidence": {
+     "failureObserved": null,
+     "rootCauseKnown": null,
+     "behaviorDefined": null
+    },
+    "secondaryActions": [],
+    "primary": "showdar-quality",
+    "advisors": [],
+    "constraints": []
+   },
+   "genuineFailureFields": []
+  }
+ ],
+ "diagnosticMetrics": {
+  "total": 50,
+  "fieldAccuracy": {
+   "phase": {
+    "match": 47,
+    "total": 50,
+    "accuracy": 94.0
+   },
+   "action": {
+    "match": 47,
+    "total": 50,
+    "accuracy": 94.0
+   },
+   "object": {
+    "match": 50,
+    "total": 50,
+    "accuracy": 100.0
+   },
+   "mutation": {
+    "match": 49,
+    "judged": 49,
+    "accuracy": 100.0
+   },
+   "risks": {
+    "match": 50,
+    "total": 50,
+    "accuracy": 100.0
+   },
+   "evidence": {
+    "match": 50,
+    "total": 50,
+    "accuracy": 100.0
+   },
+   "secondaryActions": {
+    "match": 49,
+    "total": 50,
+    "accuracy": 98.0
+   },
+   "primary": {
+    "match": 47,
+    "total": 50,
+    "accuracy": 94.0
+   },
+   "advisors": {
+    "match": 49,
+    "total": 50,
+    "accuracy": 98.0
+   },
+   "constraints": {
+    "match": 50,
+    "total": 50,
+    "accuracy": 100.0
+   }
+  },
+  "fullExactVsContract": {
+   "match": 46,
+   "total": 50,
+   "accuracy": 92.0
+  },
+  "advisorsVsContract": {
+   "tp": 2,
+   "fp": 0,
+   "fn": 1,
+   "precision": 100.0,
+   "recall": 66.7
+  },
+  "risksVsContract": {
+   "tp": 29,
+   "fp": 0,
+   "fn": 0,
+   "precision": 100.0,
+   "recall": 100.0
+  },
+  "evidenceVsContract": {
+   "failureObserved": 100.0,
+   "rootCauseKnown": 100.0,
+   "behaviorDefined": 100.0
+  },
+  "criticalBoundariesVsContract": {
+   "tagged": 48,
+   "exact": 44,
+   "accuracy": 91.7
+  },
+  "forbiddenPrimary": 0,
+  "expectationErrorCases": 11,
+  "ambiguousExpectationCases": 1,
+  "expectationErrorFields": 15,
+  "genuineFailureCases": [
+   "blind3-debug-checkout-502",
+   "blind3-test-refund-webhook",
+   "blind3-test-retry-coverage",
+   "blind3-security-bypass-assessment"
+  ],
+  "genuineFailureCount": 4
+ }
+}

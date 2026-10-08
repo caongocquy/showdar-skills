@@ -19,6 +19,15 @@ test/
 .showdar.json
 .showdar/
 
+# Project-local agent installations and code index
+/.claude/
+/.cursor/
+/.opencode/
+/.codeatlas/
+
+# Generated evaluation results; retain datasets, manifests, and audits
+/evals/*-first-run.json
+
 # Local secrets and environment files
 .env
 .env.*
