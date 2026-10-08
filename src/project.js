@@ -584,7 +584,7 @@ export async function addSkill({ cwd, skill, ai = null, scope = null, home = hom
 
   const effectiveAi = ai ?? existingManifest?.ai ?? 'universal';
   const effectiveScope = scope ?? existingManifest?.scope ?? 'project';
-  if (!NATIVE_TARGETS.includes(effectiveAi)) throw new Error(`Unknown AI target "${effectiveAi}".`);
+  if (effectiveAi !== 'all' && !NATIVE_TARGETS.includes(effectiveAi)) throw new Error(`Unknown AI target "${effectiveAi}".`);
   if (effectiveScope !== 'project' && effectiveScope !== 'global') throw new Error(`Unknown scope "${effectiveScope}".`);
 
   if (existingManifest?.skills?.includes(skillId)) {
@@ -633,10 +633,7 @@ export async function addSkill({ cwd, skill, ai = null, scope = null, home = hom
     return { skill: skillId, root: '', destination: '', added: false, scope: effectiveScope, ai: effectiveAi, profile: existingManifest.profile };
   }
 
-  const root = effectiveScope === 'global'
-    ? globalSkillRootFor(effectiveAi, { homeRoot: home })
-    : skillRootFor(effectiveAi, cwd);
-  const destination = path.join(root, skillId);
+  const targets = resolveTargets(effectiveAi);
   const managedRoots = effectiveScope === 'global'
     ? [...new Set([
         ...NATIVE_TARGETS.map((t) => globalSkillRootFor(t, { homeRoot: home })),
@@ -644,30 +641,38 @@ export async function addSkill({ cwd, skill, ai = null, scope = null, home = hom
       ])]
     : [];
   const manifestPath = effectiveScope === 'global' ? globalManifestPath(home) : path.join(cwd, PROJECT_MANIFEST);
-
   const source = path.join(packageRoot, 'skills', skillId);
   if (!(await exists(path.join(source, 'SKILL.md')))) throw new Error(`Packaged skill source missing: ${skillId}`);
 
   await mkdir(baseRoot, { recursive: true });
   const priorOwned = ownedPathSet(existingManifest);
-  const relative = manifestPathFor(baseRoot, destination);
-  const existed = await exists(destination);
-  const alreadyTracked = priorOwned.has(relative);
-
   const files = [];
-  await copyOwned({ baseRoot, source, destination, priorOwned, newFiles: files, managedRoots });
+  const destinations = [...new Set(targets.map(target => effectiveScope === 'global'
+    ? globalSkillRootFor(target, { homeRoot: home })
+    : skillRootFor(target, cwd)))].map(root => path.join(root, skillId));
+  const alreadyInstalled = destinations.every(destination =>
+    priorOwned.has(manifestPathFor(baseRoot, destination)));
 
-  const targets = [effectiveAi];
+  // Inspect every target before copying anything. Never overwrite foreign skills.
+  for (const destination of destinations) {
+    await assertSafeManagedPath(baseRoot, destination, managedRoots);
+    const relative = manifestPathFor(baseRoot, destination);
+    if ((await exists(destination)) && !priorOwned.has(relative)) {
+      throw new Error(`Refusing to overwrite existing non-Showdar-managed skill or command: ${destination}`);
+    }
+  }
+  for (const destination of destinations) {
+    await copyOwned({ baseRoot, source, destination, priorOwned, newFiles: files, managedRoots });
+  }
+
   const commandHarnesses = [];
   for (const target of targets) {
     const adapter = ADAPTERS[target];
     if (adapter?.commands?.destination) {
-      if (effectiveScope === 'project') {
-        commandHarnesses.push({ target, root: commandRootFor(target, cwd) });
-      } else {
-        const globalRoot = globalCommandRootForTarget(target, { homeRoot: home });
-        if (globalRoot) commandHarnesses.push({ target, root: globalRoot });
-      }
+      const root = effectiveScope === 'project'
+        ? commandRootFor(target, cwd)
+        : globalCommandRootForTarget(target, { homeRoot: home });
+      if (root) commandHarnesses.push({ target, root });
     }
   }
 
@@ -684,10 +689,11 @@ export async function addSkill({ cwd, skill, ai = null, scope = null, home = hom
   const merged = new Map((existingManifest?.files ?? []).map((e) => [e.path, e]));
   for (const f of files) merged.set(f.path, f);
 
-  const instructionFile = existingManifest?.instructions ?? (effectiveScope === 'project' ? instructionSurfaceFor(effectiveAi, cwd) : null);
+  const instructionFile = existingManifest?.instructions ?? (effectiveScope === 'project' ? instructionSurfaceFor(effectiveAi === 'all' ? 'universal' : effectiveAi, cwd) : null);
   const commandHarness = [...new Set([...(existingManifest?.commandHarness ?? []), ...commandHarnesses.map((c) => c.target)])];
 
   const manifest = {
+    ...(existingManifest ?? {}),
     version: existingManifest?.version ?? 2,
     scope: effectiveScope,
     packageVersion,
@@ -713,7 +719,55 @@ export async function addSkill({ cwd, skill, ai = null, scope = null, home = hom
     }
   }
 
-  return { skill: skillId, root, destination, added: !alreadyTracked || !existed, scope: effectiveScope, ai: effectiveAi, profile: manifest.profile };
+  return { skill: skillId, root: path.dirname(destinations[0]), destination: destinations[0], added: !alreadyInstalled, scope: effectiveScope, ai: effectiveAi, profile: manifest.profile };
+}
+
+
+/**
+ * Additive profile/workflow member install. Existing project profile and any
+ * extra extension metadata are preserved. Requested members are deduplicated.
+ * Each member uses the standard single-skill installer and remains rerunnable.
+ */
+export async function addSkills({ cwd, skills, ai = null, scope = null, home = homedir(), packageRoot, packageVersion = '0.2.0' }) {
+  if (!Array.isArray(skills) || !skills.length) throw new Error('At least one skill is required.');
+  const skillIds = [...new Set(skills.map(normalizeSkillName))];
+  const baseRoot = scope === 'global' ? home : cwd;
+  const manifestPath = scope === 'global' ? globalManifestPath(home) : path.join(cwd, PROJECT_MANIFEST);
+  const existing = await readManifest(manifestPath, baseRoot);
+  const effectiveAi = ai ?? existing?.ai ?? 'universal';
+  const targets = resolveTargets(effectiveAi);
+  const owned = ownedPathSet(existing);
+  const managedRoots = scope === 'global'
+    ? [...new Set(NATIVE_TARGETS.map(target => globalSkillRootFor(target, { homeRoot: home })))]
+    : [];
+  // Preflight packaged inputs and all requested target paths before writing.
+  for (const skillId of skillIds) {
+    const source = path.join(packageRoot, 'skills', skillId, 'SKILL.md');
+    if (!(await exists(source))) throw new Error(`Packaged skill source missing: ${skillId}`);
+    for (const target of targets) {
+      const skillRoot = scope === 'global'
+        ? globalSkillRootFor(target, { homeRoot: home })
+        : skillRootFor(target, cwd);
+      const destination = path.join(skillRoot, skillId);
+      await assertSafeManagedPath(baseRoot, destination, managedRoots);
+      const relative = manifestPathFor(baseRoot, destination);
+      if ((await exists(destination)) && !owned.has(relative)) {
+        throw new Error(`Refusing to overwrite existing non-Showdar-managed skill or command: ${destination}`);
+      }
+    }
+  }
+  const installed = [];
+  for (const skill of skillIds) {
+    installed.push(await addSkill({ cwd, skill, ai, scope, home, packageRoot, packageVersion }));
+  }
+  return {
+    skills: skillIds,
+    added: installed.filter(entry => entry.added).length,
+    alreadyInstalled: installed.filter(entry => !entry.added).length,
+    profile: installed.at(-1)?.profile ?? existing?.profile ?? null,
+    ai: installed.at(-1)?.ai ?? effectiveAi,
+    scope: installed.at(-1)?.scope ?? scope ?? existing?.scope ?? 'project',
+  };
 }
 
 export async function removeProject(projectRoot) {
