@@ -66,6 +66,18 @@ authorize source mutation, commit, merge or push. A custom workflow JSON file
 uses the existing `add-workflow` validation/manifest semantics; remote files
 and arbitrary executable plugins are unsupported.
 
+## Interactive terminal experience
+
+On a real terminal, `showdar wizard` and `showdar add --interactive` open a
+keyboard-driven TUI powered by `@clack/prompts`. Use **↑/↓ + Enter** for single
+choices and **Space + Enter** for multi-selection. The skill picker also supports
+typing to search. The wizard presents a full preview and waits for confirmation
+before installing. Ctrl+C or declining confirmation cancels with no changes.
+
+`showdar setup` uses the same guided prompts and previews documents before
+writing. For scripts/CI, `--yes`, `--dry-run` and `--json` remain unchanged
+and never require a TTY.
+
 ## Guided onboarding and project context
 
 Showdar also offers repo-aware onboarding after installing the CLI and selected

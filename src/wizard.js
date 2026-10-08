@@ -1,4 +1,3 @@
-import { createInterface } from 'node:readline/promises';
 import { stdin, stdout } from 'node:process';
 import { PROFILES, ALL_SKILLS, resolveProfile, normalizeSkillName, getWorkflow } from './catalog.js';
 import { NATIVE_TARGETS } from './adapters.js';
@@ -47,35 +46,142 @@ export async function applyWizardPlan({ cwd, home, packageRoot, packageVersion, 
     : initProject({ projectRoot: cwd, homeRoot: home, packageRoot, packageVersion,
       profile, ai: safe.ai, skillIds: safe.skills });
 }
-export async function collectWizardAnswers(defaults = {}) {
-  if (!stdin.isTTY || !stdout.isTTY) {
+
+/**
+ * Real keyboard-driven installer. The prompt layer is injectable for
+ * cancellation and selection tests; --yes/--dry-run bypass it entirely.
+ */
+export async function collectWizardAnswers(defaults = {}, promptApi = null) {
+  if ((!stdin.isTTY || !stdout.isTTY) && !promptApi) {
     throw new Error('Interactive wizard requires a TTY. Use --profile/--skills/--workflow with --yes or --dry-run in CI.');
   }
-  const rl = createInterface({ input: stdin, output: stdout });
-  async function ask(label, defaultValue) {
-    const response = (await rl.question(label + ' [' + defaultValue + ']: ')).trim();
-    return response || defaultValue;
-  }
+  const p = promptApi ?? await import('@clack/prompts');
+  const { select, multiselect, confirm, intro, outro, note, cancel, isCancel } = p;
+  const searchableMulti = p.autocompleteMultiselect ?? multiselect;
+  const className = 'Showdar Skills · Installation';
+  intro(className);
+
+  const stop = () => {
+    cancel('Installation cancelled. No files changed.');
+    return { plan: null, cancelled: true };
+  };
+  const choose = async (options) => {
+    const answer = await select(options);
+    if (isCancel(answer)) return null;
+    return answer;
+  };
+  const list = async (options, searchable = false) => {
+    const answer = await (searchable ? searchableMulti(options) : multiselect(options));
+    if (isCancel(answer)) return null;
+    return answer;
+  };
+  const mode = await choose({
+    message: 'Installation mode',
+    initialValue: defaults.mode ?? 'add',
+    options: [
+      { value: 'add', label: 'Add to existing skills', hint: 'Recommended · keep installed skills' },
+      { value: 'replace', label: 'Replace Showdar-managed skills', hint: 'Changes the entire managed set' },
+    ],
+  });
+  if (mode === null) return stop();
+
+  const ai = await choose({
+    message: 'Coding agent',
+    initialValue: defaults.ai ?? 'universal',
+    options: [
+      { value: 'universal', label: 'Universal / Codex-compatible' },
+      { value: 'codex', label: 'Codex' },
+      { value: 'opencode', label: 'OpenCode' },
+      { value: 'cursor', label: 'Cursor' },
+      { value: 'claude', label: 'Claude Code' },
+      { value: 'all', label: 'All supported agents', hint: 'Install on each compatible surface' },
+    ],
+  });
+  if (ai === null) return stop();
+
+  const scope = await choose({
+    message: 'Installation scope',
+    initialValue: defaults.scope ?? 'project',
+    options: [
+      { value: 'project', label: 'Project', hint: 'Only this repository' },
+      { value: 'global', label: 'Global', hint: 'User-wide across repositories' },
+    ],
+  });
+  if (scope === null) return stop();
+
+  const profileName = await choose({
+    message: 'Base skill profile',
+    initialValue: defaults.profile ?? 'none',
+    options: [
+      { value: 'none', label: 'None · select skills individually' },
+      ...Object.entries(PROFILES).map(([name, ids]) => ({
+        value: name, label: name, hint: ids.length + ' skills',
+      })),
+    ],
+  });
+  if (profileName === null) return stop();
+
+  const baseIds = new Set(profileName === 'none' ? [] : resolveProfile(profileName));
+  const explicit = await list({
+    message: 'Additional skills · type to search, Space to select, Enter to continue',
+    options: ALL_SKILLS
+      .filter((skill) => skill.kind === 'primitive' && !baseIds.has(skill.id))
+      .map((skill) => ({
+        value: skill.id,
+        label: skill.id.replace(/^showdar-/, ''),
+        hint: skill.domain,
+      })),
+    required: false,
+    maxItems: 9,
+    placeholder: 'Search skills...',
+  }, true);
+  if (explicit === null) return stop();
+
+  const workflows = await list({
+    message: 'Built-in workflows (optional)',
+    options: ALL_SKILLS
+      .filter((skill) => skill.kind === 'workflow')
+      .map((skill) => ({
+        value: skill.id,
+        label: skill.id.replace(/^showdar-/, ''),
+        hint: skill.stages.length + ' stages, missing stages installed automatically',
+      })),
+    required: false,
+  });
+  if (workflows === null) return stop();
+
+  let plan;
   try {
-    stdout.write('\nShowdar installation wizard (no files changed until confirmation)\n');
-    const mode = await ask('Mode (add/replace)', defaults.mode || 'add');
-    const ai = await ask('AI target (' + [...NATIVE_TARGETS, 'all'].join('/') + ')', defaults.ai || 'universal');
-    const scope = await ask('Scope (project/global)', defaults.scope || 'project');
-    stdout.write('Available profiles: ' + Object.keys(PROFILES).join(', ') + '\n');
-    const profile = await ask('Profile (or none)', defaults.profile || 'none');
-    stdout.write('Available skills: ' + ALL_SKILLS.map(s => s.id.replace(/^showdar-/, '')).join(', ') + '\n');
-    const skills = await ask('Extra skills (comma-separated, or none)', defaults.skills || 'none');
-    const workflows = await ask('Built-in workflows (comma-separated, or none)', defaults.workflows || 'none');
-    const plan = buildWizardPlan({
-      mode, ai, scope, profile: profile === 'none' ? null : profile,
-      skills: skills === 'none' ? '' : skills,
-      workflows: workflows === 'none' ? '' : workflows,
+    plan = buildWizardPlan({
+      mode, ai, scope,
+      profile: profileName === 'none' ? null : profileName,
+      skills: explicit.join(','),
+      workflows: workflows.join(','),
     });
-    stdout.write('\nPreview: ' + plan.action + ' ' + plan.skills.length +
-      ' skills on ' + plan.ai + ' (' + plan.scope + ')\n' +
-      plan.skills.map(s => '  - ' + s).join('\n') + '\n');
-    const confirm = await ask('Apply changes? (yes/no)', 'no');
-    if (confirm !== 'yes') return { plan, cancelled: true };
-    return { plan, cancelled: false };
-  } finally { rl.close(); }
+  } catch (error) {
+    p.log?.warn?.(error.message);
+    return stop();
+  }
+
+  const alreadyIncluded = baseIds.size;
+  note([
+    'Operation: ' + (mode === 'add' ? 'Additive (no removal)' : 'Replace Showdar-managed set'),
+    'Agent: ' + ai + '  ·  Scope: ' + scope,
+    'Profile: ' + (plan.profile ?? 'none') + ' (' + alreadyIncluded + ' built-in skills)',
+    'Extra skills: ' + explicit.length + '  ·  Workflows: ' + workflows.length,
+    'Unique skills to install: ' + plan.skills.length,
+    '',
+    ...plan.skills.map((id) => '  • ' + id),
+  ].join('\n'), 'Installation preview');
+
+  const approved = await confirm({
+    message: mode === 'replace'
+      ? 'Replace the installed Showdar-managed skill selection?'
+      : 'Install these skills?',
+    initialValue: false,
+  });
+  if (isCancel(approved) || !approved) return stop();
+
+  outro('Selection confirmed. Installing…');
+  return { plan, cancelled: false };
 }
