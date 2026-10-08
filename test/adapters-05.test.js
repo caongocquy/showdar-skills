@@ -106,6 +106,9 @@ test('explicit project targets get exactly one instruction surface', async () =>
         await assert.rejects(access(path.join(projectRoot, 'CLAUDE.md')));
         await assert.rejects(access(path.join(projectRoot, '.cursor', 'rules', 'showdar.mdc')));
       }
+      if (ai === 'cursor') {
+        await access(path.join(projectRoot, '.cursor/commands/showdar-setup.md'));
+      }
       if (commands) {
         const root = ai === 'opencode' ? '.opencode/commands/showdar' : '.claude/commands/showdar';
         await access(path.join(projectRoot, root, 'debug.md'));
