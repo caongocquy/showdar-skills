@@ -76,6 +76,7 @@ async function main() {
   const version = await packageVersion();
 
   if (command === 'help' || command === '--help' || command === '-h') return printHelp(version);
+  if (command === 'setup') throw new Error('The showdar setup CLI was removed. Use /showdar/setup in OpenCode or Claude, or ask your coding agent to audit and configure Showdar project context.');
   if (command === '--version' || command === '-V') {
     console.log(version);
     return;
