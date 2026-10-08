@@ -1,3 +1,5 @@
+> **Historical reference:** This document contains older CLI descriptions. Current commands: `showdar setup` is the interactive skills installer (formerly `showdar wizard`); `/showdar-setup` is the agent-driven project-context audit on OpenCode/Claude. See [README](../README.md) for the current quick start.
+
 # Showdar Skills
 
 [![npm version](https://img.shields.io/npm/v/showdar-skills?logo=npm)](https://www.npmjs.com/package/showdar-skills)

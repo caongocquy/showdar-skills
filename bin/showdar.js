@@ -1,8 +1,6 @@
 #!/usr/bin/env node
 import path from 'node:path';
 import { parseArgs } from 'node:util';
-import { collectProjectSetupAnswers } from '../src/setup-prompt.js';
-import { planProjectSetup, applyProjectSetup } from '../src/setup.js';
 import { buildWizardPlan, applyWizardPlan, collectWizardAnswers } from '../src/wizard.js';
 import { startTaskBranch, formatGitStart } from '../src/git-start.js';
 import { guardMutation, formatMutationGuard } from '../src/git-guard.js';
@@ -53,11 +51,7 @@ function printHelp(version, command = null) {
     return;
   }
   if (command === 'setup') {
-    console.log('Usage: showdar setup [--dry-run|--yes] [--tracker github|gitlab|local] [--docs-dir docs/agents] [--json]');
-    return;
-  }
-  if (command === 'wizard') {
-    console.log('Usage: showdar wizard [--mode add|replace] [--profile name] [--skills comma,list] [--workflow comma,list] [--ai target] [--scope project|global] [--yes|--dry-run] [--json]');
+    console.log('Usage: showdar setup [--mode add|replace] [--profile name] [--skills comma,list] [--workflow comma,list] [--ai target] [--scope project|global] [--yes|--dry-run] [--json]');
     return;
   }
   if (command === 'init') {
@@ -72,7 +66,7 @@ function printHelp(version, command = null) {
     console.log(`Showdar Skills ${version}\n\nUsage:\n  showdar add <skill> [--ai <target>] [--scope <project|global>]\n  showdar add profile <profile> [--ai <target>] [--scope <project|global>]\n  showdar add workflow <builtin-name|local-json-path> [--ai <target>] [--scope <project|global>]\n\nExamples:\n  showdar add git\n  showdar add showdar-git\n  showdar add profile insurance\n  showdar add workflow feature\n  showdar add workflow ./workflows/acme-release.json\n\nAdd preserves installed skills; init replaces the managed set. Built-in workflows add required stages.`);
     return;
   }
-  console.log(`Showdar Skills ${version}\n\nUsage:\n  showdar init ${scopeUsage} [--profile <name>] [--ai <universal|codex|opencode|cursor|claude|all>] [--pack <local-path>]\n  showdar add <skill> [--ai <target>] [--scope <project|global>]\n  showdar add profile <profile> [--ai <target>] [--scope <project|global>]\n  showdar add workflow <builtin-name|local-json-path> [--ai <target>] [--scope <project|global>]\n  showdar route (--stdin | --prompt <text>) [--json]\n  showdar git-start --type <type> --name <task> [--base <branch>] [--dry-run] [--json]\n  showdar guard --mutation <read-only|local-write> [--json]\n  showdar setup [--dry-run|--yes] [--tracker github|gitlab|local] [--json]\n  showdar wizard [--mode add|replace] [--profile <name>] [--skills <names>] [--workflow <names>] [--ai <target>] [--scope <project|global>] [--yes|--dry-run]\n  showdar add-pack <local-path>\n  showdar remove-pack <name>\n  showdar add-workflow <local-path>\n  showdar status ${scopeUsage}\n  showdar doctor ${scopeUsage}\n  showdar validate\n  showdar list [--extensions]\n  showdar remove ${scopeUsage}\n  showdar create-pack <path> [--vendor <vendor>] [--description <text>] [--with-workflow <id>] [--with-profile <name>]\n  showdar validate-pack <local-path> [--json]\n  showdar inspect-pack <local-path> [--json] [--checkpoint <file>]\n  showdar doctor ${scopeUsage} [--extensions] [--json]\n  showdar update-pack <local-path> [--dry-run] [--json]\n  showdar validate\n  showdar list [--extensions] [--json]\n  showdar remove ${scopeUsage}\n\nExtension packs accept local directories/workspace paths only; tarball, URL, Git, and registry sources are rejected.\n\nDefaults: scope project, profile full, AI target universal.\nProfiles: ${Object.keys(PROFILES).join(', ')}\nDeprecated aliases: ${Object.entries(PROFILE_ALIASES).map(([alias, target]) => `${alias} -> ${target}`).join(', ')}\nAI targets: ${AI_TARGETS.join(', ')}`);
+  console.log(`Showdar Skills ${version}\n\nUsage:\n  showdar init ${scopeUsage} [--profile <name>] [--ai <universal|codex|opencode|cursor|claude|all>] [--pack <local-path>]\n  showdar add <skill> [--ai <target>] [--scope <project|global>]\n  showdar add profile <profile> [--ai <target>] [--scope <project|global>]\n  showdar add workflow <builtin-name|local-json-path> [--ai <target>] [--scope <project|global>]\n  showdar route (--stdin | --prompt <text>) [--json]\n  showdar git-start --type <type> --name <task> [--base <branch>] [--dry-run] [--json]\n  showdar guard --mutation <read-only|local-write> [--json]\n  showdar setup [--mode add|replace] [--profile <name>] [--skills <names>] [--workflow <names>] [--ai <target>] [--scope <project|global>] [--yes|--dry-run]\n  showdar add-pack <local-path>\n  showdar remove-pack <name>\n  showdar add-workflow <local-path>\n  showdar status ${scopeUsage}\n  showdar doctor ${scopeUsage}\n  showdar validate\n  showdar list [--extensions]\n  showdar remove ${scopeUsage}\n  showdar create-pack <path> [--vendor <vendor>] [--description <text>] [--with-workflow <id>] [--with-profile <name>]\n  showdar validate-pack <local-path> [--json]\n  showdar inspect-pack <local-path> [--json] [--checkpoint <file>]\n  showdar doctor ${scopeUsage} [--extensions] [--json]\n  showdar update-pack <local-path> [--dry-run] [--json]\n  showdar validate\n  showdar list [--extensions] [--json]\n  showdar remove ${scopeUsage}\n\nExtension packs accept local directories/workspace paths only; tarball, URL, Git, and registry sources are rejected.\n\nDefaults: scope project, profile full, AI target universal.\nProfiles: ${Object.keys(PROFILES).join(', ')}\nDeprecated aliases: ${Object.entries(PROFILE_ALIASES).map(([alias, target]) => `${alias} -> ${target}`).join(', ')}\nAI targets: ${AI_TARGETS.join(', ')}`);
 }
 
 async function main() {
@@ -82,7 +76,7 @@ async function main() {
   const version = await packageVersion();
 
   if (command === 'help' || command === '--help' || command === '-h') return printHelp(version);
-  if (command === '--version' || command === '-V') {
+    if (command === '--version' || command === '-V') {
     console.log(version);
     return;
   }
@@ -90,35 +84,7 @@ async function main() {
 
   const scope = ['init', 'status', 'doctor', 'remove', 'add'].includes(command) ? scopeAfter(args) : null;
 
-  if (command === 'setup') {
-    const { values } = parseArgs({ args: args.slice(1), options: {
-      'dry-run': { type: 'boolean' }, yes: { type: 'boolean' },
-      tracker: { type: 'string' }, 'docs-dir': { type: 'string' },
-      json: { type: 'boolean' }, help: { type: 'boolean', short: 'h' },
-    } });
-    if (values.help) return printHelp(version, command);
-    let tracker = values.tracker ?? null;
-    let docsDir = values['docs-dir'] ?? 'docs/agents';
-    if (!values.yes && !values['dry-run']) {
-      const answers = await collectProjectSetupAnswers({ cwd: projectRoot, tracker, docsDir });
-      if (answers.cancelled) return;
-      tracker = answers.tracker;
-      docsDir = answers.docsDir;
-    }
-    const plan = await planProjectSetup({ cwd: projectRoot, tracker, docsDir });
-    if (values['dry-run']) {
-      console.log(values.json ? JSON.stringify({ ok: true, command, data: plan }, null, 2)
-        : 'Setup preview:\n' + plan.files.map(f => '  ' + f.action + ' ' + f.path).join('\n'));
-      return;
-    }
-    const result = await applyProjectSetup({ cwd: projectRoot, plan });
-    console.log(values.json ? JSON.stringify({ ok: true, command, data: result }, null, 2)
-      : 'Setup completed. Created: ' + result.created.length + '; preserved: ' + result.preserved.length
-        + '. Shared context: ' + result.docsDir);
-    return;
-  }
-
-  if (command === 'wizard' || (command === 'add' && args.includes('--interactive'))) {
+  if (command === 'setup' || (command === 'add' && args.includes('--interactive'))) {
     const wizardArgs = command === 'add' ? args.filter(a => a !== '--interactive').slice(1) : args.slice(1);
     const { values } = parseArgs({ args: wizardArgs, options: {
       mode: { type: 'string' }, profile: { type: 'string' },
@@ -127,7 +93,7 @@ async function main() {
       yes: { type: 'boolean' }, 'dry-run': { type: 'boolean' },
       json: { type: 'boolean' }, help: { type: 'boolean', short: 'h' },
     } });
-    if (values.help) return printHelp(version, 'wizard');
+    if (values.help) return printHelp(version, 'setup');
     let plan;
     if (values.yes || values['dry-run']) {
       plan = buildWizardPlan({
@@ -144,7 +110,7 @@ async function main() {
       plan = collected.plan;
     }
     if (values['dry-run']) {
-      console.log(values.json ? JSON.stringify({ ok: true, command: 'wizard', data: plan }, null, 2)
+      console.log(values.json ? JSON.stringify({ ok: true, command: 'setup', data: plan }, null, 2)
         : 'Wizard preview (' + plan.action + '): ' + plan.skills.join(', '));
       return;
     }

@@ -164,15 +164,31 @@ async function generateCommandFiles({ baseRoot, skillIds, target, commandRoot, p
   await writeTextAtomic(aggregatorDest, aggregatorContent);
   newFiles.push({ path: aggregatorRel, hash: await hashTree(aggregatorDest) });
   files.push({ destination: aggregatorDest, skillId: 'aggregator', shortName: 'skill' });
-  const setupDest = path.join(commandRoot, 'setup.md');
+  const setupDest = path.join(path.dirname(commandRoot), 'showdar-setup.md');
   const setupRel = manifestPathFor(baseRoot, setupDest);
   if ((await exists(setupDest)) && !priorOwned.has(setupRel)) {
     throw new Error('Refusing to overwrite existing non-Showdar-managed command: ' + setupDest);
   }
   await writeTextAtomic(setupDest, renderShowdarSetupCommand());
   newFiles.push({ path: setupRel, hash: await hashTree(setupDest) });
-  files.push({ destination: setupDest, skillId: 'setup', shortName: 'setup' });
+  files.push({ destination: setupDest, skillId: 'setup', shortName: 'showdar-setup' });
   return files;
+}
+
+async function generateCursorSetupCommand({ baseRoot, scope, homeRoot, priorOwned, newFiles }) {
+  const root = scope === 'global'
+    ? path.join(homeRoot, '.cursor', 'commands')
+    : path.join(baseRoot, '.cursor', 'commands');
+  const destination = path.join(root, 'showdar-setup.md');
+  await assertSafeManagedPath(baseRoot, destination);
+  const relative = manifestPathFor(baseRoot, destination);
+  if ((await exists(destination)) && !priorOwned.has(relative)) {
+    throw new Error('Refusing to overwrite existing non-Showdar-managed command: ' + destination);
+  }
+  await mkdir(root, { recursive: true });
+  await writeTextAtomic(destination, renderShowdarSetupCommand());
+  newFiles.push({ path: relative, hash: await hashTree(destination) });
+  return { destination, skillId: 'setup', shortName: 'showdar-setup', target: 'cursor' };
 }
 
 async function initInstallation({
@@ -226,6 +242,7 @@ async function initInstallation({
     ? [...new Set([
         ...NATIVE_TARGETS.map((t) => globalSkillRootFor(t, { homeRoot })),
         ...NATIVE_TARGETS.filter((t) => globalCommandRootForTarget(t, { homeRoot })).map((t) => globalCommandRootForTarget(t, { homeRoot })),
+        ...NATIVE_TARGETS.filter((t) => globalCommandRootForTarget(t, { homeRoot })).map((t) => path.dirname(globalCommandRootForTarget(t, { homeRoot }))),
       ])]
     : [];
   const commandHarnesses = [];
@@ -239,9 +256,15 @@ async function initInstallation({
           desiredPaths.add(manifestPathFor(baseRoot, path.join(root, `${shortName}.md`)));
         }
         desiredPaths.add(manifestPathFor(baseRoot, path.join(root, 'skill.md')));
+        desiredPaths.add(manifestPathFor(baseRoot, path.join(path.dirname(root), 'showdar-setup.md')));
         commandHarnesses.push({ target, root });
       }
     }
+  }
+
+  if (targets.includes('cursor')) {
+    const cursorRoot = scope === 'global' ? homeRoot : baseRoot;
+    desiredPaths.add(manifestPathFor(baseRoot, path.join(cursorRoot, '.cursor', 'commands', 'showdar-setup.md')));
   }
 
   const staleTargets = [];
@@ -262,6 +285,9 @@ async function initInstallation({
   }
 
   const commandsGenerated = [];
+  if (targets.includes('cursor')) {
+    commandsGenerated.push(await generateCursorSetupCommand({ baseRoot, scope, homeRoot, priorOwned, newFiles: files }));
+  }
   for (const { target, root } of commandHarnesses) {
     const generated = await generateCommandFiles({
       baseRoot,
@@ -475,7 +501,7 @@ async function inspectInstallation({
       if (!commandRoot) continue;
       for (const cmd of manifest.commands ?? []) {
         if (cmd.target !== harness) continue;
-        const dest = path.join(commandRoot, `${cmd.name}.md`);
+        const dest = cmd.name === 'showdar-setup' ? path.join(path.dirname(commandRoot), 'showdar-setup.md') : path.join(commandRoot, `${cmd.name}.md`);
         const rel = manifestPathFor(baseRoot, dest);
         const owned = projectOwned.has(rel);
         if (!(await exists(dest))) {
@@ -527,6 +553,7 @@ async function removeInstallation({ baseRoot, manifestPath, scope, homeRoot = ho
     ? [...new Set([
         ...NATIVE_TARGETS.map((t) => globalSkillRootFor(t, { homeRoot })),
         ...NATIVE_TARGETS.filter((t) => globalCommandRootForTarget(t, { homeRoot })).map((t) => globalCommandRootForTarget(t, { homeRoot })),
+        ...NATIVE_TARGETS.filter((t) => globalCommandRootForTarget(t, { homeRoot })).map((t) => path.dirname(globalCommandRootForTarget(t, { homeRoot }))),
       ])]
     : [];
 
@@ -624,6 +651,9 @@ export async function addSkill({ cwd, skill, ai = null, scope = null, home = hom
     for (const destination of destinations) {
       await copyOwned({ baseRoot, source, destination, priorOwned, newFiles: refreshedFiles });
     }
+    if ((existingManifest.targets ?? []).includes('cursor')) {
+      await generateCursorSetupCommand({ baseRoot, scope: effectiveScope, homeRoot: home, priorOwned, newFiles: refreshedFiles });
+    }
     for (const target of existingManifest.commandHarness ?? []) {
       const commandRoot = effectiveScope === 'global' ? globalCommandRootForTarget(target, { homeRoot: home }) : commandRootFor(target, cwd);
       if (commandRoot) await generateCommandFiles({ baseRoot, skillIds: existingManifest.skills, target, commandRoot, priorOwned, newFiles: refreshedFiles });
@@ -686,6 +716,10 @@ export async function addSkill({ cwd, skill, ai = null, scope = null, home = hom
 
   const allSkillIds = [...new Set([...(existingManifest?.skills ?? []), skillId])];
   const newCommands = [];
+  if (targets.includes('cursor')) {
+    const generated = await generateCursorSetupCommand({ baseRoot, scope: effectiveScope, homeRoot: home, priorOwned, newFiles: files });
+    newCommands.push({ target: 'cursor', name: 'showdar-setup', path: manifestPathFor(baseRoot, generated.destination) });
+  }
   const harnessTargets = [...new Set([...(existingManifest?.commandHarness ?? []), ...commandHarnesses.map(c => c.target)])];
   for (const target of harnessTargets) {
     const root = effectiveScope === 'global' ? globalCommandRootForTarget(target, { homeRoot: home }) : commandRootFor(target, cwd);

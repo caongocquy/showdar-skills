@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- Replaced the CLI `showdar wizard` entry point with `showdar setup`, preserving the interactive skills installer flow and `add --interactive` alias.
+- Replaced the generated project-context template CLI with `/showdar-setup`, an evidence-based AI onboarding command for Cursor, OpenCode and Claude Code.
+- Agent-driven setup now audits product/domain context alongside repository conventions, proposes diffs and requires approval and Git preflight before modifying docs.
+- Retained existing intent routing and installation safeguards; no separate setup engine or router.
+
 ## [0.14.2]
 
 ### Changed

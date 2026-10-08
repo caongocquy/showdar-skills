@@ -106,6 +106,9 @@ test('explicit project targets get exactly one instruction surface', async () =>
         await assert.rejects(access(path.join(projectRoot, 'CLAUDE.md')));
         await assert.rejects(access(path.join(projectRoot, '.cursor', 'rules', 'showdar.mdc')));
       }
+      if (ai === 'cursor') {
+        await access(path.join(projectRoot, '.cursor/commands/showdar-setup.md'));
+      }
       if (commands) {
         const root = ai === 'opencode' ? '.opencode/commands/showdar' : '.claude/commands/showdar';
         await access(path.join(projectRoot, root, 'debug.md'));
@@ -119,7 +122,7 @@ test('explicit project targets get exactly one instruction surface', async () =>
   }
 });
 
-test('command counts include built-in setup: minimal 8+2, add feature 9+2, full+workflows 22+2', async () => {
+test('command counts include separate top-level agent setup: minimal 8+1, add feature 9+1, full+workflows 22+1', async () => {
   const allIds = [...resolveProfile('full'), 'showdar-feature', 'showdar-bugfix', 'showdar-release', 'showdar-incident'];
   const { base, packageRoot, projectRoot, homeRoot } = await fixture(allIds);
   try {
@@ -127,18 +130,18 @@ test('command counts include built-in setup: minimal 8+2, add feature 9+2, full+
     await initProject({ projectRoot, homeRoot, packageRoot, profile: 'minimal', ai: 'opencode', skillIds: minimal, packageVersion: '0.4.0' });
     const readDir = async (dir) => (await import('node:fs/promises')).readdir(dir);
     let files = await readDir(path.join(projectRoot, '.opencode/commands/showdar'));
-    assert.equal(files.filter((f) => f !== 'skill.md').length, 9);
+    assert.equal(files.filter((f) => f !== 'skill.md').length, 8);
     assert.ok(files.includes('skill.md'));
-    assert.ok(files.includes('setup.md'));
+    await access(path.join(projectRoot, '.opencode/commands/showdar-setup.md'));
 
     await addSkill({ cwd: projectRoot, skill: 'feature', packageRoot, home: homeRoot, packageVersion: '0.4.0' });
     files = await readDir(path.join(projectRoot, '.opencode/commands/showdar'));
-    assert.equal(files.filter((f) => f !== 'skill.md').length, 10);
+    assert.equal(files.filter((f) => f !== 'skill.md').length, 9);
     assert.ok(files.includes('feature.md'));
 
     await initProject({ projectRoot, homeRoot, packageRoot, profile: 'full', ai: 'opencode', skillIds: allIds, packageVersion: '0.4.0' });
     files = await readDir(path.join(projectRoot, '.opencode/commands/showdar'));
-    assert.equal(files.filter((f) => f !== 'skill.md').length, 23);
+    assert.equal(files.filter((f) => f !== 'skill.md').length, 22);
     assert.ok(files.includes('skill.md'));
     const aggregator = await readFile(path.join(projectRoot, '.opencode/commands/showdar/skill.md'), 'utf8');
     for (const id of allIds) assert.ok(aggregator.includes(id));
