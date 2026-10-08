@@ -89,6 +89,17 @@ jobs:
           ref: ${{ needs.metadata.outputs.tag }}
           fetch-depth: 0
 
+      - name: Refresh release packager for manual backfill
+        if: github.event_name == 'workflow_dispatch'
+        shell: bash
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          set -euo pipefail
+          git fetch origin "$DEFAULT_BRANCH" --depth=1
+          mkdir -p scripts
+          git show FETCH_HEAD:scripts/package-release-bundle.mjs > scripts/package-release-bundle.mjs
+
       - name: Set up Node.js 24
         uses: actions/setup-node@v4
         with:
