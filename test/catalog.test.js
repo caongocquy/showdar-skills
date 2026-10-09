@@ -87,10 +87,11 @@ test('profiles represent role-oriented skill bundles', () => {
   assert.deepEqual(PROFILES.qa, [
     'showdar-understand', 'showdar-requirements', 'showdar-quality', 'showdar-test',
     'showdar-debug', 'showdar-review', 'showdar-ship', 'showdar-recover', 'showdar-git',
+    'showdar-setup', 'showdar-refine', 'showdar-domain-model',
   ]);
   assert.deepEqual(PROFILES.product, [
     'showdar-understand', 'showdar-requirements', 'showdar-plan', 'showdar-design',
-    'showdar-quality', 'showdar-review',
+    'showdar-quality', 'showdar-review', 'showdar-setup', 'showdar-refine', 'showdar-domain-model',
   ]);
   assert.deepEqual(PROFILES.insurance, [
     'showdar-insurance-domain', 'showdar-insurance-workflows', 'showdar-insurance-review',
@@ -98,7 +99,7 @@ test('profiles represent role-oriented skill bundles', () => {
 });
 
 test('every profile references known skills without duplicates', () => {
-  const known = new Set(EXPECTED_SKILLS);
+  const known = new Set(ALL_SKILLS.map(skill => skill.id));
   for (const [profile, ids] of Object.entries(PROFILES)) {
     assert.ok(ids.length > 0, `${profile} should not be empty`);
     assert.equal(new Set(ids).size, ids.length, `${profile} contains duplicates`);
