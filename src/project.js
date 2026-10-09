@@ -224,7 +224,9 @@ async function inspectLegacySetupCommands({ baseRoot, manifest, scope, homeRoot 
 }
 
 async function removeLegacySetupCommands(entries) {
-  for (const entry of entries) await rm(entry.target, { force: true });
+  // Entries have already passed ownership/path and hash checks; native skill
+  // directories require recursive removal, legacy commands are regular files.
+  for (const entry of entries) await rm(entry.target, { recursive: true, force: true });
 }
 
 async function initInstallation({

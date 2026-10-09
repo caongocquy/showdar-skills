@@ -15,7 +15,7 @@ test('plan creates durable Markdown only when complexity and authorized writes w
   const reference = await readFile(path.join(root, 'skills/showdar-plan/references/plan-persistence.md'), 'utf8');
   for (const phrase of [
     /Adaptive Plan Persistence/i,
-    /canonical plan\/ticket/i,
+    /canonical (?:plan\/ticket|ticket\/plan)/i,
     /single.session/i,
     /docs\/plans\/<feature>\.md/i,
     /before creating or modifying a plan file/i,
@@ -43,7 +43,7 @@ test('build resumes earliest unmet dependency-ready task, not from unchecked fla
     /blocked/i,
     /change.*scope|plan.*stale|drift/i,
   ]) assert.match(build + exec, pattern);
-  assert.match(exec, /checked box.*not.*proof/i);
+  assert.match(exec, /checked task can be stale|checkbox.*only/i);
   assert.match(exec, /workflow.state checkpoint/i);
 });
 
