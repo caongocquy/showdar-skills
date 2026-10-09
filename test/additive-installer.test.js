@@ -35,7 +35,7 @@ test('add profile insurance extends developer without replacing profile or exist
     const after = await manifest(cwd);
     assert.equal(after.profile, 'developer');
     assert.equal(after.ai, 'opencode');
-    assert.equal(after.skills.length, 15);
+    assert.equal(after.skills.length, 18);
     for (const id of [...before.skills, ...resolveProfile('insurance')]) assert.ok(after.skills.includes(id), id);
     for (const id of ['insurance-domain', 'insurance-workflows', 'insurance-review']) {
       await access(skillPath(cwd, 'opencode', id));
