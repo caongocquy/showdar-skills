@@ -6,9 +6,7 @@ import { randomBytes } from 'node:crypto';
 
 import { BenchmarkAdapter } from '../lib/adapter.js';
 import { createEvidence, createResultContract, createViolation } from '../lib/result-contract.js';
-import {
-  buildRoutePlan
-} from '../../src/route-plan.js';
+import { buildThinRoutePlan } from '../../src/route-plan.js';
 import { normalizeIntent } from '../../src/intent.js';
 import { buildVerificationPlan } from '../../src/verification-budget.js';
 import { buildUnifiedVerificationPlan, createCompactExecutionBrief } from '../../src/verification-executor.js';
@@ -244,9 +242,22 @@ function advisorExcerpt(content) {
   return lines.slice(start >= 0 ? start : 0, (start >= 0 ? start : 0) + 18).join('\n');
 }
 
-async function buildOrchestrationBrief(scenario, repoRoot) {
+export async function buildOrchestrationBrief(scenario, repoRoot) {
   const intent = normalizeIntent(scenario.normalizedIntent);
-  const routePlan = buildRoutePlan(intent);
+  const phaseCapability = {
+    discovery: 'understand', definition: 'requirements', planning: 'plan',
+    design: 'design', implementation: 'implement', diagnosis: 'debug',
+    verification: 'test', delivery: 'ship', operations: 'ops',
+    recovery: 'recover', repository: 'git',
+  };
+  const primaryCapability = scenario.routingMeta?.primaryCapability ?? phaseCapability[intent.phase];
+  const structuralRoute = buildThinRoutePlan(intent, { primaryCapability });
+  // Adapt the structural router's string advisors to the verification contract.
+  const routePlan = {
+    primary: structuralRoute.primary,
+    advisors: structuralRoute.advisors.map(skill => ({ skill, reasons: ['requested secondary action'] })),
+    confidence: { level: 'high', margin: 0, decisive: true },
+  };
   const verificationPlan = buildVerificationPlan(intent, routePlan, scenario.changeMetadata ?? {});
   const unifiedVerificationPlan = buildUnifiedVerificationPlan(intent, routePlan, verificationPlan, scenario.changeMetadata ?? {});
   const stateResult = createExecutionState({ primary: routePlan.primary.skill });
@@ -266,7 +277,7 @@ async function buildOrchestrationBrief(scenario, repoRoot) {
   // We still load it for traceability but mark it as reference
   const primaryGuidance = loadSkill(routePlan.primary.skill, repoRoot);
   const advisorGuidance = (await awaitSkillExcerpts(routePlan.advisors, repoRoot)).join('\n\n');
-  const advisorLines = routePlan.advisors.map((advisor) => `- ${advisor.skill}: ${advisor.reasons.join('; ')}`).join('\n') || '- none';
+  const advisorLines = routePlan.advisors.map((advisor) => `- ${advisor.skill}: ${(advisor.reasons ?? []).join('; ')}`).join('\n') || '- none';
 
   const brief = [
     'This is benchmark-normalized-intent orchestration. Raw-prompt intent parsing is NOT evaluated.',

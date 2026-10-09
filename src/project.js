@@ -144,6 +144,7 @@ async function generateCommandFiles({ baseRoot, skillIds, target, commandRoot, p
   for (const skillId of skillIds) {
     const shortName = skillId.replace(/^showdar-/, '');
     const destination = path.join(commandRoot, `${shortName}.md`);
+    await assertSafeManagedPath(baseRoot, destination, managedRoots);
     const relative = manifestPathFor(baseRoot, destination);
     if ((await exists(destination)) && !priorOwned.has(relative)) {
       throw new Error(`Refusing to overwrite existing non-Showdar-managed command: ${destination}`);
@@ -155,6 +156,7 @@ async function generateCommandFiles({ baseRoot, skillIds, target, commandRoot, p
     files.push({ destination, skillId, shortName });
   }
   const aggregatorDest = path.join(commandRoot, 'skill.md');
+  await assertSafeManagedPath(baseRoot, aggregatorDest, managedRoots);
   const aggregatorRel = manifestPathFor(baseRoot, aggregatorDest);
   if ((await exists(aggregatorDest)) && !priorOwned.has(aggregatorRel)) {
     throw new Error(`Refusing to overwrite existing non-Showdar-managed command: ${aggregatorDest}`);
@@ -165,6 +167,7 @@ async function generateCommandFiles({ baseRoot, skillIds, target, commandRoot, p
   newFiles.push({ path: aggregatorRel, hash: await hashTree(aggregatorDest) });
   files.push({ destination: aggregatorDest, skillId: 'aggregator', shortName: 'skill' });
   const setupDest = path.join(path.dirname(commandRoot), 'showdar-setup.md');
+  await assertSafeManagedPath(baseRoot, setupDest, managedRoots);
   const setupRel = manifestPathFor(baseRoot, setupDest);
   if ((await exists(setupDest)) && !priorOwned.has(setupRel)) {
     throw new Error('Refusing to overwrite existing non-Showdar-managed command: ' + setupDest);
@@ -267,13 +270,62 @@ async function initInstallation({
     desiredPaths.add(manifestPathFor(baseRoot, path.join(cursorRoot, '.cursor', 'commands', 'showdar-setup.md')));
   }
 
+  // Validate instruction surfaces before removing any previously managed files.
+  if (scope === 'project') {
+    const nextTarget = ai === 'all' ? 'universal' : targets[0];
+    const nextInstruction = instructionSurfaceFor(nextTarget, baseRoot);
+    if (nextInstruction) {
+      await assertSafeManagedPath(baseRoot, nextInstruction.targetPath);
+      if (nextInstruction.kind === 'block' && await exists(nextInstruction.targetPath)) {
+        stripManagedBlock(await readFile(nextInstruction.targetPath, 'utf8'));
+      }
+      if (nextInstruction.kind === 'file' && await exists(nextInstruction.targetPath) &&
+          prior?.instructions?.file !== nextInstruction.file) {
+        throw new Error('Refusing to overwrite existing non-Showdar-managed instruction: ' + nextInstruction.targetPath);
+      }
+    }
+    if (prior?.instructions?.file) {
+      const previous = path.resolve(baseRoot, prior.instructions.file);
+      const valid = prior.instructions.kind === 'block'
+        ? ['AGENTS.md', 'CLAUDE.md'].map(file => path.resolve(baseRoot, file))
+        : [path.resolve(baseRoot, '.cursor/rules/showdar.mdc')];
+      if (!valid.includes(previous)) throw new Error('Unsafe prior instruction path: ' + prior.instructions.file);
+      await assertSafeManagedPath(baseRoot, previous);
+      if (prior.instructions.kind === 'block' && await exists(previous)) {
+        stripManagedBlock(await readFile(previous, 'utf8'));
+      }
+    }
+  }
+
   const staleTargets = [];
   for (const entry of prior?.files ?? []) {
     const targetPath = safeOwnedPath(baseRoot, entry.path, managedRoots);
     if (targetPath && !desiredPaths.has(entry.path)) {
+      if (path.resolve(targetPath) === path.resolve(baseRoot) || !isManagedDeletionTarget(baseRoot, targetPath, scope, homeRoot, prior)) throw new Error('Unsafe stale managed path: ' + entry.path);
       await assertSafeManagedPath(baseRoot, targetPath, managedRoots);
       staleTargets.push(targetPath);
     }
+  }
+  // Preflight all destinations before deleting the previous installation.
+  for (const { destination } of skillDestinations) {
+    await assertSafeManagedPath(baseRoot, destination, managedRoots);
+    const rel = manifestPathFor(baseRoot, destination);
+    if ((await exists(destination)) && !priorOwned.has(rel)) throw new Error('Refusing to overwrite existing non-Showdar-managed skill or command: ' + destination);
+  }
+  for (const { root } of commandHarnesses) {
+    for (const filename of [...skillIds.map(id => id.replace(/^showdar-/, '') + '.md'), 'skill.md']) {
+      const dest = path.join(root, filename);
+      await assertSafeManagedPath(baseRoot, dest, managedRoots);
+      if ((await exists(dest)) && !priorOwned.has(manifestPathFor(baseRoot, dest))) throw new Error('Foreign command destination: ' + dest);
+    }
+    const top = path.join(path.dirname(root), 'showdar-setup.md');
+    await assertSafeManagedPath(baseRoot, top, managedRoots);
+    if ((await exists(top)) && !priorOwned.has(manifestPathFor(baseRoot, top))) throw new Error('Foreign setup command: ' + top);
+  }
+  if (targets.includes('cursor')) {
+    const cursorDest = path.join(scope === 'global' ? homeRoot : baseRoot, '.cursor', 'commands', 'showdar-setup.md');
+    await assertSafeManagedPath(baseRoot, cursorDest, managedRoots);
+    if ((await exists(cursorDest)) && !priorOwned.has(manifestPathFor(baseRoot, cursorDest))) throw new Error('Foreign Cursor setup command: ' + cursorDest);
   }
   for (const stale of staleTargets) await rm(stale, { recursive: true, force: true });
 
@@ -544,6 +596,44 @@ async function inspectInstallation({
   };
 }
 
+function isManagedDeletionTarget(baseRoot, target, scope, homeRoot, manifest) {
+  const absolute = path.resolve(target);
+  const installedSkills = new Set(manifest?.skills ?? []);
+  const targets = scope === 'global' ? NATIVE_TARGETS : (manifest?.targets ?? resolveTargets(manifest?.ai ?? 'universal'));
+  for (const agent of targets) {
+    const skillRoot = scope === 'global'
+      ? globalSkillRootFor(agent, { homeRoot })
+      : skillRootFor(agent, baseRoot);
+    const skillName = path.relative(skillRoot, absolute);
+    if (!skillName.includes(path.sep) && installedSkills.has(skillName) && skillName.startsWith('showdar-')) return true;
+
+    const commandsRoot = scope === 'global'
+      ? globalCommandRootForTarget(agent, { homeRoot })
+      : commandRootFor(agent, baseRoot);
+    if (commandsRoot) {
+      const commandName = path.relative(commandsRoot, absolute);
+      const supported = new Set(['skill.md', ...[...installedSkills].map(id => id.replace(/^showdar-/, '') + '.md')]);
+      if (!commandName.includes(path.sep) && supported.has(commandName)) return true;
+      if (absolute === path.resolve(path.dirname(commandsRoot), 'showdar-setup.md')) return true;
+    }
+    if (agent === 'cursor' && absolute === path.resolve(
+      scope === 'global' ? homeRoot : baseRoot, '.cursor', 'commands', 'showdar-setup.md')) return true;
+    if (agent === 'cursor' && absolute === path.resolve(
+      scope === 'global' ? homeRoot : baseRoot, '.cursor', 'rules', 'showdar.mdc')) return true;
+  }
+  const packRoot = path.resolve(baseRoot, EXTENSION_DIR, 'packs');
+  for (const pack of manifest?.extensions?.packs ?? []) {
+    if (typeof pack.name !== 'string' || !/^[a-z0-9][a-z0-9_-]*$/.test(pack.name)) continue;
+    const ownedPackRoot = path.resolve(packRoot, pack.name);
+    if (absolute.startsWith(ownedPackRoot + path.sep)) return true;
+  }
+  for (const workflow of manifest?.extensions?.customWorkflows ?? []) {
+    if (workflow.source !== 'standalone' || typeof workflow.id !== 'string' || !/^[a-z0-9][a-z0-9_-]*$/.test(workflow.id)) continue;
+    if (absolute === path.resolve(baseRoot, EXTENSION_DIR, 'workflows', workflow.id + '.json')) return true;
+  }
+  return false;
+}
+
 async function removeInstallation({ baseRoot, manifestPath, scope, homeRoot = homedir() }) {
   await assertSafeManagedPath(baseRoot, manifestPath);
   let manifest;
@@ -557,16 +647,23 @@ async function removeInstallation({ baseRoot, manifestPath, scope, homeRoot = ho
       ])]
     : [];
 
+  const removalTargets = [];
   for (const entry of manifest?.files ?? []) {
     const target = safeOwnedPath(baseRoot, entry.path, managedRoots);
-    if (target) {
-      await assertSafeManagedPath(baseRoot, target, managedRoots);
-      await rm(target, { recursive: true, force: true });
+    if (!target || path.resolve(target) === path.resolve(baseRoot) || !isManagedDeletionTarget(baseRoot, target, scope, homeRoot, manifest)) {
+      throw new Error('Unsafe Showdar manifest deletion path: ' + entry.path);
     }
+    await assertSafeManagedPath(baseRoot, target, managedRoots);
+    removalTargets.push(target);
   }
+  for (const target of removalTargets) await rm(target, { recursive: true, force: true });
 
   if (scope === 'project' && manifest?.instructions) {
-    const filePath = path.join(baseRoot, manifest.instructions.file);
+    const filePath = path.resolve(baseRoot, manifest.instructions.file);
+    const expected = manifest.instructions.kind === 'block'
+      ? new Set([path.join(baseRoot, 'AGENTS.md'), path.join(baseRoot, 'CLAUDE.md')])
+      : new Set([path.join(baseRoot, '.cursor', 'rules', 'showdar.mdc')]);
+    if (!expected.has(filePath)) throw new Error('Unsafe Showdar instruction path: ' + manifest.instructions.file);
     if (manifest.instructions.kind === 'block') {
       await removeManagedBlock(filePath);
     } else if (manifest.instructions.kind === 'file') {
@@ -622,7 +719,8 @@ export async function addSkill({ cwd, skill, ai = null, scope = null, home = hom
   if (effectiveAi !== 'all' && !NATIVE_TARGETS.includes(effectiveAi)) throw new Error(`Unknown AI target "${effectiveAi}".`);
   if (effectiveScope !== 'project' && effectiveScope !== 'global') throw new Error(`Unknown scope "${effectiveScope}".`);
 
-  if (existingManifest?.skills?.includes(skillId)) {
+  if (existingManifest?.skills?.includes(skillId) &&
+      resolveTargets(effectiveAi).every(target => (existingManifest.targets ?? []).includes(target))) {
     const refreshedFiles = [];
     const priorOwned = ownedPathSet(existingManifest);
     const source = path.join(packageRoot, 'skills', skillId);
@@ -919,6 +1017,7 @@ export async function addPack({ cwd, source, home = homedir(), packageVersion = 
         version: manifest.version,
         source: path.relative(cwd, packRoot).replaceAll(path.sep, '/'),
         hash: packHash,
+        installedHash: await hashTree(destination),
         installedAt: new Date().toISOString(),
       }],
       customWorkflows: [...(existing.extensions?.customWorkflows ?? []), ...((manifest.workflows ?? []).map((w) => ({
@@ -1065,7 +1164,7 @@ export async function createPack({ cwd, path: packPath, vendor, description, wit
   const { createPackScaffold } = await import('./pack-scaffold.js');
   const absolutePath = path.resolve(cwd, packPath);
   const name = path.basename(absolutePath);
-  return createPackScaffold({ destination: absolutePath, name, vendor, description, withWorkflow, withProfile });
+  return createPackScaffold({ destination: path.dirname(absolutePath), name, vendor, description, withWorkflow, withProfile });
 }
 
 export async function inspectPack({ cwd, source }) {
