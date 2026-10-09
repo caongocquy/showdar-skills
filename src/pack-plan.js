@@ -308,8 +308,18 @@ export async function planPackUpdate({ cwd, source }) {
   const installedHash = await computeInstalledHash(cwd, existingPack.name, existing);
   const recordedHash = existingPack.hash;
   const expectedInstalledHash = existingPack.installedHash ?? installedHash;
-  const installedDrift = installedHash !== null && installedHash !== expectedInstalledHash ||
-    (existing.files ?? []).some(entry => entry.path.startsWith(`${EXTENSION_DIR}/packs/${existingPack.name}/`) && !entry.hash);
+  let installedDrift = installedHash === null || installedHash !== expectedInstalledHash ||
+    installedHash === 'missing-managed-file' || installedHash?.startsWith('foreign-files:');
+  // Per-file ownership hashes are the source of truth for older installations.
+  const oldPrefix = `${EXTENSION_DIR}/packs/${existingPack.name}/`;
+  for (const entry of existing.files ?? []) {
+    if (!entry.path.startsWith(oldPrefix)) continue;
+    const installedFile = path.join(cwd, entry.path);
+    if (!entry.hash || !(await exists(installedFile)) || await hashTree(installedFile) !== entry.hash) {
+      installedDrift = true;
+      break;
+    }
+  }
 
   const sourceHash = newPackHash;
   const manifestHash = await computeManifestHash(existing);
@@ -515,14 +525,14 @@ export async function executePackUpdate(plan, { cwd }) {
     }
     const merged = new Map((existing.files ?? []).filter(entry => !entry.path.startsWith(prefix)).map(e => [e.path, e]));
     for (const file of newFiles) merged.set(file.path, file);
-    const awaitHashPlaceholder = await hashTree(tempDir);
+    const stagedInstalledHash = await hashTree(tempDir);
     const updated = {
       ...existing,
       files: [...merged.values()],
       extensions: {
         ...(existing.extensions ?? {}),
         packs: (existing.extensions?.packs ?? []).map(p => p.name === newManifest.name
-          ? { ...p, version: newManifest.version, hash: plan.candidate.hash, installedHash: awaitHashPlaceholder, installedAt: new Date().toISOString() }
+          ? { ...p, version: newManifest.version, hash: plan.candidate.hash, installedHash: stagedInstalledHash, installedAt: new Date().toISOString() }
           : p),
         customWorkflows: [
           ...(existing.extensions?.customWorkflows ?? []).filter(w => w.source !== `pack:${newManifest.name}`),
