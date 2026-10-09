@@ -270,6 +270,33 @@ async function initInstallation({
     desiredPaths.add(manifestPathFor(baseRoot, path.join(cursorRoot, '.cursor', 'commands', 'showdar-setup.md')));
   }
 
+  // Validate instruction surfaces before removing any previously managed files.
+  if (scope === 'project') {
+    const nextTarget = ai === 'all' ? 'universal' : targets[0];
+    const nextInstruction = instructionSurfaceFor(nextTarget, baseRoot);
+    if (nextInstruction) {
+      await assertSafeManagedPath(baseRoot, nextInstruction.targetPath);
+      if (nextInstruction.kind === 'block' && await exists(nextInstruction.targetPath)) {
+        stripManagedBlock(await readFile(nextInstruction.targetPath, 'utf8'));
+      }
+      if (nextInstruction.kind === 'file' && await exists(nextInstruction.targetPath) &&
+          prior?.instructions?.file !== nextInstruction.file) {
+        throw new Error('Refusing to overwrite existing non-Showdar-managed instruction: ' + nextInstruction.targetPath);
+      }
+    }
+    if (prior?.instructions?.file) {
+      const previous = path.resolve(baseRoot, prior.instructions.file);
+      const valid = prior.instructions.kind === 'block'
+        ? ['AGENTS.md', 'CLAUDE.md'].map(file => path.resolve(baseRoot, file))
+        : [path.resolve(baseRoot, '.cursor/rules/showdar.mdc')];
+      if (!valid.includes(previous)) throw new Error('Unsafe prior instruction path: ' + prior.instructions.file);
+      await assertSafeManagedPath(baseRoot, previous);
+      if (prior.instructions.kind === 'block' && await exists(previous)) {
+        stripManagedBlock(await readFile(previous, 'utf8'));
+      }
+    }
+  }
+
   const staleTargets = [];
   for (const entry of prior?.files ?? []) {
     const targetPath = safeOwnedPath(baseRoot, entry.path, managedRoots);
