@@ -663,7 +663,8 @@ export async function addSkill({ cwd, skill, ai = null, scope = null, home = hom
   if (effectiveAi !== 'all' && !NATIVE_TARGETS.includes(effectiveAi)) throw new Error(`Unknown AI target "${effectiveAi}".`);
   if (effectiveScope !== 'project' && effectiveScope !== 'global') throw new Error(`Unknown scope "${effectiveScope}".`);
 
-  if (existingManifest?.skills?.includes(skillId)) {
+  if (existingManifest?.skills?.includes(skillId) &&
+      resolveTargets(effectiveAi).every(target => (existingManifest.targets ?? []).includes(target))) {
     const refreshedFiles = [];
     const priorOwned = ownedPathSet(existingManifest);
     const source = path.join(packageRoot, 'skills', skillId);
