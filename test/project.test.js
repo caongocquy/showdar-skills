@@ -214,23 +214,23 @@ test('project init deduplicates globally owned skills and preserves the requeste
 
   const result = await initProject({ projectRoot, homeRoot, packageRoot, profile: 'developer', ai: 'codex', skillIds: resolveProfile('developer'), packageVersion: '0.2.1' });
   assert.equal(result.requestedSkills, 15);
-  assert.equal(result.installedSkills, 4);
+  assert.equal(result.installedSkills, 7);
   assert.equal(result.satisfiedByGlobal, 8);
   assert.equal(result.skippedDuplicates, 8);
 
   const manifest = JSON.parse(await readFile(path.join(projectRoot, '.showdar.json'), 'utf8'));
   assert.deepEqual(manifest.skills, resolveProfile('developer'));
   assert.equal(manifest.satisfiedByGlobal.length, 8);
-  assert.equal(manifest.files.filter(({ path: file }) => file.startsWith('.agents/skills/')).length, 4);
+  assert.equal(manifest.files.filter(({ path: file }) => file.startsWith('.agents/skills/')).length, 7);
   await assert.rejects(access(path.join(projectRoot, '.agents/skills/showdar-understand')));
   await access(path.join(projectRoot, '.agents/skills/showdar-security/SKILL.md'));
   const status = await inspectProject(projectRoot, { homeRoot });
   assert.equal(status.healthy, true);
-  assert.equal(status.skills, 12);
+  assert.equal(status.skills, 15);
   assert.equal(status.satisfiedByGlobal, 8);
 
   const repeat = await initProject({ projectRoot, homeRoot, packageRoot, profile: 'developer', ai: 'codex', skillIds: resolveProfile('developer'), packageVersion: '0.2.1' });
-  assert.equal(repeat.installedSkills, 4);
+  assert.equal(repeat.installedSkills, 7);
   assert.equal(repeat.satisfiedByGlobal, 8);
   assert.equal(repeat.skippedDuplicates, 8);
 });
