@@ -59,7 +59,7 @@ test('companion SKILL.md artifacts satisfy native portable format and approval g
     assert.match(markdown, /approval/i);
     assert.match(markdown, /CLI is unavailable|without any Showdar executable|skills-only/);
   }
-  const refine = await readFile(path.join(packageRoot, 'skills/showdar-refine/SKILL.md'), 'utf8');
+  const refine = await readFile(path.join(packageRoot, 'skills/showdar-brainstorm/SKILL.md'), 'utf8');
   assert.match(refine, /whole.*spec|complete.*spec/i);
   const feature = await readFile(path.join(packageRoot, 'skills/showdar-feature/SKILL.md'), 'utf8');
   assert.match(feature, /Conditional refinement gate/);
@@ -71,7 +71,7 @@ test('native Cursor setup is installed without a colliding custom slash command'
     await initProject({ projectRoot: f.projectRoot, homeRoot: f.homeRoot, packageRoot,
       profile: 'developer', ai: 'cursor', skillIds: resolveProfile('developer'), packageVersion: '0.16.0' });
     await access(path.join(f.projectRoot, '.cursor/skills/showdar-setup/SKILL.md'));
-    await access(path.join(f.projectRoot, '.cursor/skills/showdar-refine/SKILL.md'));
+    await access(path.join(f.projectRoot, '.cursor/skills/showdar-brainstorm/SKILL.md'));
     await access(path.join(f.projectRoot, '.cursor/skills/showdar-domain-model/SKILL.md'));
     await assert.rejects(access(path.join(f.projectRoot, '.cursor/commands/showdar-setup.md')));
     assert.equal((await inspectProject(f.projectRoot, { homeRoot: f.homeRoot })).healthy, true);

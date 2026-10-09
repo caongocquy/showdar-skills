@@ -87,11 +87,11 @@ test('profiles represent role-oriented skill bundles', () => {
   assert.deepEqual(PROFILES.qa, [
     'showdar-understand', 'showdar-requirements', 'showdar-quality', 'showdar-test',
     'showdar-debug', 'showdar-review', 'showdar-ship', 'showdar-recover', 'showdar-git',
-    'showdar-setup', 'showdar-refine', 'showdar-domain-model',
+    'showdar-setup', 'showdar-brainstorm', 'showdar-domain-model',
   ]);
   assert.deepEqual(PROFILES.product, [
     'showdar-understand', 'showdar-requirements', 'showdar-plan', 'showdar-design',
-    'showdar-quality', 'showdar-review', 'showdar-setup', 'showdar-refine', 'showdar-domain-model',
+    'showdar-quality', 'showdar-review', 'showdar-setup', 'showdar-brainstorm', 'showdar-domain-model',
   ]);
   assert.deepEqual(PROFILES.insurance, [
     'showdar-insurance-domain', 'showdar-insurance-workflows', 'showdar-insurance-review',
@@ -113,6 +113,8 @@ test('unknown profile throws a useful error', () => {
 
 test('three portable companion skills are installable but excluded from lifecycle primitives', () => {
   assert.equal(COMPANION_SKILLS.length, 3);
+  assert.ok(COMPANION_SKILLS.some(skill => skill.id === 'showdar-brainstorm'));
+  assert.ok(!COMPANION_SKILLS.some(skill => skill.id === 'showdar-refine'));
   assert.equal(ALL_SKILLS.length, 25);
   assert.ok(COMPANION_SKILLS.every(x => x.kind === 'companion'));
   assert.ok(COMPANION_SKILLS.every(x => !SKILLS.some(y => y.id === x.id)));
