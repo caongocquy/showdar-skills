@@ -19,6 +19,12 @@ export const SKILLS = [
   { id: 'showdar-insurance-review', kind: 'primitive', domain: 'insurance', description: 'Use when reviewing insurer UI labels, business models, API/schema mappings, validation, edge cases or Dev/QA scenarios for insurance terminology and business correctness.' },
 ];
 
+export const COMPANION_SKILLS = [
+  { id: 'showdar-setup', kind: 'companion', domain: 'onboarding', description: 'Use when onboarding a repository, auditing project context, or proposing grounded glossary and agent documentation improvements.' },
+  { id: 'showdar-refine', kind: 'companion', domain: 'refinement', description: 'Use when a feature idea or implementation request has unresolved product or architecture decisions that require interactive refinement and explicit spec approval.' },
+  { id: 'showdar-domain-model', kind: 'companion', domain: 'domain', description: 'Use when clarifying shared domain terminology, maintaining an evidence-backed glossary, or documenting confirmed architectural decisions as ADRs.' },
+];
+
 export const WORKFLOW_SKILLS = [
   { id: 'showdar-feature', kind: 'workflow', domain: 'feature', stages: ['showdar-understand', 'showdar-requirements', 'showdar-plan', 'showdar-design', 'showdar-build', 'showdar-test', 'showdar-review'], description: 'Use when implementing a complete feature end-to-end, adaptively sequencing understand, requirements, plan, design, build, test, and review stages based on existing definition.' },
   { id: 'showdar-bugfix', kind: 'workflow', domain: 'bugfix', stages: ['showdar-understand', 'showdar-debug', 'showdar-build', 'showdar-test', 'showdar-review'], description: 'Use when resolving an observed defect end-to-end, adaptively sequencing understand, debug, build, test, and review stages based on whether root cause is already proven.' },
@@ -28,9 +34,11 @@ export const WORKFLOW_SKILLS = [
 
 export const PRIMITIVE_SKILLS = SKILLS;
 
-export const ALL_SKILLS = [...SKILLS, ...WORKFLOW_SKILLS];
+export const ALL_SKILLS = [...SKILLS, ...COMPANION_SKILLS, ...WORKFLOW_SKILLS];
 
 export const PRIMITIVE_COUNT = SKILLS.length;
+
+export const COMPANION_COUNT = COMPANION_SKILLS.length;
 
 export const WORKFLOW_COUNT = WORKFLOW_SKILLS.length;
 
@@ -42,12 +50,12 @@ const ids = (...values) => values;
 
 export const PROFILES = {
   minimal: ids('showdar-understand', 'showdar-plan', 'showdar-build', 'showdar-debug', 'showdar-test', 'showdar-review', 'showdar-recover', 'showdar-git'),
-  developer: ids('showdar-understand', 'showdar-plan', 'showdar-design', 'showdar-build', 'showdar-debug', 'showdar-test', 'showdar-review', 'showdar-upgrade', 'showdar-ship', 'showdar-recover', 'showdar-git', 'showdar-security'),
-  backend: ids('showdar-understand', 'showdar-plan', 'showdar-build', 'showdar-debug', 'showdar-test', 'showdar-review', 'showdar-upgrade', 'showdar-ship', 'showdar-recover', 'showdar-git', 'showdar-requirements', 'showdar-quality', 'showdar-security', 'showdar-ops'),
-  qa: ids('showdar-understand', 'showdar-requirements', 'showdar-quality', 'showdar-test', 'showdar-debug', 'showdar-review', 'showdar-ship', 'showdar-recover', 'showdar-git'),
-  product: ids('showdar-understand', 'showdar-requirements', 'showdar-plan', 'showdar-design', 'showdar-quality', 'showdar-review'),
+  developer: ids('showdar-understand', 'showdar-plan', 'showdar-design', 'showdar-build', 'showdar-debug', 'showdar-test', 'showdar-review', 'showdar-upgrade', 'showdar-ship', 'showdar-recover', 'showdar-git', 'showdar-security', 'showdar-setup', 'showdar-refine', 'showdar-domain-model'),
+  backend: ids('showdar-understand', 'showdar-plan', 'showdar-build', 'showdar-debug', 'showdar-test', 'showdar-review', 'showdar-upgrade', 'showdar-ship', 'showdar-recover', 'showdar-git', 'showdar-requirements', 'showdar-quality', 'showdar-security', 'showdar-ops', 'showdar-setup', 'showdar-refine', 'showdar-domain-model'),
+  qa: ids('showdar-understand', 'showdar-requirements', 'showdar-quality', 'showdar-test', 'showdar-debug', 'showdar-review', 'showdar-ship', 'showdar-recover', 'showdar-git', 'showdar-setup', 'showdar-refine', 'showdar-domain-model'),
+  product: ids('showdar-understand', 'showdar-requirements', 'showdar-plan', 'showdar-design', 'showdar-quality', 'showdar-review', 'showdar-setup', 'showdar-refine', 'showdar-domain-model'),
   insurance: ids('showdar-insurance-domain', 'showdar-insurance-workflows', 'showdar-insurance-review'),
-  full: SKILLS.map((skill) => skill.id),
+  full: [...SKILLS, ...COMPANION_SKILLS].map((skill) => skill.id),
 };
 
 export const PROFILE_ALIASES = {

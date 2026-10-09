@@ -24,7 +24,7 @@ showdar doctor
 | Agent setup | Analyze the repository, propose grounded shared context, and update docs after approval. |
 | `doctor` | Check the installation and flag problems. |
 
-**OpenCode / Claude Code:** after installation, use `/showdar-setup` to audit the codebase and prepare project context. The agent previews a diff and requests approval before changes. **Cursor:** use `/showdar-setup` as a project slash command. **Codex:** ask the agent to audit this repository and set up Showdar project context.
+**Portable skills:** native agent discovery works with `npx skills add caongocquy/showdar-skills` without the Showdar CLI. Invoke `showdar-setup` by name (or `/showdar-setup` where the agent supports skill slash-invocation). **CLI:** `showdar setup` remains the interactive installer. The setup skill audits project context and proposes Glossary changes with explicit approval; ADRs require actual decisions.
 
 Already configured? Just give the coding agent a normal task, such as *"Fix the checkout validation bug and add regression tests."* Showdar guidance routes requests to the relevant installed skills; you do not need to call each skill manually.
 
@@ -39,6 +39,14 @@ showdar doctor
 ```
 
 **Install vs. configure:** `showdar init` installs/replaces a skill selection, `showdar add` extends it, and `showdar setup` is the interactive installer. Project context is created or enriched by the AI agent using repository evidence and explicit approval; the CLI `showdar setup` runs the interactive installer and does not generate project context.
+
+## Portable companions
+
+- `showdar-setup`: repository evidence audit, project context onboarding and optional glossary bootstrap; user approval before writing.
+- `showdar-refine`: conditional questioning for material ambiguity. After refinement starts, a complete Decision Brief must receive explicit approval before implementation; skip when work is already defined.
+- `showdar-domain-model`: read canonical terminology and ADRs when relevant; propose edits for accepted domain definitions or real architecture decisions, and write only after approval.
+
+Companions are native-discoverable and first-class installable skills, not primary lifecycle routes. `showdar-feature` consults refine only when decisions can alter behavior, and handoff reuses approved specs rather than asking again. Specs follow adaptive persistence: use existing canonical tickets/docs first; create a durable spec for complex cross-session work, and keep small same-session briefs in conversation.
 
 ## Version and updates
 
@@ -62,7 +70,7 @@ User task
   -> Execute / verify / report
 ```
 
-Showdar ships **18 primitive** and **4 workflow** skills, including optional insurance-domain coverage. Only relevant instructions and references are loaded as needed.
+Showdar ships **18 lifecycle primitives**, **3 portable companion** and **4 workflow** skills, including optional insurance-domain coverage. Only relevant instructions and references are loaded as needed.
 
 Before local source/config/docs changes, follow the project's Git policy and run `showdar guard --mutation local-write --json`; work on a task branch when required. Routing and onboarding do not grant permission to commit, merge, push, or deploy.
 

@@ -41,8 +41,8 @@ test('primitive count includes the three insurer domain skills', () => {
 test('workflow count is four and total installable is twenty-two', () => {
   assert.deepEqual(WORKFLOW_SKILLS.map((skill) => skill.id), EXPECTED_WORKFLOWS);
   assert.equal(WORKFLOW_COUNT, 4);
-  assert.equal(TOTAL_COUNT, 22);
-  assert.equal(ALL_SKILLS.length, 22);
+  assert.equal(TOTAL_COUNT, 25);
+  assert.equal(ALL_SKILLS.length, 25);
   assert.ok(WORKFLOW_SKILLS.every((skill) => skill.kind === 'workflow'));
 });
 
