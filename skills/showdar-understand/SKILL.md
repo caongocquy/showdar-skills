@@ -50,6 +50,13 @@ description: Use when mapping an unfamiliar repository, architecture, dependenci
 - Keep the map proportional to the user task; avoid exploring unrelated subsystems.
 - Never expose secrets found in configuration. Refer to secret names only.
 
+## Shared domain context discovery
+
+- Alongside repository instructions, discover the canonical glossary, ADRs and approved specs if they exist.
+- Read only task-relevant domain terms and accepted architecture decisions, and distinguish them from observed code behavior.
+- Do not bootstrap missing docs as part of read-only understanding; suggest installed `showdar-setup` for onboarding or `showdar-domain-model` for material shared terminology work.
+- Never treat an inferred code structure as proof that a domain policy or ADR was approved.
+
 ## Workflow
 
 ### Phase 1 — establish repository context

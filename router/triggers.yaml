@@ -17,6 +17,11 @@ priority:
   - showdar-understand
   - showdar-test
   - showdar-build
+# Portable companions are invoked by native discovery or lifecycle skill guidance, not by canonical priority.
+companions:
+  - showdar-setup
+  - showdar-refine
+  - showdar-domain-model
 rules:
   - if root cause is unknown prefer showdar-debug over showdar-build
   - if requirements or change surface are unresolved prefer showdar-plan over showdar-build

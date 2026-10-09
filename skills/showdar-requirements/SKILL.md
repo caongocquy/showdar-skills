@@ -56,6 +56,14 @@ Before any task-owned source/config/test/docs write, apply `showdar-git` branch 
 - Present unresolved items under an explicit `Open questions` heading when stakeholder input is required.
 - Do not claim a requirement is ready merely because a happy path is described.
 
+## Approved-spec and refinement handoff
+
+- First inspect existing canonical spec/ticket and an approved Decision Brief when available; do not restart an interview for accepted decisions.
+- If blocking product or architectural choices remain and `showdar-refine` is installed, use it as a companion before claiming the requirement implementation-ready.
+- Once refinement was triggered, no implementation may begin until the user explicitly approves the complete spec.
+- Capture newly agreed shared terms for an optional `showdar-domain-model` glossary proposal; do not silently edit docs or infer approvals.
+- Preserve Decision Brief IDs and non-goals in acceptance criteria. Report missing approval or conflicting sources as blockers.
+
 ## Workflow
 
 ### Phase 1 — establish the source of truth

@@ -8,7 +8,7 @@ import { routeRequest, formatRoute } from '../src/runtime-route.js';
 import { homedir } from 'node:os';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { AI_TARGETS, PRIMITIVE_COUNT, PROFILE_ALIASES, PROFILES, SKILLS, TOTAL_COUNT, WORKFLOW_COUNT, canonicalProfile, isDeprecatedProfile, resolveProfile, getWorkflow, normalizeSkillName } from '../src/catalog.js';
+import { AI_TARGETS, COMPANION_SKILLS, PRIMITIVE_COUNT, PROFILE_ALIASES, PROFILES, SKILLS, TOTAL_COUNT, WORKFLOW_COUNT, canonicalProfile, isDeprecatedProfile, resolveProfile, getWorkflow, normalizeSkillName } from '../src/catalog.js';
 import { addPack, addSkill, addSkills, addWorkflow, globalManifestPath, initGlobal, initProject, inspectGlobal, inspectProject, listExtensions, listExtensionsDetailed, removeGlobal, removePack, removeProject, validatePackSource, createPack, inspectPack, doctor, updatePack, readProjectOverrides } from '../src/project.js';
 import { formatPlanPreviewHuman, projectPackUpdatePreview } from '../src/pack-plan.js';
 import { assessCheckpointAgainstCandidate } from '../src/pack-inspect.js';
@@ -198,7 +198,7 @@ async function main() {
       return;
     }
     console.log(`Profiles: ${Object.keys(PROFILES).join(', ')}\nDeprecated aliases: ${Object.entries(PROFILE_ALIASES).map(([alias, target]) => `${alias} -> ${target}`).join(', ')}\n\nSkills:`);
-    for (const skill of SKILLS) console.log(`  ${skill.id}  [${skill.domain}]  ${skill.description}`);
+    for (const skill of [...SKILLS, ...COMPANION_SKILLS]) console.log(`  ${skill.id}  [${skill.kind}/${skill.domain}]  ${skill.description}`);
     return;
   }
 

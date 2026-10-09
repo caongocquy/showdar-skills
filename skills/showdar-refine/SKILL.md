@@ -42,6 +42,8 @@ description: Use when a feature idea or implementation request has unresolved pr
 - Do not fabricate product decisions or source evidence.
 - Use native skill discovery in skills-only installations without assuming router, manifest or CLI.
 
+Read `references/questioning.md` and `references/approval-handoff.md` only when that depth of detail is needed; these references are packaged inside this skill for skills-only installers.
+
 ## Workflow
 
 - Start read-only: inspect request, canonical spec/ticket, relevant repository context and existing ADR/glossary.

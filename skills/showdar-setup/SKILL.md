@@ -42,6 +42,8 @@ description: Use when onboarding a repository, auditing project context, or prop
 - Do not fabricate product decisions or source evidence.
 - Use native skill discovery in skills-only installations without assuming router, manifest or CLI.
 
+Read `references/context-audit.md` only when that depth of detail is needed; these references are packaged inside this skill for skills-only installers.
+
 ## Workflow
 
 - Inventory instructions, package/build files, app entrypoints and relevant tests without source mutation.

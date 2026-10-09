@@ -42,6 +42,8 @@ description: Use when clarifying shared domain terminology, maintaining an evide
 - Do not fabricate product decisions or source evidence.
 - Use native skill discovery in skills-only installations without assuming router, manifest or CLI.
 
+Read `references/glossary.md` and `references/adr.md` only when that depth of detail is needed; these references are packaged inside this skill for skills-only installers.
+
 ## Workflow
 
 - Discover canonical glossary, ADR, domain docs and previous decisions first.
