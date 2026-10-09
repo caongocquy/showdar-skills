@@ -9,7 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [0.17.0]
 
 ### Added
-- Renamed native portable `showdar-refine` to **`showdar-brainstorm`**, keeping `refine` and `showdar-refine` as CLI input aliases.
+- Renamed native portable `showdar-refine` to **`showdar-brainstorm`**, without a legacy CLI alias.
 - Adaptive Markdown plan persistence and verification-backed task resume for the Brainstorm → Plan → Build workflow.
 - Safe, hash-checked migration for CLI-owned legacy native skills and commands.
 

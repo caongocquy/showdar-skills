@@ -97,17 +97,11 @@ export function isWorkflowSkill(id) {
   return WORKFLOW_SKILLS.some((skill) => skill.id === id);
 }
 
-// Compatibility for existing CLI commands. Always install the canonical skill ID.
-export const SKILL_ALIASES = Object.freeze({
-  refine: 'showdar-brainstorm',
-  'showdar-refine': 'showdar-brainstorm',
-});
-
 export function normalizeSkillName(name) {
   if (typeof name !== 'string' || !name.trim()) throw new Error('Skill name is required.');
   const trimmed = name.trim();
   const canonical = trimmed.startsWith('showdar-') ? trimmed : `showdar-${trimmed}`;
-  const skill = getSkill(SKILL_ALIASES[canonical] ?? canonical);
+  const skill = getSkill(canonical);
   if (!skill) {
     const known = ALL_SKILLS.map((s) => s.id.replace(/^showdar-/, '')).join(', ');
     throw new Error(`Unknown skill "${name}". Available skills: ${known}`);

@@ -46,7 +46,7 @@ showdar doctor
 - `showdar-brainstorm`: conditional questioning for material ambiguity. After refinement starts, a complete Decision Brief must receive explicit approval before implementation; skip when work is already defined.
 - `showdar-domain-model`: read canonical terminology and ADRs when relevant; propose edits for accepted domain definitions or real architecture decisions, and write only after approval.
 
-CLI compatibility: `showdar add refine` and `showdar add showdar-refine` install the canonical `showdar-brainstorm`. New native installs should invoke `/showdar-brainstorm`; independent Skills CLI installs must be updated through that installer.
+Use `showdar add brainstorm` or `/showdar-brainstorm`. The retired skill name is not a CLI alias. Existing v0.16.0 installs should update their profile; Showdar-managed legacy copies are migrated only when unchanged. Independent Skills CLI installs must be updated with that installer.
 
 For longer work, `showdar-plan` may persist a plan in the repository's canonical plans location (default `docs/plans/<feature>.md`) with stable task IDs and a verification ledger. `showdar-build` resumes from that plan, but a checkbox is not proof and a plan is not Git or implementation authority.
 
