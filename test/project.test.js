@@ -213,7 +213,7 @@ test('project init deduplicates globally owned skills and preserves the requeste
   await initGlobal({ homeRoot, packageRoot, profile: 'minimal', ai: 'codex', skillIds: resolveProfile('minimal'), packageVersion: '0.2.1' });
 
   const result = await initProject({ projectRoot, homeRoot, packageRoot, profile: 'developer', ai: 'codex', skillIds: resolveProfile('developer'), packageVersion: '0.2.1' });
-  assert.equal(result.requestedSkills, 12);
+  assert.equal(result.requestedSkills, 15);
   assert.equal(result.installedSkills, 4);
   assert.equal(result.satisfiedByGlobal, 8);
   assert.equal(result.skippedDuplicates, 8);

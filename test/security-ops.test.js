@@ -19,8 +19,8 @@ test('security and ops are first-class skills with role-aware profile membership
     'showdar-security', 'showdar-ops', 'showdar-insurance-domain',
     'showdar-insurance-workflows', 'showdar-insurance-review',
   ]);
-  assert.equal(PROFILES.developer.length, 12);
-  assert.equal(PROFILES.backend.length, 14);
+  assert.equal(PROFILES.developer.length, 15);
+  assert.equal(PROFILES.backend.length, 17);
   assert.equal(PROFILES.qa.length, 9);
   assert.equal(PROFILES.product.length, 6);
   assert.equal(PROFILES.full.length, 18);

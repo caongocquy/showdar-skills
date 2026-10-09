@@ -21,9 +21,6 @@ rules:
   - showdar-build owns application feature implementation; showdar-ops owns operational configuration and runtime workflows; showdar-git owns local Git workflow and does not imply operational execution
   - showdar-design preserves authoritative existing design tokens and product constraints
   - explicit user instructions override automatic routing while safety and repository constraints remain in force
-  - showdar-setup, showdar-refine and showdar-domain-model are native companions, never canonical lifecycle primary or independent routing engines
-  - showdar-refine is conditional; once triggered its complete spec must be explicitly approved before implementation
-  - showdar-domain-model reads glossary and ADRs when relevant and writes only approved domain or architecture changes
 overlap_matrix:
   - pair: showdar-understand vs showdar-requirements
     boundary: understand maps observed system behavior; requirements defines behavior that should exist or remains undecided
