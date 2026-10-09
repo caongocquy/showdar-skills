@@ -44,21 +44,22 @@ try {
   await writeFile(path.join(userSkill, 'SKILL.md'), 'user-owned\n');
 
   const init = run(process.execPath, [cli, 'init', '--ai', 'all', '--profile', 'full'], { cwd: project });
-  if (!/Skills: 18/.test(init)) throw new Error(`unexpected init output: ${init}`);
+  if (!/Skills: 21/.test(init)) throw new Error(`unexpected init output: ${init}`);
 
   const roots = ['.agents/skills', '.opencode/skills', '.claude/skills'];
-  const skillIds = ['showdar-understand','showdar-plan','showdar-design','showdar-build','showdar-debug','showdar-test','showdar-review','showdar-upgrade','showdar-ship','showdar-recover','showdar-git','showdar-requirements','showdar-quality','showdar-security','showdar-ops','showdar-insurance-domain','showdar-insurance-workflows','showdar-insurance-review'];
+  const skillIds = ['showdar-understand','showdar-plan','showdar-design','showdar-build','showdar-debug','showdar-test','showdar-review','showdar-upgrade','showdar-ship','showdar-recover','showdar-git','showdar-requirements','showdar-quality','showdar-security','showdar-ops','showdar-insurance-domain','showdar-insurance-workflows','showdar-insurance-review','showdar-setup','showdar-refine','showdar-domain-model'];
   for (const skillRoot of roots) {
     for (const id of skillIds) await mustExist(path.join(project, skillRoot, id, 'SKILL.md'));
   }
   const commands = await readdir(path.join(project, '.opencode', 'commands', 'showdar'));
-  if (commands.filter((name) => name.endsWith('.md')).length !== 19) throw new Error(`expected 19 OpenCode nested commands (18 direct + skill.md), got ${commands.length}`);
-  await mustExist(path.join(project, '.opencode', 'commands', 'showdar-setup.md'));
-  await mustExist(path.join(project, '.cursor', 'commands', 'showdar-setup.md'));
+  if (commands.filter((name) => name.endsWith('.md')).length !== 22) throw new Error(`expected 22 OpenCode nested commands (21 direct + skill.md), got ${commands.length}`);
+  await mustNotExist(path.join(project, '.opencode', 'commands', 'showdar-setup.md'));
+  await mustNotExist(path.join(project, '.cursor', 'commands', 'showdar-setup.md'));
+  await mustExist(path.join(project, '.cursor', 'skills', 'showdar-setup', 'SKILL.md'));
   const claudeCommands = await readdir(path.join(project, '.claude', 'commands', 'showdar'));
-  if (claudeCommands.filter((name) => name.endsWith('.md')).length !== 19) throw new Error(`expected 19 Claude nested commands (18 direct + skill.md), got ${claudeCommands.length}`);
+  if (claudeCommands.filter((name) => name.endsWith('.md')).length !== 19) throw new Error(`expected 22 Claude nested commands (21 direct + skill.md), got ${claudeCommands.length}`);
 
-  await mustExist(path.join(project, '.claude', 'commands', 'showdar-setup.md'));
+  await mustNotExist(path.join(project, '.claude', 'commands', 'showdar-setup.md'));
 
   // Prove installed skills are self-contained: their helper imports must work outside the source package.
   const searchOut = run(process.execPath, [path.join(project, '.agents/skills/showdar-design/scripts/search.mjs'), '--query', 'wedding editorial elegant', '--domain', 'products', '--limit', '1'], { cwd: project });
