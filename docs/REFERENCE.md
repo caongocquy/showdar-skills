@@ -1,11 +1,11 @@
-> **Historical reference:** This document contains older CLI descriptions. Current commands: `showdar setup` is the interactive skills installer (formerly `showdar wizard`); `/showdar-setup` is the agent-driven project-context audit on OpenCode/Claude. See [README](../README.md) for the current quick start.
+> **Current CLI reference (v0.17.0 source):** `showdar setup` is the interactive skill-selection installer; invoking the installed `showdar-setup` agent skill audits repository context after approval. Read the [README](../README.md) for quick start and the [workflow guide](./WORKFLOWS.md) for Brainstorm → Plan → Build/TDD → Test/Review. Older release design/history below remains background rather than overriding current CLI help.
 
 # Showdar Skills
 
 [![npm version](https://img.shields.io/npm/v/showdar-skills?logo=npm)](https://www.npmjs.com/package/showdar-skills)
 [![Node >=20](https://img.shields.io/badge/node-%3E%3D20-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue?logo=opensourceinitiative&logoColor=white)](./LICENSE)
-[![22 skills](https://img.shields.io/badge/skills-22-6f42c1)](#skill-catalog)
+[![26 skills](https://img.shields.io/badge/skills-26-6f42c1)](#skill-catalog)
 
 Production-grade software engineering skills for coding agents. Showdar covers
 the full lifecycle—from requirements and planning through implementation, QA,
@@ -14,33 +14,32 @@ routing and progressive knowledge loading.
 
 ## Quick start
 
-Install the CLI, then install a role-oriented skill profile into your project:
+Install the CLI, then use the interactive installer to select AI target, profile and optional workflows:
 
 ```bash
 npm install -g showdar-skills
 cd my-project
-showdar init
+showdar setup
 showdar doctor
 ```
 
+For a non-interactive installation, choose the selection explicitly. `init` **replaces** the managed skill set:
+
 ```bash
-showdar init --ai cursor
-showdar init --ai claude --scope global
+showdar init --profile developer --ai cursor
 showdar init --profile developer --ai opencode
+showdar init --profile developer --ai claude --scope global
 ```
 
-To install from source instead:
+The CLI supports Cursor, Claude Code, OpenCode, Codex and Universal Agent Skills. Use `showdar add <skill>` or `showdar add profile <name>` to extend an existing installation without replacement.
+
+Portable skills can also be installed through `npx skills add caongocquy/showdar-skills`, without the Showdar CLI. For repository **context** onboarding, invoke the installed `showdar-setup` skill in your coding agent after installation; the terminal command `showdar setup` does **not** produce `docs/agents/` files.
+
+To install CLI from a checked-out source repository instead:
 
 ```bash
-git clone https://github.com/caongocquy/showdar-skills.git
-cd showdar-skills
 npm install -g .
 ```
-
-Showdar works with Universal Agent Skills, Codex, OpenCode, Cursor, and
-Claude Code as supported installation targets. Choose `backend`, `qa`, or
-`product` when that gives discovery a more precise context; use `full` when
-you want all capabilities available.
 
 ## Additive installation
 
@@ -68,55 +67,20 @@ authorize source mutation, commit, merge or push. A custom workflow JSON file
 uses the existing `add-workflow` validation/manifest semantics; remote files
 and arbitrary executable plugins are unsupported.
 
-## Interactive terminal experience
+## Interactive terminal installer and agent-driven project context
 
-On a real terminal, `showdar wizard` and `showdar add --interactive` open a
-keyboard-driven TUI powered by `@clack/prompts`. Use **↑/↓ + Enter** for single
-choices and **Space + Enter** for multi-selection. The skill picker also supports
-typing to search. The wizard presents a full preview and waits for confirmation
-before installing. Ctrl+C or declining confirmation cancels with no changes.
-
-`showdar setup` uses the same guided prompts and previews documents before
-writing. For scripts/CI, `--yes`, `--dry-run` and `--json` remain unchanged
-and never require a TTY.
-
-## Guided onboarding and project context
-
-Showdar also offers repo-aware onboarding after installing the CLI and selected
-skills. It detects Git host, package scripts, stack and documentation, then
-previews the files it would create:
+`showdar setup` is the supported interactive installer for selecting existing Showdar skills. It uses a terminal UI and previews the selected installation before changes. `showdar add --interactive` opens additive selection. For scripts and CI supply a profile or explicit skills and a non-interactive flag:
 
 ```bash
-showdar setup --dry-run --json
-showdar setup                       # interactive terminal questionnaire
-showdar setup --yes --tracker gitlab # non-interactive, requires safe task branch
+showdar setup --profile developer --ai cursor --dry-run
+showdar setup --yes --profile developer --ai cursor
+showdar setup --yes --mode replace --profile qa --ai codex
+showdar add --interactive
 ```
 
-Run `showdar guard --mutation local-write --json` before applying setup changes.
-On an integration branch, use `showdar git-start` first. Setup never writes
-code or silently overwrites existing user docs. It creates only missing
-`docs/agents/project.md`, `issue-tracker.md`, `verification.md`, and
-`domain.md`. A glossary and ADRs are referenced if present, not created
-unnecessarily. Installed native guidance asks skills to consult relevant
-shared context when it exists. OpenCode/Claude expose `/showdar/setup`;
-other agents can run `showdar setup` from their terminal.
+The CLI `showdar setup` **does not audit source or write agent project-context documents**. After installing the companion, invoke `showdar-setup` natively in the coding agent (for example `/showdar-setup` where supported, or `/showdar/setup` on OpenCode/Claude generated command surfaces). The skill audits the repository, proposes edits to existing canonical documentation or `docs/agents/{project,issue-tracker,verification,domain}.md`, requests approval and enforces Git preflight before writing. It does not create speculative ADRs or glossaries.
 
-The installer also has an interactive selector:
-
-```bash
-showdar wizard
-showdar add --interactive                 # additive wizard alias
-showdar wizard --profile developer --skills git,insurance-domain --workflow feature --ai opencode --dry-run
-showdar wizard --profile developer --skills git --ai opencode --yes
-showdar wizard --mode replace --profile insurance --ai codex --yes
-```
-
-The wizard chooses install mode (add or replace), profile, additional skills,
-built-in workflows, AI target, and scope. It previews the deduplicated skill
-set and confirms before changing files. Non-interactive executions require
-explicit skill selection and `--yes`, unless using `--dry-run`. The default
-mode is additive, preserving the current installation; replace mode uses
-the same semantics as `showdar init`. No downloads or remote writes occur.
+Other companion skills are `showdar-brainstorm` (requirements/design approval), `showdar-tdd` (bounded RED → GREEN → REFACTOR), and `showdar-domain-model` (approved glossary/ADR updates). These are native-discoverable optional helpers, not additional lifecycle stages. See [workflow guide](./WORKFLOWS.md).
 
 ## Runtime routing and task branches
 
@@ -578,7 +542,7 @@ requires, skip defined or decision-free stages, load one primitive at a time,
 and stop when evidence or authority is missing. Single primitive requests stay
 primitive (`showdar-review`, `showdar-debug`, `showdar-test`). Phase 6G remains
 the authority source; workflows consume it and never mint it. Workflows are
-opt-in through `showdar add <workflow>`; profiles install primitive sets only.
+opt-in through `showdar add <workflow>`; profiles install primitive and companion sets only.
 
 ## Workflow execution state (0.6.0)
 
@@ -936,8 +900,8 @@ Product behavior notes:
 ```bash
 showdar init [--scope <project|global>] --ai <target> --profile <profile>
 showdar add <skill> [--ai <target>] [--scope <project|global>]
-showdar setup [--dry-run|--yes] [--tracker github|gitlab|local] [--docs-dir docs/agents]
-showdar wizard [--mode add|replace] [--profile name] [--skills list] [--workflow list] [--ai target] [--scope project|global] [--yes|--dry-run]
+showdar setup [--mode add|replace] [--profile <name>] [--skills <comma,list>] [--workflow <comma,list>] [--ai <target>] [--scope <project|global>] [--yes|--dry-run] [--json]
+showdar add --interactive [--profile <name>] [--ai <target>] [--scope <project|global>]
 showdar add profile <profile> [--ai <target>] [--scope <project|global>]
 showdar add workflow <builtin-name|local-json-path> [--ai <target>] [--scope <project|global>]
 showdar add-pack <local-path>
@@ -954,8 +918,9 @@ showdar create-pack <path> [--vendor <v>] [--description <text>] [--with-workflo
 showdar validate-pack <local-path> [--json]
 showdar inspect-pack <local-path> [--json]
 showdar update-pack <local-path>
-showdar validate
-showdar remove [--scope <project|global>]
+showdar -v
+showdar update [--manager npm|pnpm|brew] [--dry-run]
+showdar upgrade [--manager npm|pnpm|brew] [--dry-run]
 ```
 
 Main flags are `--ai`, `--profile`, and `--scope`. `--ai` accepts `universal`,
