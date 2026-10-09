@@ -1,10 +1,14 @@
+# Further v0.17.0 changes (pre-release)
+
+`showdar-tdd` is a new optional companion installable with `showdar add tdd --ai cursor`; developer/backend/qa/full profiles include it. Existing installations retain their selection until explicitly updated. Canonical default plan and approved-spec documents now live under `docs/showdar/plans/` and `docs/showdar/specs/`. Existing project documentation conventions are never migrated or overwritten automatically. TDD is evidence-based RED → GREEN → REFACTOR where runnable tests exist, not a source of implicit Git or deployment authority.
+
 # Upgrade from v0.16.0 to v0.17.0
 
 The native skill `showdar-refine` is retired, and `showdar-brainstorm` is its sole replacement. **No CLI alias**: `showdar add refine` and `showdar add showdar-refine` are rejected. Use `showdar add brainstorm` or update the project profile.
 
 For CLI-managed installs, `showdar init --profile developer --ai cursor` or `showdar add brainstorm --ai cursor` migrates matching owned v0.16 native files and commands only when their recorded hashes still match. If a managed file was modified, migration stops without deleting user changes. Independently installed skills (e.g. via `npx skills add`) have no Showdar ownership record: inspect and update them with their original installer.
 
-Plans may stay in chat for small tasks. Complex, staged or cross-session plans can be saved to a repository's existing canonical plan path (default `docs/plans/<feature>.md`) with task IDs, dependencies and verification ledger. Build checks actual source/tests before completing tasks. A plan never stores authorization or replaces lifecycle checkpoints.
+Plans may stay in chat for small tasks. Complex, staged or cross-session plans can be saved to a repository's existing canonical plan path (default `docs/showdar/plans/<feature>.md`) with task IDs, dependencies and verification ledger. Build checks actual source/tests before completing tasks. A plan never stores authorization or replaces lifecycle checkpoints.
 
 ---
 
