@@ -252,11 +252,12 @@ async function main() {
         console.log(JSON.stringify({
           schemaVersion: 1,
           command: 'doctor',
-          ok: true,
+          ok: result.healthy,
           data: { ...result, checkpointCompatibility: 'not-assessed' },
           warnings: result.warnings ?? [],
           errors: [],
         }, null, 2));
+        if (!result.healthy) process.exitCode = 1;
         return;
       }
       console.log(`Extension diagnostics\nHealth: ${result.healthy ? 'OK' : 'BROKEN'}`);
@@ -265,6 +266,7 @@ async function main() {
       for (const issue of result.issues) console.log(`- ${issue}`);
       for (const warning of result.warnings ?? []) console.log(`warning: ${warning}`);
       if (!result.healthy) {
+        process.exitCode = 1;
         console.log(`Checkpoint compatibility: not-assessed (supply a checkpoint via inspect-pack --checkpoint)`);
         if (result.customWorkflows.length) console.log(`Note: checkpoints referencing changed workflow definitions will be revalidated on resume.`);
       }
@@ -356,6 +358,7 @@ async function main() {
     if (!packPath) throw new Error('Pack path is required. Usage: showdar validate-pack <local-path> [--json]');
     const isJson = args.includes('--json');
     const result = await validatePackSource({ cwd: projectRoot, source: packPath });
+    if (!result.ok) process.exitCode = 1;
     if (isJson) {
       console.log(JSON.stringify(result, null, 2));
     } else {
