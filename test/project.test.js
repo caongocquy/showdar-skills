@@ -214,7 +214,7 @@ test('project init deduplicates globally owned skills and preserves the requeste
 
   const result = await initProject({ projectRoot, homeRoot, packageRoot, profile: 'developer', ai: 'codex', skillIds: resolveProfile('developer'), packageVersion: '0.2.1' });
   assert.equal(result.requestedSkills, resolveProfile('developer').length);
-  assert.equal(result.installedSkills, 7);
+  assert.equal(result.installedSkills, resolveProfile('developer').length - 8);
   assert.equal(result.satisfiedByGlobal, 8);
   assert.equal(result.skippedDuplicates, 8);
 
@@ -230,7 +230,7 @@ test('project init deduplicates globally owned skills and preserves the requeste
   assert.equal(status.satisfiedByGlobal, 8);
 
   const repeat = await initProject({ projectRoot, homeRoot, packageRoot, profile: 'developer', ai: 'codex', skillIds: resolveProfile('developer'), packageVersion: '0.2.1' });
-  assert.equal(repeat.installedSkills, 7);
+  assert.equal(repeat.installedSkills, resolveProfile('developer').length - 8);
   assert.equal(repeat.satisfiedByGlobal, 8);
   assert.equal(repeat.skippedDuplicates, 8);
 });
