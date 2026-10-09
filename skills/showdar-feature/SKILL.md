@@ -49,7 +49,7 @@ Before any task-owned source/config/test/docs write, apply `showdar-git` branch 
 
 - Before selecting implementation stages, assess whether the requested feature has material unresolved product, permission, state, data, or architecture decisions.
 - If the request is sufficiently defined, skip refinement with a concrete evidence reason; never force an interview for a local, low-risk or already approved change.
-- If materially unclear and the optional `showdar-refine` companion is installed, invoke it before implementation; ask one high-impact question at a time and produce a Decision Brief.
+- If materially unclear and the optional `showdar-brainstorm` companion is installed, invoke it before implementation; ask one high-impact question at a time and produce a Decision Brief.
 - If the companion is missing, report it rather than claiming it ran; resolve blocking decisions with the user before continuing.
 - When refinement has been triggered, wait for explicit user approval of the *whole* proposed spec revision before entering `showdar-build`.
 - Carry approved decisions, non-goals, acceptance notes, unresolved questions and evidence into requirements/plan/design without repeating already answered questions.
@@ -57,6 +57,15 @@ Before any task-owned source/config/test/docs write, apply `showdar-git` branch 
 - If later repository evidence contradicts an approved decision, reopen only the affected decision and obtain revision-specific approval.
 - Refer to installed `showdar-domain-model` for meaningful shared terminology or accepted architectural decisions, not as a required lifecycle stage.
 - This decision gate is portable guidance, not a new router, workflow-state stage, checkpoint authority, or implicit permission to mutate files.
+
+## Resumable plan handoff
+
+- When the `showdar-plan` stage is selected, prefer the repository's canonical plan location for complex or cross-session work; bounded work may keep a short plan in chat.
+- Supply `showdar-build` with the approved spec reference, persisted plan path and revision (or explicit in-chat brief), stable task IDs, dependencies and required verification.
+- A saved task checkbox is neither an approval nor a workflow stage completion receipt; the receiving Build agent must revalidate current repo and evidence.
+- On session changes or interruptions use `showdar-recover` to reconcile plan tasks with actual source and tests before continuing.
+- Do not add new workflow-state schema fields or treat plan persistence as a substitute for serialized workflow checkpoints.
+
 
 ## Workflow
 

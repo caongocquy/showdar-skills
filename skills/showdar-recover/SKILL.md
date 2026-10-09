@@ -51,6 +51,15 @@ Before any task-owned source/config/test/docs write, apply `showdar-git` branch 
 - Re-run relevant verification before declaring recovered work complete.
 - Conflict resolution must preserve semantic intent from both sides, not just remove markers.
 
+## Resume from persisted plans
+
+- Locate the canonical plan and matching approved spec, if present. Never presume `docs/plans/` is canonical when the repo specifies another path.
+- Compare stable task IDs, recorded revision, task checkboxes and evidence ledger with current Git changes and executable proof.
+- A checked task with stale or missing proof is `implemented-unverified`. Preserve existing and unrelated user edits and reverify rather than automatically repeating the implementation.
+- Identify the first unmet dependency-ready task, then hand it to `showdar-build`. If plan and spec conflict, stop and request a targeted plan revision.
+- Do not treat a plan file as Git/implementation authority or rewrite progress without normal preflight.
+
+
 ## Workflow
 
 ### Phase 1 — reconstruct goal

@@ -55,9 +55,23 @@ Before any task-owned source/config/test/docs write, apply `showdar-git` branch 
 
 - Read an available approved Decision Brief, canonical glossary and accepted ADRs before selecting the approach.
 - Treat approved alternatives and non-goals as constraints; avoid re-opening decisions merely to make the plan look cleaner.
-- If a materially different choice is required, stop and reopen only affected decisions through `showdar-refine` if installed, or request the user decision directly.
+- If a materially different choice is required, stop and reopen only affected decisions through `showdar-brainstorm` if installed, or request the user decision directly.
 - Use `showdar-domain-model` only to propose a meaningful new shared concept or approved high-impact architecture record.
 - Approval of a design never grants write, Git, release, or production authority.
+
+## Adaptive Plan Persistence and handoff
+
+- Read `references/plan-persistence.md` when a durable plan or cross-session handoff is needed; `examples/persisted-plan.md` illustrates the shape, not a mandatory template.
+- Locate the repository's canonical ticket/plan first. Reuse a matching existing artifact; never create a duplicate solely because its path differs from `docs/plans/`.
+- For bounded work contained in one session, a short in-chat plan is sufficient. For complex, staged, multi-agent or cross-session work, propose a Markdown plan at the canonical location, defaulting to `docs/plans/<feature>.md` only if no convention exists.
+- Before creating or modifying a plan file, obtain authorization for that write and pass Git preflight; if blocked, provide the proposed plan in chat without claiming it was persisted.
+- Reference the approved spec/ticket and its revision where one exists. If `showdar-brainstorm` was triggered, do not designate a plan execution-ready until the entire Decision Brief revision has explicit user approval.
+- Assign stable `TASK-NNN` identifiers to ordered tasks with `- [ ]` checkboxes; include requirement/decision IDs, dependency IDs, scope, edge behavior, exact existing proof commands or explicitly manual checks, and acceptance conditions.
+- Planning alone never checks any task. The plan's `ready` status records preparedness, not implementation authority or proof.
+- Store plan revision, state, linked spec revision, risks, verification ledger, blockers and next dependency-ready task. Never fabricate approvals, command output, commit SHA or test results.
+- Revising scope requires identifying affected tasks and increasing plan revision. Preserve stable IDs for unchanged outcomes, keep historical proof while marking stale receipts invalid, and never silently amend an approved product decision.
+- Handoff states the exact plan path/revision or in-chat brief, persistence status (skipped/proposed/written), unresolved blockers and next actionable task.
+
 
 ## Workflow
 

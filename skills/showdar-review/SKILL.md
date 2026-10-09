@@ -53,6 +53,13 @@ description: Use when reviewing code or diffs for general correctness, architect
 - Propose glossary/ADR changes through installed `showdar-domain-model` only when a real accepted domain or architectural decision has changed.
 - Reviewing code does not authorize editing domain docs or overriding approval decisions.
 
+## Saved-plan review checks
+
+- Where relevant, compare the code diff against the canonical plan revision, linked approved spec and task evidence ledger.
+- Flag tasks whose checkboxes claim completion but whose behavior or verification receipts do not substantiate that claim.
+- Return findings linked to task IDs; Review does not grant permission to change plan state or approved decisions.
+
+
 ## Workflow
 
 ### Phase 1 — understand intent and diff

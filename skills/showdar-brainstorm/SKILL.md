@@ -1,9 +1,9 @@
 ---
-name: showdar-refine
-description: Use when a feature idea or implementation request has unresolved product or architecture decisions that require interactive refinement and explicit spec approval.
+name: showdar-brainstorm
+description: Use when brainstorming a feature, challenging assumptions, comparing real alternatives, and approving the complete spec before implementation.
 ---
 
-# Showdar Refine
+# Showdar Brainstorm
 
 ## Purpose
 
@@ -43,6 +43,12 @@ description: Use when a feature idea or implementation request has unresolved pr
 - Use native skill discovery in skills-only installations without assuming router, manifest or CLI.
 
 Read `references/questioning.md` and `references/approval-handoff.md` only when that depth of detail is needed; these references are packaged inside this skill for skills-only installers.
+
+## Plan handoff
+
+- Read `references/handoff-plan.md` when moving from brainstorming to implementation planning.
+- Pass the accepted Decision Brief revision, decision IDs and acceptance criteria to `showdar-plan`. Durable specs follow existing canonical locations; the plan is a separate artifact whose persistence is adaptive.
+- A full-spec approval is necessary after brainstorming but does not mark plan tasks as done or grant Git/write authority.
 
 ## Workflow
 

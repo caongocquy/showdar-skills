@@ -47,7 +47,7 @@ try {
   if (!/Skills: 21/.test(init)) throw new Error(`unexpected init output: ${init}`);
 
   const roots = ['.agents/skills', '.opencode/skills', '.claude/skills'];
-  const skillIds = ['showdar-understand','showdar-plan','showdar-design','showdar-build','showdar-debug','showdar-test','showdar-review','showdar-upgrade','showdar-ship','showdar-recover','showdar-git','showdar-requirements','showdar-quality','showdar-security','showdar-ops','showdar-insurance-domain','showdar-insurance-workflows','showdar-insurance-review','showdar-setup','showdar-refine','showdar-domain-model'];
+  const skillIds = ['showdar-understand','showdar-plan','showdar-design','showdar-build','showdar-debug','showdar-test','showdar-review','showdar-upgrade','showdar-ship','showdar-recover','showdar-git','showdar-requirements','showdar-quality','showdar-security','showdar-ops','showdar-insurance-domain','showdar-insurance-workflows','showdar-insurance-review','showdar-setup','showdar-brainstorm','showdar-domain-model'];
   for (const skillRoot of roots) {
     for (const id of skillIds) await mustExist(path.join(project, skillRoot, id, 'SKILL.md'));
   }

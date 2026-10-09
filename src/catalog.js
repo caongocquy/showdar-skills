@@ -21,7 +21,7 @@ export const SKILLS = [
 
 export const COMPANION_SKILLS = [
   { id: 'showdar-setup', kind: 'companion', domain: 'onboarding', description: 'Use when onboarding a repository, auditing project context, or proposing grounded glossary and agent documentation improvements.' },
-  { id: 'showdar-refine', kind: 'companion', domain: 'refinement', description: 'Use when a feature idea or implementation request has unresolved product or architecture decisions that require interactive refinement and explicit spec approval.' },
+  { id: 'showdar-brainstorm', kind: 'companion', domain: 'brainstorming', description: 'Use when brainstorming feature ideas, challenging assumptions, comparing alternatives, and approving a complete spec before implementation.' },
   { id: 'showdar-domain-model', kind: 'companion', domain: 'domain', description: 'Use when clarifying shared domain terminology, maintaining an evidence-backed glossary, or documenting confirmed architectural decisions as ADRs.' },
 ];
 
@@ -50,10 +50,10 @@ const ids = (...values) => values;
 
 export const PROFILES = {
   minimal: ids('showdar-understand', 'showdar-plan', 'showdar-build', 'showdar-debug', 'showdar-test', 'showdar-review', 'showdar-recover', 'showdar-git'),
-  developer: ids('showdar-understand', 'showdar-plan', 'showdar-design', 'showdar-build', 'showdar-debug', 'showdar-test', 'showdar-review', 'showdar-upgrade', 'showdar-ship', 'showdar-recover', 'showdar-git', 'showdar-security', 'showdar-setup', 'showdar-refine', 'showdar-domain-model'),
-  backend: ids('showdar-understand', 'showdar-plan', 'showdar-build', 'showdar-debug', 'showdar-test', 'showdar-review', 'showdar-upgrade', 'showdar-ship', 'showdar-recover', 'showdar-git', 'showdar-requirements', 'showdar-quality', 'showdar-security', 'showdar-ops', 'showdar-setup', 'showdar-refine', 'showdar-domain-model'),
-  qa: ids('showdar-understand', 'showdar-requirements', 'showdar-quality', 'showdar-test', 'showdar-debug', 'showdar-review', 'showdar-ship', 'showdar-recover', 'showdar-git', 'showdar-setup', 'showdar-refine', 'showdar-domain-model'),
-  product: ids('showdar-understand', 'showdar-requirements', 'showdar-plan', 'showdar-design', 'showdar-quality', 'showdar-review', 'showdar-setup', 'showdar-refine', 'showdar-domain-model'),
+  developer: ids('showdar-understand', 'showdar-plan', 'showdar-design', 'showdar-build', 'showdar-debug', 'showdar-test', 'showdar-review', 'showdar-upgrade', 'showdar-ship', 'showdar-recover', 'showdar-git', 'showdar-security', 'showdar-setup', 'showdar-brainstorm', 'showdar-domain-model'),
+  backend: ids('showdar-understand', 'showdar-plan', 'showdar-build', 'showdar-debug', 'showdar-test', 'showdar-review', 'showdar-upgrade', 'showdar-ship', 'showdar-recover', 'showdar-git', 'showdar-requirements', 'showdar-quality', 'showdar-security', 'showdar-ops', 'showdar-setup', 'showdar-brainstorm', 'showdar-domain-model'),
+  qa: ids('showdar-understand', 'showdar-requirements', 'showdar-quality', 'showdar-test', 'showdar-debug', 'showdar-review', 'showdar-ship', 'showdar-recover', 'showdar-git', 'showdar-setup', 'showdar-brainstorm', 'showdar-domain-model'),
+  product: ids('showdar-understand', 'showdar-requirements', 'showdar-plan', 'showdar-design', 'showdar-quality', 'showdar-review', 'showdar-setup', 'showdar-brainstorm', 'showdar-domain-model'),
   insurance: ids('showdar-insurance-domain', 'showdar-insurance-workflows', 'showdar-insurance-review'),
   full: [...SKILLS, ...COMPANION_SKILLS].map((skill) => skill.id),
 };
