@@ -40,7 +40,7 @@ export function planSelfUpdate({ packageRoot, manager = null, roots = {} }) {
 
   let selected = manager;
   if (!selected) {
-    if (/(^|\\/)Cellar\\/showdar-skills\\/[^/]+\\//i.test(current)) {
+    if (current.includes('/Cellar/showdar-skills/')) {
       selected = 'brew';
     } else {
       for (const candidate of ['pnpm', 'npm']) {
