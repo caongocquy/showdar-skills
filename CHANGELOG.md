@@ -6,6 +6,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.15.1]
+
+### Fixed
+
+- Reject malformed or unauthorized managed paths before removing project files; block symlink-based command writes and preflight installation collisions before replacing existing skills.
+- Make extension pack updates fail closed on conflicts and installed drift, stage changes safely, restore the previous installation on failure, remove obsolete owned files and clean staging directories.
+- Separate source pack identity from installed-tree hashes to avoid false drift reports when source-only documentation is not installed.
+- Ensure adding an existing skill to another AI target installs that target, and return nonzero exit codes for failed JSON diagnostics.
+- Correct `create-pack` destination handling and adapt the Codex benchmark to the current structural routing contract.
+- Remove unused legacy scoring helpers from the thin router.
+
+### Tests
+
+- Add regression coverage for destructive manifest paths, symlink boundaries, failed replacements, pack drift and updates, CLI diagnostics, target switching, scaffold paths, and Codex benchmark guidance.
+
+
 ## [0.15.0]
 
 ### Changed
