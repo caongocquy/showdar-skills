@@ -173,8 +173,8 @@ async function generateCommandFiles({ baseRoot, skillIds, target, commandRoot, p
 // The retired skill is not a runnable alias. Delete only pristine managed copies.
 function isLegacyBrainstormPath(relative) {
   return typeof relative === 'string' &&
-    (/(^|\\/)skills\\/showdar-refine$/.test(relative) ||
-      /(^|\\/)commands\\/showdar\\/refine\\.md$/.test(relative));
+    (/(^|\/)skills\/showdar-refine$/.test(relative) ||
+      /(^|\/)commands\/showdar\/refine\.md$/.test(relative));
 }
 
 async function inspectLegacyBrainstormFiles({ baseRoot, manifest, scope, homeRoot = homedir(), managedRoots = [] }) {
