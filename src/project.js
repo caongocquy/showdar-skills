@@ -572,7 +572,7 @@ async function inspectInstallation({
 function isManagedDeletionTarget(baseRoot, target, scope, homeRoot, manifest) {
   const absolute = path.resolve(target);
   const installedSkills = new Set(manifest?.skills ?? []);
-  const targets = scope === 'global' ? NATIVE_TARGETS : resolveTargets(manifest?.ai ?? 'universal');
+  const targets = scope === 'global' ? NATIVE_TARGETS : (manifest?.targets ?? resolveTargets(manifest?.ai ?? 'universal'));
   for (const agent of targets) {
     const skillRoot = scope === 'global'
       ? globalSkillRootFor(agent, { homeRoot })
@@ -596,8 +596,13 @@ function isManagedDeletionTarget(baseRoot, target, scope, homeRoot, manifest) {
   }
   const packRoot = path.resolve(baseRoot, EXTENSION_DIR, 'packs');
   for (const pack of manifest?.extensions?.packs ?? []) {
+    if (typeof pack.name !== 'string' || !/^[a-z0-9][a-z0-9_-]*$/.test(pack.name)) continue;
     const ownedPackRoot = path.resolve(packRoot, pack.name);
     if (absolute.startsWith(ownedPackRoot + path.sep)) return true;
+  }
+  for (const workflow of manifest?.extensions?.customWorkflows ?? []) {
+    if (workflow.source !== 'standalone' || typeof workflow.id !== 'string' || !/^[a-z0-9][a-z0-9_-]*$/.test(workflow.id)) continue;
+    if (absolute === path.resolve(baseRoot, EXTENSION_DIR, 'workflows', workflow.id + '.json')) return true;
   }
   return false;
 }
@@ -627,7 +632,11 @@ async function removeInstallation({ baseRoot, manifestPath, scope, homeRoot = ho
   for (const target of removalTargets) await rm(target, { recursive: true, force: true });
 
   if (scope === 'project' && manifest?.instructions) {
-    const filePath = path.join(baseRoot, manifest.instructions.file);
+    const filePath = path.resolve(baseRoot, manifest.instructions.file);
+    const expected = manifest.instructions.kind === 'block'
+      ? new Set([path.join(baseRoot, 'AGENTS.md'), path.join(baseRoot, 'CLAUDE.md')])
+      : new Set([path.join(baseRoot, '.cursor', 'rules', 'showdar.mdc')]);
+    if (!expected.has(filePath)) throw new Error('Unsafe Showdar instruction path: ' + manifest.instructions.file);
     if (manifest.instructions.kind === 'block') {
       await removeManagedBlock(filePath);
     } else if (manifest.instructions.kind === 'file') {
