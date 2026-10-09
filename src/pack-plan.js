@@ -111,7 +111,7 @@ function compareWorkflowDefinitions(oldManifest, newManifest) {
 async function computeManifestHash(manifest) {
   const relevant = {
     packs: (manifest.extensions?.packs ?? []).map((p) => ({
-      name: p.name, version: p.version, source: p.source, hash: p.hash,
+      name: p.name, version: p.version, source: p.source, hash: p.hash, installedHash: p.installedHash,
     })),
     customWorkflows: (manifest.extensions?.customWorkflows ?? []).map((w) => ({
       id: w.id, source: w.source, path: w.path,
@@ -307,7 +307,9 @@ export async function planPackUpdate({ cwd, source }) {
 
   const installedHash = await computeInstalledHash(cwd, existingPack.name, existing);
   const recordedHash = existingPack.hash;
-  const installedDrift = installedHash !== null && installedHash !== recordedHash;
+  const expectedInstalledHash = existingPack.installedHash ?? installedHash;
+  const installedDrift = installedHash !== null && installedHash !== expectedInstalledHash ||
+    (existing.files ?? []).some(entry => entry.path.startsWith(`${EXTENSION_DIR}/packs/${existingPack.name}/`) && !entry.hash);
 
   const sourceHash = newPackHash;
   const manifestHash = await computeManifestHash(existing);
@@ -513,13 +515,14 @@ export async function executePackUpdate(plan, { cwd }) {
     }
     const merged = new Map((existing.files ?? []).filter(entry => !entry.path.startsWith(prefix)).map(e => [e.path, e]));
     for (const file of newFiles) merged.set(file.path, file);
+    const awaitHashPlaceholder = await hashTree(tempDir);
     const updated = {
       ...existing,
       files: [...merged.values()],
       extensions: {
         ...(existing.extensions ?? {}),
         packs: (existing.extensions?.packs ?? []).map(p => p.name === newManifest.name
-          ? { ...p, version: newManifest.version, hash: plan.candidate.hash, installedAt: new Date().toISOString() }
+          ? { ...p, version: newManifest.version, hash: plan.candidate.hash, installedHash: awaitHashPlaceholder, installedAt: new Date().toISOString() }
           : p),
         customWorkflows: [
           ...(existing.extensions?.customWorkflows ?? []).filter(w => w.source !== `pack:${newManifest.name}`),
