@@ -1,5 +1,3 @@
-import { CAPABILITIES } from './capabilities.js';
-import { rankCapabilities } from './capability-score.js';
 import { normalizeIntent } from './intent.js';
 
 export const MAX_ADVISORS = 2;
@@ -19,44 +17,6 @@ const SECONDARY_ACTION_SKILLS = Object.freeze({
   design: 'showdar-design',
   requirements: 'showdar-requirements',
 });
-
-function addUnique(list, value) {
-  if (!list.includes(value)) list.push(value);
-}
-
-function signalForSecondaryAction(action) {
-  const skill = SECONDARY_ACTION_SKILLS[action] ?? (action.startsWith('showdar-') ? action : null);
-  return skill ? `secondary action ${action} targets ${skill}` : null;
-}
-
-function advisorSignals(intent, candidate) {
-  const signals = [];
-  for (const action of intent.secondaryActions) {
-    if (SECONDARY_ACTION_SKILLS[action] === candidate.skill || action === candidate.skill) {
-      addUnique(signals, signalForSecondaryAction(action) ?? `secondary action ${action} targets ${candidate.skill}`);
-    }
-  }
-  return signals;
-}
-
-function candidateWithMetadata(candidate, intent, primarySkill) {
-  const signals = candidate.skill === primarySkill ? [] : advisorSignals(intent, candidate);
-  return {
-    ...candidate,
-    reasons: [...candidate.reasons, ...signals],
-    advisorEligible: signals.length > 0,
-    advisorReasons: signals,
-  };
-}
-
-function confidenceFor(primary, candidates, decisive) {
-  const next = candidates.find((candidate) => candidate.skill !== primary.skill);
-  const margin = primary.score - (next?.score ?? primary.score);
-  const level = decisive || (margin >= 6 && primary.matched.some((value) => value.startsWith('phase:') || value.startsWith('action:')))
-    ? 'high'
-    : margin > 0 ? 'medium' : 'low';
-  return { level, margin, decisive };
-}
 
 // Thin deterministic structural route path (Phase 6G T16).
 // Structural path: internal primaryCapability → primary skill via CAPABILITY_TO_SKILL
