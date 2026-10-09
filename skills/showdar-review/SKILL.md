@@ -53,6 +53,12 @@ description: Use when reviewing code or diffs for general correctness, architect
 - Propose glossary/ADR changes through installed `showdar-domain-model` only when a real accepted domain or architectural decision has changed.
 - Reviewing code does not authorize editing domain docs or overriding approval decisions.
 
+## Independent review gates
+
+- Load `references/dual-gate-review.md` when reviewing an implementation against requirements or reporting readiness.
+- Always return independent **Spec Compliance** and **Code Quality** verdicts: PASS, FAIL, BLOCKED or NOT_APPLICABLE, each with scoped evidence and reasons. Missing authoritative requirements blocks Spec Compliance; it does not manufacture a quality defect or PASS.
+- Pin the base/head or working diff and spec/plan revisions; link findings to requirement/task IDs where available. Recheck changed evidence after fixes; cap review at two fix rounds after the initial review, then escalate remaining failures.
+
 ## Saved-plan review checks
 
 - Where relevant, compare the code diff against the canonical plan revision, linked approved spec and task evidence ledger.
@@ -145,6 +151,7 @@ description: Use when reviewing code or diffs for general correctness, architect
 
 ## Output contract
 
+- **Spec Compliance** and **Code Quality** — independent verdicts, source/spec revisions, evidence boundaries and unexecuted checks.
 - Findings ordered P0 -> P3.
 - Each finding: **severity/title**, **location**, **evidence**, **impact/scenario**, **recommended change**.
 - After findings: brief **verification gaps/residual risk** if relevant.

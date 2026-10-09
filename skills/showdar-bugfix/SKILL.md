@@ -46,6 +46,12 @@ Before any task-owned source/config/test/docs write, apply `showdar-git` branch 
 - End-to-end fixes always include verification; never skip it to move faster.
 - Stop when required evidence is missing instead of guessing.
 
+## Evidence handoff
+
+- Debug supplies the executed original reproducer, expected/observed signal and confirmed versus provisional cause before a causal fix. Carry task IDs, spec/plan revisions when present, source revision, actual executor, Consumes/Produces contracts, changed paths, proof/gaps and next owner/action.
+- Build owns the task ledger and uses installed TDD or the same direct evidence contract; Test keeps independent regression coverage. Never claim a missing companion or subagent ran.
+- Review returns independent Spec Compliance and Code Quality verdicts. Missing/stale required evidence or a FAIL/BLOCKED required gate keeps completion blocked. Existing stage/checkpoint schema and Git authority remain unchanged.
+
 ## Workflow
 
 ### Phase 1 — determine needed stages

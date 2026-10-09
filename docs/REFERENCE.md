@@ -1,10 +1,10 @@
-> **Current CLI reference (v0.17.0 source):** `showdar setup` is the interactive skill-selection installer; invoking the installed `showdar-setup` agent skill audits repository context after approval. Read the [README](../README.md) for quick start and the [workflow guide](./WORKFLOWS.md) for Brainstorm → Plan → Build/TDD → Test/Review. Older release design/history below remains background rather than overriding current CLI help.
+> **Current CLI reference (v0.17.0 source):** `showdar setup` is the interactive skill-selection installer; invoking the installed `showdar-setup` agent skill audits repository context after approval. Read the [README](../README.md) for quick start and the [source-repository workflow guide](https://github.com/caongocquy/showdar-skills/blob/main/docs/WORKFLOWS.md) for Brainstorm → Plan → Build/TDD → Test/Review. Older release design/history below remains background rather than overriding current CLI help.
 
 # Showdar Skills
 
 [![npm version](https://img.shields.io/npm/v/showdar-skills?logo=npm)](https://www.npmjs.com/package/showdar-skills)
 [![Node >=20](https://img.shields.io/badge/node-%3E%3D20-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
-[![MIT License](https://img.shields.io/badge/license-MIT-blue?logo=opensourceinitiative&logoColor=white)](./LICENSE)
+[![MIT License](https://img.shields.io/badge/license-MIT-blue?logo=opensourceinitiative&logoColor=white)](../LICENSE)
 [![26 skills](https://img.shields.io/badge/skills-26-6f42c1)](#skill-catalog)
 
 Production-grade software engineering skills for coding agents. Showdar covers
@@ -80,7 +80,7 @@ showdar add --interactive
 
 The CLI `showdar setup` **does not audit source or write agent project-context documents**. After installing the companion, invoke `showdar-setup` natively in the coding agent (for example `/showdar-setup` where supported, or `/showdar/setup` on OpenCode/Claude generated command surfaces). The skill audits the repository, proposes edits to existing canonical documentation or `docs/agents/{project,issue-tracker,verification,domain}.md`, requests approval and enforces Git preflight before writing. It does not create speculative ADRs or glossaries.
 
-Other companion skills are `showdar-brainstorm` (requirements/design approval), `showdar-tdd` (bounded RED → GREEN → REFACTOR), and `showdar-domain-model` (approved glossary/ADR updates). These are native-discoverable optional helpers, not additional lifecycle stages. See [workflow guide](./WORKFLOWS.md).
+Other companion skills are `showdar-brainstorm` (requirements/design approval), `showdar-tdd` (bounded RED → GREEN → REFACTOR), and `showdar-domain-model` (approved glossary/ADR updates). These are native-discoverable optional helpers, not additional lifecycle stages. See [source-repository workflow guide](https://github.com/caongocquy/showdar-skills/blob/main/docs/WORKFLOWS.md).
 
 ## Runtime routing and task branches
 
@@ -376,7 +376,7 @@ New manifests store the canonical `developer` profile.
 
 ## Test-driven implementation and document layout
 
-The `showdar-tdd` companion is included in developer/backend/qa/full profiles, or can be installed individually with `showdar add tdd --ai cursor`. It runs one scoped RED (reproduced behavior failure), GREEN (passing focused test), REFACTOR (focused test stays passing) cycle at a time and hands actual proof to `showdar-build`. `showdar-test` independently selects integration, regression and E2E coverage; Review remains a separate quality gate. No fabricated RED logs and no ceremonial tests for documentation-only or missing-harness work.
+The `showdar-tdd` companion is included in developer/backend/qa/full profiles, or can be installed individually with `showdar add tdd --ai cursor`. It runs one scoped RED (reproduced behavior failure), GREEN (passing focused test), REFACTOR (focused test stays passing) cycle at a time and hands actual proof to `showdar-build`. `showdar-test` independently selects integration, regression and E2E coverage; Review returns independent Spec Compliance and Code Quality verdicts. No fabricated RED logs and no ceremonial tests for documentation-only or missing-harness work.
 
 Adaptive documentation persistence uses a project's existing canonical docs first; if none exists, durable approved specs default to `docs/showdar/specs/<feature>.md` and multi-session execution plans default to `docs/showdar/plans/<feature>.md`. Smaller tasks can remain in chat. A saved plan is not execution authorization and task checkboxes require fresh code/test evidence.
 
@@ -385,6 +385,22 @@ docs/showdar/
   specs/<feature>.md
   plans/<feature>.md
 ```
+
+### Workflow quality playbooks
+
+These portable instruction contracts retain 26 installable skills and existing workflow stages. Detail loads only when needed:
+
+| Contract | Packaged reference |
+| --- | --- |
+| Executable vertical-slice planning; verified dependency frontier; expand → migrate → contract | [Task decomposition](../skills/showdar-plan/references/task-decomposition.md) |
+| Inline-first execution; actual subagent capability/isolation; inline or serialized fallback; bounded fixes | [Build execution](../skills/showdar-build/references/plan-execution.md) |
+| Independent Spec Compliance / Code Quality gates; missing requirements BLOCKED | [Dual-gate review](../skills/showdar-review/references/dual-gate-review.md) |
+| Public TDD seams, independent expected values and mocks that preserve the tested contract | [Test seams](../skills/showdar-tdd/references/test-seams.md) |
+| Runnable symptom before certainty; controlled experiments and provisional diagnosis when evidence is missing | [Debug feedback](../skills/showdar-debug/references/hypothesis-driven-debugging.md) |
+| Spike / Bounded / Architectural paths; whole-brief revision approval and throwaway spike artifacts | [Brainstorm paths](../skills/showdar-brainstorm/references/approval-handoff.md) |
+| Task/source/spec/plan revisions, actual executor, contracts, proof/gaps and next owner | [Workflow handoff](../skills/showdar-feature/references/task-handoff.md) |
+
+Review verdicts are PASS, FAIL, BLOCKED or NOT_APPLICABLE per gate with reasons and evidence boundaries. Task receipts supplement existing checkpoints; they do not add schema fields or grant Git, remote or deployment authority. Legacy plan IDs and historical receipts are preserved, while stale proof must be reverified. See the [source-repository workflow guide](https://github.com/caongocquy/showdar-skills/blob/main/docs/WORKFLOWS.md) for end-to-end examples; npm packages include the reference guide and skill playbooks, while the workflow guide remains a source-repository document.
 
 ## Skill catalog
 
@@ -634,6 +650,31 @@ authority invariance, completion, trace equality, revision monotonicity,
 checkpoint round-trip, skip-evidence backing) with no fuzzy score
 thresholds. `npm run check` (test/validate/pack) does not run the
 benchmark; the release pipeline runs `npm run eval`, gating both suites.
+
+### Experimental agent behavioral evaluation
+
+The source checkout contains `evals/behavioral/scenarios.json` and `scripts/behavioral-eval.mjs`: **18 cases** across Brainstorm, Plan, Build, TDD, Review and Safety/Recovery, with fixture seeds and independent oracles. This experimental runner is **not production-ready** and is not a packaged CLI command. Current coverage is **18 NOT_RUN, 0 PASS**; no comparable real-agent baseline or after-change results exist, so behavioral readiness is **BLOCKED** and measured improvement is unverified.
+
+| Evidence | What it proves | Limit |
+| --- | --- | --- |
+| Static/document contracts and installer tests | Required instructions/assets exist and install correctly | Does not execute an agent obeying those instructions |
+| Retrieval/workflow evals | Deterministic routing/state/trace invariants | Not live-agent conduct |
+| Fake-process adapter fixtures | JSONL parsing, refusal, timeout, environment, redaction and artifact handling | Never real-agent behavioral PASS |
+| Imported trace analysis | Submitted events match or mismatch deterministic action/order checks | Always behavioral BLOCKED; ignores submitted provenance, execution claims, artifact proofs and rubric decisions |
+| Comparable real-agent baseline + after-change | Actual agent conduct against identical cases/oracles and controlled fixtures | Requires supported safety controls, verified capture and separately authorized model usage |
+
+Repository-only, model-free checks:
+
+```bash
+node --test scripts/lib/behavioral-eval/*.test.mjs
+node scripts/behavioral-eval.mjs --json  # No agent launched; reports NOT_RUN
+```
+
+The Codex CLI JSONL adapter has offline fixture setup, event mapping, artifacts and structured reports. Real execution is disabled by default and the current adapter fails closed **before process launch or API-key handoff** even with opt-in: it has no preventive exact-argv command mediation. `command-policy.mjs` is a future broker contract, not an enforced Codex allowlist. JSONL logs are post-execution observation. OS sandboxing, credential isolation, restricted environment, timeout/output caps and concurrency limit one remain required; they cannot be replaced by prefix rules, audit logs or disabled sandbox protections.
+
+A prior model-free probe in the Codex-hosted macOS environment exited 71 (`sandbox_apply: Operation not permitted`); nested Seatbelt restrictions are a possibility, not a confirmed unique cause. The source checkout's `evals/behavioral/README.md` provides a normal-Terminal diagnostic. No live scenarios were launched. Imported trace files cannot establish their own trusted origin. Their event analysis uses MATCH/MISMATCH/INCOMPLETE separately from behavioral status, which remains BLOCKED. Trusted runner capture, bound artifact integrity and independent rubric evaluation are unsupported; no submitted hash, signature, model identity or rubric PASS enables behavioral PASS.
+
+Keep the original suite/oracles and baseline fixture assumptions intact. The original source is frozen at `3969d4eb62497a203beaa25fce41ecf8b3c9735a`; compare identical cases with recorded source, model/harness, host capabilities, permissions, budgets and repetitions. Internal spec/plan/baseline snapshots stay ignored and outside npm packages. Do not count BLOCKED/NOT_RUN or simulated results as PASS, or authorize paid/model execution from a documentation example.
 
 ## A typical software workflow
 
@@ -974,4 +1015,4 @@ directories so the selected workflow can load it progressively.
 
 ## License
 
-[MIT](./LICENSE)
+[MIT](../LICENSE)

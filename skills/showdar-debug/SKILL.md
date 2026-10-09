@@ -55,7 +55,8 @@ Before any task-owned source/config/test/docs write, apply `showdar-git` branch 
 ## Workflow
 
 ### Phase 1 — reproduce and bound
-- Write the shortest reliable reproduction, environment, expected result, and actual result.
+- First seek one runnable command, fixture or script that reproduces the actual reported symptom; load `references/hypothesis-driven-debugging.md` for seam selection and the tight experiment loop.
+- Record environment, expected result and actual result before asserting root cause. When safe reproduction is unavailable, record attempts and missing access; keep diagnosis provisional.
 - Determine whether failure is deterministic, timing-dependent, data-dependent, platform-specific, or release-only.
 - Reduce unrelated variables without changing the failing invariant.
 
@@ -76,7 +77,7 @@ Before any task-owned source/config/test/docs write, apply `showdar-git` branch 
 ### Phase 5 — experiment
 - Run one controlled experiment.
 - Record result and update hypothesis ranking.
-- Repeat until one root cause is confirmed or evidence forces escalation.
+- After two experiments without a new discriminating signal, reduce the case or change the observation seam; stop with missing evidence when budget/access prevents progress. Continue only with a stated new experiment, not repeated guesses.
 
 ### Phase 6 — regression proof
 - Create the lowest-level automated test/scenario that fails for the confirmed defect.

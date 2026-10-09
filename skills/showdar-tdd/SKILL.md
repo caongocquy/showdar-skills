@@ -39,6 +39,7 @@ Before any test, source, config or documentation write, respect the repository's
 - Determine the actual behavioral boundary, owners and affected consumers.
 - Discover the existing test framework; do not invent package scripts or command names.
 - Read `references/red-green-refactor.md` for the evidence and exemption contract.
+- Load `references/test-seams.md` before choosing or repairing a test seam: use a public observable boundary and independent expected results; reject tautological expectations and mocks that erase the changed contract.
 - For behavior examples, read `examples/behavior-change.md` when helpful.
 
 ## Non-negotiable rules

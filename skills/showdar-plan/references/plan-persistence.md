@@ -15,8 +15,10 @@
 - Mark the first dependency-ready, not-yet-proven task as the next action; do not simply pick the first unchecked item when its prerequisites are unmet.
 
 ## Ownership and completion
+- Legacy Markdown plans remain readable: preserve existing IDs, canonical paths and historical receipts. Add missing contract fields when the task is next refined; do not renumber tasks or require a wholesale format migration.
 - Only implementation plus passing required proof permits checking `[x]`. Absent, failed, skipped, or stale proof leaves `[ ]` and is reported as blocked or implemented-unverified.
 - A checked box is not itself proof. Repo code/tests and fresh evidence override stale narration.
+- Preserve stale receipts as historical evidence, mark their source/revision mismatch, and rerun the affected proof before resuming completion claims.
 - When decisions change, increment plan revision, preserve unchanged task IDs, track superseded work and invalidate affected evidence explicitly; never erase historical results.
 - The approved spec governs product behavior; the plan does not grant Git mutation permission, merge authority or deployment privileges.
 - Workflow-state checkpoint JSON remains an independent execution record with no plan-path additions.

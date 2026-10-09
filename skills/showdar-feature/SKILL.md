@@ -73,6 +73,12 @@ Before any task-owned source/config/test/docs write, apply `showdar-git` branch 
 - Do not add new workflow-state schema fields or treat plan persistence as a substitute for serialized workflow checkpoints.
 
 
+## Evidence handoff
+
+- Load `references/task-handoff.md` when crossing stages or recovering a task. Carry task/requirement IDs, spec/plan revisions, source revision and actual executor, Consumes/Produces contracts, changed paths, exact proof/results, gaps and next owner/action.
+- Build owns task-ledger completion; Test adds independent coverage and Review returns separate Spec Compliance and Code Quality verdicts. Missing/stale required proof or a FAIL/BLOCKED required gate prevents completion.
+- Preserve existing checkpoint schema and stage choices. Companion availability changes how the contract is followed, not authority or evidence requirements; never claim an unavailable skill/agent ran.
+
 ## Workflow
 
 ### Phase 1 — determine needed stages

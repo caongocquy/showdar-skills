@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- Made planning executable with vertical slices, Consumes/Produces, verified dependencies, negative cases and compatibility-aware expand → migrate → contract staging.
+- Added inline-first Build execution with actual host capability/isolation checks, honest fallback and bounded fix attempts; Review now returns independent Spec Compliance and Code Quality verdicts.
+- Strengthened TDD public test seams/independent expectations, Debug symptom/experiment feedback, and Spike / Bounded / Architectural brainstorm paths.
+- Aligned Feature/Bugfix/Recover/Test receipts while preserving legacy plan IDs, approval/Git guard semantics, the 26-skill catalog and existing workflow stages.
+- Updated public workflow guidance and packaged reference pointers; detailed playbooks remain lazy-loaded skill assets.
+
+### Experimental / readiness
+
+- Added source-only 18-case behavioral scenarios and offline-tested Codex JSONL adapter engineering. Static contracts, deterministic benchmarks and fake processes are distinct from real-agent evidence.
+- Live execution remains disabled and fails closed because preventive command mediation is unsupported; OS sandbox/credential isolation must remain enforced. Imported traces now receive deterministic event analysis only and always remain behavioral BLOCKED; submitted provenance, artifact proofs and rubric PASS cannot establish trusted execution.
+- Behavioral baseline/after-change and final behavioral readiness remain BLOCKED: **18 NOT_RUN, 0 PASS**. No measurable agent-quality improvement, release, or live model run is claimed.
+
 ## [0.17.0]
 
 ### Additional unpublished changes

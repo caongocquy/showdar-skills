@@ -72,18 +72,14 @@ Before any task-owned source/config/test/docs write, apply `showdar-git` branch 
 
 ## Execute and resume a task plan
 
-- Read `references/plan-execution.md` before using a persisted plan to track or resume tasks.
-- Discover the canonical implementation plan and approved spec first. If no durable plan is appropriate, use the agreed in-chat plan; never manufacture a file requirement for a small change.
-- Compare plan revision, linked spec and decision IDs, actual source, dependencies, and prior verification receipts before editing.
-- Treat checked boxes as *claims* requiring code/test evidence, never as proof or authorization. If prior evidence is stale or missing, classify as `implemented-unverified`, inspect the implementation, then verify it before writing new code.
-- Pick the earliest unmet dependency-ready task, implement its bounded change, and run the exact relevant verification plus checks needed for affected contracts.
-- Only after behavior exists and required proof succeeds may its task be marked `[x]`, together with an evidence ledger receipt containing actual command/scenario, outcome, changed files and commit/revision context when available.
-- If proof is blocked, failed or unavailable, keep `[ ]` and record `blocked` or `implemented-unverified`; never mark a task done just because code was edited.
-- Progress updates to Markdown are writes governed by the same Git preflight and foreign-file protections as source code. If file writes cannot be performed safely, report status in chat instead of falsifying a plan.
-- If plan or spec has materially drifted, stop the affected task, report the conflict and return to `showdar-plan` or `showdar-brainstorm` for the relevant decision; do not silently reshape scope during Build.
-- A saved plan supplements, but never replaces, workflow-state checkpoints, full-spec approval, Git authorization, or separate Test/Review evidence.
-- When interrupted, return verified/unverified task IDs, proof, blockers, plan revision/path and first ready task so `showdar-recover` or another agent can resume without guessing.
-
+- Read `references/plan-execution.md` when executing, delegating or resuming a task plan; use the agreed in-chat plan for bounded work.
+- Reconcile spec/plan revision, current source, dependencies and prior receipts before editing. Checked boxes are claims; stale proof is `implemented-unverified`.
+- Choose the earliest unmet dependency-ready task and an inline-first executor. Delegate only with actual host capability, adequate budget and isolated scope; serialize shared files/resources. Never claim a subagent ran when unavailable.
+- Execute preflight → RED → implementation → GREEN → REFACTOR → reverify → ledger, with an honest exemption for unsuitable TDD work.
+- Only mark `[x]` after implementation and fresh required proof succeed. Missing, failed or blocked proof keeps `[ ]`; safe ledger writes also require Git preflight.
+- Check delegated artifacts and proof independently before integrating. Stop after two unsuccessful fix attempts on the same failing task and report evidence plus the next action.
+- Scope/approved-contract drift returns the affected decision to Plan/Brainstorm. A plan or executor choice grants no Git, release or infrastructure authority.
+- Handoff includes task ID, plan/spec revision, Consumes/Produces, changed paths, actual receipts, verification gaps and the next dependency-ready task. Saved plans supplement workflow-state checkpoints and separate Test/Review evidence.
 
 ## Workflow
 

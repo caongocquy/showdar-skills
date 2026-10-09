@@ -98,8 +98,10 @@ Before any task-owned source/config/test/docs write, apply `showdar-git` branch 
 - Define rollout/rollback or feature-flag needs.
 
 ### Phase 5 — decompose execution
-- Order tasks by dependency and independent reviewability.
-- Each task states files/symbols, behavior, error/edge behavior, test, and verification command.
+- Read `references/task-decomposition.md` for material task decomposition, dependency conflicts or wide migrations.
+- Prefer vertical slices with an observable outcome and tests in each slice. Use expand → migrate → contract when coupled migrations need a compatibility window.
+- Record stable task IDs, requirements, dependencies, Consumes/Produces, non-goals, test seam, negative cases, rollback and executable proof; compare expected vs observed results.
+- Reject cycles, missing producers and conflicting parallel claims; expose the dependency-ready frontier from verified prerequisites.
 - For testable behavior tasks, include an expected RED → GREEN → REFACTOR sequence and the test boundary/command; where unavailable, document why and choose an honest alternative proof, never fake RED output.
 - Keep task boundaries small enough that a reviewer could approve one and reject the next.
 
@@ -167,6 +169,7 @@ Before any task-owned source/config/test/docs write, apply `showdar-git` branch 
 - **Risks and dependencies** — including compatibility/rollback.
 - **Ordered tasks** — exact behavior and files/symbols where known.
 - **Verification matrix** — command/scenario proving each task and final result.
+- **Handoff** — approved spec/plan revision, dependency-ready frontier, task proof contracts, unresolved decisions and next owner; readiness does not grant implementation authority.
 
 ## Anti-patterns
 
