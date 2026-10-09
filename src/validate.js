@@ -1,7 +1,7 @@
 import { access, readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { ALL_SKILLS, PRIMITIVE_COUNT, SKILLS, PROFILES, TOTAL_COUNT, WORKFLOW_COUNT, WORKFLOW_SKILLS } from './catalog.js';
+import { ALL_SKILLS, COMPANION_COUNT, COMPANION_SKILLS, PRIMITIVE_COUNT, SKILLS, PROFILES, TOTAL_COUNT, WORKFLOW_COUNT, WORKFLOW_SKILLS } from './catalog.js';
 import { validateCapabilities } from './capabilities.js';
 import { CANONICAL_RUNTIME_FILE, VENDORED_RUNTIME_FILES } from './runtime.js';
 import { parseCsv } from '../engine/csv.mjs';
@@ -331,12 +331,13 @@ export async function validateRepository(packageRoot) {
   const errors = [];
   const warnings = [];
   const known = new Set(ALL_SKILLS.map((skill) => skill.id));
-  const primitives = new Set(SKILLS.map((skill) => skill.id));
+  const primitives = new Set([...SKILLS, ...COMPANION_SKILLS].map((skill) => skill.id));
   const skillsRoot = path.join(packageRoot, 'skills');
 
   if (SKILLS.length !== PRIMITIVE_COUNT || PRIMITIVE_COUNT !== 18) errors.push(`primitive skill count must remain 18 (found ${SKILLS.length})`);
   if (WORKFLOW_SKILLS.length !== WORKFLOW_COUNT || WORKFLOW_COUNT !== 4) errors.push(`workflow skill count must be 4 (found ${WORKFLOW_SKILLS.length})`);
-  if (ALL_SKILLS.length !== TOTAL_COUNT || TOTAL_COUNT !== 22) errors.push(`total installable skill count must be 22 (found ${ALL_SKILLS.length})`);
+  if (COMPANION_SKILLS.length !== COMPANION_COUNT || COMPANION_COUNT !== 3) errors.push(`companion skill count must be 3 (found ${COMPANION_SKILLS.length})`);
+  if (ALL_SKILLS.length !== TOTAL_COUNT || TOTAL_COUNT !== 25) errors.push(`total installable skill count must be 25 (found ${ALL_SKILLS.length})`);
 
   for (const error of validateCapabilities().errors) errors.push(`capabilities: ${error}`);
 

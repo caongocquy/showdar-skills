@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { AI_TARGETS, PROFILE_ALIASES, PROFILES, SKILLS, canonicalProfile, resolveProfile } from '../src/catalog.js';
+import { AI_TARGETS, COMPANION_SKILLS, ALL_SKILLS, PROFILE_ALIASES, PROFILES, SKILLS, canonicalProfile, resolveProfile } from '../src/catalog.js';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -28,7 +28,7 @@ const EXPECTED_SKILLS = [
   'showdar-insurance-review',
 ];
 
-test('catalog contains exactly eighteen first-class skills', () => {
+test('catalog retains eighteen lifecycle primitives', () => {
   assert.deepEqual(SKILLS.map((skill) => skill.id), EXPECTED_SKILLS);
   assert.ok(SKILLS.every((skill) => skill.description?.length >= 30));
 });
@@ -55,7 +55,7 @@ test('supported AI targets include native and universal modes', () => {
 });
 
 test('full profile resolves every skill exactly once', () => {
-  assert.deepEqual(resolveProfile('full'), EXPECTED_SKILLS);
+  assert.deepEqual(resolveProfile('full'), [...EXPECTED_SKILLS, ...COMPANION_SKILLS.map(skill => skill.id)]);
 });
 
 test('legacy mobile and web profiles resolve to the developer profile', () => {
@@ -69,12 +69,12 @@ test('legacy mobile and web profiles resolve to the developer profile', () => {
 test('profiles represent role-oriented skill bundles', () => {
   assert.deepEqual(Object.keys(PROFILES), ['minimal', 'developer', 'backend', 'qa', 'product', 'insurance', 'full']);
   assert.equal(PROFILES.minimal.length, 8);
-  assert.equal(PROFILES.developer.length, 12);
-  assert.equal(PROFILES.backend.length, 14);
-  assert.equal(PROFILES.qa.length, 9);
-  assert.equal(PROFILES.product.length, 6);
+  assert.equal(PROFILES.developer.length, 15);
+  assert.equal(PROFILES.backend.length, 17);
+  assert.equal(PROFILES.qa.length, 12);
+  assert.equal(PROFILES.product.length, 9);
   assert.equal(PROFILES.insurance.length, 3);
-  assert.equal(PROFILES.full.length, 18);
+  assert.equal(PROFILES.full.length, 21);
   for (const profile of ['minimal', 'developer', 'backend', 'qa', 'full']) {
     assert.ok(PROFILES[profile].includes('showdar-git'));
   }
@@ -87,10 +87,11 @@ test('profiles represent role-oriented skill bundles', () => {
   assert.deepEqual(PROFILES.qa, [
     'showdar-understand', 'showdar-requirements', 'showdar-quality', 'showdar-test',
     'showdar-debug', 'showdar-review', 'showdar-ship', 'showdar-recover', 'showdar-git',
+    'showdar-setup', 'showdar-refine', 'showdar-domain-model',
   ]);
   assert.deepEqual(PROFILES.product, [
     'showdar-understand', 'showdar-requirements', 'showdar-plan', 'showdar-design',
-    'showdar-quality', 'showdar-review',
+    'showdar-quality', 'showdar-review', 'showdar-setup', 'showdar-refine', 'showdar-domain-model',
   ]);
   assert.deepEqual(PROFILES.insurance, [
     'showdar-insurance-domain', 'showdar-insurance-workflows', 'showdar-insurance-review',
@@ -98,7 +99,7 @@ test('profiles represent role-oriented skill bundles', () => {
 });
 
 test('every profile references known skills without duplicates', () => {
-  const known = new Set(EXPECTED_SKILLS);
+  const known = new Set(ALL_SKILLS.map(skill => skill.id));
   for (const [profile, ids] of Object.entries(PROFILES)) {
     assert.ok(ids.length > 0, `${profile} should not be empty`);
     assert.equal(new Set(ids).size, ids.length, `${profile} contains duplicates`);
@@ -108,4 +109,11 @@ test('every profile references known skills without duplicates', () => {
 
 test('unknown profile throws a useful error', () => {
   assert.throws(() => resolveProfile('nope'), /Unknown profile "nope"/);
+});
+
+test('three portable companion skills are installable but excluded from lifecycle primitives', () => {
+  assert.equal(COMPANION_SKILLS.length, 3);
+  assert.equal(ALL_SKILLS.length, 25);
+  assert.ok(COMPANION_SKILLS.every(x => x.kind === 'companion'));
+  assert.ok(COMPANION_SKILLS.every(x => !SKILLS.some(y => y.id === x.id)));
 });

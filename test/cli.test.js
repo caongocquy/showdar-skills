@@ -36,7 +36,7 @@ test('showdar list prints V0.2 profiles and flagship skills', async () => {
 
 test('showdar prints the package version for --version and -V', async () => {
   const expected = JSON.parse(await readFile(path.join(root, 'package.json'), 'utf8')).version;
-  for (const flag of ['--version', '-V']) {
+  for (const flag of ['--version', '-V', '-v']) {
     const result = await run([flag]);
     assert.equal(result.code, 0, result.stderr);
     assert.equal(result.stdout.trim(), expected);

@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { PROFILES, SKILLS, resolveProfile } from '../src/catalog.js';
+import { PROFILES, SKILLS, COMPANION_SKILLS, resolveProfile } from '../src/catalog.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const cli = path.join(root, 'bin', 'showdar.js');
@@ -19,18 +19,18 @@ test('security and ops are first-class skills with role-aware profile membership
     'showdar-security', 'showdar-ops', 'showdar-insurance-domain',
     'showdar-insurance-workflows', 'showdar-insurance-review',
   ]);
-  assert.equal(PROFILES.developer.length, 12);
-  assert.equal(PROFILES.backend.length, 14);
-  assert.equal(PROFILES.qa.length, 9);
-  assert.equal(PROFILES.product.length, 6);
-  assert.equal(PROFILES.full.length, 18);
+  assert.equal(PROFILES.developer.length, 15);
+  assert.equal(PROFILES.backend.length, 17);
+  assert.equal(PROFILES.qa.length, 12);
+  assert.equal(PROFILES.product.length, 9);
+  assert.equal(PROFILES.full.length, 21);
   assert.ok(PROFILES.developer.includes('showdar-security'));
   assert.ok(PROFILES.backend.includes('showdar-security'));
   assert.ok(PROFILES.backend.includes('showdar-ops'));
   assert.ok(!PROFILES.developer.includes('showdar-ops'));
   assert.deepEqual(resolveProfile('mobile'), resolveProfile('developer'));
   assert.deepEqual(resolveProfile('web'), resolveProfile('developer'));
-  assert.deepEqual(resolveProfile('full'), SKILLS.map(({ id }) => id));
+  assert.deepEqual(resolveProfile('full'), [...SKILLS, ...COMPANION_SKILLS].map(({ id }) => id));
 });
 
 test('security and ops skills state their evidence and mutation boundaries', async () => {

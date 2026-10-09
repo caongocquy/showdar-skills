@@ -51,6 +51,15 @@ Before any task-owned source/config/test/docs write, apply `showdar-git` branch 
 - Add/adjust tests at the lowest level that can fail for the intended regression/behavior.
 - Do not rewrite unrelated formatting or files.
 
+## Approved decision boundaries
+
+- Read the current approved feature brief, canonical glossary and relevant accepted ADRs if they exist.
+- When refinement has been triggered, require explicit approval of the whole brief revision before implementing; ordinary fully specified work does not incur a new approval gate.
+- Preserve agreed domain names, behavior and non-goals in code; do not change accepted decisions silently.
+- If implementation exposes a genuine conflict with an approved contract, stop and request approval for the affected decision before altering scope.
+- Invoke installed `showdar-domain-model` only for a meaningful shared glossary/architecture update, with a separate proposed diff and approval.
+- Do not assume `showdar route`, CLI install or workflow checkpoint grants mutation authority.
+
 ## Workflow
 
 ### Phase 1 — pre-change check

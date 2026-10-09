@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, mkdir, rm, symlink } from 'node:fs/promises';
+import { mkdtemp, mkdir, rm, symlink, readFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -14,11 +14,12 @@ function run(...args) {
   return spawnSync(process.execPath, [cli, ...args], { encoding: 'utf8', timeout: 10000 });
 }
 
-test('CLI version aliases return exactly the package version', () => {
+test('CLI version aliases return exactly the package version', async () => {
+  const version = JSON.parse(await readFile(path.join(packageRoot, 'package.json'), 'utf8')).version;
   for (const flag of ['-v', '-V', '--version']) {
     const result = run(flag);
     assert.equal(result.status, 0, result.stderr);
-    assert.equal(result.stdout.trim(), '0.15.1');
+    assert.equal(result.stdout.trim(), version);
   }
 });
 

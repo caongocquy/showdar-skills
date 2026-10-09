@@ -45,6 +45,19 @@ Before any task-owned source/config/test/docs write, apply `showdar-git` branch 
 - Security may load as an orthogonal primitive (`showdar-security`) when the change touches auth, secrets, trust boundaries, or exposure.
 - Stop when required evidence is missing instead of guessing.
 
+## Conditional refinement gate (portable)
+
+- Before selecting implementation stages, assess whether the requested feature has material unresolved product, permission, state, data, or architecture decisions.
+- If the request is sufficiently defined, skip refinement with a concrete evidence reason; never force an interview for a local, low-risk or already approved change.
+- If materially unclear and the optional `showdar-refine` companion is installed, invoke it before implementation; ask one high-impact question at a time and produce a Decision Brief.
+- If the companion is missing, report it rather than claiming it ran; resolve blocking decisions with the user before continuing.
+- When refinement has been triggered, wait for explicit user approval of the *whole* proposed spec revision before entering `showdar-build`.
+- Carry approved decisions, non-goals, acceptance notes, unresolved questions and evidence into requirements/plan/design without repeating already answered questions.
+- Use the existing canonical spec/ticket when present; persist a new `docs/specs/` document only for durable or complex handoff after approval.
+- If later repository evidence contradicts an approved decision, reopen only the affected decision and obtain revision-specific approval.
+- Refer to installed `showdar-domain-model` for meaningful shared terminology or accepted architectural decisions, not as a required lifecycle stage.
+- This decision gate is portable guidance, not a new router, workflow-state stage, checkpoint authority, or implicit permission to mutate files.
+
 ## Workflow
 
 ### Phase 1 — determine needed stages

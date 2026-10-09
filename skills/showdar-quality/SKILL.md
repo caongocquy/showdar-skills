@@ -46,6 +46,12 @@ description: Use when planning QA/QC scenarios, risk coverage, regression scope,
 - Preserve requirement terminology and trace each scenario to a requirement, risk, change surface, or observed defect.
 - If a check belongs inside an automated test, state the boundary and hand implementation to `showdar-test`.
 
+## Decision coverage
+
+- Derive QA scenarios from existing approved spec and acceptance notes when present; do not invent missing product rules.
+- If refinement was triggered and approval is missing, flag the readiness blocker instead of pretending the spec is agreed.
+- Preserve canonical domain terminology when writing test scenarios; meaningful changes belong in an approved glossary proposal.
+
 ## Workflow
 
 ### Phase 1 — define the quality question

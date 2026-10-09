@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.16.0]
+
+### Added
+
+- Three portable first-class companion skills: `showdar-setup`, `showdar-refine`, and `showdar-domain-model`; native skills-only users no longer need the CLI for onboarding, refinement, or glossary/ADR guidance.
+- Conditional refinement with explicit spec approval, adaptive Decision Brief persistence, and approval-bound architectural/domain documentation.
+
+### Changed
+
+- Companion catalog, profiles and validations support 25 installable skills while retaining 18 lifecycle primitives and 4 workflows.
+- Existing lifecycle skills consume approved briefs and canonical glossary/ADR context without adding a second router.
+- CLI installation migrates away from the legacy generated `/showdar-setup` command toward the portable skill with owned-file safety checks.
+
+
 ## [0.15.1]
 
 ### Fixed

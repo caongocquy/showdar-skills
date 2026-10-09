@@ -56,6 +56,14 @@ Before any task-owned source/config/test/docs write, apply `showdar-git` branch 
 - Maintain readable contrast, semantic labeling, focus order, reduced-motion behavior, and text scaling.
 - Prefer existing design tokens/components when they meet the requirement.
 
+## Approved design context
+
+- Locate an approved feature brief, established design system and relevant accepted ADRs before proposing UI changes.
+- Preserve approved behavior and product constraints instead of silently revising flow, terminology, or permission rules.
+- When a design decision would materially change approved behavior, ask to reopen just that decision; use installed `showdar-refine` when a real interview is needed.
+- If a shared term is newly accepted, propose canonical glossary updates through installed `showdar-domain-model` rather than duplicating vocabulary.
+- Do not manufacture ADRs for routine visual preferences or minor component decisions.
+
 ## Workflow
 
 ### Mode selection

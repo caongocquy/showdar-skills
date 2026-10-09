@@ -38,6 +38,11 @@ translations such as policy → “chính sách” or premium → “cao
 cấp”. Do not equate application, quote, contract and
 certificate.
 
+## Project glossary integration
+
+- Prefer the project's existing canonical insurance glossary for agreed wording and aliases; local references are background, not authority over project decisions.
+- If shared terminology changes, propose updating the canonical glossary through `showdar-domain-model` when installed; never silently rewrite insurance product rules.
+
 ## Workflow
 
 1. Identify the requested module and known market, insurer, product, product version and API version. Unknown scope stays explicit; ask only for missing context that changes the answer.

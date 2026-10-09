@@ -15,7 +15,7 @@ import {
 import { normalizeSkillName, ALL_SKILLS } from './catalog.js';
 import { assertSafeManagedPath, lstatWithoutSymlink, safeOwnedPath } from './path-safety.js';
 export { assertSafeManagedPath, lstatWithoutSymlink, safeOwnedPath } from './path-safety.js';
-import { renderManagedBlock, renderShowdarCommand, renderShowdarAggregator, renderShowdarSetupCommand } from './adapter-renderers.js';
+import { renderManagedBlock, renderShowdarCommand, renderShowdarAggregator } from './adapter-renderers.js';
 import { validatePack } from './validate-pack.js';
 
 const PROJECT_MANIFEST = '.showdar.json';
@@ -166,32 +166,37 @@ async function generateCommandFiles({ baseRoot, skillIds, target, commandRoot, p
   await writeTextAtomic(aggregatorDest, aggregatorContent);
   newFiles.push({ path: aggregatorRel, hash: await hashTree(aggregatorDest) });
   files.push({ destination: aggregatorDest, skillId: 'aggregator', shortName: 'skill' });
-  const setupDest = path.join(path.dirname(commandRoot), 'showdar-setup.md');
-  await assertSafeManagedPath(baseRoot, setupDest, managedRoots);
-  const setupRel = manifestPathFor(baseRoot, setupDest);
-  if ((await exists(setupDest)) && !priorOwned.has(setupRel)) {
-    throw new Error('Refusing to overwrite existing non-Showdar-managed command: ' + setupDest);
-  }
-  await writeTextAtomic(setupDest, renderShowdarSetupCommand());
-  newFiles.push({ path: setupRel, hash: await hashTree(setupDest) });
-  files.push({ destination: setupDest, skillId: 'setup', shortName: 'showdar-setup' });
   return files;
 }
 
-async function generateCursorSetupCommand({ baseRoot, scope, homeRoot, priorOwned, newFiles }) {
-  const root = scope === 'global'
-    ? path.join(homeRoot, '.cursor', 'commands')
-    : path.join(baseRoot, '.cursor', 'commands');
-  const destination = path.join(root, 'showdar-setup.md');
-  await assertSafeManagedPath(baseRoot, destination);
-  const relative = manifestPathFor(baseRoot, destination);
-  if ((await exists(destination)) && !priorOwned.has(relative)) {
-    throw new Error('Refusing to overwrite existing non-Showdar-managed command: ' + destination);
+// Legacy custom commands collided with native /showdar-setup skill invocation.
+function isLegacySetupCommandPath(relative) {
+  return typeof relative === 'string' && /(^|\/)commands\/showdar-setup\.md$/.test(relative);
+}
+
+function effectiveScopeForManifest(scope, manifest) {
+  return scope ?? manifest?.scope ?? 'project';
+}
+
+async function inspectLegacySetupCommands({ baseRoot, manifest, scope, homeRoot = homedir(), managedRoots = [] }) {
+  const entries = (manifest?.files ?? []).filter(entry => isLegacySetupCommandPath(entry.path));
+  const results = [];
+  for (const entry of entries) {
+    const target = safeOwnedPath(baseRoot, entry.path, managedRoots);
+    if (!target || !isManagedDeletionTarget(baseRoot, target, scope, homeRoot, manifest)) {
+      throw new Error('Unsafe legacy Showdar setup command path: ' + entry.path);
+    }
+    await assertSafeManagedPath(baseRoot, target, managedRoots);
+    if (await exists(target) && await hashTree(target) !== entry.hash) {
+      throw new Error('Modified legacy Showdar setup command; resolve the conflict before migrating: ' + entry.path);
+    }
+    results.push({ path: entry.path, target });
   }
-  await mkdir(root, { recursive: true });
-  await writeTextAtomic(destination, renderShowdarSetupCommand());
-  newFiles.push({ path: relative, hash: await hashTree(destination) });
-  return { destination, skillId: 'setup', shortName: 'showdar-setup', target: 'cursor' };
+  return results;
+}
+
+async function removeLegacySetupCommands(entries) {
+  for (const entry of entries) await rm(entry.target, { force: true });
 }
 
 async function initInstallation({
@@ -259,15 +264,9 @@ async function initInstallation({
           desiredPaths.add(manifestPathFor(baseRoot, path.join(root, `${shortName}.md`)));
         }
         desiredPaths.add(manifestPathFor(baseRoot, path.join(root, 'skill.md')));
-        desiredPaths.add(manifestPathFor(baseRoot, path.join(path.dirname(root), 'showdar-setup.md')));
         commandHarnesses.push({ target, root });
       }
     }
-  }
-
-  if (targets.includes('cursor')) {
-    const cursorRoot = scope === 'global' ? homeRoot : baseRoot;
-    desiredPaths.add(manifestPathFor(baseRoot, path.join(cursorRoot, '.cursor', 'commands', 'showdar-setup.md')));
   }
 
   // Validate instruction surfaces before removing any previously managed files.
@@ -303,6 +302,9 @@ async function initInstallation({
     if (targetPath && !desiredPaths.has(entry.path)) {
       if (path.resolve(targetPath) === path.resolve(baseRoot) || !isManagedDeletionTarget(baseRoot, targetPath, scope, homeRoot, prior)) throw new Error('Unsafe stale managed path: ' + entry.path);
       await assertSafeManagedPath(baseRoot, targetPath, managedRoots);
+      if (isLegacySetupCommandPath(entry.path) && await exists(targetPath) && await hashTree(targetPath) !== entry.hash) {
+        throw new Error('Modified legacy Showdar setup command; resolve the conflict before migrating: ' + entry.path);
+      }
       staleTargets.push(targetPath);
     }
   }
@@ -318,14 +320,6 @@ async function initInstallation({
       await assertSafeManagedPath(baseRoot, dest, managedRoots);
       if ((await exists(dest)) && !priorOwned.has(manifestPathFor(baseRoot, dest))) throw new Error('Foreign command destination: ' + dest);
     }
-    const top = path.join(path.dirname(root), 'showdar-setup.md');
-    await assertSafeManagedPath(baseRoot, top, managedRoots);
-    if ((await exists(top)) && !priorOwned.has(manifestPathFor(baseRoot, top))) throw new Error('Foreign setup command: ' + top);
-  }
-  if (targets.includes('cursor')) {
-    const cursorDest = path.join(scope === 'global' ? homeRoot : baseRoot, '.cursor', 'commands', 'showdar-setup.md');
-    await assertSafeManagedPath(baseRoot, cursorDest, managedRoots);
-    if ((await exists(cursorDest)) && !priorOwned.has(manifestPathFor(baseRoot, cursorDest))) throw new Error('Foreign Cursor setup command: ' + cursorDest);
   }
   for (const stale of staleTargets) await rm(stale, { recursive: true, force: true });
 
@@ -337,9 +331,6 @@ async function initInstallation({
   }
 
   const commandsGenerated = [];
-  if (targets.includes('cursor')) {
-    commandsGenerated.push(await generateCursorSetupCommand({ baseRoot, scope, homeRoot, priorOwned, newFiles: files }));
-  }
   for (const { target, root } of commandHarnesses) {
     const generated = await generateCommandFiles({
       baseRoot,
@@ -714,6 +705,18 @@ export async function addSkill({ cwd, skill, ai = null, scope = null, home = hom
     ? await readManifest(globalManifestPath(home), home)
     : await readManifest(path.join(cwd, PROJECT_MANIFEST), cwd);
 
+  const migrationRoot = effectiveScopeForManifest(scope, existingManifest) === 'global' ? home : cwd;
+  const migrationScope = effectiveScopeForManifest(scope, existingManifest);
+  const legacyCommands = await inspectLegacySetupCommands({
+    baseRoot: migrationRoot, manifest: existingManifest, scope: migrationScope, homeRoot: home,
+    managedRoots: migrationScope === 'global'
+      ? NATIVE_TARGETS.flatMap(target => {
+          const root = globalCommandRootForTarget(target, { homeRoot: home });
+          return root ? [root, path.dirname(root)] : [];
+        })
+      : [],
+  });
+  const legacyPaths = new Set(legacyCommands.map(entry => entry.path));
   const effectiveAi = ai ?? existingManifest?.ai ?? 'universal';
   const effectiveScope = scope ?? existingManifest?.scope ?? 'project';
   if (effectiveAi !== 'all' && !NATIVE_TARGETS.includes(effectiveAi)) throw new Error(`Unknown AI target "${effectiveAi}".`);
@@ -749,9 +752,6 @@ export async function addSkill({ cwd, skill, ai = null, scope = null, home = hom
     for (const destination of destinations) {
       await copyOwned({ baseRoot, source, destination, priorOwned, newFiles: refreshedFiles });
     }
-    if ((existingManifest.targets ?? []).includes('cursor')) {
-      await generateCursorSetupCommand({ baseRoot, scope: effectiveScope, homeRoot: home, priorOwned, newFiles: refreshedFiles });
-    }
     for (const target of existingManifest.commandHarness ?? []) {
       const commandRoot = effectiveScope === 'global' ? globalCommandRootForTarget(target, { homeRoot: home }) : commandRootFor(target, cwd);
       if (commandRoot) await generateCommandFiles({ baseRoot, skillIds: existingManifest.skills, target, commandRoot, priorOwned, newFiles: refreshedFiles });
@@ -762,10 +762,11 @@ export async function addSkill({ cwd, skill, ai = null, scope = null, home = hom
       if (instruction.kind === 'block') await writeManagedBlock(file, existingManifest.skills);
       else if (instruction.kind === 'file') await writeCursorRule(file, existingManifest.skills);
     }
-    const files = new Map((existingManifest.files ?? []).map(f => [f.path, f]));
+    await removeLegacySetupCommands(legacyCommands);
+    const files = new Map((existingManifest.files ?? []).filter(f => !legacyPaths.has(f.path)).map(f => [f.path, f]));
     for (const f of refreshedFiles) files.set(f.path, f);
     await writeJsonAtomic(effectiveScope === 'global' ? globalManifestPath(home) : path.join(cwd, PROJECT_MANIFEST),
-      { ...existingManifest, packageVersion, files: [...files.values()] });
+      { ...existingManifest, packageVersion, commands: (existingManifest.commands ?? []).filter(c => !legacyPaths.has(c.path)), files: [...files.values()] });
     return { skill: skillId, root: '', destination: '', added: false, scope: effectiveScope, ai: effectiveAi, profile: existingManifest.profile };
   }
 
@@ -814,10 +815,6 @@ export async function addSkill({ cwd, skill, ai = null, scope = null, home = hom
 
   const allSkillIds = [...new Set([...(existingManifest?.skills ?? []), skillId])];
   const newCommands = [];
-  if (targets.includes('cursor')) {
-    const generated = await generateCursorSetupCommand({ baseRoot, scope: effectiveScope, homeRoot: home, priorOwned, newFiles: files });
-    newCommands.push({ target: 'cursor', name: 'showdar-setup', path: manifestPathFor(baseRoot, generated.destination) });
-  }
   const harnessTargets = [...new Set([...(existingManifest?.commandHarness ?? []), ...commandHarnesses.map(c => c.target)])];
   for (const target of harnessTargets) {
     const root = effectiveScope === 'global' ? globalCommandRootForTarget(target, { homeRoot: home }) : commandRootFor(target, cwd);
@@ -826,7 +823,8 @@ export async function addSkill({ cwd, skill, ai = null, scope = null, home = hom
     newCommands.push(...generated.map(c => ({ target, name: c.shortName, path: manifestPathFor(baseRoot, c.destination) })));
   }
 
-  const merged = new Map((existingManifest?.files ?? []).map((e) => [e.path, e]));
+  await removeLegacySetupCommands(legacyCommands);
+  const merged = new Map((existingManifest?.files ?? []).filter(e => !legacyPaths.has(e.path)).map((e) => [e.path, e]));
   for (const f of files) merged.set(f.path, f);
 
   const instructionFile = existingManifest?.instructions ?? (effectiveScope === 'project' ? instructionSurfaceFor(effectiveAi === 'all' ? 'universal' : effectiveAi, cwd) : null);
@@ -842,7 +840,7 @@ export async function addSkill({ cwd, skill, ai = null, scope = null, home = hom
     targets: [...new Set([...(existingManifest?.targets ?? []), ...targets])],
     skills: allSkillIds,
     satisfiedByGlobal: existingManifest?.satisfiedByGlobal ?? [],
-    commands: [...new Map([...(existingManifest?.commands ?? []), ...newCommands].map(c => [c.path, c])).values()],
+    commands: [...new Map([...(existingManifest?.commands ?? []).filter(c => !legacyPaths.has(c.path)), ...newCommands].map(c => [c.path, c])).values()],
     files: [...merged.values()],
     instructions: instructionFile ? { file: instructionFile.file, kind: instructionFile.kind } : null,
     commandHarness,

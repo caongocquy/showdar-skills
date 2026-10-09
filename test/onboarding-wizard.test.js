@@ -52,9 +52,10 @@ test('wizard previews combined selections without mutating project and adds the 
     for (const name of plan.skills) assert.ok(m.skills.includes(name), name);
     assert.equal(m.ai, 'opencode');
     assert.equal(run(cwd, 'doctor').status, 0);
-    const setupCommand = await readFile(path.join(cwd, '.opencode/commands/showdar-setup.md'), 'utf8');
-    assert.match(setupCommand, /Audit product purpose, user roles, key business flows/);
-    assert.match(setupCommand, /proposed file-by-file diff/);
+    const setupSkill = await readFile(path.join(cwd, '.opencode/skills/showdar-setup/SKILL.md'), 'utf8');
+    assert.match(setupSkill, /glossary/i);
+    assert.match(setupSkill, /approval/i);
+    await assert.rejects(access(path.join(cwd, '.opencode/commands/showdar-setup.md')));
     const addAgain = run(cwd, 'add', '--interactive', '--yes', ...args);
     assert.equal(addAgain.status, 0, addAgain.stderr);
     assert.deepEqual((await manifest(cwd)).skills, m.skills);
@@ -84,8 +85,7 @@ test('context discovery guidance is in generated OpenCode commands without chang
     assert.equal(run(cwd, 'init', '--profile', 'minimal', '--ai', 'opencode').status, 0);
     const instruction = await readFile(path.join(cwd, 'AGENTS.md'), 'utf8');
     assert.match(instruction, /docs\/agents/);
-    const command = await readFile(path.join(cwd, '.opencode/commands/showdar-setup.md'), 'utf8');
-    assert.match(command, /interactive skill installer/);
-    assert.match(command, /Git state/);
+    await assert.rejects(access(path.join(cwd, '.opencode/commands/showdar-setup.md')));
+    assert.match(instruction, /showdar setup in the CLI is only an interactive skill installer/);
   } finally { await cleanup(); }
 });

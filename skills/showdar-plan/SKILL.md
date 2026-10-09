@@ -51,6 +51,14 @@ Before any task-owned source/config/test/docs write, apply `showdar-git` branch 
 - Do not invent requirements to make the architecture cleaner.
 - Avoid placeholders such as “handle errors appropriately” without defining the required behavior.
 
+## Refinement and domain decision contract
+
+- Read an available approved Decision Brief, canonical glossary and accepted ADRs before selecting the approach.
+- Treat approved alternatives and non-goals as constraints; avoid re-opening decisions merely to make the plan look cleaner.
+- If a materially different choice is required, stop and reopen only affected decisions through `showdar-refine` if installed, or request the user decision directly.
+- Use `showdar-domain-model` only to propose a meaningful new shared concept or approved high-impact architecture record.
+- Approval of a design never grants write, Git, release, or production authority.
+
 ## Workflow
 
 ### Phase 1 — normalize the requirement

@@ -45,6 +45,14 @@ description: Use when reviewing code or diffs for general correctness, architect
 - Do not spend review budget on formatting already automated.
 - If no material findings exist, say so and mention residual verification limits.
 
+## Approved decisions and documentation review
+
+- Compare changes against the available approved Decision Brief, relevant acceptance criteria, canonical glossary and accepted ADRs.
+- Flag contradictions or unauthorized scope/terminology shifts with evidence; missing docs are not proof that the implementation is wrong.
+- Verify refinement approval if that gate was triggered; do not infer it from a task status or checkpoint alone.
+- Propose glossary/ADR changes through installed `showdar-domain-model` only when a real accepted domain or architectural decision has changed.
+- Reviewing code does not authorize editing domain docs or overriding approval decisions.
+
 ## Workflow
 
 ### Phase 1 — understand intent and diff
