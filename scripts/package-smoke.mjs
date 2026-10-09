@@ -57,7 +57,7 @@ try {
   await mustNotExist(path.join(project, '.cursor', 'commands', 'showdar-setup.md'));
   await mustExist(path.join(project, '.cursor', 'skills', 'showdar-setup', 'SKILL.md'));
   const claudeCommands = await readdir(path.join(project, '.claude', 'commands', 'showdar'));
-  if (claudeCommands.filter((name) => name.endsWith('.md')).length !== 19) throw new Error(`expected 22 Claude nested commands (21 direct + skill.md), got ${claudeCommands.length}`);
+  if (claudeCommands.filter((name) => name.endsWith('.md')).length !== 22) throw new Error(`expected 22 Claude nested commands (21 direct + skill.md), got ${claudeCommands.length}`);
 
   await mustNotExist(path.join(project, '.claude', 'commands', 'showdar-setup.md'));
 
