@@ -55,6 +55,14 @@ Native usage: `showdar add tdd --ai cursor`, then `/showdar-tdd` where supported
 
 Companions are native-discoverable and first-class installable skills, not primary lifecycle routes. `showdar-feature` consults brainstorm only when decisions can alter behavior, and handoff reuses approved specs rather than asking again. Specs follow adaptive persistence: use existing canonical tickets/docs first; create a durable spec for complex cross-session work, and keep small same-session briefs in conversation.
 
+## Typical feature workflow
+
+For a feature with unresolved requirements, use `/showdar-brainstorm` to develop and approve a Decision Brief, then `/showdar-plan` and `/showdar-build`. Build uses `showdar-tdd` where installed and runnable: verify **RED → GREEN → REFACTOR**, record executed checks, and mark a plan task complete only after proof. `showdar-test` handles broader verification; `showdar-review` remains independent.
+
+For complex work, approved specs and implementation plans default to `docs/showdar/specs/` and `docs/showdar/plans/`. Small tasks may stay in chat. These are agent-guidance conventions, not automatic CLI-generated documents or a mandatory runtime state machine; repository-owned canonical paths take precedence.
+
+See the [workflow guide](./docs/WORKFLOWS.md) for examples, TDD exemptions, persisted plan/resume, and installation behavior.
+
 ## Version and updates
 
 ```bash
@@ -71,19 +79,21 @@ showdar update --manager npm   # Explicit override: npm, pnpm, brew
 
 ```text
 User task
-  -> Showdar intent routing
-  -> Installed lifecycle skill + optional domain context
-  -> Git preflight (before writes)
-  -> Execute / verify / report
+  -> Installed skill / intent routing
+  -> Brainstorm (only if material decisions are unresolved)
+  -> Approved spec -> Plan (persist for larger work)
+  -> Build -> TDD where runnable -> Test -> Review
+  -> Git preflight before any writes, proof before completion
 ```
 
-Showdar ships **18 lifecycle primitives**, **3 portable companion** and **4 workflow** skills, including optional insurance-domain coverage. Only relevant instructions and references are loaded as needed.
+Showdar ships **18 lifecycle primitives**, **4 portable companions** and **4 workflow** skills, including optional insurance-domain coverage. Only relevant instructions and references are loaded as needed.
 
 Before local source/config/docs changes, follow the project's Git policy and run `showdar guard --mutation local-write --json`; work on a task branch when required. Routing and onboarding do not grant permission to commit, merge, push, or deploy.
 
 ## Documentation
 
-- [Detailed CLI, profiles, adapters, routing, and policies](./docs/REFERENCE.md)
+- [Feature workflow: Brainstorm → Plan → Build/TDD → Test/Review](./docs/WORKFLOWS.md)
+- [CLI, profiles, adapters, routing, and policies](./docs/REFERENCE.md)
 - [Migration notes](./MIGRATION.md)
 - [Changelog](./CHANGELOG.md)
 - [Releasing](./RELEASING.md)

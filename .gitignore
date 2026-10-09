@@ -50,6 +50,9 @@ pnpm-debug.log*
 *.swp
 *.swo
 
-# Local planning documents are intentionally not part of the published repo.
-docs/
+# Local working/feature plans are intentionally not part of the published source repo.
+# Keep public reference guides tracked while excluding local docs and plans.
+docs/*
+!docs/REFERENCE.md
+!docs/WORKFLOWS.md
 .agents
