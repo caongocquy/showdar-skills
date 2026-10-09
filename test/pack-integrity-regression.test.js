@@ -70,3 +70,33 @@ test('successful pack update removes obsolete files and leaves no staging direct
   const dirs = await readdir(path.join(cwd, '.showdar/extensions/packs'));
   assert.ok(dirs.every(x => !x.includes('.tmp-') && !x.includes('.backup-')));
 }));
+
+test('blocked foreign-file conflict cannot modify the installed pack or manifest', () => fixture(async ({ cwd, result }) => {
+  await addPack({ cwd, source: 'example-pack', packageVersion: '0.15.0' });
+  const manifestPath = path.join(cwd, '.showdar.json');
+  const before = await readFile(manifestPath, 'utf8');
+  const installedPack = path.join(cwd, '.showdar/extensions/packs', result.manifest.name);
+  const foreign = path.join(installedPack, 'new-instruction.txt');
+  await writeFile(foreign, 'FOREIGN USER FILE');
+  await writeFile(path.join(result.packDir, 'new-instruction.txt'), 'candidate file');
+  await bump(result.packDir, '0.2.0');
+  const plan = await planPackUpdate({ cwd, source: 'example-pack' });
+  assert.equal(plan.executable, false);
+  await assert.rejects(executePackUpdate(plan, { cwd }), /blocked/);
+  assert.equal(await readFile(manifestPath, 'utf8'), before);
+  assert.equal(await readFile(foreign, 'utf8'), 'FOREIGN USER FILE');
+}));
+
+test('unhealthy extension doctor JSON fails with matching ok flag and exit code', () => fixture(async ({ cwd, result }) => {
+  await addPack({ cwd, source: 'example-pack', packageVersion: '0.15.0' });
+  const installedPack = path.join(cwd, '.showdar/extensions/packs', result.manifest.name);
+  await writeFile(path.join(installedPack, 'pack.json'), 'USER EDIT');
+  const { spawnSync } = await import('node:child_process');
+  const proc = spawnSync(process.execPath,
+    [path.join(packageRoot, 'bin/showdar.js'), 'doctor', '--extensions', '--json'],
+    { cwd, encoding: 'utf8' });
+  assert.equal(proc.status, 1, proc.stderr);
+  const report = JSON.parse(proc.stdout);
+  assert.equal(report.ok, false);
+  assert.equal(report.data.healthy, false);
+}));
