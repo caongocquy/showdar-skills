@@ -307,6 +307,7 @@ function mapHostFailure(captured) {
 export async function runCodexScenario({
   scenario, suite, sourceSha, allowModel = false, env = process.env, timeoutMs = DEFAULT_TIMEOUT_MS,
   concurrency = CONCURRENCY_LIMIT, model, repoRoot = process.cwd(), spawnProcess, simulateProcess = typeof spawnProcess === 'function',
+  simulatedPlatform = 'darwin',
 } = {}) {
   const simulated = typeof spawnProcess === 'function' && simulateProcess;
   const kind = simulated ? 'simulated' : 'real-agent';
@@ -334,9 +335,11 @@ export async function runCodexScenario({
     initializeFixtureRepository(workspace, template.branch, envForCli);
     result.fixture = { template: scenario.fixture.template, declaredBranch: template.branch, isolated: true };
     const { OPENAI_API_KEY: _apiKey, ...probeEnv } = envForCli;
-    if (process.platform !== 'darwin') {
+    // Fake process fixtures model a sandbox independently of the host; real runs use the actual OS.
+    const platform = simulated ? simulatedPlatform : process.platform;
+    if (platform !== 'darwin') {
       result.status = 'BLOCKED';
-      result.reasons = [`Sandbox preflight is not implemented for host platform ${process.platform}`];
+      result.reasons = [`Sandbox preflight is not implemented for host platform ${platform}`];
       result.execution.sandboxProbe = 'unsupported-platform';
       return result;
     }
@@ -347,10 +350,10 @@ export async function runCodexScenario({
     if (sandboxFailure) {
       result.status = 'BLOCKED';
       result.reasons = [`Sandbox preflight failed: ${redact(sandboxFailure, secrets)}`];
-      result.execution.sandboxProbe = 'failed';
+      result.execution.sandboxProbe = simulated ? 'simulated-failed' : 'failed';
       return result;
     }
-    result.execution.sandboxProbe = 'passed';
+    result.execution.sandboxProbe = simulated ? 'simulated-passed' : 'passed';
     const help = await runChild(processRunner, 'codex', ['exec', '--help'], {
       cwd: workspace, env: probeEnv, timeoutMs: Math.min(timeoutMs, 10_000), maxOutputBytes: 64 * 1024,
     });

@@ -114,6 +114,7 @@ test('sandbox preflight failure blocks before Codex can make a model request', a
   assert.match(result.reasons.join(' '), /sandbox/i);
   assert.equal(result.execution.agentLaunched, false);
   assert.equal(result.provenance, 'fake-process-fixture');
+  assert.equal(result.execution.sandboxProbe, 'simulated-failed');
   assert.equal(calls.some(([command, args]) => command === 'codex' && args[0] === 'exec' && !args.includes('--help')), false);
 });
 
@@ -145,6 +146,8 @@ test('fake process captures isolated fixture artifacts but can never report beha
     spawnProcess: fakeRunner, timeoutMs: 1000,
   });
   assert.equal(result.execution.kind, 'simulated');
+  assert.equal(result.execution.sandboxProbe, 'simulated-passed');
+  assert.equal(result.execution.agentLaunched, false);
   assert.equal(result.status, 'NOT_RUN');
   assert.notEqual(result.status, 'PASS');
   assert.ok(result.trace.events.some(event => event.kind === 'tool_invoked'));
@@ -165,4 +168,45 @@ test('timed-out Codex process is killed and reported BLOCKED', async () => {
   assert.equal(child.killed, true);
   assert.equal(result.status, 'BLOCKED');
   assert.match(result.reasons.join(' '), /timed out/);
+});
+
+
+test('unsupported sandbox platform is tested separately from fake process behavior', async () => {
+  let launched = false;
+  const result = await runCodexScenario({ scenario, suite, sourceSha, model: 'gpt-5.6-codex', allowModel: true,
+    env: { SHOWDAR_BEHAVIORAL_ALLOW_MODEL: '1', OPENAI_API_KEY: 'fixture-key' },
+    simulatedPlatform: 'linux', spawnProcess: () => { launched = true; throw new Error('must not launch'); },
+  });
+  assert.equal(result.status, 'BLOCKED');
+  assert.equal(result.execution.sandboxProbe, 'unsupported-platform');
+  assert.match(result.reasons.join(' '), /host platform linux/);
+  assert.equal(result.execution.agentLaunched, false);
+  assert.equal(launched, false);
+});
+
+test('simulation platform injection cannot enable real-agent execution', async () => {
+  for (const simulatedPlatform of ['darwin', 'linux']) {
+    let launched = false;
+    const result = await runCodexScenario({ scenario, suite, sourceSha, model: 'gpt-5.6-codex', allowModel: true,
+      env: { SHOWDAR_BEHAVIORAL_ALLOW_MODEL: '1', OPENAI_API_KEY: 'fixture-key' },
+      simulatedPlatform, simulateProcess: false,
+      spawnProcess: () => { launched = true; throw new Error('must not launch'); },
+    });
+    assert.equal(result.status, 'BLOCKED');
+    assert.equal(result.execution.kind, 'real-agent');
+    assert.match(result.reasons.join(' '), /preventive exact-argv command mediation/);
+    assert.equal(result.execution.agentLaunched, false);
+    assert.equal(launched, false);
+  }
+});
+
+test('simulation flags without an injected process cannot reach the real spawn path', async () => {
+  const result = await runCodexScenario({ scenario, suite, sourceSha, model: 'gpt-5.6-codex', allowModel: true,
+    env: { SHOWDAR_BEHAVIORAL_ALLOW_MODEL: '1', OPENAI_API_KEY: 'fixture-key' },
+    simulateProcess: true, simulatedPlatform: 'darwin',
+  });
+  assert.equal(result.status, 'BLOCKED');
+  assert.equal(result.execution.kind, 'real-agent');
+  assert.equal(result.execution.agentLaunched, false);
+  assert.match(result.reasons.join(' '), /preventive exact-argv command mediation/);
 });
