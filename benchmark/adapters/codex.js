@@ -251,7 +251,13 @@ export async function buildOrchestrationBrief(scenario, repoRoot) {
     recovery: 'recover', repository: 'git',
   };
   const primaryCapability = scenario.routingMeta?.primaryCapability ?? phaseCapability[intent.phase];
-  const routePlan = buildThinRoutePlan(intent, { primaryCapability });
+  const structuralRoute = buildThinRoutePlan(intent, { primaryCapability });
+  // Adapt the structural router's string advisors to the verification contract.
+  const routePlan = {
+    primary: structuralRoute.primary,
+    advisors: structuralRoute.advisors.map(skill => ({ skill, reasons: ['requested secondary action'] })),
+    confidence: { level: 'high', margin: 0, decisive: true },
+  };
   const verificationPlan = buildVerificationPlan(intent, routePlan, scenario.changeMetadata ?? {});
   const unifiedVerificationPlan = buildUnifiedVerificationPlan(intent, routePlan, verificationPlan, scenario.changeMetadata ?? {});
   const stateResult = createExecutionState({ primary: routePlan.primary.skill });
