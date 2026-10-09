@@ -51,6 +51,13 @@ Before any task-owned source/config/test/docs write, apply `showdar-git` branch 
 - Keep test-only shortcuts out of production APIs.
 - Do not use snapshot-only assertions for critical behavior.
 
+## Relationship with showdar-tdd
+
+- `showdar-tdd` owns the tight RED → GREEN → REFACTOR implementation loop for a bounded behavior task, if the companion is installed.
+- This skill owns test strategy, selecting the correct boundary, regression, integration and E2E coverage and independent verification; it is not replaced by TDD.
+- When TDD is active, require genuine expected RED evidence (not configuration failure), a passing GREEN test and another passing test after REFACTOR. If the companion is absent, these behavior-first rules still apply.
+- Do not demand artificial RED proofs for docs-only work, generated assets, existing behavior re-verification or no runnable harness; state an alternative verified check.
+
 ## Task-plan verification handoff
 
 - When a task plan exists, derive relevant proof cases from its task IDs, acceptance notes and linked approved spec.

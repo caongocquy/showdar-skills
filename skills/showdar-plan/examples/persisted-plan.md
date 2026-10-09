@@ -17,6 +17,7 @@
   - Depends on: none
   - Acceptance: authorized patch succeeds; wrong owner, invalid payload and expired deadline fail
   - Files/symbols: name verified API and service symbols during planning
+  - TDD: expected RED is denied-owner update test; GREEN is minimal authorization/validation; REFACTOR reruns unchanged behavior proof.
   - Proof: existing project integration test command (discover exact command before execution)
 - [ ] **TASK-002** — Refresh host UI after successful mutation.
   - Depends on: TASK-001

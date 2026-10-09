@@ -62,8 +62,8 @@ Before any task-owned source/config/test/docs write, apply `showdar-git` branch 
 ## Adaptive Plan Persistence and handoff
 
 - Read `references/plan-persistence.md` when a durable plan or cross-session handoff is needed; `examples/persisted-plan.md` illustrates the shape, not a mandatory template.
-- Locate the repository's canonical ticket/plan first. Reuse a matching existing artifact; never create a duplicate solely because its path differs from `docs/plans/`.
-- For bounded work contained in one session, a short in-chat plan is sufficient. For complex, staged, multi-agent or cross-session work, propose a Markdown plan at the canonical location, defaulting to `docs/plans/<feature>.md` only if no convention exists.
+- Locate the repository's canonical ticket/plan first. Reuse a matching existing artifact; never create a duplicate solely because its path differs from `docs/showdar/plans/`.
+- For bounded work contained in one session, a short in-chat plan is sufficient. For complex, staged, multi-agent or cross-session work, propose a Markdown plan at the canonical location, defaulting to `docs/showdar/plans/<feature>.md` only if no convention exists.
 - Before creating or modifying a plan file, obtain authorization for that write and pass Git preflight; if blocked, provide the proposed plan in chat without claiming it was persisted.
 - Reference the approved spec/ticket and its revision where one exists. If `showdar-brainstorm` was triggered, do not designate a plan execution-ready until the entire Decision Brief revision has explicit user approval.
 - Assign stable `TASK-NNN` identifiers to ordered tasks with `- [ ]` checkboxes; include requirement/decision IDs, dependency IDs, scope, edge behavior, exact existing proof commands or explicitly manual checks, and acceptance conditions.
@@ -100,6 +100,7 @@ Before any task-owned source/config/test/docs write, apply `showdar-git` branch 
 ### Phase 5 — decompose execution
 - Order tasks by dependency and independent reviewability.
 - Each task states files/symbols, behavior, error/edge behavior, test, and verification command.
+- For testable behavior tasks, include an expected RED → GREEN → REFACTOR sequence and the test boundary/command; where unavailable, document why and choose an honest alternative proof, never fake RED output.
 - Keep task boundaries small enough that a reviewer could approve one and reject the next.
 
 ### Phase 6 — self-review
