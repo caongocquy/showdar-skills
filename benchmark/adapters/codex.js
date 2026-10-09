@@ -242,7 +242,7 @@ function advisorExcerpt(content) {
   return lines.slice(start >= 0 ? start : 0, (start >= 0 ? start : 0) + 18).join('\n');
 }
 
-async function buildOrchestrationBrief(scenario, repoRoot) {
+export async function buildOrchestrationBrief(scenario, repoRoot) {
   const intent = normalizeIntent(scenario.normalizedIntent);
   const phaseCapability = {
     discovery: 'understand', definition: 'requirements', planning: 'plan',
