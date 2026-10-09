@@ -151,7 +151,7 @@ async function inspectPackInstalled(cwd, packName, manifest) {
   const sourceValidation = await validatePack(path.join(cwd, '.showdar', 'extensions', 'packs', packName)).catch(() => ({ ok: false, errors: ['validation failed'] }));
   const sourceHash = await hashTree(path.join(cwd, '.showdar', 'extensions', 'packs', packName)).catch(() => null);
   
-  const recordedHash = manifest.hash;
+  const recordedHash = manifest.installedHash ?? sourceHash;
   let drift = 'no-drift';
   let details = '';
   
@@ -160,7 +160,7 @@ async function inspectPackInstalled(cwd, packName, manifest) {
     details = 'Cannot compute source hash';
   } else if (sourceHash !== recordedHash) {
     drift = 'source-drift';
-    details = 'Full-tree hash differs from recorded manifest hash';
+    details = 'Installed-tree hash differs from recorded installed hash';
   }
   
   return {
