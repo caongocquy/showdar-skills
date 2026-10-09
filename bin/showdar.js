@@ -13,6 +13,7 @@ import { addPack, addSkill, addSkills, addWorkflow, globalManifestPath, initGlob
 import { formatPlanPreviewHuman, projectPackUpdatePreview } from '../src/pack-plan.js';
 import { assessCheckpointAgainstCandidate } from '../src/pack-inspect.js';
 import { validateRepository } from '../src/validate.js';
+import { detectGlobalRoots, planSelfUpdate, executeSelfUpdate } from '../src/self-update.js';
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const COMMANDS = ['understand', 'plan', 'design', 'build', 'debug', 'test', 'review', 'upgrade', 'ship', 'recover', 'git', 'requirements', 'quality', 'security', 'ops', 'skill'];
@@ -50,6 +51,10 @@ function printHelp(version, command = null) {
     console.log('Usage: showdar guard --mutation <read-only|local-write> [--json]');
     return;
   }
+  if (command === 'update' || command === 'upgrade') {
+    console.log('Usage: showdar update [--manager npm|pnpm|brew] [--dry-run]\nAlias: showdar upgrade\nUpdates the globally installed Showdar CLI package; does not overwrite project-installed skills.');
+    return;
+  }
   if (command === 'setup') {
     console.log('Usage: showdar setup [--mode add|replace] [--profile name] [--skills comma,list] [--workflow comma,list] [--ai target] [--scope project|global] [--yes|--dry-run] [--json]');
     return;
@@ -66,7 +71,7 @@ function printHelp(version, command = null) {
     console.log(`Showdar Skills ${version}\n\nUsage:\n  showdar add <skill> [--ai <target>] [--scope <project|global>]\n  showdar add profile <profile> [--ai <target>] [--scope <project|global>]\n  showdar add workflow <builtin-name|local-json-path> [--ai <target>] [--scope <project|global>]\n\nExamples:\n  showdar add git\n  showdar add showdar-git\n  showdar add profile insurance\n  showdar add workflow feature\n  showdar add workflow ./workflows/acme-release.json\n\nAdd preserves installed skills; init replaces the managed set. Built-in workflows add required stages.`);
     return;
   }
-  console.log(`Showdar Skills ${version}\n\nUsage:\n  showdar init ${scopeUsage} [--profile <name>] [--ai <universal|codex|opencode|cursor|claude|all>] [--pack <local-path>]\n  showdar add <skill> [--ai <target>] [--scope <project|global>]\n  showdar add profile <profile> [--ai <target>] [--scope <project|global>]\n  showdar add workflow <builtin-name|local-json-path> [--ai <target>] [--scope <project|global>]\n  showdar route (--stdin | --prompt <text>) [--json]\n  showdar git-start --type <type> --name <task> [--base <branch>] [--dry-run] [--json]\n  showdar guard --mutation <read-only|local-write> [--json]\n  showdar setup [--mode add|replace] [--profile <name>] [--skills <names>] [--workflow <names>] [--ai <target>] [--scope <project|global>] [--yes|--dry-run]\n  showdar add-pack <local-path>\n  showdar remove-pack <name>\n  showdar add-workflow <local-path>\n  showdar status ${scopeUsage}\n  showdar doctor ${scopeUsage}\n  showdar validate\n  showdar list [--extensions]\n  showdar remove ${scopeUsage}\n  showdar create-pack <path> [--vendor <vendor>] [--description <text>] [--with-workflow <id>] [--with-profile <name>]\n  showdar validate-pack <local-path> [--json]\n  showdar inspect-pack <local-path> [--json] [--checkpoint <file>]\n  showdar doctor ${scopeUsage} [--extensions] [--json]\n  showdar update-pack <local-path> [--dry-run] [--json]\n  showdar validate\n  showdar list [--extensions] [--json]\n  showdar remove ${scopeUsage}\n\nExtension packs accept local directories/workspace paths only; tarball, URL, Git, and registry sources are rejected.\n\nDefaults: scope project, profile full, AI target universal.\nProfiles: ${Object.keys(PROFILES).join(', ')}\nDeprecated aliases: ${Object.entries(PROFILE_ALIASES).map(([alias, target]) => `${alias} -> ${target}`).join(', ')}\nAI targets: ${AI_TARGETS.join(', ')}`);
+  console.log(`Showdar Skills ${version}\n\nUsage:\n  showdar init ${scopeUsage} [--profile <name>] [--ai <universal|codex|opencode|cursor|claude|all>] [--pack <local-path>]\n  showdar add <skill> [--ai <target>] [--scope <project|global>]\n  showdar add profile <profile> [--ai <target>] [--scope <project|global>]\n  showdar add workflow <builtin-name|local-json-path> [--ai <target>] [--scope <project|global>]\n  showdar route (--stdin | --prompt <text>) [--json]\n  showdar git-start --type <type> --name <task> [--base <branch>] [--dry-run] [--json]\n  showdar guard --mutation <read-only|local-write> [--json]\n  showdar -v | --version\n  showdar update [--manager npm|pnpm|brew] [--dry-run]\n  showdar upgrade [--manager npm|pnpm|brew] [--dry-run]\n  showdar setup [--mode add|replace] [--profile <name>] [--skills <names>] [--workflow <names>] [--ai <target>] [--scope <project|global>] [--yes|--dry-run]\n  showdar add-pack <local-path>\n  showdar remove-pack <name>\n  showdar add-workflow <local-path>\n  showdar status ${scopeUsage}\n  showdar doctor ${scopeUsage}\n  showdar validate\n  showdar list [--extensions]\n  showdar remove ${scopeUsage}\n  showdar create-pack <path> [--vendor <vendor>] [--description <text>] [--with-workflow <id>] [--with-profile <name>]\n  showdar validate-pack <local-path> [--json]\n  showdar inspect-pack <local-path> [--json] [--checkpoint <file>]\n  showdar doctor ${scopeUsage} [--extensions] [--json]\n  showdar update-pack <local-path> [--dry-run] [--json]\n  showdar validate\n  showdar list [--extensions] [--json]\n  showdar remove ${scopeUsage}\n\nExtension packs accept local directories/workspace paths only; tarball, URL, Git, and registry sources are rejected.\n\nDefaults: scope project, profile full, AI target universal.\nProfiles: ${Object.keys(PROFILES).join(', ')}\nDeprecated aliases: ${Object.entries(PROFILE_ALIASES).map(([alias, target]) => `${alias} -> ${target}`).join(', ')}\nAI targets: ${AI_TARGETS.join(', ')}`);
 }
 
 async function main() {
@@ -76,11 +81,27 @@ async function main() {
   const version = await packageVersion();
 
   if (command === 'help' || command === '--help' || command === '-h') return printHelp(version);
-    if (command === '--version' || command === '-V') {
+  if (command === '--version' || command === '-V' || command === '-v') {
     console.log(version);
     return;
   }
   if (!['route', 'git-start', 'guard'].includes(command) && (args.includes('--help') || args.includes('-h'))) return printHelp(version, command);
+
+  if (command === 'update' || command === 'upgrade') {
+    const { values, positionals } = parseArgs({ args: args.slice(1), allowPositionals: true,
+      options: { manager: { type: 'string' }, 'dry-run': { type: 'boolean' } } });
+    if (positionals.length) throw new Error('Unexpected update arguments: ' + positionals.join(' '));
+    const manager = values.manager ?? null;
+    const roots = manager ? {} : detectGlobalRoots();
+    const plan = planSelfUpdate({ packageRoot, manager, roots });
+    console.log('Showdar Skills ' + version + ' (installed via ' + plan.manager + ')');
+    console.log('Update command: ' + [plan.command, ...plan.args].join(' '));
+    if (values['dry-run']) return;
+    await executeSelfUpdate(plan);
+    console.log('Showdar package update completed. Run showdar -v to verify the installed version.');
+    console.log('Project-installed skill copies are not changed. Refresh them separately using the existing Showdar installer.');
+    return;
+  }
 
   const scope = ['init', 'status', 'doctor', 'remove', 'add'].includes(command) ? scopeAfter(args) : null;
 

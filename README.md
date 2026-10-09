@@ -40,6 +40,18 @@ showdar doctor
 
 **Install vs. configure:** `showdar init` installs/replaces a skill selection, `showdar add` extends it, and `showdar setup` is the interactive installer. Project context is created or enriched by the AI agent using repository evidence and explicit approval; the CLI `showdar setup` runs the interactive installer and does not generate project context.
 
+## Version and updates
+
+```bash
+showdar -v                 # Also supports --version and -V
+showdar update             # Auto-detect npm, pnpm, or Homebrew global installation
+showdar upgrade            # Alias of update
+showdar update --dry-run   # Preview without changing anything
+showdar update --manager npm   # Explicit override: npm, pnpm, brew
+```
+
+`update` upgrades the globally installed Showdar CLI via the detected package manager and does **not** automatically rewrite skill copies in existing projects. When a package manager cannot be safely identified (for example, local source checkouts or ephemeral `npx` installs), it stops and prints manual installation options. Installing only portable skills through `npx skills add` does not install the Showdar CLI. Use `showdar update-pack` for extension packs; it is separate from updating the CLI.
+
 ## How it works
 
 ```text
