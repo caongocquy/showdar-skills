@@ -369,7 +369,7 @@ export async function planPackUpdate({ cwd, source }) {
     warnings.push('Existing checkpoints referencing changed workflows will be revalidated on resume.');
   }
 
-  const executable = conflicts.length === 0 && validation.ok;
+  const executable = conflicts.length === 0 && validation.ok && !installedDrift;
 
   return deepFreeze({
     ok: true,
@@ -451,6 +451,7 @@ export async function verifyPlanPreconditions(plan, { cwd }) {
 }
 
 export async function executePackUpdate(plan, { cwd }) {
+  if (!plan.ok || !plan.executable) throw new Error('Pack update is blocked by validation, ownership conflicts, or installed drift. No files changed.');
   const verification = await verifyPlanPreconditions(plan, { cwd });
   if (!verification.ok) {
     throw new Error(`Plan is stale (${verification.reason} changed since preview). Re-run: showdar update-pack <path> --dry-run`);
@@ -474,71 +475,78 @@ export async function executePackUpdate(plan, { cwd }) {
   const tempDir = path.join(cwd, EXTENSION_DIR, 'packs', `.${newManifest.name}.tmp-${process.pid}-${Date.now()}`);
   const destination = path.join(cwd, EXTENSION_DIR, 'packs', newManifest.name);
 
+  const { mkdir, cp, rm, rename } = await import('node:fs/promises');
+  const backupDir = path.join(cwd, EXTENSION_DIR, 'packs', `.${newManifest.name}.backup-${process.pid}-${Date.now()}`);
+  let backedUp = false;
+  let promoted = false;
   try {
+    // Stage every candidate file without touching the installed tree.
     for (const file of fileList) {
       await assertSafeManagedPath(packRootSafe(cwd, plan.candidate.source), file.source);
       const dest = path.join(tempDir, file.relative);
       await assertSafeManagedPath(cwd, dest);
-      const { mkdir, cp } = await import('node:fs/promises');
       await mkdir(path.dirname(dest), { recursive: true });
-      await cp(file.source, dest, { recursive: true });
+      await cp(file.source, dest, { recursive: false });
     }
-
-    const newFiles = [];
+    // All existing installed files must be owned and unchanged.
+    const prefix = `${EXTENSION_DIR}/packs/${newManifest.name}/`;
+    const oldEntries = (existing.files ?? []).filter(entry => entry.path.startsWith(prefix));
+    for (const entry of oldEntries) {
+      const dest = path.join(cwd, entry.path);
+      await assertSafeManagedPath(cwd, dest);
+      if (!(await exists(dest)) || await hashTree(dest) !== entry.hash) {
+        throw new Error('Installed pack drift detected: ' + entry.path);
+      }
+    }
     for (const file of fileList) {
       const dest = path.join(destination, file.relative);
       await assertSafeManagedPath(cwd, dest);
       const relative = manifestPathFor(cwd, dest);
-      if ((await exists(dest)) && !priorOwned.has(relative)) {
-        throw new Error(`Refusing to overwrite existing non-Showdar-managed file: ${dest}`);
-      }
-      const { mkdir, cp, rm } = await import('node:fs/promises');
-      await rm(dest, { recursive: true, force: true });
-      await mkdir(path.dirname(dest), { recursive: true });
-      await cp(file.source, dest, { recursive: true });
-      newFiles.push({ path: relative, hash: await hashTree(dest), extension: true });
+      if ((await exists(dest)) && !priorOwned.has(relative)) throw new Error('Foreign pack file: ' + relative);
     }
 
-    const merged = new Map((existing.files ?? []).map((e) => [e.path, e]));
+    const newFiles = [];
+    for (const file of fileList) {
+      const dest = path.join(tempDir, file.relative);
+      newFiles.push({ path: manifestPathFor(cwd, path.join(destination, file.relative)),
+        hash: await hashTree(dest), extension: true });
+    }
+    const merged = new Map((existing.files ?? []).filter(entry => !entry.path.startsWith(prefix)).map(e => [e.path, e]));
     for (const file of newFiles) merged.set(file.path, file);
-
     const updated = {
       ...existing,
       files: [...merged.values()],
       extensions: {
         ...(existing.extensions ?? {}),
-        packs: (existing.extensions?.packs ?? []).map((p) => p.name === newManifest.name
+        packs: (existing.extensions?.packs ?? []).map(p => p.name === newManifest.name
           ? { ...p, version: newManifest.version, hash: plan.candidate.hash, installedAt: new Date().toISOString() }
           : p),
-        customWorkflows: existing.extensions?.customWorkflows?.filter((w) => w.source !== `pack:${newManifest.name}`) ?? [],
+        customWorkflows: [
+          ...(existing.extensions?.customWorkflows ?? []).filter(w => w.source !== `pack:${newManifest.name}`),
+          ...(newManifest.workflows ?? []).map(w => ({
+            id: w.id, source: `pack:${newManifest.name}`,
+            path: `${EXTENSION_DIR}/packs/${newManifest.name}/${w.path}`.replaceAll(path.sep, '/'),
+          })),
+        ],
       },
     };
 
-    if (newManifest.workflows) {
-      updated.extensions.customWorkflows = [
-        ...updated.extensions.customWorkflows,
-        ...newManifest.workflows.map((w) => ({
-          id: w.id,
-          source: `pack:${newManifest.name}`,
-          path: `${EXTENSION_DIR}/packs/${newManifest.name}/${w.path}`.replaceAll(path.sep, '/'),
-        })),
-      ];
+    if (await exists(destination)) {
+      await rename(destination, backupDir);
+      backedUp = true;
     }
-
+    await rename(tempDir, destination);
+    promoted = true;
     await writeJsonAtomic(manifestPath, updated);
-
-    return {
-      pack: newManifest.name,
-      version: newManifest.version,
-      status: 'updated',
-      oldHash: plan.current.hash,
-      newHash: plan.candidate.hash,
-      files: newFiles.length,
-    };
+    if (backedUp) await rm(backupDir, { recursive: true, force: true });
+    return { pack: newManifest.name, version: newManifest.version, status: 'updated',
+      oldHash: plan.current.hash, newHash: plan.candidate.hash, files: newFiles.length };
   } catch (error) {
-    const { rm } = await import('node:fs/promises');
-    await rm(tempDir, { recursive: true, force: true }).catch(() => {});
+    if (promoted) await rm(destination, { recursive: true, force: true }).catch(() => {});
+    if (backedUp) await rename(backupDir, destination).catch(() => {});
     throw error;
+  } finally {
+    await rm(tempDir, { recursive: true, force: true }).catch(() => {});
   }
 }
 
