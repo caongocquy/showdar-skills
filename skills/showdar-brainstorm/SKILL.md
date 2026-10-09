@@ -1,9 +1,9 @@
 ---
-name: showdar-refine
-description: Use when a feature idea or implementation request has unresolved product or architecture decisions that require interactive refinement and explicit spec approval.
+name: showdar-brainstorm
+description: Use when brainstorming a feature, challenging assumptions, comparing real alternatives, and approving the complete spec before implementation.
 ---
 
-# Showdar Refine
+# Showdar Brainstorm
 
 ## Purpose
 
