@@ -747,6 +747,7 @@ export async function addSkill({ cwd, skill, ai = null, scope = null, home = hom
         })
       : [],
   });
+  const legacyPaths = new Set(legacyCommands.map(entry => entry.path));
   const migrationManagedRoots = migrationScope === 'global'
     ? [...new Set([
         ...NATIVE_TARGETS.map(t => globalSkillRootFor(t, { homeRoot: home })),
