@@ -44,6 +44,12 @@ description: Use when brainstorming a feature, challenging assumptions, comparin
 
 Read `references/questioning.md` and `references/approval-handoff.md` only when that depth of detail is needed; these references are packaged inside this skill for skills-only installers.
 
+## Plan handoff
+
+- Read `references/handoff-plan.md` when moving from brainstorming to implementation planning.
+- Pass the accepted Decision Brief revision, decision IDs and acceptance criteria to `showdar-plan`. Durable specs follow existing canonical locations; the plan is a separate artifact whose persistence is adaptive.
+- A full-spec approval is necessary after brainstorming but does not mark plan tasks as done or grant Git/write authority.
+
 ## Workflow
 
 - Start read-only: inspect request, canonical spec/ticket, relevant repository context and existing ADR/glossary.
