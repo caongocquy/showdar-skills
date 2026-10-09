@@ -60,6 +60,21 @@ Before any task-owned source/config/test/docs write, apply `showdar-git` branch 
 - Invoke installed `showdar-domain-model` only for a meaningful shared glossary/architecture update, with a separate proposed diff and approval.
 - Do not assume `showdar route`, CLI install or workflow checkpoint grants mutation authority.
 
+## Execute and resume a task plan
+
+- Read `references/plan-execution.md` before using a persisted plan to track or resume tasks.
+- Discover the canonical implementation plan and approved spec first. If no durable plan is appropriate, use the agreed in-chat plan; never manufacture a file requirement for a small change.
+- Compare plan revision, linked spec and decision IDs, actual source, dependencies, and prior verification receipts before editing.
+- Treat checked boxes as *claims* requiring code/test evidence, never as proof or authorization. If prior evidence is stale or missing, classify as `implemented-unverified`, inspect the implementation, then verify it before writing new code.
+- Pick the earliest unmet dependency-ready task, implement its bounded change, and run the exact relevant verification plus checks needed for affected contracts.
+- Only after behavior exists and required proof succeeds may its task be marked `[x]`, together with an evidence ledger receipt containing actual command/scenario, outcome, changed files and commit/revision context when available.
+- If proof is blocked, failed or unavailable, keep `[ ]` and record `blocked` or `implemented-unverified`; never mark a task done just because code was edited.
+- Progress updates to Markdown are writes governed by the same Git preflight and foreign-file protections as source code. If file writes cannot be performed safely, report status in chat instead of falsifying a plan.
+- If plan or spec has materially drifted, stop the affected task, report the conflict and return to `showdar-plan` or `showdar-brainstorm` for the relevant decision; do not silently reshape scope during Build.
+- A saved plan supplements, but never replaces, workflow-state checkpoints, full-spec approval, Git authorization, or separate Test/Review evidence.
+- When interrupted, return verified/unverified task IDs, proof, blockers, plan revision/path and first ready task so `showdar-recover` or another agent can resume without guessing.
+
+
 ## Workflow
 
 ### Phase 1 — pre-change check

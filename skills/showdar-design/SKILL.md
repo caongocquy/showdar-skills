@@ -60,9 +60,15 @@ Before any task-owned source/config/test/docs write, apply `showdar-git` branch 
 
 - Locate an approved feature brief, established design system and relevant accepted ADRs before proposing UI changes.
 - Preserve approved behavior and product constraints instead of silently revising flow, terminology, or permission rules.
-- When a design decision would materially change approved behavior, ask to reopen just that decision; use installed `showdar-refine` when a real interview is needed.
+- When a design decision would materially change approved behavior, ask to reopen just that decision; use installed `showdar-brainstorm` when a real interview is needed.
 - If a shared term is newly accepted, propose canonical glossary updates through installed `showdar-domain-model` rather than duplicating vocabulary.
 - Do not manufacture ADRs for routine visual preferences or minor component decisions.
+
+## Brainstorm and plan handoff
+
+- Preserve the accepted behavior and constraints from `showdar-brainstorm` when creating design guidance.
+- Pass relevant design outcomes into `showdar-plan` without marking implementation task checkboxes as done or treating design approval as execution authority.
+
 
 ## Workflow
 
