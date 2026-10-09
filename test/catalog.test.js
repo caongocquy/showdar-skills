@@ -69,12 +69,12 @@ test('legacy mobile and web profiles resolve to the developer profile', () => {
 test('profiles represent role-oriented skill bundles', () => {
   assert.deepEqual(Object.keys(PROFILES), ['minimal', 'developer', 'backend', 'qa', 'product', 'insurance', 'full']);
   assert.equal(PROFILES.minimal.length, 8);
-  assert.equal(PROFILES.developer.length, 15);
-  assert.equal(PROFILES.backend.length, 17);
-  assert.equal(PROFILES.qa.length, 12);
+  assert.equal(PROFILES.developer.length, 16);
+  assert.equal(PROFILES.backend.length, 18);
+  assert.equal(PROFILES.qa.length, 13);
   assert.equal(PROFILES.product.length, 9);
   assert.equal(PROFILES.insurance.length, 3);
-  assert.equal(PROFILES.full.length, 21);
+  assert.equal(PROFILES.full.length, 22);
   for (const profile of ['minimal', 'developer', 'backend', 'qa', 'full']) {
     assert.ok(PROFILES[profile].includes('showdar-git'));
   }
@@ -87,7 +87,7 @@ test('profiles represent role-oriented skill bundles', () => {
   assert.deepEqual(PROFILES.qa, [
     'showdar-understand', 'showdar-requirements', 'showdar-quality', 'showdar-test',
     'showdar-debug', 'showdar-review', 'showdar-ship', 'showdar-recover', 'showdar-git',
-    'showdar-setup', 'showdar-brainstorm', 'showdar-domain-model',
+    'showdar-setup', 'showdar-brainstorm', 'showdar-domain-model', 'showdar-tdd',
   ]);
   assert.deepEqual(PROFILES.product, [
     'showdar-understand', 'showdar-requirements', 'showdar-plan', 'showdar-design',
@@ -111,11 +111,17 @@ test('unknown profile throws a useful error', () => {
   assert.throws(() => resolveProfile('nope'), /Unknown profile "nope"/);
 });
 
-test('three portable companion skills are installable but excluded from lifecycle primitives', () => {
-  assert.equal(COMPANION_SKILLS.length, 3);
+test('four portable companion skills are installable but excluded from lifecycle primitives', () => {
+  assert.equal(COMPANION_SKILLS.length, 4);
   assert.ok(COMPANION_SKILLS.some(skill => skill.id === 'showdar-brainstorm'));
+  assert.ok(COMPANION_SKILLS.some(skill => skill.id === 'showdar-tdd'));
+  assert.ok(PROFILES.developer.includes('showdar-tdd'));
+  assert.ok(PROFILES.backend.includes('showdar-tdd'));
+  assert.ok(PROFILES.qa.includes('showdar-tdd'));
+  assert.ok(!PROFILES.product.includes('showdar-tdd'));
+  assert.ok(!PROFILES.minimal.includes('showdar-tdd'));
   assert.ok(!COMPANION_SKILLS.some(skill => skill.id === 'showdar-refine'));
-  assert.equal(ALL_SKILLS.length, 25);
+  assert.equal(ALL_SKILLS.length, 26);
   assert.ok(COMPANION_SKILLS.every(x => x.kind === 'companion'));
   assert.ok(COMPANION_SKILLS.every(x => !SKILLS.some(y => y.id === x.id)));
 });

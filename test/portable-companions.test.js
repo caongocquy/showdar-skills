@@ -40,8 +40,8 @@ async function seedLegacy({ projectRoot }) {
 
 test('companions are installable first-class skills without changing lifecycle primitive membership', () => {
   assert.equal(SKILLS.length, 18);
-  assert.equal(COMPANION_SKILLS.length, 3);
-  assert.equal(ALL_SKILLS.length, 25);
+  assert.equal(COMPANION_SKILLS.length, 4);
+  assert.equal(ALL_SKILLS.length, 26);
   assert.ok(resolveProfile('full').includes('showdar-setup'));
   for (const skill of COMPANION_SKILLS) {
     assert.equal(getSkill(skill.id)?.kind, 'companion');
@@ -73,6 +73,8 @@ test('native Cursor setup is installed without a colliding custom slash command'
     await access(path.join(f.projectRoot, '.cursor/skills/showdar-setup/SKILL.md'));
     await access(path.join(f.projectRoot, '.cursor/skills/showdar-brainstorm/SKILL.md'));
     await access(path.join(f.projectRoot, '.cursor/skills/showdar-domain-model/SKILL.md'));
+    await access(path.join(f.projectRoot, '.cursor/skills/showdar-tdd/SKILL.md'));
+    await access(path.join(f.projectRoot, '.cursor/skills/showdar-tdd/references/red-green-refactor.md'));
     await assert.rejects(access(path.join(f.projectRoot, '.cursor/commands/showdar-setup.md')));
     assert.equal((await inspectProject(f.projectRoot, { homeRoot: f.homeRoot })).healthy, true);
   } finally { await rm(f.root, { recursive: true, force: true }); }

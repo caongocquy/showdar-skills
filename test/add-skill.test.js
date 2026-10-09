@@ -25,6 +25,8 @@ test('normalizeSkillName accepts short and canonical names', () => {
   assert.equal(normalizeSkillName('showdar-debug'), 'showdar-debug');
   assert.equal(normalizeSkillName('security'), 'showdar-security');
   assert.equal(normalizeSkillName('brainstorm'), 'showdar-brainstorm');
+  assert.equal(normalizeSkillName('tdd'), 'showdar-tdd');
+  assert.equal(normalizeSkillName('showdar-tdd'), 'showdar-tdd');
   assert.equal(normalizeSkillName('showdar-brainstorm'), 'showdar-brainstorm');
   assert.throws(() => normalizeSkillName('refine'), /Unknown skill/);
   assert.throws(() => normalizeSkillName('showdar-refine'), /Unknown skill/);

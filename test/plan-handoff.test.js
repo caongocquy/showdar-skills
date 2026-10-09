@@ -17,7 +17,7 @@ test('plan creates durable Markdown only when complexity and authorized writes w
     /Adaptive Plan Persistence/i,
     /canonical (?:plan\/ticket|ticket\/plan)/i,
     /single.session/i,
-    /docs\/plans\/<feature>\.md/i,
+    /docs\/showdar\/plans\/<feature>\.md/i,
     /before creating or modifying a plan file/i,
     /Git preflight/i,
     /TASK-NNN/,
@@ -56,6 +56,9 @@ test('brainstorm, plan, build, feature, recover, test and review share task hand
     assert.deepEqual(result.errors, [], name + ': ' + result.errors.join(', '));
   }
   assert.match(await skillText('showdar-feature'), /Resumable plan handoff/);
+  assert.match(await skillText('showdar-feature'), /Adaptive TDD companion/);
+  assert.match(await skillText('showdar-plan'), /RED.*GREEN.*REFACTOR/);
+  assert.match(await skillText('showdar-build'), /RED.*GREEN.*REFACTOR/);
   assert.match(await skillText('showdar-recover'), /Resume from persisted plans/);
   assert.match(await skillText('showdar-test'), /Task-plan verification handoff/);
   assert.match(await skillText('showdar-review'), /Saved-plan review checks/);
@@ -77,6 +80,6 @@ test('installed native plan/build skills carry all lazy-loaded references withou
       '.cursor/skills/showdar-build/SKILL.md',
       '.cursor/skills/showdar-build/references/plan-execution.md',
     ]) await access(path.join(projectRoot, p));
-    await assert.rejects(access(path.join(projectRoot, 'docs/plans')));
+    await assert.rejects(access(path.join(projectRoot, 'docs/showdar/plans')));
   } finally { await rm(sandbox, { recursive: true, force: true }); }
 });
