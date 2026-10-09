@@ -43,8 +43,8 @@ showdar doctor
 ## Portable companions
 
 - `showdar-setup`: repository evidence audit, project context onboarding and optional glossary bootstrap; user approval before writing.
-- `showdar-brainstorm`: conditional questioning for material ambiguity. After brainstorming starts, a complete Decision Brief must receive explicit approval before implementation; skip when work is already defined.
-- `showdar-tdd`: verified RED → GREEN → REFACTOR for bounded testable behavior tasks; callable directly or used within Build when installed. Never invent a failing test, and declare a reason/alternative check when no runnable harness exists.
+- `showdar-brainstorm`: Spike, Bounded or Architectural refinement for material ambiguity; defined work skips it. After brainstorming starts, a complete Decision Brief must receive explicit approval before implementation.
+- `showdar-tdd`: verified RED → GREEN → REFACTOR for bounded testable behavior tasks; callable directly or used within Build when installed. Use public behavior seams and independent expected values. Never invent a failing test; declare an exemption/alternative check when no runnable harness exists.
 - `showdar-domain-model`: read canonical terminology and ADRs when relevant; propose edits for accepted domain definitions or real architecture decisions, and write only after approval.
 
 Use `showdar add brainstorm` or `/showdar-brainstorm`. The retired skill name is not a CLI alias. Existing v0.16.0 installs should update their profile; Showdar-managed legacy copies are migrated only when unchanged. Independent Skills CLI installs must be updated with that installer.
@@ -59,9 +59,13 @@ Companions are native-discoverable and first-class installable skills, not prima
 
 For a feature with unresolved requirements, use `/showdar-brainstorm` to develop and approve a Decision Brief, then `/showdar-plan` and `/showdar-build`. Build uses `showdar-tdd` where installed and runnable: verify **RED → GREEN → REFACTOR**, record executed checks, and mark a plan task complete only after proof. `showdar-test` handles broader verification; `showdar-review` remains independent.
 
+Plan uses executable vertical slices with dependencies, Consumes/Produces contracts, negative cases and proof. Build defaults to inline execution; subagents require actual host capability, budget and safe isolation, with inline/serialized fallback. Review returns independent **Spec Compliance** and **Code Quality** verdicts. Debug seeks a runnable symptom before claiming a cause; handoffs carry source/task revisions, actual checks and gaps.
+
+These are instruction contracts, not measured agent-quality gains. The experimental 18-case behavioral suite currently has **18 NOT_RUN, 0 PASS**; live execution and behavioral readiness remain **BLOCKED**. Static checks and imported trace grades do not establish comparable real-agent improvement. See [evaluation limitations](./docs/REFERENCE.md#experimental-agent-behavioral-evaluation).
+
 For complex work, approved specs and implementation plans default to `docs/showdar/specs/` and `docs/showdar/plans/`. Small tasks may stay in chat. These are agent-guidance conventions, not automatic CLI-generated documents or a mandatory runtime state machine; repository-owned canonical paths take precedence.
 
-See the [workflow guide](./docs/WORKFLOWS.md) for examples, TDD exemptions, persisted plan/resume, and installation behavior.
+See the [source-repository workflow guide](./docs/WORKFLOWS.md) for examples, TDD exemptions, persisted plan/resume, and installation behavior. Packaged skill references contain the detailed playbooks.
 
 ## Version and updates
 
@@ -92,7 +96,7 @@ Before local source/config/docs changes, follow the project's Git policy and run
 
 ## Documentation
 
-- [Feature workflow: Brainstorm → Plan → Build/TDD → Test/Review](./docs/WORKFLOWS.md)
+- [Feature workflow guide (source repository)](./docs/WORKFLOWS.md)
 - [CLI, profiles, adapters, routing, and policies](./docs/REFERENCE.md)
 - [Migration notes](./MIGRATION.md)
 - [Changelog](./CHANGELOG.md)

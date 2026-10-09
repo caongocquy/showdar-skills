@@ -1,19 +1,16 @@
-# Example evidence log
+# Example evidence log (illustrative only; NOT_RUN)
 
-Request: search shows the previous title immediately after an incremental sync.
+TASK-008: search shows the previous title immediately after incremental sync.
 
-Observation: the bug reproduces only after sync; a clean process is correct.
-Evidence: bypassing the query cache returns the new title, and the database row
-has the new version. The stale response has the old cache version.
+WHEN: reported symptom occurs after a committed title update, not on a clean query.
+DO: discover the repository's existing test command for a fixture that warms the query cache, changes one title, syncs, then queries again. Record that exact command and source revision before running it.
 
-Hypotheses:
-1. The index write is stale.
-2. The query cache is not invalidated for the changed document.
-3. Two sync workers race and restore the old value.
+| Experiment | Expected if hypothesis holds | Observed receipt |
+| --- | --- | --- |
+| Read persisted row/version after sync | Stale row supports write failure | NOT_RUN — no repository fixture attached to this example |
+| Bypass only the query cache | New title supports invalidation defect | NOT_RUN |
+| Replay with controlled worker ordering | Failure changes with ordering if workers race | NOT_RUN |
 
-Experiment: log document ID, cache key, source version, and worker ID; then
-invalidate only the affected key after the commit. The stale result disappears,
-and reverting invalidation makes the regression test fail again.
-
-Conclusion: cache invalidation is the confirmed root cause. Record the failed
-hypotheses and add a regression test before making the minimal production fix.
+PROVE: if executed observations show a new persisted row and old cached response, test invalidating only that key. The original reproducer must pass with the correction and fail without it before claiming confirmed root cause.
+FAIL: absent those receipts, cause remains provisional. Do not report “cache invalidation confirmed” from this narrative or install/clear dependencies to mask the symptom.
+HANDOFF: actual command/results, revision, sanitized key/version evidence, discarded hypotheses, remaining gaps and owning invalidation surface; no fabricated regression PASS.

@@ -60,10 +60,12 @@ Before any task-owned source/config/test/docs write, apply `showdar-git` branch 
 ## Resume from persisted plans
 
 - Locate the canonical plan and matching approved spec, if present. Never presume `docs/showdar/plans/` is canonical when the repo specifies another path.
-- Compare stable task IDs, recorded revision, task checkboxes and evidence ledger with current Git changes and executable proof.
+- Compare stable task IDs, spec/plan revisions, source revision, actual executor, Consumes/Produces contracts, task checkboxes and evidence ledger with current Git changes and executable proof. Preserve legacy IDs, canonical paths and historical receipts; enrich only the next relevant handoff.
 - A checked task with stale or missing proof is `implemented-unverified`. Preserve existing and unrelated user edits and reverify rather than automatically repeating the implementation.
 - Identify the first unmet dependency-ready task, then hand it to `showdar-build`. If plan and spec conflict, stop and request a targeted plan revision.
 - Do not treat a plan file as Git/implementation authority or rewrite progress without normal preflight.
+- Carry Review's independent Spec Compliance and Code Quality verdicts and revalidate affected stale evidence. Missing or blocked required gates remain incomplete; never fabricate historical TDD/companion/subagent execution.
+- Send the next owner/action changed/protected paths, exact executed proof and gaps; keep workflow checkpoint schema unchanged.
 
 
 ## Workflow

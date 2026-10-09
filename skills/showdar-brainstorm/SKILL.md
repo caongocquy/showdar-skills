@@ -54,6 +54,7 @@ Read `references/questioning.md` and `references/approval-handoff.md` only when 
 
 - Start read-only: inspect request, canonical spec/ticket, relevant repository context and existing ADR/glossary.
 - Classify readiness from evidence; skip refinement when outcomes and important decisions are already specified.
+- If refinement is needed, select **Spike**, **Bounded** or **Architectural** from `references/approval-handoff.md`; load its path table for feasibility work, bounded existing seams or major contract decisions. Spike artifacts are throwaway, not approved production code. Increase rigor when hidden complexity appears without repeating answered questions.
 - If triggered, identify the single highest-impact unresolved decision rather than many decorative questions.
 - Ask one targeted question at a time; when helpful give two or three feasible options with consequences.
 - Challenge assumptions and negative paths, permissions, state, rollback, compatibility and data integrity.
