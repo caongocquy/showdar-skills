@@ -86,3 +86,19 @@ test('Codex benchmark module imports the current routing contract', async () => 
   const module = await import('../benchmark/adapters/codex.js');
   assert.equal(typeof module.buildVariantPrompt, 'function');
 });
+
+test('Codex benchmark guidance uses a structural primary and advisor list', async () => {
+  const { buildOrchestrationBrief } = await import('../benchmark/adapters/codex.js');
+  const scenario = {
+    prompt: 'Investigate a failing test',
+    normalizedIntent: {
+      phase: 'diagnosis', action: 'investigate', object: 'test failure',
+      secondaryActions: ['test'], mutation: 'read-only', risks: ['regression'],
+      evidence: { rootCauseKnown: false, failureObserved: true, behaviorDefined: null },
+    },
+  };
+  const result = await buildOrchestrationBrief(scenario, packageRoot);
+  assert.equal(result.routePlan.primary.skill, 'showdar-debug');
+  assert.ok(result.routePlan.advisors.some(a => a.skill === 'showdar-test'));
+  assert.match(result.brief, /Primary owner: showdar-debug/);
+});
