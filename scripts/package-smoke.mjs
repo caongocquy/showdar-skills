@@ -44,20 +44,24 @@ try {
   await writeFile(path.join(userSkill, 'SKILL.md'), 'user-owned\n');
 
   const init = run(process.execPath, [cli, 'init', '--ai', 'all', '--profile', 'full'], { cwd: project });
-  if (!/Skills: 21/.test(init)) throw new Error(`unexpected init output: ${init}`);
+  if (!/Skills: 22/.test(init)) throw new Error(`unexpected init output: ${init}`);
 
   const roots = ['.agents/skills', '.opencode/skills', '.claude/skills'];
-  const skillIds = ['showdar-understand','showdar-plan','showdar-design','showdar-build','showdar-debug','showdar-test','showdar-review','showdar-upgrade','showdar-ship','showdar-recover','showdar-git','showdar-requirements','showdar-quality','showdar-security','showdar-ops','showdar-insurance-domain','showdar-insurance-workflows','showdar-insurance-review','showdar-setup','showdar-brainstorm','showdar-domain-model'];
+  const skillIds = ['showdar-understand','showdar-plan','showdar-design','showdar-build','showdar-debug','showdar-test','showdar-review','showdar-upgrade','showdar-ship','showdar-recover','showdar-git','showdar-requirements','showdar-quality','showdar-security','showdar-ops','showdar-insurance-domain','showdar-insurance-workflows','showdar-insurance-review','showdar-setup','showdar-brainstorm','showdar-domain-model','showdar-tdd'];
   for (const skillRoot of roots) {
     for (const id of skillIds) await mustExist(path.join(project, skillRoot, id, 'SKILL.md'));
   }
   const commands = await readdir(path.join(project, '.opencode', 'commands', 'showdar'));
-  if (commands.filter((name) => name.endsWith('.md')).length !== 22) throw new Error(`expected 22 OpenCode nested commands (21 direct + skill.md), got ${commands.length}`);
+  if (commands.filter((name) => name.endsWith('.md')).length !== 23) throw new Error(`expected 23 OpenCode nested commands (22 direct + skill.md), got ${commands.length}`);
   await mustNotExist(path.join(project, '.opencode', 'commands', 'showdar-setup.md'));
   await mustNotExist(path.join(project, '.cursor', 'commands', 'showdar-setup.md'));
   await mustExist(path.join(project, '.cursor', 'skills', 'showdar-setup', 'SKILL.md'));
+  await mustExist(path.join(project, '.cursor', 'skills', 'showdar-tdd', 'SKILL.md'));
+  await mustExist(path.join(project, '.cursor', 'skills', 'showdar-tdd', 'references', 'red-green-refactor.md'));
+  await mustExist(path.join(project, '.cursor', 'skills', 'showdar-tdd', 'examples', 'behavior-change.md'));
+
   const claudeCommands = await readdir(path.join(project, '.claude', 'commands', 'showdar'));
-  if (claudeCommands.filter((name) => name.endsWith('.md')).length !== 22) throw new Error(`expected 22 Claude nested commands (21 direct + skill.md), got ${claudeCommands.length}`);
+  if (claudeCommands.filter((name) => name.endsWith('.md')).length !== 23) throw new Error(`expected 23 Claude nested commands (22 direct + skill.md), got ${claudeCommands.length}`);
 
   await mustNotExist(path.join(project, '.claude', 'commands', 'showdar-setup.md'));
 
@@ -99,7 +103,7 @@ try {
   const doctor = run(process.execPath, [cli, 'doctor'], { cwd: project });
   if (!/Health: OK/.test(doctor)) throw new Error(`doctor is not healthy: ${doctor}`);
   const status = run(process.execPath, [cli, 'status'], { cwd: project });
-  if (!/AI: all/.test(status) || !/Skills: 21/.test(status)) throw new Error(`unexpected status: ${status}`);
+  if (!/AI: all/.test(status) || !/Skills: 22/.test(status)) throw new Error(`unexpected status: ${status}`);
 
   run(process.execPath, [cli, 'remove'], { cwd: project });
   await mustNotExist(path.join(project, '.showdar.json'));

@@ -51,9 +51,15 @@ Before any task-owned source/config/test/docs write, apply `showdar-git` branch 
 - Re-run relevant verification before declaring recovered work complete.
 - Conflict resolution must preserve semantic intent from both sides, not just remove markers.
 
+## Recover TDD evidence
+
+- For partially completed tasks, inspect actual tests/code and the RED/GREEN/REFACTOR ledger when present. Treat old test logs and checkboxes as hints; rerun relevant proof before declaring verified-complete.
+- If interrupted in RED, make no assumption that implementation started. If interrupted in GREEN or REFACTOR, check the code against acceptance and rerun targeted test before further edits.
+- When the companion is absent, resume with the same evidence contract through Build/Test; do not fabricate a historical RED run.
+
 ## Resume from persisted plans
 
-- Locate the canonical plan and matching approved spec, if present. Never presume `docs/plans/` is canonical when the repo specifies another path.
+- Locate the canonical plan and matching approved spec, if present. Never presume `docs/showdar/plans/` is canonical when the repo specifies another path.
 - Compare stable task IDs, recorded revision, task checkboxes and evidence ledger with current Git changes and executable proof.
 - A checked task with stale or missing proof is `implemented-unverified`. Preserve existing and unrelated user edits and reverify rather than automatically repeating the implementation.
 - Identify the first unmet dependency-ready task, then hand it to `showdar-build`. If plan and spec conflict, stop and request a targeted plan revision.

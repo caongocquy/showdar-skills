@@ -61,7 +61,7 @@ Read `references/questioning.md` and `references/approval-handoff.md` only when 
 - Draft a concise Decision Brief: goal, scope, non-goals, decisions with IDs, alternatives, acceptance notes and blockers.
 - Show the complete proposed spec and request explicit approval; a response to one question is not approval for the whole brief.
 - On changes, revise the brief and ask approval again; do not implement while waiting.
-- After approval, prefer an existing canonical spec or ticket; save to docs/specs only for complex durable handoffs with file approval.
+- After approval, prefer an existing canonical spec or ticket; save to docs/showdar/specs only for complex durable handoffs with file approval.
 - For a small one-session task, keep the approved brief in conversation; never claim chat memory persists across sessions.
 - Handoff the approved brief and exact decisions to showdar-requirements or showdar-plan without repeating the interview.
 - If later evidence contradicts an accepted decision, reopen only affected decisions and request fresh approval.

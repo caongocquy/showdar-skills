@@ -60,6 +60,16 @@ Before any task-owned source/config/test/docs write, apply `showdar-git` branch 
 - Invoke installed `showdar-domain-model` only for a meaningful shared glossary/architecture update, with a separate proposed diff and approval.
 - Do not assume `showdar route`, CLI install or workflow checkpoint grants mutation authority.
 
+## Test-driven implementation
+
+- Use installed `showdar-tdd` for behavior-changing tasks when tests can be run at a meaningful boundary; the companion is optional, not a new workflow stage. If missing, follow the same evidence-first RED → GREEN → REFACTOR contract directly with `showdar-test` support.
+- RED: add a minimal behavioral test and run it against current code. Confirm it fails for the expected missing behavior/defect rather than a broken fixture, imports or configuration.
+- GREEN: make the smallest production change that makes the test pass; rerun the same targeted test and inspect negative/error cases.
+- REFACTOR: improve production/test code only within the agreed task boundaries, rerun the targeted tests and affected checks to keep GREEN.
+- Document actual commands and observed RED, GREEN and REFACTOR results against the plan task ID. Never fabricate a failing run or mark `[x]` when proof is absent.
+- When TDD cannot meaningfully apply (docs-only, generated assets, unavailable test harness), explicitly record why and execute an honest alternate verification. Do not write ceremonial tests.
+- `showdar-test` still owns broad test-level strategy and integration/E2E verification, and `showdar-review` still reviews final diffs.
+
 ## Execute and resume a task plan
 
 - Read `references/plan-execution.md` before using a persisted plan to track or resume tasks.

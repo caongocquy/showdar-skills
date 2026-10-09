@@ -336,8 +336,8 @@ export async function validateRepository(packageRoot) {
 
   if (SKILLS.length !== PRIMITIVE_COUNT || PRIMITIVE_COUNT !== 18) errors.push(`primitive skill count must remain 18 (found ${SKILLS.length})`);
   if (WORKFLOW_SKILLS.length !== WORKFLOW_COUNT || WORKFLOW_COUNT !== 4) errors.push(`workflow skill count must be 4 (found ${WORKFLOW_SKILLS.length})`);
-  if (COMPANION_SKILLS.length !== COMPANION_COUNT || COMPANION_COUNT !== 3) errors.push(`companion skill count must be 3 (found ${COMPANION_SKILLS.length})`);
-  if (ALL_SKILLS.length !== TOTAL_COUNT || TOTAL_COUNT !== 25) errors.push(`total installable skill count must be 25 (found ${ALL_SKILLS.length})`);
+  if (COMPANION_SKILLS.length !== COMPANION_COUNT || COMPANION_COUNT !== 4) errors.push(`companion skill count must be 4 (found ${COMPANION_SKILLS.length})`);
+  if (ALL_SKILLS.length !== TOTAL_COUNT || TOTAL_COUNT !== 26) errors.push(`total installable skill count must be 26 (found ${ALL_SKILLS.length})`);
 
   for (const error of validateCapabilities().errors) errors.push(`capabilities: ${error}`);
 

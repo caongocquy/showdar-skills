@@ -44,11 +44,14 @@ showdar doctor
 
 - `showdar-setup`: repository evidence audit, project context onboarding and optional glossary bootstrap; user approval before writing.
 - `showdar-brainstorm`: conditional questioning for material ambiguity. After brainstorming starts, a complete Decision Brief must receive explicit approval before implementation; skip when work is already defined.
+- `showdar-tdd`: verified RED → GREEN → REFACTOR for bounded testable behavior tasks; callable directly or used within Build when installed. Never invent a failing test, and declare a reason/alternative check when no runnable harness exists.
 - `showdar-domain-model`: read canonical terminology and ADRs when relevant; propose edits for accepted domain definitions or real architecture decisions, and write only after approval.
 
 Use `showdar add brainstorm` or `/showdar-brainstorm`. The retired skill name is not a CLI alias. Existing v0.16.0 installs should update their profile; Showdar-managed legacy copies are migrated only when unchanged. Independent Skills CLI installs must be updated with that installer.
 
-For longer work, `showdar-plan` may persist a plan in the repository's canonical plans location (default `docs/plans/<feature>.md`) with stable task IDs and a verification ledger. `showdar-build` resumes from that plan, but a checkbox is not proof and a plan is not Git or implementation authority.
+Durable specs default to `docs/showdar/specs/<feature>.md` after full-spec approval, unless the project has an existing canonical convention. For longer work, `showdar-plan` may persist a plan in the repository's canonical plans location (default `docs/showdar/plans/<feature>.md`) with stable task IDs and a verification ledger. `showdar-build` resumes from that plan, but a checkbox is not proof and a plan is not Git or implementation authority.
+
+Native usage: `showdar add tdd --ai cursor`, then `/showdar-tdd` where supported. For automatic Build use, select a profile including TDD (developer/backend/qa/full) or add it explicitly.
 
 Companions are native-discoverable and first-class installable skills, not primary lifecycle routes. `showdar-feature` consults brainstorm only when decisions can alter behavior, and handoff reuses approved specs rather than asking again. Specs follow adaptive persistence: use existing canonical tickets/docs first; create a durable spec for complex cross-session work, and keep small same-session briefs in conversation.
 

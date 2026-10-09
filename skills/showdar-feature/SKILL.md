@@ -53,10 +53,16 @@ Before any task-owned source/config/test/docs write, apply `showdar-git` branch 
 - If the companion is missing, report it rather than claiming it ran; resolve blocking decisions with the user before continuing.
 - When refinement has been triggered, wait for explicit user approval of the *whole* proposed spec revision before entering `showdar-build`.
 - Carry approved decisions, non-goals, acceptance notes, unresolved questions and evidence into requirements/plan/design without repeating already answered questions.
-- Use the existing canonical spec/ticket when present; persist a new `docs/specs/` document only for durable or complex handoff after approval.
+- Use the existing canonical spec/ticket when present; persist a new `docs/showdar/specs/` document only for durable or complex handoff after approval.
 - If later repository evidence contradicts an approved decision, reopen only the affected decision and obtain revision-specific approval.
 - Refer to installed `showdar-domain-model` for meaningful shared terminology or accepted architectural decisions, not as a required lifecycle stage.
 - This decision gate is portable guidance, not a new router, workflow-state stage, checkpoint authority, or implicit permission to mutate files.
+
+## Adaptive TDD companion
+
+- `showdar-tdd` is an optional companion for the `showdar-build` implementation loop, not a new candidate stage or workflow-state schema field.
+- For behavior changes with runnable tests, Build should hand the smallest task and acceptance criteria to TDD, retain RED/GREEN/REFACTOR receipts and follow with `showdar-test` and `showdar-review`.
+- If TDD cannot run, record why and use task-appropriate alternate proof. Do not skip verification or imply an unavailable companion was invoked.
 
 ## Resumable plan handoff
 

@@ -141,7 +141,7 @@ test('command counts follow selected skills without legacy top-level setup comma
 
     await initProject({ projectRoot, homeRoot, packageRoot, profile: 'full', ai: 'opencode', skillIds: allIds, packageVersion: '0.4.0' });
     files = await readDir(path.join(projectRoot, '.opencode/commands/showdar'));
-    assert.equal(files.filter((f) => f !== 'skill.md').length, 25);
+    assert.equal(files.filter((f) => f !== 'skill.md').length, allIds.length);
     assert.ok(files.includes('skill.md'));
     const aggregator = await readFile(path.join(projectRoot, '.opencode/commands/showdar/skill.md'), 'utf8');
     for (const id of allIds) assert.ok(aggregator.includes(id));

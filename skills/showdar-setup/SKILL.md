@@ -20,7 +20,7 @@ description: Use when onboarding a repository, auditing project context, or prop
 
 ## When not to use
 
-- A single feature needs questions: use showdar-refine.
+- A single feature needs questions: use showdar-brainstorm.
 - An existing contract needs implementation: use the appropriate lifecycle skill.
 - The user only wants the interactive CLI installer: use showdar setup.
 

@@ -66,11 +66,11 @@ test('package contract includes only public reference docs and is reproducible',
   }
 });
 
-test('packed package ships 18 primitives, 3 companions and 4 workflows', async () => {
+test('packed package ships 18 primitives, 4 companions and 4 workflows', async () => {
   const { ALL_SKILLS, PRIMITIVE_COUNT, TOTAL_COUNT, WORKFLOW_COUNT } = await import('../src/catalog.js');
   assert.equal(PRIMITIVE_COUNT, 18);
   assert.equal(WORKFLOW_COUNT, 4);
-  assert.equal(TOTAL_COUNT, 25);
+  assert.equal(TOTAL_COUNT, 26);
   const sandbox = await mkdtemp(path.join(tmpdir(), 'showdar-workflow-contract-'));
   const packDir = path.join(sandbox, 'pack');
   await mkdir(packDir, { recursive: true });

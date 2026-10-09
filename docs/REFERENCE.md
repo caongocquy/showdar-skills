@@ -167,8 +167,8 @@ guidance, including re-adding an existing skill. Global installs keep native dis
 and do not write project AGENTS.md or CLAUDE.md.
 
 The four workflows remain native discoverable/installable skills; `route` does not
-introduce workflow selection. Profiles remain primitive-only: `full` contains all
-18 primitives, and the insurance profile remains unchanged.
+introduce workflow selection. Profiles contain primitives plus portable companions: `full` contains all
+18 primitives and 4 companions; the insurance profile remains unchanged.
 
 Before the first local-write task source edit, the coding agent must run
 `showdar guard --mutation local-write --json` and require `ok=true` and
@@ -215,7 +215,7 @@ source edits.
 
 ## Why Showdar?
 
-- **18 focused primitive skills** plus 4 adaptive workflow skills (22 installable), including an opt-in insurance domain profile.
+- **18 focused primitive skills**, 4 portable companions and 4 adaptive workflow skills (26 installable), including an opt-in insurance domain profile.
 - **Lifecycle coverage** from product rules to implementation, verification,
   security, operations, release readiness, and Git completion.
 - **Intent-based discovery** that selects the workflow matching the request.
@@ -387,20 +387,19 @@ paths are refreshed or removed.
 
 ## Profiles
 
-Role-specific profiles improve routing precision. Profiles install primitive
-skill sets; workflow skills are opt-in through `showdar add <workflow>` and
-are not silently included in any profile. `full` exposes every primitive
-skill, but still does not eagerly load every skill body.
+Role-specific profiles improve routing precision. Profiles install selected primitive
+and portable companion skills; workflows remain opt-in through `showdar add <workflow>`.
+`full` includes every primitive and companion, but does not eagerly load every skill body.
 
 | Profile | Skills | Best for |
 | --- | ---: | --- |
 | `minimal` | 8 | Focused everyday assistance |
-| `developer` | 12 | General application development |
-| `backend` | 14 | APIs, services, and runtime operations |
-| `qa` | 9 | Testing and quality workflows |
-| `product` | 6 | Product, requirements, and design work |
+| `developer` | 16 | General application development |
+| `backend` | 18 | APIs, services, and runtime operations |
+| `qa` | 13 | Testing and quality workflows |
+| `product` | 9 | Product, requirements, and design work |
 | `insurance` | 3 | Insurance terminology, business flows, and UI/API review |
-| `full` | 18 | All primitive capabilities |
+| `full` | 22 | All primitive and companion capabilities |
 
 Legacy aliases remain compatible:
 
@@ -411,10 +410,23 @@ web    -> developer
 
 New manifests store the canonical `developer` profile.
 
+## Test-driven implementation and document layout
+
+The `showdar-tdd` companion is included in developer/backend/qa/full profiles, or can be installed individually with `showdar add tdd --ai cursor`. It runs one scoped RED (reproduced behavior failure), GREEN (passing focused test), REFACTOR (focused test stays passing) cycle at a time and hands actual proof to `showdar-build`. `showdar-test` independently selects integration, regression and E2E coverage; Review remains a separate quality gate. No fabricated RED logs and no ceremonial tests for documentation-only or missing-harness work.
+
+Adaptive documentation persistence uses a project's existing canonical docs first; if none exists, durable approved specs default to `docs/showdar/specs/<feature>.md` and multi-session execution plans default to `docs/showdar/plans/<feature>.md`. Smaller tasks can remain in chat. A saved plan is not execution authorization and task checkboxes require fresh code/test evidence.
+
+```text
+docs/showdar/
+  specs/<feature>.md
+  plans/<feature>.md
+```
+
 ## Skill catalog
 
-All 18 primitive entries are first-class Showdar skills. Four workflow skills
-compose them; see [Workflow skills](#workflow-skills).
+All 18 primitive entries and 4 portable companions are installable Showdar skills.
+Four workflow skills compose the primitive stages; see [Workflow skills](#workflow-skills).
+`showdar-tdd` is a companion used inside the Build stage when suitable; it does not change the workflow-state stage list.
 
 ### Analysis and planning
 
@@ -438,6 +450,7 @@ compose them; see [Workflow skills](#workflow-skills).
 | Skill | Use when |
 | --- | --- |
 | `showdar-test` | Choosing or implementing automated tests for behavior, regressions, integration, E2E, or coverage. |
+| `showdar-tdd` (companion) | Implementing a bounded behavioral change with real RED → GREEN → REFACTOR evidence; direct invocation `/showdar-tdd` is available where native skills support it. |
 | `showdar-quality` | Planning QA/QC scenarios, risk coverage, regression scope, compatibility checks, or bug-report evidence. |
 | `showdar-review` | Reviewing code or diffs for general correctness, architecture, performance, maintainability, or tests. |
 
@@ -748,9 +761,9 @@ Use `showdar add insurance-workflows --ai codex` and
 that wants all three, `showdar init --profile insurance --ai codex` installs the set.
 
 Accepted names are the short form (`debug`, `feature`, `insurance-domain`)
-or the canonical form (`showdar-debug`, `showdar-feature`). The release ships exactly 18 primitive
-skills plus 4 workflow skills (22 installable total); profiles install
-primitive sets only. There is no `showdar workflow ...` command. `showdar add`
+or the canonical form (`showdar-debug`, `showdar-feature`). The release ships exactly 18 primitive,
+4 companion and 4 workflow skills (26 installable total); built-in profiles select primitive
+and companion skills but do not include workflows. There is no `showdar workflow ...` command. `showdar add`
 is idempotent, preserves the configured profile, supports `--ai`/`--scope`
 overrides, and refuses to overwrite a foreign same-name skill directory that
 Showdar does not own.

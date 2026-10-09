@@ -8,6 +8,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [0.17.0]
 
+### Additional unpublished changes
+
+- Added portable native `showdar-tdd` companion with evidence-based RED → GREEN → REFACTOR; integrated into Build/Plan/Test/Feature/Recover without adding a workflow stage.
+- Canonical default plan and spec documents now live under `docs/showdar/plans/` and `docs/showdar/specs/`; existing repository locations still win.
+- Updated developer/backend/qa/full profiles and 26-skill catalog, migration guidance, and regression coverage.
+
+
 ### Added
 - Renamed native portable `showdar-refine` to **`showdar-brainstorm`**, without a legacy CLI alias.
 - Adaptive Markdown plan persistence and verification-backed task resume for the Brainstorm → Plan → Build workflow.
