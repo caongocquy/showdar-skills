@@ -170,6 +170,34 @@ async function generateCommandFiles({ baseRoot, skillIds, target, commandRoot, p
 }
 
 // Legacy custom commands collided with native /showdar-setup skill invocation.
+// The retired skill is not a runnable alias. Delete only pristine managed copies.
+function isLegacyBrainstormPath(relative) {
+  return typeof relative === 'string' &&
+    (/(^|\\/)skills\\/showdar-refine$/.test(relative) ||
+      /(^|\\/)commands\\/showdar\\/refine\\.md$/.test(relative));
+}
+
+async function inspectLegacyBrainstormFiles({ baseRoot, manifest, scope, homeRoot = homedir(), managedRoots = [] }) {
+  const entries = (manifest?.files ?? []).filter(entry => isLegacyBrainstormPath(entry.path));
+  const results = [];
+  for (const entry of entries) {
+    const target = safeOwnedPath(baseRoot, entry.path, managedRoots);
+    if (!target || !isManagedDeletionTarget(baseRoot, target, scope, homeRoot, manifest)) {
+      throw new Error('Unsafe retired Showdar skill path: ' + entry.path);
+    }
+    await assertSafeManagedPath(baseRoot, target, managedRoots);
+    if (await exists(target) && await hashTree(target) !== entry.hash) {
+      throw new Error('Modified retired Showdar skill; preserve user changes before migrating: ' + entry.path);
+    }
+    results.push({ path: entry.path, target });
+  }
+  return results;
+}
+
+function migrateBrainstormSelection(ids) {
+  return [...new Set(ids.map(id => id === 'showdar-refine' ? 'showdar-brainstorm' : id))];
+}
+
 function isLegacySetupCommandPath(relative) {
   return typeof relative === 'string' && /(^|\/)commands\/showdar-setup\.md$/.test(relative);
 }
@@ -304,6 +332,9 @@ async function initInstallation({
       await assertSafeManagedPath(baseRoot, targetPath, managedRoots);
       if (isLegacySetupCommandPath(entry.path) && await exists(targetPath) && await hashTree(targetPath) !== entry.hash) {
         throw new Error('Modified legacy Showdar setup command; resolve the conflict before migrating: ' + entry.path);
+      }
+      if (isLegacyBrainstormPath(entry.path) && await exists(targetPath) && await hashTree(targetPath) !== entry.hash) {
+        throw new Error('Modified retired Showdar skill; preserve user changes before migrating: ' + entry.path);
       }
       staleTargets.push(targetPath);
     }
@@ -716,7 +747,23 @@ export async function addSkill({ cwd, skill, ai = null, scope = null, home = hom
         })
       : [],
   });
-  const legacyPaths = new Set(legacyCommands.map(entry => entry.path));
+  const migrationManagedRoots = migrationScope === 'global'
+    ? [...new Set([
+        ...NATIVE_TARGETS.map(t => globalSkillRootFor(t, { homeRoot: home })),
+        ...NATIVE_TARGETS.filter(t => globalCommandRootForTarget(t, { homeRoot: home })).map(t => globalCommandRootForTarget(t, { homeRoot: home })),
+      ])]
+    : [];
+  // On explicit add brainstorm, migrate preexisting CLI-owned v0.16 skill/commands;
+  // other adds leave the old managed selection until an explicit profile upgrade.
+  const migratingBrainstorm = skillId === 'showdar-brainstorm' && existingManifest?.skills?.includes('showdar-refine');
+  const retiredFiles = migratingBrainstorm
+    ? await inspectLegacyBrainstormFiles({ baseRoot: migrationRoot, manifest: existingManifest, scope: migrationScope, homeRoot: home, managedRoots: migrationManagedRoots })
+    : [];
+  const retiredPaths = new Set(retiredFiles.map(entry => entry.path));
+  const removedPaths = new Set([...legacyPaths, ...retiredPaths]);
+  const migratedSkills = migratingBrainstorm
+    ? migrateBrainstormSelection(existingManifest.skills)
+    : existingManifest?.skills ?? [];
   const effectiveAi = ai ?? existingManifest?.ai ?? 'universal';
   const effectiveScope = scope ?? existingManifest?.scope ?? 'project';
   if (effectiveAi !== 'all' && !NATIVE_TARGETS.includes(effectiveAi)) throw new Error(`Unknown AI target "${effectiveAi}".`);
@@ -754,19 +801,19 @@ export async function addSkill({ cwd, skill, ai = null, scope = null, home = hom
     }
     for (const target of existingManifest.commandHarness ?? []) {
       const commandRoot = effectiveScope === 'global' ? globalCommandRootForTarget(target, { homeRoot: home }) : commandRootFor(target, cwd);
-      if (commandRoot) await generateCommandFiles({ baseRoot, skillIds: existingManifest.skills, target, commandRoot, priorOwned, newFiles: refreshedFiles });
+      if (commandRoot) await generateCommandFiles({ baseRoot, skillIds: migratedSkills, target, commandRoot, priorOwned, newFiles: refreshedFiles });
     }
     if (effectiveScope === 'project' && existingManifest.instructions) {
       const instruction = existingManifest.instructions;
       const file = path.join(cwd, instruction.file);
-      if (instruction.kind === 'block') await writeManagedBlock(file, existingManifest.skills);
-      else if (instruction.kind === 'file') await writeCursorRule(file, existingManifest.skills);
+      if (instruction.kind === 'block') await writeManagedBlock(file, migratedSkills);
+      else if (instruction.kind === 'file') await writeCursorRule(file, migratedSkills);
     }
-    await removeLegacySetupCommands(legacyCommands);
-    const files = new Map((existingManifest.files ?? []).filter(f => !legacyPaths.has(f.path)).map(f => [f.path, f]));
+    await removeLegacySetupCommands([...legacyCommands, ...retiredFiles]);
+    const files = new Map((existingManifest.files ?? []).filter(f => !removedPaths.has(f.path)).map(f => [f.path, f]));
     for (const f of refreshedFiles) files.set(f.path, f);
     await writeJsonAtomic(effectiveScope === 'global' ? globalManifestPath(home) : path.join(cwd, PROJECT_MANIFEST),
-      { ...existingManifest, packageVersion, commands: (existingManifest.commands ?? []).filter(c => !legacyPaths.has(c.path)), files: [...files.values()] });
+      { ...existingManifest, packageVersion, skills: migratedSkills, commands: (existingManifest.commands ?? []).filter(c => !removedPaths.has(c.path)), files: [...files.values()] });
     return { skill: skillId, root: '', destination: '', added: false, scope: effectiveScope, ai: effectiveAi, profile: existingManifest.profile };
   }
 
@@ -813,7 +860,7 @@ export async function addSkill({ cwd, skill, ai = null, scope = null, home = hom
     }
   }
 
-  const allSkillIds = [...new Set([...(existingManifest?.skills ?? []), skillId])];
+  const allSkillIds = [...new Set([...migratedSkills, skillId])];
   const newCommands = [];
   const harnessTargets = [...new Set([...(existingManifest?.commandHarness ?? []), ...commandHarnesses.map(c => c.target)])];
   for (const target of harnessTargets) {
@@ -823,8 +870,8 @@ export async function addSkill({ cwd, skill, ai = null, scope = null, home = hom
     newCommands.push(...generated.map(c => ({ target, name: c.shortName, path: manifestPathFor(baseRoot, c.destination) })));
   }
 
-  await removeLegacySetupCommands(legacyCommands);
-  const merged = new Map((existingManifest?.files ?? []).filter(e => !legacyPaths.has(e.path)).map((e) => [e.path, e]));
+  await removeLegacySetupCommands([...legacyCommands, ...retiredFiles]);
+  const merged = new Map((existingManifest?.files ?? []).filter(e => !removedPaths.has(e.path)).map((e) => [e.path, e]));
   for (const f of files) merged.set(f.path, f);
 
   const instructionFile = existingManifest?.instructions ?? (effectiveScope === 'project' ? instructionSurfaceFor(effectiveAi === 'all' ? 'universal' : effectiveAi, cwd) : null);
@@ -840,7 +887,7 @@ export async function addSkill({ cwd, skill, ai = null, scope = null, home = hom
     targets: [...new Set([...(existingManifest?.targets ?? []), ...targets])],
     skills: allSkillIds,
     satisfiedByGlobal: existingManifest?.satisfiedByGlobal ?? [],
-    commands: [...new Map([...(existingManifest?.commands ?? []).filter(c => !legacyPaths.has(c.path)), ...newCommands].map(c => [c.path, c])).values()],
+    commands: [...new Map([...(existingManifest?.commands ?? []).filter(c => !removedPaths.has(c.path)), ...newCommands].map(c => [c.path, c])).values()],
     files: [...merged.values()],
     instructions: instructionFile ? { file: instructionFile.file, kind: instructionFile.kind } : null,
     commandHarness,
