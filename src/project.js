@@ -274,6 +274,7 @@ async function initInstallation({
   for (const entry of prior?.files ?? []) {
     const targetPath = safeOwnedPath(baseRoot, entry.path, managedRoots);
     if (targetPath && !desiredPaths.has(entry.path)) {
+      if (path.resolve(targetPath) === path.resolve(baseRoot) || !isManagedDeletionTarget(baseRoot, targetPath, scope, homeRoot)) throw new Error('Unsafe stale managed path: ' + entry.path);
       await assertSafeManagedPath(baseRoot, targetPath, managedRoots);
       staleTargets.push(targetPath);
     }
@@ -959,6 +960,7 @@ export async function addPack({ cwd, source, home = homedir(), packageVersion = 
         version: manifest.version,
         source: path.relative(cwd, packRoot).replaceAll(path.sep, '/'),
         hash: packHash,
+        installedHash: await hashTree(destination),
         installedAt: new Date().toISOString(),
       }],
       customWorkflows: [...(existing.extensions?.customWorkflows ?? []), ...((manifest.workflows ?? []).map((w) => ({
