@@ -274,7 +274,7 @@ async function initInstallation({
   for (const entry of prior?.files ?? []) {
     const targetPath = safeOwnedPath(baseRoot, entry.path, managedRoots);
     if (targetPath && !desiredPaths.has(entry.path)) {
-      if (path.resolve(targetPath) === path.resolve(baseRoot) || !isManagedDeletionTarget(baseRoot, targetPath, scope, homeRoot)) throw new Error('Unsafe stale managed path: ' + entry.path);
+      if (path.resolve(targetPath) === path.resolve(baseRoot) || !isManagedDeletionTarget(baseRoot, targetPath, scope, homeRoot, prior)) throw new Error('Unsafe stale managed path: ' + entry.path);
       await assertSafeManagedPath(baseRoot, targetPath, managedRoots);
       staleTargets.push(targetPath);
     }
@@ -283,7 +283,7 @@ async function initInstallation({
   for (const { destination } of skillDestinations) {
     await assertSafeManagedPath(baseRoot, destination, managedRoots);
     const rel = manifestPathFor(baseRoot, destination);
-    if ((await exists(destination)) && !priorOwned.has(rel)) throw new Error('Foreign skill destination: ' + destination);
+    if ((await exists(destination)) && !priorOwned.has(rel)) throw new Error('Refusing to overwrite existing non-Showdar-managed skill or command: ' + destination);
   }
   for (const { root } of commandHarnesses) {
     for (const filename of [...skillIds.map(id => id.replace(/^showdar-/, '') + '.md'), 'skill.md']) {
@@ -569,17 +569,37 @@ async function inspectInstallation({
   };
 }
 
-function isManagedDeletionTarget(baseRoot, target, scope, homeRoot) {
-  const roots = scope === 'global'
-    ? [...NATIVE_TARGETS.map(t => globalSkillRootFor(t, { homeRoot })),
-       ...NATIVE_TARGETS.map(t => globalCommandRootForTarget(t, { homeRoot })).filter(Boolean)]
-    : [...NATIVE_TARGETS.map(t => skillRootFor(t, baseRoot)),
-       ...NATIVE_TARGETS.map(t => commandRootFor(t, baseRoot)).filter(Boolean)];
-  const normalized = path.resolve(target);
-  if (path.basename(normalized) === 'showdar-setup.md') {
-    return roots.some(root => path.dirname(normalized) === path.dirname(path.resolve(root)));
+function isManagedDeletionTarget(baseRoot, target, scope, homeRoot, manifest) {
+  const absolute = path.resolve(target);
+  const installedSkills = new Set(manifest?.skills ?? []);
+  const targets = scope === 'global' ? NATIVE_TARGETS : resolveTargets(manifest?.ai ?? 'universal');
+  for (const agent of targets) {
+    const skillRoot = scope === 'global'
+      ? globalSkillRootFor(agent, { homeRoot })
+      : skillRootFor(agent, baseRoot);
+    const skillName = path.relative(skillRoot, absolute);
+    if (!skillName.includes(path.sep) && installedSkills.has(skillName) && skillName.startsWith('showdar-')) return true;
+
+    const commandsRoot = scope === 'global'
+      ? globalCommandRootForTarget(agent, { homeRoot })
+      : commandRootFor(agent, baseRoot);
+    if (commandsRoot) {
+      const commandName = path.relative(commandsRoot, absolute);
+      const supported = new Set(['skill.md', ...[...installedSkills].map(id => id.replace(/^showdar-/, '') + '.md')]);
+      if (!commandName.includes(path.sep) && supported.has(commandName)) return true;
+      if (absolute === path.resolve(path.dirname(commandsRoot), 'showdar-setup.md')) return true;
+    }
+    if (agent === 'cursor' && absolute === path.resolve(
+      scope === 'global' ? homeRoot : baseRoot, '.cursor', 'commands', 'showdar-setup.md')) return true;
+    if (agent === 'cursor' && absolute === path.resolve(
+      scope === 'global' ? homeRoot : baseRoot, '.cursor', 'rules', 'showdar.mdc')) return true;
   }
-  return roots.some(root => normalized.startsWith(path.resolve(root) + path.sep));
+  const packRoot = path.resolve(baseRoot, EXTENSION_DIR, 'packs');
+  for (const pack of manifest?.extensions?.packs ?? []) {
+    const ownedPackRoot = path.resolve(packRoot, pack.name);
+    if (absolute.startsWith(ownedPackRoot + path.sep)) return true;
+  }
+  return false;
 }
 
 async function removeInstallation({ baseRoot, manifestPath, scope, homeRoot = homedir() }) {
@@ -598,7 +618,7 @@ async function removeInstallation({ baseRoot, manifestPath, scope, homeRoot = ho
   const removalTargets = [];
   for (const entry of manifest?.files ?? []) {
     const target = safeOwnedPath(baseRoot, entry.path, managedRoots);
-    if (!target || path.resolve(target) === path.resolve(baseRoot) || !isManagedDeletionTarget(baseRoot, target, scope, homeRoot)) {
+    if (!target || path.resolve(target) === path.resolve(baseRoot) || !isManagedDeletionTarget(baseRoot, target, scope, homeRoot, manifest)) {
       throw new Error('Unsafe Showdar manifest deletion path: ' + entry.path);
     }
     await assertSafeManagedPath(baseRoot, target, managedRoots);
