@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import {consumePaidResponse} from './paid-authorization.mjs';
 
 const ENDPOINT = 'https://api.openai.com/v1/responses';
 export const LIVE_TRANSPORT_BLOCKER = 'Live Responses disabled: trusted live producer, observable semantic events and attestation E2E have not been verified';
@@ -89,11 +90,14 @@ export function assertLiveTransportEnabled(allowModel) {
   if (!LIVE_EXECUTION_GATES_VERIFIED) throw new Error(LIVE_TRANSPORT_BLOCKER);
 }
 
-export function createLiveResponsesTransport({allowModel=false,apiKey='',timeoutMs=30000} = {}) {
+export function createLiveResponsesTransport(options = {}) {
+  const timeoutMs=options.timeoutMs ?? 30000;
   const deadline=Date.now()+timeoutMs;
   return async request=>{
-    assertLiveTransportEnabled(allowModel);
+    assertLiveTransportEnabled(options.allowModel);
+    const authorizedMs=consumePaidResponse(options.authorization,request);
+    const apiKey=options.apiKey ?? '';
     if (!apiKey) throw new Error('Live credential unavailable');
-    return send(request,{fetchImpl:nativeFetch,apiKey,timeoutMs:remainingBudget(timeoutMs,deadline),origin:'responses-live'});
+    return send(request,{fetchImpl:nativeFetch,apiKey,timeoutMs:Math.min(remainingBudget(timeoutMs,deadline),authorizedMs),origin:'responses-live'});
   };
 }

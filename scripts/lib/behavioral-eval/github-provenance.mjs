@@ -27,7 +27,7 @@ export async function readEvidence(file) {
 }
 
 export async function githubJson(relative,token) {
-  if (!token || !/^\/(actions\/runs\/\d+(\/attempts\/\d+)?|pulls\/\d+(\/reviews\?per_page=100)?|collaborators\/[A-Za-z0-9-]+\/permission)$/.test(relative)) throw new Error('Invalid authenticated GitHub lookup');
+  if (!token || !/^\/(actions\/runs\/\d+(\/attempts\/\d+|\/approvals)?|environments\/showdar-paid-capture(\/deployment-branch-policies)?|pulls\/\d+(\/reviews\?per_page=100)?|collaborators\/[A-Za-z0-9-]+\/permission)$/.test(relative)) throw new Error('Invalid authenticated GitHub lookup');
   const response=await fetch(`https://api.github.com/repos/${REPOSITORY}${relative}`,{
     headers:{Authorization:`Bearer ${token}`,Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'},
     redirect:'error',signal:AbortSignal.timeout(15000),
