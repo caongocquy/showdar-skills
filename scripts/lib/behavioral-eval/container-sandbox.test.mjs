@@ -39,9 +39,6 @@ test('sandbox command rejects unknown probes, mutable images and ambiguous mount
     { workspace: '/tmp/a,b' },
     { workspace: '/tmp/a\nb' },
   ]) {
-    // Root mount is rejected by the runtime's disposable workspace creation,
-    // not by this pure argv builder; separately test its actual path policy.
-    if (changes.workspace === '/') continue;
     assert.throws(() => buildSandboxProbeArgs({ imageDigest, workspace, name, probe: 'identity', ...changes }));
   }
 });
