@@ -106,15 +106,23 @@ export async function runSandboxedTool({
   } finally {
     try {await exec(docker,['rm','--force',name],{env,timeout:3000,maxBuffer:4096,windowsHide:true});} catch {}
   }
+  let artifact;
   if (typed.tool==='artifact.write') {
     await inspectPath(root,typed.path,false);
     const bytes=await readFile(path.join(root,typed.path));
     if (bytes.length>MAX_BYTES || bytes.toString('utf8')!==typed.content) denied('captured artifact differs from mediated payload');
+    const snapshotFile=path.join(evidence,'artifact-'+randomUUID()+'.bin');
+    await writeFile(snapshotFile,bytes,{flag:'wx',mode:0o600});
+    const verifiedBytes=await readFile(snapshotFile);
+    if (!verifiedBytes.equals(bytes)) denied('host-owned artifact snapshot mismatch');
+    artifact={path:typed.path,snapshotFile,bytes:bytes.length,
+      sha256:createHash('sha256').update(verifiedBytes).digest('hex')};
   }
   const receipt={
     schemaVersion:1,kind:'sandbox-tool-observation',tool:typed.tool,
     observedAt:new Date().toISOString(),imageId,
     resultSha256:createHash('sha256').update(JSON.stringify(outcome)).digest('hex'),
+    artifact:artifact ?? null,
     behavioralGrade:'NOT_EVALUATED',
   };
   const evidenceFile=path.join(evidence,'tool-'+randomUUID()+'.json');
