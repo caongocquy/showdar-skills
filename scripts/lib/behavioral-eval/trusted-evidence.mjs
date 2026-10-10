@@ -45,7 +45,7 @@ function reviewPayload(review) {
   try { return JSON.parse(review.body.slice('SHOWDAR-RUBRIC/1\n'.length)); } catch { return null; }
 }
 
-function evaluateHumanReview(reviews, {evidence, evidenceDigest, actor, captureActor, pullRequestAuthor, rubricIds}) {
+async function evaluateHumanReview(reviews, {evidence, evidenceDigest, actor, captureActor, pullRequestAuthor, rubricIds,base,token}) {
   if (!Array.isArray(reviews) || !Array.isArray(rubricIds) || rubricIds.length === 0) return blocked('Human review unavailable');
   const latest = new Map();
   for (const review of reviews) if (review?.user?.login) latest.set(review.user.login.toLowerCase(), review);
@@ -65,6 +65,8 @@ function evaluateHumanReview(reviews, {evidence, evidenceDigest, actor, captureA
         data.attesterRunAttempt !== evidence.attesterRunAttempt || data.attesterSourceSha !== evidence.attesterSourceSha ||
         JSON.stringify(Object.keys(data.grades ?? {}).sort()) !== JSON.stringify([...rubricIds].sort()) ||
         Object.values(data.grades ?? {}).some(grade => !['PASS','FAIL'].includes(grade))) continue;
+    const permission=await githubJson(`${base}/collaborators/${encodeURIComponent(review.user.login)}/permission`,token);
+    if (!['admin','write'].includes(permission.permission) || permission.user?.login?.toLowerCase()!==login) continue;
     return {status:'BLOCKED',rubricStatus:Object.values(data.grades).every(grade=>grade==='PASS')?'APPROVED':'REJECTED',
       reviewer:review.user.login,reason:'Trusted live capture producer is not deployed or verified; human review cannot enable behavioral PASS'};
   }
@@ -104,6 +106,7 @@ export async function verifyTrustedEvidence({evidencePath,artifactPath,tracePath
     assertEvidenceBinding(evidence,trustedExpected,artifactBytes,traceBytes);
     const trace=JSON.parse(traceBytes.toString('utf8'));
     if (trace.execution?.kind !== 'responses-live' || trace.execution?.agentLaunched !== true ||
+        trace.modelIdentity!==evidence.modelIdentity ||
         trace.events?.some(event=>event.evidence!=='host-runner') ||
         trace.responses?.length < 1 || !Array.isArray(trace.responses) ||
         trace.responses.some(response=>response.origin!=='responses-live')) return blocked('Simulated or unauthenticated capture cannot be graded');
@@ -119,9 +122,14 @@ export async function verifyTrustedEvidence({evidencePath,artifactPath,tracePath
         env:{PATH:process.env.PATH ?? '/usr/bin:/bin',GH_TOKEN:token},timeout:30000,maxBuffer:1024*1024,
       });
       const attestations=JSON.parse(result.stdout);
-      const signed=bytes.length>0 && Array.isArray(attestations) && attestations.some(item=>
-        item?.verificationResult?.statement?.subject?.some(subject=>subject?.digest?.sha256===sha256(bytes)));
-      if (!signed) return blocked('GitHub attestation does not bind these evidence bytes');
+      const invocation=`https://github.com/${repository}/actions/runs/${evidence.attesterRunId}/attempts/${evidence.attesterRunAttempt}`;
+      const signed=bytes.length>0 && Array.isArray(attestations) && attestations.some(item=>{
+        const verified=item?.verificationResult;
+        return verified?.statement?.subject?.some(subject=>subject?.digest?.sha256===sha256(bytes)) &&
+          verified.statement.predicate?.runDetails?.metadata?.invocationId===invocation &&
+          verified.signature?.certificate?.runInvocationURI===invocation;
+      });
+      if (!signed) return blocked('GitHub attestation does not bind these bytes to the exact capture run/attempt');
     }
     const base=`https://api.github.com/repos/${repository}`;
     const [run,captureRun,pull,reviews]=await Promise.all([
@@ -136,13 +144,16 @@ export async function verifyTrustedEvidence({evidencePath,artifactPath,tracePath
         captureRun.head_branch!=='main' || captureRun.event!=='workflow_run' || captureRun.conclusion!=='success' ||
         captureRun.path?.split('@')[0]!=='.github/workflows/behavioral-evidence-attestation.yml' ||
         captureRun.repository?.full_name!==repository || !captureRun.actor?.login ||
+        run.repository?.full_name!==repository || run.head_repository?.full_name!==repository ||
+        pull.head?.repo?.full_name!==repository || pull.base?.repo?.full_name!==repository ||
+        pull.base?.ref!=='main' || pull.state!=='open' || run.pull_requests?.length!==1 ||
         run.conclusion!=='success' || run.event!=='pull_request' || run.path?.split('@')[0]!=='.github/workflows/verify-pr.yml' ||
         !run.pull_requests?.some(item=>String(item.number)===String(evidence.pullRequest)&&item.head?.sha===evidence.sourceSha) ||
         pull.head?.sha!==evidence.sourceSha || String(pull.number)!==String(evidence.pullRequest) ||
         !run.actor?.login || !pull.user?.login) {
       return blocked('Workflow run or pull request does not match the evidence source');
     }
-    return evaluateHumanReview(reviews,{evidence,evidenceDigest:digest,actor:run.actor?.login,
+    return await evaluateHumanReview(reviews,{evidence,evidenceDigest:digest,actor:run.actor?.login,base,token,
       captureActor:captureRun.actor.login,
       pullRequestAuthor:pull.user?.login,rubricIds:trustedExpected.rubricIds});
   } catch(error) {

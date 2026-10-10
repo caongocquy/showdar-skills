@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createOfflineResponsesTransport, createLiveResponsesTransport } from './responses-transport.mjs';
+import { createOfflineResponsesTransport, createLiveResponsesTransport, getResponsesObservation } from './responses-transport.mjs';
 
 const request = {model:'fixture-model',input:[{role:'user',content:'fixture'}],tools:[],
   store:false,parallel_tool_calls:false,max_output_tokens:2048};
@@ -30,6 +30,10 @@ test('model-free HTTP contract has fixed endpoint, bounded bodies, cancellation 
   assert.equal(result.transportOrigin,'simulated');
   assert.equal(result.requestId,'req_fixture');
   assert.doesNotMatch(JSON.stringify(result),/test-only-key/);
+  assert.equal(getResponsesObservation(result).origin,'simulated');
+  assert.equal(getResponsesObservation(JSON.parse(JSON.stringify(result))),null);
+  result.output.push({type:'message',content:'forged'});
+  assert.throws(()=>getResponsesObservation(result),/modified/);
 });
 test('malformed requests and error, incomplete, oversized, credential-bearing HTTP responses fail closed',async()=>{
   let called = false;
@@ -52,4 +56,13 @@ test('HTTP timeout aborts the transport and does not retry',async()=>{
   }});
   await assert.rejects(send(request),/failed/);
   assert.equal(calls,1);
+});
+test('JSON-escaped credentials and credential-bearing request IDs never become transport observations',async()=>{
+  for(const [body,requestId] of [
+    [String.raw`{"id":"r","status":"completed","model":"fixture-model","output":[{"type":"message","content":"\u0074est-only-key"}]}`,'req'],
+    [JSON.stringify({id:'r',status:'completed',model:'fixture-model',output:[]}),'test-only-key'],
+  ]) {
+    const send=createOfflineResponsesTransport({apiKey:'test-only-key',fakeFetch:async()=>new Response(body,{headers:{'x-request-id':requestId}})});
+    await assert.rejects(send(request),error=>/denied/.test(error.message)&&!error.message.includes('test-only-key'));
+  }
 });

@@ -6,7 +6,8 @@ export function auditCapabilities(suite) {
     forbiddenEvents: scenario.oracle.forbidden.map(event => event.kind),
     readPaths: Object.keys(suite.fixtureTemplates[scenario.fixture.template].files),
     artifactPaths: scenario.oracle.rubric.map(rule => rule.artifact),
-    tools: ['git_status', 'git_diff_check', 'fixture_read', 'artifact_write'],
+    tools: ['git_status', 'git_diff_check', 'fixture_read', 'artifact_write','skill_select','skip_refinement'],
+    modelFreeHooks: ['skill_selected:explicit-pinned-skill-read','decision_recorded:explicit-lifecycle-skip'],
     unsupported: [
       ...new Set(scenario.oracle.required.map(event => `${event.kind}:${event.id}`)),
       'skill-reference-read', 'sandboxed-source-edit-and-test', 'independent-artifact-review',

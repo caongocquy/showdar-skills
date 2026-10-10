@@ -1,9 +1,22 @@
+import { createHash } from 'node:crypto';
+
 const ENDPOINT = 'https://api.openai.com/v1/responses';
 export const LIVE_TRANSPORT_BLOCKER = 'Live Responses disabled: trusted live producer, observable semantic events and attestation E2E have not been verified';
 const REQUEST_LIMIT = 512 * 1024;
 const RESPONSE_LIMIT = 64 * 1024;
 // Deployment gate changes require the documented real attestation and semantic-observation acceptance.
 const LIVE_EXECUTION_GATES_VERIFIED = false;
+const nativeFetch = globalThis.fetch.bind(globalThis);
+const observations = new WeakMap();
+const hash = value=>createHash('sha256').update(JSON.stringify(value)).digest('hex');
+
+/** Transport origin is minted here, never imported from response JSON or a caller trust flag. */
+export function getResponsesObservation(response) {
+  const observation = observations.get(response);
+  if (!observation) return null;
+  if (hash(response) !== observation.resultSha256) throw new Error('Responses observation was modified');
+  return structuredClone(observation);
+}
 
 async function send(request, {fetchImpl, apiKey, timeoutMs, origin}) {
   const allowed = ['model','input','tools','store','parallel_tool_calls','max_output_tokens'];
@@ -37,9 +50,16 @@ async function send(request, {fetchImpl, apiKey, timeoutMs, origin}) {
     const text = Buffer.concat(chunks).toString('utf8');
     if (apiKey && text.includes(apiKey)) throw new Error('Credential exposure denied');
     const value = JSON.parse(text);
+    if (apiKey && JSON.stringify(value).includes(apiKey)) throw new Error('Decoded credential exposure denied');
     if (typeof value.id !== 'string' || !value.id || value.status !== 'completed' ||
         value.model !== request.model || !Array.isArray(value.output)) throw new Error('Invalid Responses result');
-    return {...value,requestId:response.headers.get('x-request-id'),transportOrigin:origin};
+    const requestId=response.headers.get('x-request-id');
+    if (apiKey && requestId?.includes(apiKey)) throw new Error('Credential-bearing response identity denied');
+    if (origin==='responses-live' && (!requestId || requestId.length>256)) throw new Error('Live response identity unavailable');
+    const result={...value,requestId,transportOrigin:origin};
+    observations.set(result,{kind:'responses-transport-observation',origin,modelIdentity:value.model,
+      responseId:value.id,requestId,resultSha256:hash(result)});
+    return result;
   } catch {
     // HTTP error bodies and exception text can contain secrets; never return them as evidence.
     throw new Error('Responses transport failed or response was denied');
@@ -62,6 +82,6 @@ export function createLiveResponsesTransport({allowModel=false,apiKey='',timeout
     if (allowModel !== true) throw new Error('Explicit paid-model opt-in required');
     if (!LIVE_EXECUTION_GATES_VERIFIED) throw new Error(LIVE_TRANSPORT_BLOCKER);
     if (!apiKey) throw new Error('Live credential unavailable');
-    return send(request,{fetchImpl:globalThis.fetch,apiKey,timeoutMs,origin:'responses-live'});
+    return send(request,{fetchImpl:nativeFetch,apiKey,timeoutMs,origin:'responses-live'});
   };
 }

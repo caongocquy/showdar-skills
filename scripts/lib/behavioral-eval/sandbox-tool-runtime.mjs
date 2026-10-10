@@ -25,7 +25,7 @@ const TOOL_SCRIPT = "\n'use strict';\nconst fs = require('node:fs');\nconst path
 const within = (root, child) => child === root || child.startsWith(root + path.sep);
 
 function denied(reason) { throw new BrokerPolicyError('Sandbox tool denied: ' + reason); }
-async function assertSourceRevision(sourceRoot, sourceSha) {
+export async function assertSourceRevision(sourceRoot, sourceSha) {
   if (!/^[a-f0-9]{40}$/.test(sourceSha ?? '')) denied('full pinned source revision required');
   let actual, dirty;
   try {
@@ -34,7 +34,7 @@ async function assertSourceRevision(sourceRoot, sourceSha) {
       timeout:3000,maxBuffer:4096,windowsHide:true,
     });
     actual=result.stdout.trim();
-    const status=await exec('/usr/bin/git',['-C',sourceRoot,'status','--porcelain','--untracked-files=all'],{
+    const status=await exec('/usr/bin/git',['-c','core.fsmonitor=false','-C',sourceRoot,'status','--porcelain','--untracked-files=all'],{
       env:{PATH:'/usr/bin:/bin',HOME:'/tmp',GIT_CONFIG_NOSYSTEM:'1',GIT_CONFIG_GLOBAL:'/dev/null'},
       timeout:3000,maxBuffer:4096,windowsHide:true,
     });
@@ -194,6 +194,7 @@ export async function runSandboxedTool({
   const receipt={
     schemaVersion:1,kind:'sandbox-tool-observation',tool:typed.tool,
     observedAt:new Date().toISOString(),sourceSha,imageId,
+    requestSha256:createHash('sha256').update(JSON.stringify(request)).digest('hex'),
     resultSha256:createHash('sha256').update(JSON.stringify(outcome)).digest('hex'),
     artifact:artifact ?? null,
     behavioralGrade:'NOT_EVALUATED',

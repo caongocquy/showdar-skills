@@ -157,3 +157,28 @@ test('JSON escaped credentials cannot cross mediation or appear in captured argu
  const saved=JSON.parse(await readFile(result.evidencePath,'utf8'));
  assert.equal(saved.transcript[0][0].arguments,'[withheld]');
 }));
+test('generic fake semantic actions cannot manufacture observed skill/skip events or behavioral PASS',async()=>fixture(async dirs=>{
+ const approval='Generic hook contract approval';
+ const hash=(await import('node:crypto')).createHash('sha256').update(approval).digest('hex');
+ const generic={id:'HOOK-CONTRACT',prompt:'Test fake typed hooks only.',installedSkills:['showdar-build'],fixture:{template:'hook'},
+  oracle:{required:[],forbidden:[],order:[],rubric:[{id:'decision',artifact:'artifacts/decision.json'}]}};
+ const hookSuite={fixtureTemplates:{hook:{files:{'APPROVAL.md':approval}}}};
+ let turn=0;
+ const calls=[call('skill_select',{skill:'showdar-build'}),call('skip_refinement',{
+  approvalPath:'APPROVAL.md',approvalSha256:hash,rationale:'fixture claim'},'skip')];
+ const result=await runOfflineResponses({...dirs,scenario:generic,suite:hookSuite,sourceSha,model:'fixture',
+  fakeResponses:async()=>({output:turn<2?[calls[turn++]]:[]}),fakeRuntime:async()=>({content:'fixture',
+   observedBy:'host-scenario-runtime',event:{kind:'decision_recorded'},behavioralStatus:'PASS'})});
+ assert.equal(result.status,'NOT_RUN');assert.equal(result.grading.rubricStatus,'BLOCKED');
+ const trace=JSON.parse(await readFile(result.capturedTrace.tracePath));
+ assert.ok(trace.events.every(event=>event.evidence==='simulated-runtime'));
+ assert.ok(trace.events.every(event=>!['skill_selected','decision_recorded'].includes(event.kind)));
+ for(const item of [call('skill_select',{skill:'showdar-security'}),call('skip_refinement',{
+  approvalPath:'../APPROVAL.md',approvalSha256:hash,rationale:'fixture claim'}),call('skip_refinement',{
+  approvalPath:'APPROVAL.md',approvalSha256:'b'.repeat(64),rationale:'fixture claim'})]) {
+  let executed=false;
+  const denied=await runOfflineResponses({...dirs,scenario:generic,suite:hookSuite,sourceSha,model:'fixture',
+   fakeResponses:async()=>({output:[item]}),fakeRuntime:async()=>{executed=true;return {};}});
+  assert.equal(denied.status,'BLOCKED');assert.equal(executed,false);
+ }
+}));

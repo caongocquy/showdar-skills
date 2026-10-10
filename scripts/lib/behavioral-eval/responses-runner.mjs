@@ -6,6 +6,7 @@ import path from 'node:path';
 import { prepareBrokerCommand } from './typed-command-broker.mjs';
 import { analyzeRecordedTrace } from './trace-grader.mjs';
 import { createRunnerCapture } from './runner-capture.mjs';
+import { getScenarioActionObservation } from './scenario-actions.mjs';
 import { createLiveResponsesTransport, LIVE_TRANSPORT_BLOCKER } from './responses-transport.mjs';
 
 const hash = value => createHash('sha256').update(value).digest('hex');
@@ -16,6 +17,8 @@ const properties = {
   git_status: {}, git_diff_check: {},
   fixture_read: { path: { type:'string' } },
   artifact_write: { path: { type:'string' }, content: { type:'string' } },
+  skill_select: {skill:{type:'string'}},
+  skip_refinement: {approvalPath:{type:'string'},approvalSha256:{type:'string'},rationale:{type:'string'}},
 };
 const tools = Object.entries(properties).map(([name, fields]) => ({
   type:'function', name, description:`Fixture-only ${name}`,
@@ -50,6 +53,17 @@ function mediate(name, args, { workspace, scenario, suite }) {
   if (name === 'git_status' || name === 'git_diff_check') {
     return prepareBrokerCommand({tool:name === 'git_status' ? 'git.status' : 'git.diff-check'}, {workspace});
   }
+  if (name==='skill_select') {
+    if (!scenario.installedSkills.includes(args.skill)) throw new Error('Tool denied: skill is not installed');
+    return Object.freeze({tool:'skill.select',...args});
+  }
+  if (name==='skip_refinement') {
+    const files=suite.fixtureTemplates[scenario.fixture.template].files;
+    if (!Object.hasOwn(files,args.approvalPath) || hash(files[args.approvalPath])!==args.approvalSha256 ||
+        !args.rationale.trim() || Buffer.byteLength(args.rationale)>4096 ||
+        !scenario.oracle.rubric.some(rule=>rule.artifact==='artifacts/decision.json')) throw new Error('Tool denied: unbound skip approval');
+    return Object.freeze({tool:'refinement.skip',...args});
+  }
   if (args.path.split(/[\\/]/).some(part => !part || part === '.' || part === '..') || path.isAbsolute(args.path) || args.path.includes('\0')) throw new Error('Tool denied: path escape');
   const allowed = name === 'fixture_read'
     ? Object.keys(suite.fixtureTemplates[scenario.fixture.template].files)
@@ -68,7 +82,7 @@ export async function runOfflineResponses({scenario,suite,sourceSha,model,worksp
   const contains = (parent, child) => child === parent || child.startsWith(parent + path.sep);
   if (contains(fixtureRoot,evidenceRoot) || contains(evidenceRoot,fixtureRoot)) throw new Error('Evidence must be outside and separate from agent fixture');
   const runRoot = await mkdtemp(path.join(evidenceRoot,'run-'));
-  const capture = createRunnerCapture({directory:runRoot,scenarioId:scenario.id,sourceSha,modelIdentity:model});
+  const capture = createRunnerCapture({directory:runRoot,scenarioId:scenario.id,sourceSha,modelIdentity:model,apiKey});
   const clean = value => {
     let text = String(value);
     if (apiKey) text = text.split(apiKey).join('[REDACTED]');
@@ -92,9 +106,7 @@ export async function runOfflineResponses({scenario,suite,sourceSha,model,worksp
       if(!object(response)||!Array.isArray(response.output)||Buffer.byteLength(JSON.stringify(response))>LIMIT) throw new Error('Invalid or oversized Responses output');
       // Only custom function calls and messages are supported; no built-in external tools.
       if(response.output.some(item=>!object(item)||!['function_call','message','reasoning'].includes(item.type))) throw new Error('Unsupported Responses output capability');
-      transcript.push(JSON.parse(clean(JSON.stringify(response.output.map(item =>
-        item.type === 'function_call' ? {...item, arguments:'[withheld]'} : item)))));
-      capture.observeResponse(JSON.parse(clean(JSON.stringify({id:response.id,model:response.model,requestId:response.requestId}))),transcript.at(-1));
+      transcript.push(capture.observeResponse(response));
       input.push(...response.output);
       const calls=response.output.filter(item=>item.type==='function_call');
       if(!calls.length){completed=true;break;}
@@ -108,14 +120,19 @@ export async function runOfflineResponses({scenario,suite,sourceSha,model,worksp
         const output=await bounded(()=>fakeRuntime(request));
         if(!object(output)||Buffer.byteLength(JSON.stringify(output))>LIMIT) throw new Error('Invalid or oversized tool output');
         if(request.tool.startsWith('git.') && (!Number.isInteger(output.exitCode)||output.exitCode<0||output.exitCode>255)) throw new Error('Invalid tool exit code');
-        capture.observeTool(request,output);
+        if (request.tool==='skill.select' || request.tool==='refinement.skip') {
+          // Fake action results remain simulated; only private runtime receipts emit semantic events.
+          if (getScenarioActionObservation(output)) capture.observeAction(request,output);
+          else capture.observeTool(request,output);
+        } else capture.observeTool(request,output);
         events.push({kind:'tool_invoked',attributes:{tool:request.tool},evidence:'simulated-runtime'});
-        if(request.tool==='artifact.write') {
+        if(request.tool==='artifact.write' || request.tool==='refinement.skip') {
           if(typeof output.content!=='string') throw new Error('Artifact bytes unavailable');
           const bytes=clean(output.content); const file=path.join(runRoot,`artifact-${snapshots.length}.txt`);
           await writeFile(file,bytes,{flag:'wx',mode:0o600});
-          snapshots.push({path:request.path,file,sha256:hash(bytes)});
-          events.push({kind:'file_written',attributes:{path:request.path},evidence:'simulated-runtime'});
+          const artifactPath=request.tool==='refinement.skip'?'artifacts/decision.json':request.path;
+          snapshots.push({path:artifactPath,file,sha256:hash(bytes)});
+          events.push({kind:'file_written',attributes:{path:artifactPath},evidence:'simulated-runtime'});
         }
         const modelOutput=request.tool.startsWith('git.') ? {exitCode:output.exitCode,stdout:output.stdout ?? ''} : {content:output.content};
         input.push({type:'function_call_output',call_id:call.call_id,output:clean(JSON.stringify(modelOutput))});

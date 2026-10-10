@@ -10,6 +10,8 @@ import { prepareBrokerCommand } from './typed-command-broker.mjs';
 import { runSandboxedTool, getSandboxObservation } from './sandbox-tool-runtime.mjs';
 import { runOfflineResponses } from './responses-runner.mjs';
 import { createOfflineResponsesTransport } from './responses-transport.mjs';
+import { createScenarioActions, getScenarioActionObservation } from './scenario-actions.mjs';
+import { createRunnerCapture } from './runner-capture.mjs';
 
 const git = (cwd,args) => execFileSync('git',['-C',cwd,...args],{encoding:'utf8'});
 const image = execFileSync('/usr/bin/docker',['image','inspect','--format','{{.Id}}','showdar-eval-tools:ci'],{encoding:'utf8'}).trim();
@@ -49,6 +51,10 @@ test('actual Docker runtime executes only typed Git, fixture read and artifact w
   const read=await run({tool:'fixture.read',path:'README.md'});
   assert.equal(read.content,'fixture content');
   assert.equal(getSandboxObservation(read).sourceSha,sourceSha);
+  const capture=createRunnerCapture({directory:evidenceDir,scenarioId:'TOOL-CONTRACT',sourceSha,modelIdentity:'none'});
+  assert.throws(()=>capture.observeTool({tool:'fixture.read',path:'other.md'},read),/binding/);
+  capture.observeTool({tool:'fixture.read',path:'README.md'},read);
+  assert.throws(()=>capture.observeTool({tool:'fixture.read',path:'README.md'},read),/replay/);
   read.content='tampered';
   assert.throws(()=>getSandboxObservation(read),/modified/);
   const written=await run({tool:'artifact.write',path:'artifacts/decision.json',content:'{"decision":"fixture"}'});
@@ -61,6 +67,47 @@ test('actual Docker runtime executes only typed Git, fixture read and artifact w
   assert.equal(saved.sourceSha,sourceSha);
   assert.equal(saved.tool,'artifact.write');
   assert.equal(written.observedBy,'host-tool-runtime');
+}));
+
+test('generic model-free skill/skip hooks perform real pinned reads and lifecycle persistence without live provenance', {timeout:90_000},async()=>withFixture(async dirs=>{
+  const approval='Generic preapproved scope; this is a hook contract, not a behavioral pilot.';
+  const approvalSha256=createHash('sha256').update(approval).digest('hex');
+  await writeFile(path.join(dirs.workspace,'APPROVAL.md'),approval,{mode:0o644});
+  const hookScenario={id:'HOOK-CONTRACT',prompt:'Test only the typed hook contract.',installedSkills:['showdar-build'],
+    fixture:{template:'hook'},oracle:{required:[],forbidden:[],order:[],rubric:[{id:'hook-artifact',artifact:'artifacts/decision.json'}]}};
+  const hookSuite={fixtureTemplates:{hook:{files:{'APPROVAL.md':approval}}}};
+  const actions=await createScenarioActions({...dirs,imageId:image,installedSkills:['showdar-build'],approvalFiles:{'APPROVAL.md':approvalSha256}});
+  const skip={approvalPath:'APPROVAL.md',approvalSha256,rationale:'The exact supplied approval defines this generic test scope.'};
+  let turn=0;const observed=[];
+  const calls=[{name:'skill_select',arguments:JSON.stringify({skill:'showdar-build'})},
+    {name:'skip_refinement',arguments:JSON.stringify(skip)}];
+  const result=await runOfflineResponses({...dirs,scenario:hookScenario,suite:hookSuite,model:'offline-hook-fixture',timeoutMs:60_000,
+    fakeResponses:async()=>({output:turn<2?[{type:'function_call',call_id:'hook-'+turn,...calls[turn++]}]:[]}),
+    fakeRuntime:async request=>{
+      const {tool,...args}=request;
+      const output=tool==='skill.select'?await actions.selectSkill(args):await actions.skipRefinement(args);
+      observed.push(output);return output;
+    },
+  });
+  assert.equal(result.status,'NOT_RUN',JSON.stringify(result.reasons));
+  assert.equal(result.execution.agentLaunched,false);
+  assert.equal(result.grading.rubricStatus,'BLOCKED');
+  assert.equal(result.grading.artifacts[0].integrity,'MATCH');
+  const receipt=getScenarioActionObservation(observed[1]);
+  const decision=JSON.parse(observed[1].content);
+  assert.equal(receipt.sourceSha,dirs.sourceSha);
+  assert.equal(receipt.approvalSource.sha256,approvalSha256);
+  assert.equal(decision.workflow.skippedStages[0].stage,'showdar-requirements');
+  assert.equal(decision.workflow.revision,1);
+  assert.equal(decision.claims.requiresIndependentHumanReview,true);
+  assert.equal(createHash('sha256').update(await readFile(receipt.artifact.snapshotFile)).digest('hex'),receipt.artifact.sha256);
+  await assert.rejects(actions.skipRefinement(skip),/already accounted/);
+  const trace=JSON.parse(await readFile(result.capturedTrace.tracePath));
+  assert.deepEqual(trace.events.map(event=>event.kind),['skill_selected','decision_recorded','file_written']);
+  assert.ok(trace.events.every(event=>event.evidence==='host-scenario-runtime'));
+  assert.equal(trace.execution.kind,'simulated');assert.equal(trace.behavioralStatus,'BLOCKED');
+  const replay=createRunnerCapture({directory:dirs.evidenceDir,scenarioId:'HOOK-CONTRACT',sourceSha:dirs.sourceSha,modelIdentity:'none'});
+  assert.throws(()=>replay.observeAction({tool:'refinement.skip',...skip},observed[1]),/replay/);
 }));
 
 test('real tool boundary denies traversal and symlink escapes, excludes credentials and preserves snapshot integrity', {timeout:90_000},async()=>withFixture(async dirs=>{

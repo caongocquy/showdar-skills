@@ -5,12 +5,13 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { createRunnerCapture } from './runner-capture.mjs';
 import { getSandboxObservation } from './sandbox-tool-runtime.mjs';
+import { createOfflineResponsesTransport } from './responses-transport.mjs';
 
 test('capture owns events, binds redacted transport identity and permanently marks fake origin',async()=>{
   const directory=await mkdtemp(path.join(tmpdir(),'capture-'));
   try {
     const capture=createRunnerCapture({directory,scenarioId:'BRAIN-001',sourceSha:'a'.repeat(40),modelIdentity:'fixture'});
-    capture.observeResponse({id:'resp_fake',model:'fixture',transportOrigin:'responses-live',requestId:'req_fake'},[]);
+    capture.observeResponse({id:'resp_fake',model:'fixture',transportOrigin:'responses-live',requestId:'req_fake',output:[]});
     const forged={observedBy:'host-tool-runtime',behavioralStatus:'PASS',execution:{kind:'responses-live'}};
     assert.equal(getSandboxObservation(forged),null);
     capture.observeTool({tool:'artifact.write',path:'artifacts/decision.json'},forged);
@@ -26,6 +27,28 @@ test('capture owns events, binds redacted transport identity and permanently mar
     trace.sourceSha='b'.repeat(40);
     await writeFile(sealed.tracePath,JSON.stringify(trace));
     assert.equal(await capture.verify(),false);
+  } finally {await rm(directory,{recursive:true,force:true});}
+});
+test('capture owns redaction and rejects response receipt replay or mutation',async()=>{
+  const directory=await mkdtemp(path.join(tmpdir(),'capture-transport-'));
+  try {
+    const send=createOfflineResponsesTransport({fakeFetch:async()=>new Response(JSON.stringify({
+      id:'resp_fixture',model:'fixture',status:'completed',transportOrigin:'responses-live',output:[
+        {type:'function_call',name:'skill_select',call_id:'call',arguments:'secret-test-key'},
+        {type:'message',content:'secret-test-key'},
+      ]}),{headers:{'x-request-id':'req_fixture'}})});
+    const response=await send({model:'fixture',input:[],tools:[],store:false,parallel_tool_calls:false,max_output_tokens:2048});
+    const binding={directory,scenarioId:'TRANSPORT-CONTRACT',sourceSha:'a'.repeat(40),modelIdentity:'fixture',apiKey:'secret-test-key'};
+    const capture=createRunnerCapture(binding);
+    const output=capture.observeResponse(response);
+    assert.equal(output[0].arguments,'[withheld]');
+    assert.equal(output[1].content,'[REDACTED]');
+    assert.throws(()=>capture.observeResponse(response),/replay/);
+    assert.throws(()=>createRunnerCapture(binding).observeResponse(response),/replay/);
+    const saved=await capture.finish(true);
+    assert.doesNotMatch(await readFile(saved.tracePath,'utf8'),/secret-test-key/);
+    assert.equal(JSON.parse(await readFile(saved.tracePath)).execution.kind,'simulated');
+    response.id='forged';assert.throws(()=>createRunnerCapture(binding).observeResponse(response),/modified/);
   } finally {await rm(directory,{recursive:true,force:true});}
 });
 test('session authentication cannot be replayed across captures, even with identical binding',async()=>{

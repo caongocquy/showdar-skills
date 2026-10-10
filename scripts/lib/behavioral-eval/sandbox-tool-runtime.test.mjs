@@ -1,10 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { mkdtemp, mkdir, rm, symlink, writeFile } from 'node:fs/promises';
+import { access, mkdtemp, mkdir, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { buildSandboxToolArgs, runSandboxedTool } from './sandbox-tool-runtime.mjs';
+import { assertSourceRevision, buildSandboxToolArgs, runSandboxedTool } from './sandbox-tool-runtime.mjs';
 import { prepareBrokerCommand, BrokerPolicyError } from './typed-command-broker.mjs';
 
 const id = 'sha256:' + 'b'.repeat(64);
@@ -128,4 +128,15 @@ test('dirty source checkout is rejected even when HEAD matches the requested SHA
     await assert.rejects(()=>runSandboxedTool({request:{tool:'fixture.read',path:'README.md'},workspace,sourceRoot,evidenceDir,
       imageId:id,sourceSha,readPaths:['README.md']}),error=>error instanceof BrokerPolicyError&&/uncommitted changes/.test(error.message));
   } finally {await rm(root,{recursive:true,force:true});}
+});
+test('source cleanliness check never executes a repository-configured fsmonitor command',async()=>{
+  const root=await mkdtemp(path.join(tmpdir(),'source-fsmonitor-'));
+  const source=path.join(root,'source'),sentinel=path.join(root,'executed');
+  await mkdir(source);
+  execFileSync('/usr/bin/git',['-C',source,'init','--quiet']);
+  execFileSync('/usr/bin/git',['-C',source,'-c','user.name=Hook Test','-c','user.email=test@example.invalid','commit','--allow-empty','--quiet','-m','source']);
+  const sourceSha=execFileSync('/usr/bin/git',['-C',source,'rev-parse','HEAD'],{encoding:'utf8'}).trim();
+  execFileSync('/usr/bin/git',['-C',source,'config','core.fsmonitor',`touch ${sentinel}`]);
+  try {await assertSourceRevision(source,sourceSha);await assert.rejects(access(sentinel));}
+  finally {await rm(root,{recursive:true,force:true});}
 });
