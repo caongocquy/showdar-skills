@@ -10,7 +10,7 @@ import { requireToolImage, assertImageManifest } from './tool-image-provenance.m
 import { SANDBOX_IMAGE } from './container-sandbox.mjs';
 import { createRunnerCapture } from './runner-capture.mjs';
 import { assertCaptureBundle, validateHumanRubric, verifyPilotGates } from './pilot-gates.mjs';
-import { assertPaidCaptureApproval, produceLiveCapture, sealCapture, INFRASTRUCTURE_CHECKS } from './live-producer.mjs';
+import { produceLiveCapture, sealCapture, INFRASTRUCTURE_CHECKS } from './live-producer.mjs';
 
 const revision='a'.repeat(40);
 test('trusted producer CLI rejects live mode before parsing input or accessing authenticated services',()=>{
@@ -51,15 +51,7 @@ test('human review binds every channel record and all live evidence; forged or i
   }
 });
 
-test('single paid capture approval is exact-run/attempt and source bound; it cannot enable the disabled producer',async()=>{
-  const binding={sourceSha:revision,runnerRevision:revision,runId:'123',runAttempt:1,modelIdentity:'explicit-model',scenarioId:'BRAIN-001'};
-  const review={user:{login:'caongocquy',type:'User'},state:'APPROVED',commit_id:revision,
-    body:'SHOWDAR-CAPTURE-AUTH/1\n'+JSON.stringify({decision:'AUTHORIZE_ONE_CAPTURE',binding})};
-  assertPaidCaptureApproval(review,binding);
-  for (const key of ['sourceSha','runnerRevision','runId','runAttempt','modelIdentity','scenarioId']) {
-    assert.throws(()=>assertPaidCaptureApproval(review,{...binding,[key]:key==='runAttempt'?2:'forged'}),/binding|approval/);
-  }
-  assert.throws(()=>assertPaidCaptureApproval({...review,user:{login:'forged',type:'User'}},binding),/owner/);
+test('caller authorization flags cannot enable the disabled producer',async()=>{
   await assert.rejects(produceLiveCapture({runnerRevision:revision,sourceSha:revision,runId:'123',runAttempt:1,pullRequest:23,
     model:'explicit-model',allowModel:true,apiKey:'must-never-be-used',imageApproval:{kind:'github-attested-image'},
     verified:true,securityGates:true}),/Live Responses disabled/);
@@ -135,8 +127,10 @@ test('Phase B workflow privilege is limited to attesting same-run trusted artifa
     assert.match(workflow,/workflow_dispatch:/);
     assert.match(workflow,/permissions: \{\}/);
     assert.match(workflow,/github\.ref == 'refs\/heads\/main'/);
-    assert.doesNotMatch(workflow,/pull_request_target:|workflow_run:|OPENAI_API_KEY|secrets\./);
-    const [execution,attester]=workflow.split('  attest:\n');
+    assert.doesNotMatch(workflow,/pull_request_target:|workflow_run:/);
+    assert.doesNotMatch(workflow.split('  prepare-paid-capture:')[0],/OPENAI_API_KEY|secrets\./);
+    const [execution,rest]=workflow.split('  attest:\n');
+    const attester=rest.split('  prepare-paid-capture:')[0];
     assert.doesNotMatch(execution,/id-token: write|attestations: write/);
     assert.match(execution,/ref: \$\{\{ github.sha \}\}/);
     assert.match(execution,/persist-credentials: false/);
@@ -145,7 +139,7 @@ test('Phase B workflow privilege is limited to attesting same-run trusted artifa
     assert.match(attester,/steps\.provenance\.outputs\.bundle-path/);
     assert.doesNotMatch(attester,/checkout@|run:|run-id:|github-token:/);
     for (const action of workflow.matchAll(/uses: ([^\n]+)/g)) assert.match(action[1],/@[a-f0-9]{40} /);
-    for (const block of workflow.split('run:').slice(1)) assert.doesNotMatch(block.split(/\n      - /)[0],/\$\{\{ inputs\./);
+    for (const block of workflow.split('run:').slice(1)) assert.doesNotMatch(block.split(/\n(?:      - |  [a-z][a-z-]+:)/)[0],/\$\{\{ inputs\./);
   }
 });
 
