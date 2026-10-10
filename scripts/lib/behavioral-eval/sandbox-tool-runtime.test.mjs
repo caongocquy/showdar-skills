@@ -23,6 +23,16 @@ test('tool process uses the same hardened Docker flag contract as isolation prob
   assert.equal(args.some((x,i)=>args[i-1]==='--mount' && x.includes('docker.sock')),false);
 });
 
+test('model tool content is carried only via stdin, never Docker process argv', () => {
+  const secret='private-eval-content-do-not-expose';
+  const args=buildSandboxToolArgs({workspace,imageId:id,name,
+    request:{tool:'artifact.write',path:'artifacts/a.txt',content:secret}});
+  assert.equal(args[0],'run');
+  assert.ok(args.includes('-i'));
+  assert.equal(args.join(' ').includes(secret),false);
+  assert.equal(args.join(' ').includes(Buffer.from(secret).toString('base64')),false);
+});
+
 test('no mutable image tag or invalid workspace can reach Docker', () => {
   for (const bad of ['node:24-alpine','sha256:bad','a'.repeat(64),null]) {
     assert.throws(()=>buildSandboxToolArgs({workspace,imageId:bad,name,request:{tool:'git.status'}}),BrokerPolicyError);
