@@ -1,4 +1,4 @@
-# Responses runner offline slice
+# Responses runner and TASK-002 trust gates
 
 This is an offline Responses API function-call contract, not a verified live runner.
 The loop follows the official [function calling guide](https://developers.openai.com/api/docs/guides/function-calling): strict custom function schemas, `function_call` arguments and `function_call_output` items, accumulated response items, `store:false`, and serial tool dispatch. No shell, web, MCP, browser, package installer or arbitrary executable is exposed. `runOfflineResponses` accepts only explicitly named fake transports. The live entry point unconditionally blocks; it does not perform API requests or credential handoff.
@@ -28,7 +28,45 @@ Model-authored JSON flows through a **bounded stdin pipe**, not Docker CLI argv,
 
 `trusted-evidence.mjs` verifies the output and trace bytes against their SHA-256 values, requires `gh attestation verify` to validate the evidence envelope, output and trace for the pinned repository and signer workflow, checks that the trace matches the frozen scenario oracle, and independently checks the GitHub Actions run and PR head metadata. It then requires an APPROVED GitHub PR review by a human with repository write association. The reviewer must differ from the CI actor and PR author. The review body starts with `SHOWDAR-RUBRIC/1` followed by JSON binding the evidence digest, output and trace digests, source SHA, scenario, model identity, run ID and every rubric criterion with a PASS/FAIL grade. A replayed, stale, malformed, self-authored, bot-authored or mismatched review is BLOCKED. Any unavailable GitHub API, CLI, token, attestation or artifact also returns BLOCKED.
 
-These gates establish artifact provenance and separate human approval; they do not create observable scenario events or an independent behavioral grade. The live runner remains unconditionally disabled. GitHub's `workflow_run` attester must exist on the repository's default branch before it can produce attestations; this branch cannot verify that trigger without merging, which is outside the task scope.
+These gates check artifact provenance and separate human approval. A matching authenticated review now produces `rubricStatus: APPROVED` or `REJECTED` while behavioral `status` remains `BLOCKED`. A review cannot enable the undeployed live capture producer. Simulated capture, CI-only envelopes and caller-substituted signer workflows are rejected before review. GitHub's `workflow_run` attester must exist on `main` before it can produce attestations. The minimal bootstrap is PR #24; it must not be merged without Leo's approval.
+
+## Phase A bootstrap security and real attestation acceptance
+
+The bootstrap contains only the workflow and the self-contained generator/security tests. Privileged jobs check out `github.sha` on `refs/heads/main`, with credentials not persisted and action revisions pinned. They never check out or execute PR code, install PR dependencies, use PR caches, or consume upstream PR artifacts. Fork runs are denied. Before evidence is minted, authenticated GitHub API lookups check repository identity, workflow ID/path, run ID/attempt, current PR SHA, same-repository head, open PR and target `main`. A failed lookup, ambiguous association, replayed attempt or stale source fails closed.
+
+Only the attester job has OIDC/attestation write permissions. The independent verify job has read permissions and downloads the artifact from its own attester workflow run, verifies both JSON files with GitHub CLI at the exact source/signer SHA and `refs/heads/main`, denies self-hosted runners, and checks payload/envelope integrity plus upstream/attester run-attempt binding. All event inputs used by shell steps are environment variables in quoted arguments; numeric trigger IDs are validated by the trusted generator.
+
+Model-free E2E acceptance after an approved bootstrap merge:
+
+1. Complete or re-run `Verify PR` on an open same-repository PR at its current HEAD.
+2. Require the `Attest behavioral evaluation CI evidence` workflow's separate `attest` and `verify` jobs to succeed.
+3. Independently download `behavioral-evaluation-evidence` from that attester run; verify both files with `gh attestation verify`, the exact repository/workflow, `--source-ref refs/heads/main`, exact `--source-digest` and `--signer-digest`, and `--deny-self-hosted-runners`.
+4. Require exact source, trigger run/attempt, attester run/attempt and payload SHA-256. Modified bytes or changed run-attempt bindings must fail. Fork, failed and stale-source events must not mint evidence.
+5. Confirm valid evidence still says `TASK-002-CI`, model `none (model-free CI)` and `BLOCKED`. No model key is needed.
+
+Before bootstrap is on `main`, PR CI verifies the code and security regressions; real attestation creation and verification remain **BLOCKED**.
+
+## Phase B transport and runner capture
+
+`responses-transport.mjs` implements the non-streaming POST contract at the fixed HTTPS Responses endpoint: `store:false`, serial strict functions, bounded request and streamed response bodies, exact requested model identity, cancellation, no redirects and no automatic retries. HTTP error bodies and exception text are withheld. The explicit live opt-in is additionally blocked by a private deployment gate; no caller flag, fake transport or environment variable can enable it. Tests use only fake HTTP responses. No real API request was made.
+
+`runner-capture.mjs` captures response IDs, returned model identity, request IDs, redacted transcript, ordered tool/file events and SHA-256 bindings outside the fixture. A process-private random HMAC key seals each host session; it is never persisted or passed to the model/tool. This authenticates local session integrity and rejects tampering/replay across captures; it is not durable GitHub origin authentication. The Docker runtime brands its actual returned objects in a private WeakMap and detects mutated result bytes. Caller-authored JSON cannot forge that brand. Only those objects yield actual host tool receipts; injected runtime results stay simulated. Host file paths and receipt metadata are removed from function-call outputs.
+
+`node scripts/behavioral-eval-verify-evidence.mjs --evidence evidence.json --artifact artifact.bin --trace trace.json --expected expected.json` independently invokes the pinned attestation verifier and authenticated GitHub review lookup. The operator supplies expected source/scenario/model, upstream run/attempt, attester run/attempt/source SHA and artifact/trace digests; frozen rubric/event IDs are loaded internally. GitHub credentials come only from the host `GITHUB_TOKEN`. The review must bind every field and its reviewer must differ from both run actors and the PR author. A valid human approval is reported separately while the CLI still exits nonzero for behavioral `BLOCKED`.
+
+The model-free HTTP-to-broker-to-Docker-to-capture integration now exercises those seams on CI. Its model transport and execution remain permanently simulated even when the tool subprocesses are real. Runner-owned tool/file/verification observations cannot establish skill selection, lifecycle decisions, permission interactions or qualitative behavior. Those semantic hooks and the trusted live producer are still missing. `BRAIN-001` specifically requires actual `skill_selected(showdar-build)` and `decision_recorded(skip-refinement)` observations; selecting events from the frozen oracle or interpreting a model claim as an observation is forbidden.
+
+## Exact pilot readiness criteria (all required)
+
+- Approved bootstrap deployment on `main`, followed by the real model-free attestation E2E above. PR CI success alone does not satisfy it.
+- A reviewed trusted live capture producer installed on `main`, using trusted runner code only. Evaluated source SHA, scenario hash/ID, exact model identity, execution/response IDs, workflow run/attempt, runner revision, transcript/trace/artifact SHA-256 and tool-image identity must be bound into authenticated evidence. It must distinguish live, simulated and CI-only origins internally; submitted JSON cannot set origin.
+- Independent provenance/integrity verification at the pinned signer/source SHA and exact run/attempt. Tamper, replay, source mismatch, unknown signer, unavailable API and incomplete metadata must return `BLOCKED`.
+- Source binding before the first model request and after capture, plus current-SHA Docker isolation, credential-leakage, traversal/symlink, timeout and artifact-integrity regressions. The tool image must have a reviewed immutable build provenance; arbitrary local image IDs are insufficient.
+- Actual runner hooks for every required/forbidden pilot event, including the two `BRAIN-001` semantic events and permission/interaction observation. No `emit_event` tool, oracle-generated event or simulated transport may satisfy these gates.
+- A separate human reviewer authenticated through GitHub reviews, distinct from the PR author, execution actor and capture actor. Review must bind the exact source, evidence/trace/artifact digests, run/attempt, model/scenario and all frozen rubric IDs. Approval and negative/dismissed/stale/bot/forged review regressions must pass; behavioral grading remains blocked until verified live origin and complete observations exist.
+- Current-SHA CI green, explicit approval to enable the verified deployment gate, and separate explicit paid-pilot spend authorization. Neither approval is inferred from this implementation task.
+
+TASK-002 remains incomplete and the pilot is **NO-GO** until every criterion is met. The first paid pilot must still return `BLOCKED` until its actual evidence is independently verified and reviewed; model-free tests never establish behavioral PASS.
 
 To run the isolated integration check on a Docker-capable Ubuntu host (no model calls):
 

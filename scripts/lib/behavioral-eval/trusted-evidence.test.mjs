@@ -19,8 +19,10 @@ async function setup() {
   const evidencePath=path.join(root,'evidence.json'),artifactPath=path.join(root,'artifact.bin'),tracePath=path.join(root,'trace.json');
   const artifactBytes=Buffer.from('reviewable output'),sourceSha='a'.repeat(40),workflowRunId='38016557871',pullRequest=23;
   const trace=Buffer.from(JSON.stringify({schemaVersion:1,scenarioId:scenario.id,sourceSha,complete:true,
-    events:scenario.oracle.required.map(({kind,attributes})=>({kind,attributes}))}));
-  const evidence={schemaVersion:1,scenarioId:scenario.id,sourceSha,modelIdentity:'fixture-model',workflowRunId,pullRequest,
+    execution:{kind:'responses-live',agentLaunched:true},responses:[{origin:'responses-live',id:'resp_fixture'}],
+    events:scenario.oracle.required.map(({kind,attributes})=>({kind,attributes,evidence:'host-runner'}))}));
+  const captureBinding={workflowRunAttempt:1,attesterRunId:'44',attesterRunAttempt:1,attesterSourceSha:'b'.repeat(40)};
+  const evidence={...captureBinding,schemaVersion:1,scenarioId:scenario.id,sourceSha,modelIdentity:'fixture-model',workflowRunId,pullRequest,
     artifactSha256:sha(artifactBytes),traceSha256:sha(trace),rubricIds:scenario.oracle.rubric.map(rule=>rule.id),
     requiredEvents:scenario.oracle.required.map(event=>event.id),execution:{kind:'responses-live',agentLaunched:true},
     behavioralStatus:'READY_FOR_REVIEW'};
@@ -30,23 +32,26 @@ async function setup() {
   const review={state:'APPROVED',commit_id:sourceSha,author_association:'MEMBER',user:{login:'reviewer',type:'User'},
     body:'SHOWDAR-RUBRIC/1\n'+JSON.stringify({decision:'APPROVED',evidenceSha256:sha(evidenceBytes),
       artifactSha256:evidence.artifactSha256,traceSha256:evidence.traceSha256,sourceSha,scenarioId:scenario.id,
-      modelIdentity:evidence.modelIdentity,workflowRunId,grades})};
+      ...captureBinding,modelIdentity:evidence.modelIdentity,workflowRunId,grades})};
   const base=`https://api.github.com/repos/caongocquy/showdar-skills`;
-  const run={id:Number(workflowRunId),head_sha:sourceSha,conclusion:'success',event:'pull_request',
+  const run={run_attempt:1,id:Number(workflowRunId),head_sha:sourceSha,conclusion:'success',event:'pull_request',
     path:'.github/workflows/verify-pr.yml@refs/pull/23/merge',actor:{login:'runner'},
     pull_requests:[{number:pullRequest,head:{sha:sourceSha}}]};
   const pull={number:pullRequest,head:{sha:sourceSha},user:{login:'author'}};
   const oldPath=process.env.PATH;process.env.PATH=`${bin}:${oldPath ?? ''}`;
   const oldFetch=globalThis.fetch;
-  let api={run,pull,reviews:[review]};
+  let api={run,pull,reviews:[review],captureRun:{id:44,run_attempt:1,head_sha:captureBinding.attesterSourceSha,
+    head_branch:'main',event:'workflow_run',conclusion:'success',repository:{full_name:'caongocquy/showdar-skills'},
+    path:'.github/workflows/behavioral-evidence-attestation.yml',actor:{login:'attester'}}};
   globalThis.fetch=async url=>{
     const value=String(url);
+    if(value===`${base}/actions/runs/44`) return {ok:true,json:async()=>api.captureRun};
     if(value===`${base}/actions/runs/${workflowRunId}`) return {ok:true,json:async()=>api.run};
     if(value===`${base}/pulls/${pullRequest}`) return {ok:true,json:async()=>api.pull};
     if(value.startsWith(`${base}/pulls/${pullRequest}/reviews`)) return {ok:true,headers:{get:()=>api.reviewNext?'next; rel="next"':null},json:async()=>api.reviews};
     return {ok:false,status:404,json:async()=>({})};
   };
-  const expected={sourceSha,scenarioId:scenario.id,modelIdentity:evidence.modelIdentity,workflowRunId,
+  const expected={...captureBinding,sourceSha,scenarioId:scenario.id,modelIdentity:evidence.modelIdentity,workflowRunId,
     pullRequest,artifactSha256:evidence.artifactSha256,traceSha256:evidence.traceSha256};
   return {root,evidencePath,artifactPath,tracePath,api,setApi:value=>{api=value;},expected,
     cleanup:async()=>{globalThis.fetch=oldFetch;if(oldPath===undefined) delete process.env.PATH;else process.env.PATH=oldPath;await rm(root,{recursive:true,force:true});}};
@@ -57,21 +62,25 @@ async function verify(state) {
     signerWorkflow:'caongocquy/showdar-skills/.github/workflows/behavioral-evidence-attestation.yml',expected:state.expected,token:'test-token'});
 }
 
-test('attestation, source/run binding, captured events, artifact integrity and human grading pass together',async()=>{
+test('verified evidence connects human rubric approval while undeployed live capture remains BLOCKED',async()=>{
   const state=await setup();
   try {
     const result=await verify(state);
-    assert.deepEqual(result,{status:'PASS',reviewer:'reviewer'});
+    assert.equal(result.status,'BLOCKED');
+    assert.equal(result.rubricStatus,'APPROVED');
+    assert.equal(result.reviewer,'reviewer');
   } finally {await state.cleanup();}
 });
 
 test('tampering, source mismatch and replay block before rubric grading',async()=>{
-  for(const mode of ['artifact','source','run','reviewNext']) {
+  for(const mode of ['artifact','source','run','reviewNext','attempt','captureAttempt']) {
     const state=await setup();
     try {
       if(mode==='artifact') await writeFile(state.artifactPath,'tampered');
       if(mode==='source') state.expected.sourceSha='b'.repeat(40);
       if(mode==='run') state.setApi({...state.api,run:{...state.api.run,id:38016557870}});
+      if(mode==='attempt') state.setApi({...state.api,run:{...state.api.run,run_attempt:2}});
+      if(mode==='captureAttempt') state.setApi({...state.api,captureRun:{...state.api.captureRun,run_attempt:2}});
       if(mode==='reviewNext') state.setApi({...state.api,reviewNext:true});
       assert.equal((await verify(state)).status,'BLOCKED',mode);
     } finally {await state.cleanup();}
@@ -81,6 +90,8 @@ test('tampering, source mismatch and replay block before rubric grading',async()
 test('forged, bot, self-authored, stale and mismatched approvals never pass',async()=>{
   for(const change of [
     review=>({...review,user:{login:'runner',type:'User'}}),
+    review=>({...review,user:{login:'attester',type:'User'}}),
+    review=>({...review,user:{login:'author',type:'User'}}),
     review=>({...review,user:{login:'reviewer',type:'Bot'}}),
     review=>({...review,author_association:'NONE'}),
     review=>({...review,state:'CHANGES_REQUESTED'}),
@@ -104,4 +115,30 @@ test('missing authentication, unverifiable attestations and missing artifacts bl
     await rm(state.tracePath);
     assert.equal((await verify(state)).status,'BLOCKED');
   } finally {await state.cleanup();}
+});
+
+test('simulated events, CI-only envelopes and signer substitution never reach human approval',async()=>{
+  for (const mode of ['trace','ci','signer']) {
+    const state=await setup();
+    try {
+      if (mode==='trace') {
+        const trace=JSON.parse(await readFile(state.tracePath));
+        trace.events[0].evidence='simulated-runtime';
+        const bytes=Buffer.from(JSON.stringify(trace));
+        await writeFile(state.tracePath,bytes);
+        const evidence=JSON.parse(await readFile(state.evidencePath));
+        evidence.traceSha256=sha(bytes);state.expected.traceSha256=sha(bytes);
+        await writeFile(state.evidencePath,JSON.stringify(evidence));
+      }
+      if (mode==='ci') {
+        const evidence=JSON.parse(await readFile(state.evidencePath));
+        evidence.behavioralStatus='BLOCKED';evidence.scenarioId='TASK-002-CI';
+        await writeFile(state.evidencePath,JSON.stringify(evidence));
+      }
+      const result=mode==='signer' ? await verifyTrustedEvidence({...state,repository:'caongocquy/showdar-skills',
+        signerWorkflow:'attacker/fork/.github/workflows/attest.yml',expected:state.expected,token:'test-token'}) : await verify(state);
+      assert.equal(result.status,'BLOCKED');
+      assert.equal(result.rubricStatus,undefined);
+    } finally {await state.cleanup();}
+  }
 });

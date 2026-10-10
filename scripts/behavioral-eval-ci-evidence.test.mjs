@@ -1,49 +1,62 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { createCiEvidence } from './behavioral-eval-ci-evidence.mjs';
-import { assertEvidenceBinding } from './lib/behavioral-eval/trusted-evidence.mjs';
+import { createCiEvidence, verifyCiEnvelope } from './behavioral-eval-ci-evidence.mjs';
 
-const event={repository:{full_name:'caongocquy/showdar-skills'},workflow_run:{
-  id:38016557871,name:'Verify PR',event:'pull_request',path:'.github/workflows/verify-pr.yml@refs/pull/23/merge',conclusion:'success',
-  head_sha:'a'.repeat(40),pull_requests:[{number:23,head:{sha:'a'.repeat(40)}}],
-}};
+const repo = {full_name:'caongocquy/showdar-skills',default_branch:'main'};
+const run = {id:42,run_attempt:1,workflow_id:7,name:'Verify PR',event:'pull_request',
+  path:'.github/workflows/verify-pr.yml@refs/pull/23/merge',conclusion:'success',
+  repository:repo,head_repository:repo,head_sha:'a'.repeat(40),pull_requests:[{number:23,head:{sha:'a'.repeat(40)}}]};
+const pull = {number:23,state:'open',head:{sha:run.head_sha,repo},base:{ref:'main',repo}};
+const context = {GITHUB_REPOSITORY:repo.full_name,GITHUB_SHA:'b'.repeat(40),GITHUB_REF:'refs/heads/main',
+  GITHUB_EVENT_NAME:'workflow_run',GITHUB_RUN_ID:'43',GITHUB_RUN_ATTEMPT:'1',TRIGGER_RUN_ID:'42',TRIGGER_RUN_ATTEMPT:'1'};
+const github = async resource => resource.startsWith('pulls') ? pull : resource.startsWith('actions/runs') ? run : {id:7,path:'.github/workflows/verify-pr.yml'};
 
-test('trusted workflow evidence is bound to the completed source run and is never behavioral PASS',async()=>{
-  const dir=await mkdtemp(path.join(tmpdir(),'showdar-ci-evidence-'));
-  const previous=process.env.GITHUB_REPOSITORY;
-  process.env.GITHUB_REPOSITORY='caongocquy/showdar-skills';
+test('model-free envelope binds source, trigger attempt and attester; integrity checked independently',async()=>{
+  const dir = await mkdtemp(path.join(tmpdir(),'ci-attestation-'));
   try {
-    const {evidence}=await createCiEvidence(event,dir);
-    const payload=await readFile(path.join(dir,'payload.json'));
-    assert.equal(evidence.sourceSha,event.workflow_run.head_sha);
-    assert.equal(evidence.workflowRunId,String(event.workflow_run.id));
-    assert.equal(evidence.scenarioId,'TASK-002-CI');
-    assert.equal(evidence.modelIdentity,'none (model-free CI)');
-    assert.equal(evidence.artifactSha256,createHash('sha256').update(payload).digest('hex'));
+    const {evidence} = await createCiEvidence({repository:repo,workflow_run:run},dir,{context,github});
     assert.equal(evidence.behavioralStatus,'BLOCKED');
-    assert.throws(()=>assertEvidenceBinding(evidence,{...evidence,rubricIds:[],requiredEvents:[]},payload,Buffer.from('')),/Invalid evidence envelope/);
-  } finally {
-    if(previous===undefined) delete process.env.GITHUB_REPOSITORY; else process.env.GITHUB_REPOSITORY=previous;
-    await rm(dir,{recursive:true,force:true});
-  }
+    assert.equal(evidence.sourceSha,run.head_sha);
+    assert.deepEqual(await verifyCiEnvelope(dir,context),{status:'VERIFIED_CI_ONLY',behavioralStatus:'BLOCKED'});
+    await assert.rejects(verifyCiEnvelope(dir,{...context,GITHUB_RUN_ATTEMPT:'2'}));
+    await writeFile(path.join(dir,'payload.json'),'tampered');
+    await assert.rejects(verifyCiEnvelope(dir,context));
+  } finally {await rm(dir,{recursive:true,force:true});}
 });
 
-test('failed, replayed or mismatched workflow metadata cannot mint evidence',async()=>{
-  const dir=await mkdtemp(path.join(tmpdir(),'showdar-ci-evidence-invalid-'));
-  const previous=process.env.GITHUB_REPOSITORY;
-  process.env.GITHUB_REPOSITORY='caongocquy/showdar-skills';
+test('forks, stale source, replay, wrong workflow and malicious events fail closed',async()=>{
+  const dir = await mkdtemp(path.join(tmpdir(),'ci-denied-'));
   try {
-    for(const bad of [
-      {...event,workflow_run:{...event.workflow_run,conclusion:'failure'}},
-      {...event,workflow_run:{...event.workflow_run,head_sha:'bad'}},
-      {...event,repository:{full_name:'attacker/repo'}},
-    ]) await assert.rejects(()=>createCiEvidence(bad,path.join(dir,String(Math.random()))),/Untrusted or incomplete/);
-  } finally {
-    if(previous===undefined) delete process.env.GITHUB_REPOSITORY; else process.env.GITHUB_REPOSITORY=previous;
-    await rm(dir,{recursive:true,force:true});
-  }
+    const event = {repository:repo,workflow_run:run};
+    for (const bad of [
+      {...run,conclusion:'failure'}, {...run,id:'42; echo injected'}, {...run,run_attempt:0},
+      {...run,head_repository:{full_name:'attacker/fork'}}, {...run,pull_requests:[]},
+      {...run,head_sha:'c'.repeat(40)}, {...run,path:'.github/workflows/evil.yml'},
+    ]) await assert.rejects(createCiEvidence({...event,workflow_run:bad},dir,{context,github}));
+    for (const key of ['GITHUB_REPOSITORY','GITHUB_SHA','GITHUB_REF','GITHUB_EVENT_NAME','GITHUB_RUN_ID']) {
+      await assert.rejects(createCiEvidence(event,dir,{context:{...context,[key]:'untrusted'},github}));
+    }
+    for (const current of [{...run,run_attempt:2},{...run,workflow_id:8},{...run,head_sha:'c'.repeat(40)}]) {
+      await assert.rejects(createCiEvidence(event,dir,{context,github:async r=>r.startsWith('actions/runs')?current:github(r)}));
+    }
+    for (const current of [{...pull,head:{...pull.head,sha:'c'.repeat(40)}},{...pull,head:{...pull.head,repo:{full_name:'attacker/fork'}}},
+      {...pull,base:{ref:'develop',repo}},{...pull,state:'closed'}]) {
+      await assert.rejects(createCiEvidence(event,dir,{context,github:async r=>r.startsWith('pulls')?current:github(r)}));
+    }
+    await assert.rejects(createCiEvidence(event,dir,{context,github:async()=>{throw new Error('API unavailable');}}));
+  } finally {await rm(dir,{recursive:true,force:true});}
+});
+
+test('privileged workflow uses trusted SHA and never consumes PR code or artifacts',async()=>{
+  const workflow = await readFile(new URL('../.github/workflows/behavioral-evidence-attestation.yml',import.meta.url),'utf8');
+  assert.ok(workflow.includes('ref: $'+'{{ github.sha }}'));
+  assert.ok(workflow.includes('persist-credentials: false'));
+  assert.ok(workflow.includes('--signer-digest "$TRUSTED_SHA"'));
+  assert.ok(workflow.includes('--deny-self-hosted-runners'));
+  assert.doesNotMatch(workflow,/head_sha|head_branch|pull_request_target|npm |cache@|download-artifact@/);
+  assert.equal((workflow.match(/id-token: write/g) ?? []).length,1);
+  assert.ok(workflow.includes('gh run download "$ATTESTER_RUN_ID"'));
 });

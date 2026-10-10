@@ -7,6 +7,7 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { runOfflineResponses, runResponsesScenario, detectSandbox } from './responses-runner.mjs';
 import { auditCapabilities } from './scenario-capabilities.mjs';
+import { createOfflineResponsesTransport } from './responses-transport.mjs';
 const suite = JSON.parse(await readFile(new URL('../../../evals/behavioral/scenarios.json', import.meta.url), 'utf8'));
 const scenario = suite.scenarios[0];
 const sourceSha = 'a'.repeat(40);
@@ -17,6 +18,22 @@ async function fixture(fn) {
   try { return await fn({ workspace, evidenceDir }); } finally { await rm(root, { recursive:true, force:true }); }
 }
 const call = (name, args, id='call-1') => ({ type:'function_call', call_id:id, name, arguments:JSON.stringify(args) });
+test('model-free HTTP-to-broker-to-authenticated-capture E2E cannot grade a simulated execution',async()=>fixture(async dirs=>{
+  let turn=0;
+  const output=[[call('artifact_write',{path:scenario.oracle.rubric[0].artifact,content:'fixture decision'})],[]];
+  const result=await runOfflineResponses({...dirs,scenario,suite,sourceSha,model:'fixture-model',
+    fakeResponses:createOfflineResponsesTransport({fakeFetch:async()=>new Response(JSON.stringify({
+      id:`resp_${turn}`,status:'completed',model:'fixture-model',output:output[turn++]}),{headers:{'x-request-id':`req_${turn}`}})}),
+    fakeRuntime:async request=>({content:request.content,observedBy:'host-tool-runtime',grade:'PASS'}),
+  });
+  const trace=JSON.parse(await readFile(result.capturedTrace.tracePath));
+  assert.equal(result.status,'NOT_RUN');
+  assert.equal(trace.behavioralStatus,'BLOCKED');
+  assert.equal(trace.execution.agentLaunched,false);
+  assert.equal(trace.responses.length,2);
+  assert.ok(trace.events.every(event=>event.evidence==='simulated-runtime'));
+  assert.equal(result.grading.rubricStatus,'BLOCKED');
+}));
 test('audits all 18 frozen cases without claiming semantic events are observed', () => {
   const audit = auditCapabilities(suite);
   assert.equal(audit.length,18);

@@ -5,11 +5,13 @@ import { realpath, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { prepareBrokerCommand } from './typed-command-broker.mjs';
 import { analyzeRecordedTrace } from './trace-grader.mjs';
+import { createRunnerCapture } from './runner-capture.mjs';
+import { createLiveResponsesTransport, LIVE_TRANSPORT_BLOCKER } from './responses-transport.mjs';
 
 const hash = value => createHash('sha256').update(value).digest('hex');
 const object = value => value !== null && typeof value === 'object' && !Array.isArray(value);
 const LIMIT = 64 * 1024;
-const LIVE_BLOCKER = 'Live Responses execution disabled: separately verified sandbox, credential isolation, trusted capture and independent rubric grading are unsupported';
+const LIVE_BLOCKER = LIVE_TRANSPORT_BLOCKER;
 const properties = {
   git_status: {}, git_diff_check: {},
   fixture_read: { path: { type:'string' } },
@@ -33,8 +35,11 @@ export async function detectSandbox({ probe = promisify(execFile) } = {}) {
 }
 
 /** No supplied flags or callbacks authorize live model or tool execution. */
-export async function runResponsesScenario() {
-  return {status:'BLOCKED', reasons:[LIVE_BLOCKER], execution:{agentLaunched:false}, trustedRunnerSupported:false};
+export async function runResponsesScenario({allowModel=false}={}) {
+  try {await createLiveResponsesTransport({allowModel})();} catch(error) {
+    return {status:'BLOCKED',reasons:[error.message],execution:{agentLaunched:false},trustedRunnerSupported:false};
+  }
+  return {status:'BLOCKED',reasons:[LIVE_BLOCKER],execution:{agentLaunched:false},trustedRunnerSupported:false};
 }
 
 function mediate(name, args, { workspace, scenario, suite }) {
@@ -63,6 +68,7 @@ export async function runOfflineResponses({scenario,suite,sourceSha,model,worksp
   const contains = (parent, child) => child === parent || child.startsWith(parent + path.sep);
   if (contains(fixtureRoot,evidenceRoot) || contains(evidenceRoot,fixtureRoot)) throw new Error('Evidence must be outside and separate from agent fixture');
   const runRoot = await mkdtemp(path.join(evidenceRoot,'run-'));
+  const capture = createRunnerCapture({directory:runRoot,scenarioId:scenario.id,sourceSha,modelIdentity:model});
   const clean = value => {
     let text = String(value);
     if (apiKey) text = text.split(apiKey).join('[REDACTED]');
@@ -88,6 +94,7 @@ export async function runOfflineResponses({scenario,suite,sourceSha,model,worksp
       if(response.output.some(item=>!object(item)||!['function_call','message','reasoning'].includes(item.type))) throw new Error('Unsupported Responses output capability');
       transcript.push(JSON.parse(clean(JSON.stringify(response.output.map(item =>
         item.type === 'function_call' ? {...item, arguments:'[withheld]'} : item)))));
+      capture.observeResponse(JSON.parse(clean(JSON.stringify({id:response.id,model:response.model,requestId:response.requestId}))),transcript.at(-1));
       input.push(...response.output);
       const calls=response.output.filter(item=>item.type==='function_call');
       if(!calls.length){completed=true;break;}
@@ -101,6 +108,7 @@ export async function runOfflineResponses({scenario,suite,sourceSha,model,worksp
         const output=await bounded(()=>fakeRuntime(request));
         if(!object(output)||Buffer.byteLength(JSON.stringify(output))>LIMIT) throw new Error('Invalid or oversized tool output');
         if(request.tool.startsWith('git.') && (!Number.isInteger(output.exitCode)||output.exitCode<0||output.exitCode>255)) throw new Error('Invalid tool exit code');
+        capture.observeTool(request,output);
         events.push({kind:'tool_invoked',attributes:{tool:request.tool},evidence:'simulated-runtime'});
         if(request.tool==='artifact.write') {
           if(typeof output.content!=='string') throw new Error('Artifact bytes unavailable');
@@ -109,7 +117,8 @@ export async function runOfflineResponses({scenario,suite,sourceSha,model,worksp
           snapshots.push({path:request.path,file,sha256:hash(bytes)});
           events.push({kind:'file_written',attributes:{path:request.path},evidence:'simulated-runtime'});
         }
-        input.push({type:'function_call_output',call_id:call.call_id,output:clean(JSON.stringify(output))});
+        const modelOutput=request.tool.startsWith('git.') ? {exitCode:output.exitCode,stdout:output.stdout ?? ''} : {content:output.content};
+        input.push({type:'function_call_output',call_id:call.call_id,output:clean(JSON.stringify(modelOutput))});
       }
     }
     if(!completed) throw new Error('Turn budget exhausted');
@@ -125,10 +134,12 @@ export async function runOfflineResponses({scenario,suite,sourceSha,model,worksp
     artifacts.push({id:rule.id,path:rule.artifact,integrity,grade:'BLOCKED',reason:'Independent qualitative review unsupported'});
   }
   if(artifacts.some(item=>item.integrity==='MISMATCH')) {status='BLOCKED';reasons.push('Captured artifact integrity mismatch');}
+  const capturedTrace = await capture.finish(completed);
+  if (!await capture.verify()) {status='BLOCKED';reasons.push('Host capture integrity mismatch');}
   const result={schemaVersion:1,scenarioId:scenario.id,sourceSha,scenarioHash:hash(JSON.stringify(scenario)),
     status,reasons,execution:{kind:'simulated',agentLaunched:false},trustedRunnerSupported:false,
     events,grading:{rubricStatus:'BLOCKED',artifacts,analysis:analyzeRecordedTrace(scenario,{schemaVersion:1,scenarioId:scenario.id,sourceSha,complete:completed,events},{sourceSha})},
-    evidencePath:path.join(runRoot,'evidence.json')};
+    capturedTrace,evidencePath:path.join(runRoot,'evidence.json')};
   await writeFile(result.evidencePath,JSON.stringify({...result,transcript,snapshots},null,2),{flag:'wx',mode:0o600});
   return result;
 }

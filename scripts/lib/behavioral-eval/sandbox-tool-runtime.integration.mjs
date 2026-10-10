@@ -6,8 +6,9 @@ import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { prepareBrokerCommand } from './typed-command-broker.mjs';
-import { runSandboxedTool } from './sandbox-tool-runtime.mjs';
+import { runSandboxedTool, getSandboxObservation } from './sandbox-tool-runtime.mjs';
 import { runOfflineResponses } from './responses-runner.mjs';
+import { createOfflineResponsesTransport } from './responses-transport.mjs';
 
 const git = (cwd,args) => execFileSync('git',['-C',cwd,...args],{encoding:'utf8'});
 const image = execFileSync('/usr/bin/docker',['image','inspect','--format','{{.Id}}','showdar-eval-tools:ci'],{encoding:'utf8'}).trim();
@@ -46,6 +47,9 @@ test('actual Docker runtime executes only typed Git, fixture read and artifact w
   assert.equal(diff.exitCode,0);
   const read=await run({tool:'fixture.read',path:'README.md'});
   assert.equal(read.content,'fixture content');
+  assert.equal(getSandboxObservation(read).sourceSha,sourceSha);
+  read.content='tampered';
+  assert.throws(()=>getSandboxObservation(read),/modified/);
   const written=await run({tool:'artifact.write',path:'artifacts/decision.json',content:'{"decision":"fixture"}'});
   assert.equal(written.content,'{"decision":"fixture"}');
   assert.equal(await readFile(path.join(workspace,'artifacts/decision.json'),'utf8'),written.content);
@@ -71,14 +75,18 @@ test('real Docker runtime can back the offline Responses function-call loop with
   ];
   const result=await runOfflineResponses({
     ...dirs,scenario,suite,sourceSha,model:'offline-fixture',
-    fakeResponses:async()=>({output:outputs[turn++]}),
+    apiKey:'model-free-transport-sentinel',
+    fakeResponses:createOfflineResponsesTransport({apiKey:'model-free-transport-sentinel',fakeFetch:async(_url,options)=>{
+      assert.doesNotMatch(options.body,/evidenceFile|snapshotFile|host-tool-runtime|model-free-transport-sentinel/);
+      return new Response(JSON.stringify({id:`resp_fixture_${turn}`,model:'offline-fixture',status:'completed',output:outputs[turn++]}),
+        {headers:{'x-request-id':`req_fixture_${turn}`}});
+    }}),
     fakeRuntime:async request=>{
       const tool=await runSandboxedTool({
         request,workspace:dirs.workspace,sourceRoot:dirs.sourceRoot,evidenceDir:dirs.evidenceDir,imageId:image,sourceSha,
         readPaths:[seedFile],writePaths:[artifact],
       });
-      const {evidenceFile,observedBy,behavioralStatus,...modelOutput}=tool;
-      return modelOutput;
+      return tool;
     },
     timeoutMs:60_000,
   });
@@ -87,4 +95,11 @@ test('real Docker runtime can back the offline Responses function-call loop with
   assert.equal(result.grading.rubricStatus,'BLOCKED');
   assert.equal(result.grading.artifacts[0].integrity,'MATCH');
   assert.notEqual(result.grading.artifacts[0].grade,'PASS');
+  const trace=JSON.parse(await readFile(result.capturedTrace.tracePath));
+  assert.equal(trace.execution.kind,'simulated');
+  assert.equal(trace.behavioralStatus,'BLOCKED');
+  assert.ok(trace.events.every(event=>event.evidence==='host-tool-runtime'));
+  assert.ok(trace.events.every(event=>event.receiptSha256 || event.artifactSha256));
+  assert.ok(trace.responses.every(response=>response.origin==='simulated'));
+  assert.equal(trace.authentication.kind,'host-session-hmac-sha256');
 }));

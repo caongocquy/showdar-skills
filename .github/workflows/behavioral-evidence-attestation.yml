@@ -9,39 +9,84 @@ permissions: {}
 
 jobs:
   attest:
-    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'pull_request'
+    if: >-
+      github.repository == 'caongocquy/showdar-skills' &&
+      github.ref == 'refs/heads/main' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.head_repository.full_name == github.repository
     runs-on: ubuntu-22.04
+    timeout-minutes: 5
     permissions:
       actions: read
+      pull-requests: read
       contents: read
       id-token: write
       attestations: write
     steps:
-      - name: Check out trusted default-branch workflow code
-        uses: actions/checkout@v4
+      - name: Check out trusted attester revision
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 24
 
-      - name: Create source-bound model-free evidence
+      - name: Validate authenticated run metadata and create model-free evidence
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: node scripts/behavioral-eval-ci-evidence.mjs
 
-      - name: Attest payload digest
-        uses: actions/attest@v4
+      - name: Attest payload and envelope
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4
         with:
-          subject-path: .behavioral-evidence/payload.json
-
-      - name: Attest evidence envelope
-        uses: actions/attest@v4
-        with:
-          subject-path: .behavioral-evidence/evidence.json
+          subject-path: .behavioral-evidence/*.json
 
       - name: Preserve attested files
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: behavioral-evaluation-evidence
           path: .behavioral-evidence/*.json
           if-no-files-found: error
           retention-days: 30
+
+  verify:
+    needs: attest
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+    permissions:
+      actions: read
+      contents: read
+      attestations: read
+    steps:
+      - name: Check out trusted verifier revision
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Set up Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+
+      - name: Download only this attester run artifact and verify real GitHub provenance
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: caongocquy/showdar-skills
+          ATTESTER_RUN_ID: ${{ github.run_id }}
+          TRUSTED_SHA: ${{ github.sha }}
+          TRIGGER_RUN_ID: ${{ github.event.workflow_run.id }}
+          TRIGGER_RUN_ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
+        run: |
+          gh run download "$ATTESTER_RUN_ID" --name behavioral-evaluation-evidence --dir .behavioral-evidence
+          for file in .behavioral-evidence/payload.json .behavioral-evidence/evidence.json; do
+            gh attestation verify "$file" --repo caongocquy/showdar-skills \
+              --signer-workflow caongocquy/showdar-skills/.github/workflows/behavioral-evidence-attestation.yml \
+              --source-ref refs/heads/main --source-digest "$TRUSTED_SHA" \
+              --signer-digest "$TRUSTED_SHA" --deny-self-hosted-runners
+          done
+          node scripts/behavioral-eval-ci-evidence.mjs --verify
