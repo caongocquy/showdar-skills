@@ -59,3 +59,9 @@ jobs:
 
       - name: Verify real container isolation (model-free)
         run: node --test scripts/lib/behavioral-eval/container-sandbox.integration.mjs
+
+      - name: Build pinned-base offline tool image
+        run: docker build --pull=false -f evals/behavioral/Dockerfile.tool-runtime -t showdar-eval-tools:ci .
+
+      - name: Exercise mediated tools in isolated containers
+        run: node --test scripts/lib/behavioral-eval/sandbox-tool-runtime.integration.mjs
