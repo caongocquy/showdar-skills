@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { createCiEvidence, verifyCiEnvelope } from './behavioral-eval-ci-evidence.mjs';
@@ -20,10 +21,10 @@ test('model-free envelope binds source, trigger attempt and attester; integrity 
     const {evidence} = await createCiEvidence({repository:repo,workflow_run:run},dir,{context,github});
     assert.equal(evidence.behavioralStatus,'BLOCKED');
     assert.equal(evidence.sourceSha,run.head_sha);
-    assert.deepEqual(await verifyCiEnvelope(dir,context),{status:'VERIFIED_CI_ONLY',behavioralStatus:'BLOCKED'});
-    await assert.rejects(verifyCiEnvelope(dir,{...context,GITHUB_RUN_ATTEMPT:'2'}));
+    assert.deepEqual(await verifyCiEnvelope(dir,context,{github}),{status:'VERIFIED_CI_ONLY',behavioralStatus:'BLOCKED'});
+    await assert.rejects(verifyCiEnvelope(dir,{...context,GITHUB_RUN_ATTEMPT:'2'},{github}));
     await writeFile(path.join(dir,'payload.json'),'tampered');
-    await assert.rejects(verifyCiEnvelope(dir,context));
+    await assert.rejects(verifyCiEnvelope(dir,context,{github}));
   } finally {await rm(dir,{recursive:true,force:true});}
 });
 
@@ -59,4 +60,28 @@ test('privileged workflow uses trusted SHA and never consumes PR code or artifac
   assert.doesNotMatch(workflow,/head_sha|head_branch|pull_request_target|npm |cache@|download-artifact@/);
   assert.equal((workflow.match(/id-token: write/g) ?? []).length,1);
   assert.ok(workflow.includes('gh run download "$ATTESTER_RUN_ID"'));
+});
+
+
+test('independent verifier rejects source/PR tampering with a recomputed digest and stale/fork metadata',async()=>{
+  const dir=await mkdtemp(path.join(tmpdir(),'ci-independent-'));
+  try {
+    const {payload}=await createCiEvidence({repository:repo,workflow_run:run},dir,{context,github});
+    for (const changed of [{...payload,sourceSha:'c'.repeat(40)},{...payload,pullRequest:24}]) {
+      const bytes=Buffer.from(JSON.stringify(changed));
+      await writeFile(path.join(dir,'payload.json'),bytes);
+      await writeFile(path.join(dir,'evidence.json'),JSON.stringify({...changed,
+        artifactSha256:createHash('sha256').update(bytes).digest('hex')}));
+      await assert.rejects(verifyCiEnvelope(dir,context,{github}));
+    }
+    const bytes=Buffer.from(JSON.stringify(payload));
+    await writeFile(path.join(dir,'payload.json'),bytes);
+    await writeFile(path.join(dir,'evidence.json'),JSON.stringify({...payload,
+      artifactSha256:createHash('sha256').update(bytes).digest('hex')}));
+    for (const bad of [{...run,run_attempt:2},{...run,head_repository:{full_name:'attacker/fork'}},
+      {...run,head_sha:'c'.repeat(40)},{...run,path:'.github/workflows/evil.yml'}]) {
+      await assert.rejects(verifyCiEnvelope(dir,context,{github:async r=>r.startsWith('actions/runs')?bad:github(r)}));
+    }
+    await assert.rejects(verifyCiEnvelope(dir,context,{github:async()=>{throw new Error('API unavailable');}}));
+  } finally {await rm(dir,{recursive:true,force:true});}
 });
