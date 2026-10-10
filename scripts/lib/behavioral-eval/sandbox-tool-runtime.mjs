@@ -70,6 +70,42 @@ export function buildSandboxToolArgs({workspace,imageId,name,request}={}) {
   return [...safety.slice(0,boundary), '--entrypoint=node', imageId, '-e', TOOL_SCRIPT];
 }
 
+async function runDockerPayload(binary,args,env,payload) {
+  return new Promise((resolve,reject) => {
+    let child;
+    try { child=spawn(binary,args,{env,stdio:['pipe','pipe','pipe'],shell:false,windowsHide:true}); }
+    catch(error) { reject(error);return; }
+    let stdout='',stderr='',received=0,done=false;
+    const settle=(error,output) => {
+      if(done) return;
+      done=true;clearTimeout(timer);
+      if(error) reject(error); else resolve(output);
+    };
+    const timer=setTimeout(()=>{
+      child.kill('SIGKILL');
+      settle(new Error('Docker tool deadline exceeded'));
+    },15000);
+    const append=(where,chunk) => {
+      received+=chunk.length;
+      if(received>MAX_BYTES*2) {
+        child.kill('SIGKILL');
+        settle(new Error('Docker tool output limit exceeded'));
+        return;
+      }
+      if(where==='stdout') stdout+=chunk.toString('utf8'); else stderr+=chunk.toString('utf8');
+    };
+    child.stdout.on('data',chunk=>append('stdout',chunk));
+    child.stderr.on('data',chunk=>append('stderr',chunk));
+    child.on('error',error=>settle(error));
+    child.on('close',(code,signal)=>{
+      if(code!==0) settle(Object.assign(new Error('Docker tool exited with code '+(code ?? signal)),{stderr}));
+      else settle(null,{stdout,stderr});
+    });
+    child.stdin.on('error',()=>{}); // An early-denied tool can close stdin.
+    child.stdin.end(payload);
+  });
+}
+
 /**
  * Model-free execution of a strictly mediated typed tool inside Docker.
  * No model API key or host environment is inherited. Evidence is written by
@@ -94,7 +130,7 @@ export async function runSandboxedTool({
   const env={PATH:'/usr/bin:/bin:/usr/local/bin:/opt/homebrew/bin'};
   let outcome;
   try {
-    const result=await exec(docker,args,{env,timeout:15000,maxBuffer:MAX_BYTES*2,windowsHide:true});
+    const result=await runDockerPayload(docker,args,env,JSON.stringify(typed));
     outcome=JSON.parse(String(result.stdout));
     if (!outcome || typeof outcome !== 'object' || Array.isArray(outcome)) denied('invalid container output');
     if (typed.tool.startsWith('git.')) {
