@@ -19,6 +19,8 @@ const properties = {
   artifact_write: { path: { type:'string' }, content: { type:'string' } },
   skill_select: {skill:{type:'string'}},
   skip_refinement: {approvalPath:{type:'string'},approvalSha256:{type:'string'},rationale:{type:'string'}},
+  approval_request: {scope:{type:'string'},message:{type:'string'}},
+  scope_change: {decision:{type:'string'},message:{type:'string'}},
 };
 const tools = Object.entries(properties).map(([name, fields]) => ({
   type:'function', name, description:`Fixture-only ${name}`,
@@ -64,6 +66,12 @@ function mediate(name, args, { workspace, scenario, suite }) {
         !scenario.oracle.rubric.some(rule=>rule.artifact==='artifacts/decision.json')) throw new Error('Tool denied: unbound skip approval');
     return Object.freeze({tool:'refinement.skip',...args});
   }
+  if (name==='approval_request' || name==='scope_change') {
+    const key=name==='approval_request'?'scope':'decision';
+    const expected=name==='approval_request'?'already-approved-spec':'new-requirements';
+    if (args[key]!==expected || !args.message.trim() || args.message.length>4096) throw new Error('Tool denied: invalid interaction');
+    return Object.freeze({tool:name==='approval_request'?'interaction.approval':'interaction.scope',...args});
+  }
   if (args.path.split(/[\\/]/).some(part => !part || part === '.' || part === '..') || path.isAbsolute(args.path) || args.path.includes('\0')) throw new Error('Tool denied: path escape');
   const allowed = name === 'fixture_read'
     ? Object.keys(suite.fixtureTemplates[scenario.fixture.template].files)
@@ -73,9 +81,9 @@ function mediate(name, args, { workspace, scenario, suite }) {
   return Object.freeze({tool:name === 'fixture_read' ? 'fixture.read' : 'artifact.write', ...args});
 }
 
-/** Offline Responses wire contract only. Both injected transports are deterministic fixtures. */
-export async function runOfflineResponses({scenario,suite,sourceSha,model,workspace,evidenceDir,
-  fakeResponses,fakeRuntime,apiKey='',timeoutMs=1000,maxTurns=8} = {}) {
+/** Shared capture loop. Origin comes only from private transport receipts, never caller flags. */
+export async function runCapturedResponses({scenario,suite,sourceSha,model,workspace,evidenceDir,
+  responses,runtime,apiKey='',timeoutMs=1000,maxTurns=8} = {}) {
   if (!/^[a-f0-9]{40}$/.test(sourceSha ?? '') || typeof model !== 'string' || !model.trim()) throw new Error('Pinned source and explicit model required');
   if (!Number.isInteger(timeoutMs) || timeoutMs < 1 || timeoutMs > 300000 || !Number.isInteger(maxTurns) || maxTurns < 1 || maxTurns > 32) throw new Error('Invalid execution budget');
   const fixtureRoot = await realpath(workspace); const evidenceRoot = await realpath(evidenceDir);
@@ -89,7 +97,10 @@ export async function runOfflineResponses({scenario,suite,sourceSha,model,worksp
     return text.replace(/\bsk-[A-Za-z0-9_-]{12,}\b/g,'[REDACTED]');
   };
   const events=[]; const transcript=[]; const snapshots=[]; const callIds=new Set();
-  const input=[{role:'user',content:scenario.prompt}];
+  const input=[{role:'developer',content:JSON.stringify({scope:'Isolated fixture only; use only the supplied typed tools. Text, tool arguments, results and artifacts are captured for independent human review.',
+    sourceSha,scenarioId:scenario.id,installedSkills:scenario.installedSkills,
+    readableFixturePaths:Object.keys(suite.fixtureTemplates[scenario.fixture.template].files),
+    writableArtifactPaths:scenario.oracle.rubric.map(rule=>rule.artifact)})}, {role:'user',content:scenario.prompt}];
   let status='NOT_RUN'; const reasons=[]; let completed=false;
   const deadline = Date.now()+timeoutMs;
   async function bounded(fn) {
@@ -100,9 +111,9 @@ export async function runOfflineResponses({scenario,suite,sourceSha,model,worksp
     } finally { clearTimeout(timer); }
   }
   try {
-    if(typeof fakeResponses!=='function'||typeof fakeRuntime!=='function') throw new Error('Offline fake transports unavailable');
+    if(typeof responses!=='function'||typeof runtime!=='function') throw new Error('Offline fake transports unavailable');
     for(let turn=0;turn<maxTurns;turn++) {
-      const response=await bounded(()=>fakeResponses({model,input:structuredClone(input),tools:structuredClone(tools),parallel_tool_calls:false,store:false,max_output_tokens:2048}));
+      const response=await bounded(()=>responses({model,input:structuredClone(input),tools:structuredClone(tools),parallel_tool_calls:false,store:false,max_output_tokens:2048}));
       if(!object(response)||!Array.isArray(response.output)||Buffer.byteLength(JSON.stringify(response))>LIMIT) throw new Error('Invalid or oversized Responses output');
       // Only custom function calls and messages are supported; no built-in external tools.
       if(response.output.some(item=>!object(item)||!['function_call','message','reasoning'].includes(item.type))) throw new Error('Unsupported Responses output capability');
@@ -117,10 +128,10 @@ export async function runOfflineResponses({scenario,suite,sourceSha,model,worksp
         // Known credential values never cross into the tool transport, even through model text.
         const request=mediate(call.name,JSON.parse(call.arguments),{workspace:fixtureRoot,scenario,suite});
         if(apiKey && Object.values(request).some(value => typeof value === 'string' && value.includes(apiKey))) throw new Error('Credential exposure denied');
-        const output=await bounded(()=>fakeRuntime(request));
+        const output=await bounded(()=>runtime(request));
         if(!object(output)||Buffer.byteLength(JSON.stringify(output))>LIMIT) throw new Error('Invalid or oversized tool output');
         if(request.tool.startsWith('git.') && (!Number.isInteger(output.exitCode)||output.exitCode<0||output.exitCode>255)) throw new Error('Invalid tool exit code');
-        if (request.tool==='skill.select' || request.tool==='refinement.skip') {
+        if (request.tool==='skill.select' || request.tool==='refinement.skip' || request.tool.startsWith('interaction.')) {
           // Fake action results remain simulated; only private runtime receipts emit semantic events.
           if (getScenarioActionObservation(output)) capture.observeAction(request,output);
           else capture.observeTool(request,output);
@@ -159,4 +170,9 @@ export async function runOfflineResponses({scenario,suite,sourceSha,model,worksp
     capturedTrace,evidencePath:path.join(runRoot,'evidence.json')};
   await writeFile(result.evidencePath,JSON.stringify({...result,transcript,snapshots},null,2),{flag:'wx',mode:0o600});
   return result;
+}
+
+/** Offline callers always receive a simulated, ungraded result. */
+export async function runOfflineResponses({fakeResponses,fakeRuntime,...options}={}) {
+  return runCapturedResponses({...options,responses:fakeResponses,runtime:fakeRuntime});
 }

@@ -22,7 +22,7 @@ export function getScenarioActionObservation(result) {
 }
 
 /** Read pinned skill data and persist a real lifecycle skip. Neither action grants mutation authority. */
-export async function createScenarioActions({sourceRoot,sourceSha,workspace,evidenceDir,imageId,
+export async function createScenarioActions({sourceRoot,sourceSha,workspace,evidenceDir,imageId,imageApproval,
   installedSkills=[],approvalFiles={},decisionArtifact='artifacts/decision.json'}={}) {
   const skills=[...installedSkills];const approvals=structuredClone(approvalFiles);
   const [source,fixture,evidence]=await Promise.all([realpath(sourceRoot),realpath(workspace),realpath(evidenceDir)]);
@@ -46,6 +46,18 @@ export async function createScenarioActions({sourceRoot,sourceSha,workspace,evid
     return result;
   }
   return Object.freeze({
+    requestApproval(request) {return serialized(async()=>{
+      if (!exact(request,['scope','message']) || request.scope!=='already-approved-spec' || !request.message.trim() || request.message.length>4096) denied('approval request capability');
+      await assertSourceRevision(source,sourceSha);
+      return record({tool:'interaction.approval',...request},{content:'Approval request recorded; no approval granted'},
+        {event:{kind:'approval_requested',attributes:{scope:request.scope}},message:request.message});
+    });},
+    changeScope(request) {return serialized(async()=>{
+      if (!exact(request,['decision','message']) || request.decision!=='new-requirements' || !request.message.trim() || request.message.length>4096) denied('scope change capability');
+      await assertSourceRevision(source,sourceSha);
+      return record({tool:'interaction.scope',...request},{content:'Scope change proposal recorded; no mutation authority granted'},
+        {event:{kind:'scope_changed',attributes:{decision:request.decision}},message:request.message});
+    });},
     selectSkill(request) {return serialized(async()=>{
       if (!exact(request,['skill']) || !skills.includes(request.skill)) denied('skill capability');
       await assertSourceRevision(source,sourceSha);
@@ -83,13 +95,13 @@ export async function createScenarioActions({sourceRoot,sourceSha,workspace,evid
         evidence:[{kind:'behavior-defined',quality:'observed',source:'showdar-build'}]});
       const content=JSON.stringify({decision:'skip-refinement',sourceSha,approvalSource:{path:request.approvalPath,sha256:request.approvalSha256},
         claims:{rationale:request.rationale,requiresIndependentHumanReview:true},workflow:next});
-      const written=await runSandboxedTool({sourceRoot:source,sourceSha,workspace:fixture,evidenceDir:evidence,imageId,
+      const written=await runSandboxedTool({sourceRoot:source,sourceSha,workspace:fixture,evidenceDir:evidence,imageId,imageApproval,
         request:{tool:'artifact.write',path:decisionArtifact,content},writePaths:[decisionArtifact]});
       const receipt=getSandboxObservation(written);
       if (!receipt?.artifact || receipt.artifact.sha256!==hash(content)) denied('decision artifact integrity');
       const result=await record({tool:'refinement.skip',...request},{content},{event:{kind:'decision_recorded',attributes:{decision:'skip-refinement'}},
         approvalSource:{path:request.approvalPath,sha256:request.approvalSha256},artifact:receipt.artifact,
-        toolReceiptSha256:hash(JSON.stringify(receipt)),workflowRevision:next.revision});
+        toolReceiptSha256:hash(JSON.stringify(receipt)),toolReceipt:receipt,workflowRevision:next.revision});
       workflow=next;
       return result;
     });},

@@ -58,7 +58,7 @@ async function send(request, {fetchImpl, apiKey, timeoutMs, origin}) {
     if (origin==='responses-live' && (!requestId || requestId.length>256)) throw new Error('Live response identity unavailable');
     const result={...value,requestId,transportOrigin:origin};
     observations.set(result,{kind:'responses-transport-observation',origin,modelIdentity:value.model,
-      responseId:value.id,requestId,resultSha256:hash(result)});
+      responseId:value.id,requestId,requestSha256:hash(request),resultSha256:hash(result)});
     return result;
   } catch {
     // HTTP error bodies and exception text can contain secrets; never return them as evidence.
@@ -77,10 +77,14 @@ export function createOfflineResponsesTransport({fakeFetch,apiKey='',timeoutMs=3
 }
 
 /** Opt-in is necessary; it cannot override the unverified deployment gates. */
+export function assertLiveTransportEnabled(allowModel) {
+  if (allowModel !== true) throw new Error('Explicit paid-model opt-in required');
+  if (!LIVE_EXECUTION_GATES_VERIFIED) throw new Error(LIVE_TRANSPORT_BLOCKER);
+}
+
 export function createLiveResponsesTransport({allowModel=false,apiKey='',timeoutMs=30000} = {}) {
   return async request=>{
-    if (allowModel !== true) throw new Error('Explicit paid-model opt-in required');
-    if (!LIVE_EXECUTION_GATES_VERIFIED) throw new Error(LIVE_TRANSPORT_BLOCKER);
+    assertLiveTransportEnabled(allowModel);
     if (!apiKey) throw new Error('Live credential unavailable');
     return send(request,{fetchImpl:nativeFetch,apiKey,timeoutMs,origin:'responses-live'});
   };

@@ -1,0 +1,88 @@
+name: Verify trusted behavioral producer infrastructure
+
+on:
+  workflow_dispatch:
+    inputs:
+      producer_input:
+        description: 'Pinned JSON: sourceSha, pullRequest, model, image {imageId, archiveSha256, manifestSha256, runnerRevision, runId, runAttempt}'
+        required: true
+        type: string
+
+permissions: {}
+
+jobs:
+  contract:
+    if: github.repository == 'caongocquy/showdar-skills' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      actions: read
+      attestations: read
+      pull-requests: read
+    env:
+      PRODUCER_INPUT: ${{ inputs.producer_input }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+      - name: Validate source and trusted image run before downloading any artifact
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/behavioral-eval-producer.mjs --prepare
+      - name: Download only the validated image build attempt
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          IMAGE_RUN=$(node -e 'console.log(JSON.parse(process.env.PRODUCER_INPUT).image.runId)')
+          IMAGE_ATTEMPT=$(node -e 'console.log(JSON.parse(process.env.PRODUCER_INPUT).image.runAttempt)')
+          gh run download "$IMAGE_RUN" --repo caongocquy/showdar-skills --name "behavioral-tool-image-$IMAGE_ATTEMPT" --dir "$RUNNER_TEMP/approved-image"
+      - name: Test trusted runner code (no evaluated source execution or credentials)
+        run: |
+          npm install --ignore-scripts --no-audit --no-fund --package-lock=false
+          npm run check
+          npm run eval
+          npm run smoke
+          docker pull node@sha256:ebfe2f90462722a7a4de65e91990e97fe0d401c70e0e762c5b53302f905ec1c1
+          node --test scripts/lib/behavioral-eval/container-sandbox.integration.mjs
+          docker build --pull=false -f evals/behavioral/Dockerfile.tool-runtime -t showdar-eval-tools:ci .
+          node --test scripts/lib/behavioral-eval/sandbox-tool-runtime.integration.mjs
+          git diff --check
+      - name: Independently verify image provenance and capture a model-free producer contract
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/behavioral-eval-producer.mjs
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: behavioral-producer-contract-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/capture/evidence.json
+            ${{ runner.temp }}/capture/trace.json
+            ${{ runner.temp }}/capture/artifacts.json
+          if-no-files-found: error
+          retention-days: 90
+
+  attest:
+    needs: contract
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: behavioral-producer-contract-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/capture
+      - uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4
+        with:
+          subject-path: |
+            ${{ runner.temp }}/capture/evidence.json
+            ${{ runner.temp }}/capture/trace.json
+            ${{ runner.temp }}/capture/artifacts.json

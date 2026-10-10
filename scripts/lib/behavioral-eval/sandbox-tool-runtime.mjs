@@ -5,6 +5,7 @@ import { access, mkdir, readFile, realpath, writeFile, lstat } from 'node:fs/pro
 import path from 'node:path';
 import { buildSandboxProbeArgs, SANDBOX_IMAGE } from './container-sandbox.mjs';
 import { BrokerPolicyError, prepareBrokerCommand } from './typed-command-broker.mjs';
+import { requireToolImage } from './tool-image-provenance.mjs';
 
 const exec = promisify(execFile);
 const observations = new WeakMap();
@@ -145,7 +146,7 @@ async function runDockerPayload(binary,args,env,payload) {
  * This is not a whole-agent attestation and cannot yield behavioral PASS.
  */
 export async function runSandboxedTool({
-  request,workspace,sourceRoot,evidenceDir,imageId,sourceSha,readPaths=[],writePaths=[],
+  request,workspace,sourceRoot,evidenceDir,imageId,imageApproval,sourceSha,readPaths=[],writePaths=[],
 }={}) {
   if (typeof sourceRoot !== 'string' || !sourceRoot) denied('pinned source checkout required');
   const root=await realpath(workspace);
@@ -156,6 +157,8 @@ export async function runSandboxedTool({
   const typed=validateRequest(request,root,readPaths,writePaths);
   if (typed.path) await inspectPath(root,typed.path,typed.tool==='artifact.write');
   await assertSourceRevision(source,sourceSha);
+  let imageProvenance;
+  try {imageProvenance=requireToolImage(imageApproval,imageId);} catch(error) {denied(error.message);}
   const docker=await (async()=>{
     for(const candidate of DOCKER_PATHS) { try {await access(candidate);return candidate;} catch {} }
     return null;
@@ -193,7 +196,7 @@ export async function runSandboxedTool({
   }
   const receipt={
     schemaVersion:1,kind:'sandbox-tool-observation',tool:typed.tool,
-    observedAt:new Date().toISOString(),sourceSha,imageId,
+    observedAt:new Date().toISOString(),sourceSha,imageId,imageProvenance,
     requestSha256:createHash('sha256').update(JSON.stringify(request)).digest('hex'),
     resultSha256:createHash('sha256').update(JSON.stringify(outcome)).digest('hex'),
     artifact:artifact ?? null,
