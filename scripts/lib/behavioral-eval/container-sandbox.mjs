@@ -92,7 +92,7 @@ export async function verifyDockerIsolation({
         checks.push({ probe, status: passed ? 'PASS' : 'FAIL' });
         if (!passed) break;
       } catch (error) {
-        checks.push({ probe, status: 'BLOCKED', reason: String(error?.message ?? 'Container probe failed').slice(0, 300) });
+        checks.push({ probe, status: 'BLOCKED', reason: String(error?.stderr || error?.message || 'Container probe failed').slice(0, 1000) });
         break;
       } finally {
         // A timed-out Docker client may leave a running container behind.
