@@ -55,8 +55,10 @@ test('actual Docker runtime executes only typed Git, fixture read and artifact w
 test('real Docker runtime can back the offline Responses function-call loop without behavioral PASS', {timeout:90_000},async()=>withFixture(async dirs=>{
   let turn=0;
   const artifact=scenario.oracle.rubric[0].artifact;
+  const seedFile=Object.keys(suite.fixtureTemplates[scenario.fixture.template].files)[0];
+  await writeFile(path.join(dirs.workspace,seedFile),suite.fixtureTemplates[scenario.fixture.template].files[seedFile],{mode:0o644});
   const outputs=[
-    [{type:'function_call',name:'fixture_read',call_id:'call-read',arguments:JSON.stringify({path:'README.md'})}],
+    [{type:'function_call',name:'fixture_read',call_id:'call-read',arguments:JSON.stringify({path:seedFile})}],
     [{type:'function_call',name:'artifact_write',call_id:'call-write',arguments:JSON.stringify({path:artifact,content:'fixture-grade: PASS'})}],
     [{type:'message',content:[{type:'output_text',text:'done'}]}],
   ];
@@ -66,7 +68,7 @@ test('real Docker runtime can back the offline Responses function-call loop with
     fakeRuntime:async request=>{
       const tool=await runSandboxedTool({
         request,workspace:dirs.workspace,evidenceDir:dirs.evidenceDir,imageId:image,
-        readPaths:['README.md'],writePaths:[artifact],
+        readPaths:[seedFile],writePaths:[artifact],
       });
       const {evidenceFile,observedBy,behavioralStatus,...modelOutput}=tool;
       return modelOutput;
