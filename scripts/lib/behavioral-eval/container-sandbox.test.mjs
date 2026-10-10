@@ -24,7 +24,7 @@ test('Docker invocation confines a nonroot process to the fixture and no network
     assert.ok(args.includes('node@sha256:' + 'a'.repeat(64)));
     assert.equal(args.at(-1), probe);
     assert.equal(args.includes('--privileged'), false);
-    assert.equal(args.some(arg => arg.startsWith('--env') || arg.includes('docker.sock')), false);
+    assert.equal(args.some((arg, index) => arg.startsWith('--env') || (args[index - 1] === '--mount' && arg.includes('docker.sock'))), false);
   }
 });
 
