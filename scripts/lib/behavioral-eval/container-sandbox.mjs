@@ -21,7 +21,8 @@ function dockerArgs({ imageDigest, workspace, name, probe }) {
   if (!SANDBOX_PROBES.includes(probe)) throw new Error('Unknown sandbox probe');
   if (!/^node@sha256:[a-f0-9]{64}$/.test(imageDigest)) throw new Error('Pinned image digest required');
   if (typeof workspace !== 'string' || !path.isAbsolute(workspace) ||
-      workspace.includes(',') || workspace.includes('\n') || workspace.includes('\r')) {
+      workspace === path.parse(workspace).root || path.normalize(workspace) !== workspace ||
+      workspace.includes('\0') || workspace.includes(',') || workspace.includes('\n') || workspace.includes('\r')) {
     throw new Error('Invalid fixture mount path');
   }
   return [
