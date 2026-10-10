@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { chmod, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { chmod, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -60,6 +61,45 @@ test('actual Docker runtime executes only typed Git, fixture read and artifact w
   assert.equal(saved.sourceSha,sourceSha);
   assert.equal(saved.tool,'artifact.write');
   assert.equal(written.observedBy,'host-tool-runtime');
+}));
+
+test('real tool boundary denies traversal and symlink escapes, excludes credentials and preserves snapshot integrity', {timeout:90_000},async()=>withFixture(async dirs=>{
+  const previous=process.env.OPENAI_API_KEY;
+  const sentinel='model-free-credential-leak-sentinel';
+  process.env.OPENAI_API_KEY=sentinel;
+  const run=request=>runSandboxedTool({...dirs,request,imageId:image,
+    readPaths:['README.md','escape','../outside'],writePaths:['artifacts/decision.json','escape-parent/output.json']});
+  try {
+    await symlink('/etc/passwd',path.join(dirs.workspace,'escape'));
+    await symlink(dirs.evidenceDir,path.join(dirs.workspace,'escape-parent'));
+    for (const request of [
+      {tool:'fixture.read',path:'../outside'}, {tool:'fixture.read',path:'escape'},
+      {tool:'artifact.write',path:'escape-parent/output.json',content:'forged'},
+      {tool:'fixture.read',path:'/proc/self/environ'},
+    ]) await assert.rejects(run(request),/unsafe|symlink/);
+    const read=await run({tool:'fixture.read',path:'README.md'});
+    assert.doesNotMatch(JSON.stringify(read),new RegExp(sentinel));
+    const written=await run({tool:'artifact.write',path:'artifacts/decision.json',content:'captured bytes'});
+    const receipt=getSandboxObservation(written);
+    await writeFile(path.join(dirs.workspace,'artifacts/decision.json'),'agent-writable tamper');
+    const snapshot=await readFile(receipt.artifact.snapshotFile);
+    assert.equal(snapshot.toString(),'captured bytes');
+    assert.equal(createHash('sha256').update(snapshot).digest('hex'),receipt.artifact.sha256);
+    await writeFile(receipt.artifact.snapshotFile,'host-evidence tamper');
+    assert.notEqual(createHash('sha256').update(await readFile(receipt.artifact.snapshotFile)).digest('hex'),receipt.artifact.sha256);
+  } finally {
+    if (previous===undefined) delete process.env.OPENAI_API_KEY;else process.env.OPENAI_API_KEY=previous;
+  }
+}));
+
+test('actual stalled container hits the tool deadline and is removed without minting a receipt', {timeout:45_000},async()=>withFixture(async dirs=>{
+  const fifo=path.join(dirs.workspace,'stalled-input');
+  execFileSync('/usr/bin/mkfifo',[fifo]);
+  await chmod(fifo,0o666);
+  await assert.rejects(runSandboxedTool({...dirs,imageId:image,request:{tool:'fixture.read',path:'stalled-input'},
+    readPaths:['stalled-input']}),/deadline exceeded/);
+  const running=execFileSync('/usr/bin/docker',['ps','--all','--filter','name=showdar-tool-','--format','{{.Names}}'],{encoding:'utf8'});
+  assert.equal(running.trim(),'');
 }));
 
 test('real Docker runtime can back the offline Responses function-call loop without behavioral PASS', {timeout:90_000},async()=>withFixture(async dirs=>{
