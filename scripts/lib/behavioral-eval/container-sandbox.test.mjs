@@ -20,7 +20,7 @@ test('Docker invocation confines a nonroot process to the fixture and no network
     assert.ok(args.includes('--pids-limit=64'));
     assert.ok(args.includes('--memory=256m'));
     assert.ok(args.includes('--cpus=1'));
-    assert.ok(args.includes('type=bind,src=' + workspace + ',dst=/workspace,rw'));
+    assert.ok(args.includes('type=bind,src=' + workspace + ',dst=/workspace'));
     assert.ok(args.includes('node@sha256:' + 'a'.repeat(64)));
     assert.equal(args.at(-1), probe);
     assert.equal(args.includes('--privileged'), false);
