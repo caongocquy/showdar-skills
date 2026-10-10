@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { chmod, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { prepareBrokerCommand } from './typed-command-broker.mjs';
@@ -13,7 +14,7 @@ const image = execFileSync('/usr/bin/docker',['image','inspect','--format','{{.I
 assert.match(image,/^sha256:[a-f0-9]{64}$/);
 const suite=JSON.parse(await readFile(new URL('../../../evals/behavioral/scenarios.json',import.meta.url),'utf8'));
 const scenario=suite.scenarios[0];
-const sourceSha='a'.repeat(40);
+const sourceRoot=fileURLToPath(new URL('../../../',import.meta.url));
 
 async function withFixture(fn) {
   const root=await mkdtemp(path.join(tmpdir(),'showdar-container-tools-'));
@@ -28,14 +29,15 @@ async function withFixture(fn) {
   git(workspace,['init','--quiet']);
   git(workspace,['add','README.md']);
   git(workspace,['-c','user.name=Showdar Eval','-c','user.email=eval@example.invalid','commit','--quiet','-m','fixture']);
-  try {await fn({workspace,evidenceDir});} finally {await rm(root,{recursive:true,force:true});}
+  const sourceSha=git(sourceRoot,['rev-parse','HEAD']).trim();
+  try {await fn({workspace,evidenceDir,sourceRoot,sourceSha});} finally {await rm(root,{recursive:true,force:true});}
 }
 
 test('actual Docker runtime executes only typed Git, fixture read and artifact write with host evidence', {timeout:90_000},async()=>withFixture(async dirs=>{
-  const {workspace,evidenceDir}=dirs;
+  const {workspace,evidenceDir,sourceSha}=dirs;
   const readPaths=['README.md'];
   const writePaths=['artifacts/decision.json'];
-  const run=request=>runSandboxedTool({request,workspace,evidenceDir,imageId:image,readPaths,writePaths});
+  const run=request=>runSandboxedTool({request,workspace,sourceRoot,evidenceDir,imageId:image,sourceSha,readPaths,writePaths});
   const status=await run(prepareBrokerCommand({tool:'git.status'},{workspace}));
   assert.equal(status.exitCode,0);
   assert.match(status.stdout,/## /);
@@ -51,11 +53,13 @@ test('actual Docker runtime executes only typed Git, fixture read and artifact w
   assert.equal(saved.kind,'sandbox-tool-observation');
   assert.equal(saved.behavioralGrade,'NOT_EVALUATED');
   assert.equal(saved.imageId,image);
+  assert.equal(saved.sourceSha,sourceSha);
   assert.equal(saved.tool,'artifact.write');
   assert.equal(written.observedBy,'host-tool-runtime');
 }));
 
 test('real Docker runtime can back the offline Responses function-call loop without behavioral PASS', {timeout:90_000},async()=>withFixture(async dirs=>{
+  const {sourceSha}=dirs;
   let turn=0;
   const artifact=scenario.oracle.rubric[0].artifact;
   const seedFile=Object.keys(suite.fixtureTemplates[scenario.fixture.template].files)[0];
@@ -70,7 +74,7 @@ test('real Docker runtime can back the offline Responses function-call loop with
     fakeResponses:async()=>({output:outputs[turn++]}),
     fakeRuntime:async request=>{
       const tool=await runSandboxedTool({
-        request,workspace:dirs.workspace,evidenceDir:dirs.evidenceDir,imageId:image,
+        request,workspace:dirs.workspace,sourceRoot:dirs.sourceRoot,evidenceDir:dirs.evidenceDir,imageId:image,sourceSha,
         readPaths:[seedFile],writePaths:[artifact],
       });
       const {evidenceFile,observedBy,behavioralStatus,...modelOutput}=tool;

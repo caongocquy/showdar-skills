@@ -1,0 +1,47 @@
+name: Attest behavioral evaluation CI evidence
+
+on:
+  workflow_run:
+    workflows: [Verify PR]
+    types: [completed]
+
+permissions: {}
+
+jobs:
+  attest:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'pull_request'
+    runs-on: ubuntu-22.04
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+      - name: Check out trusted default-branch workflow code
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Create source-bound model-free evidence
+        run: node scripts/behavioral-eval-ci-evidence.mjs
+
+      - name: Attest payload digest
+        uses: actions/attest@v4
+        with:
+          subject-path: .behavioral-evidence/payload.json
+
+      - name: Attest evidence envelope
+        uses: actions/attest@v4
+        with:
+          subject-path: .behavioral-evidence/evidence.json
+
+      - name: Preserve attested files
+        uses: actions/upload-artifact@v4
+        with:
+          name: behavioral-evaluation-evidence
+          path: .behavioral-evidence/*.json
+          if-no-files-found: error
+          retention-days: 30

@@ -13,6 +13,26 @@ const TOOL_SCRIPT = "\n'use strict';\nconst fs = require('node:fs');\nconst path
 const within = (root, child) => child === root || child.startsWith(root + path.sep);
 
 function denied(reason) { throw new BrokerPolicyError('Sandbox tool denied: ' + reason); }
+async function assertSourceRevision(sourceRoot, sourceSha) {
+  if (!/^[a-f0-9]{40}$/.test(sourceSha ?? '')) denied('full pinned source revision required');
+  let actual, dirty;
+  try {
+    const result=await exec('/usr/bin/git',['-C',sourceRoot,'rev-parse','--verify','HEAD^{commit}'],{
+      env:{PATH:'/usr/bin:/bin',HOME:'/tmp',GIT_CONFIG_NOSYSTEM:'1',GIT_CONFIG_GLOBAL:'/dev/null'},
+      timeout:3000,maxBuffer:4096,windowsHide:true,
+    });
+    actual=result.stdout.trim();
+    const status=await exec('/usr/bin/git',['-C',sourceRoot,'status','--porcelain','--untracked-files=all'],{
+      env:{PATH:'/usr/bin:/bin',HOME:'/tmp',GIT_CONFIG_NOSYSTEM:'1',GIT_CONFIG_GLOBAL:'/dev/null'},
+      timeout:3000,maxBuffer:4096,windowsHide:true,
+    });
+    dirty=Boolean(status.stdout.trim());
+  } catch {
+    denied('source checkout revision unavailable');
+  }
+  if (dirty) denied('source checkout has uncommitted changes');
+  if (actual!==sourceSha) denied('source checkout revision mismatch');
+}
 function validatedPath(value, allowed) {
   if (typeof value !== 'string' || !value || path.isAbsolute(value) ||
       value.includes('\\') || value.includes('\0') ||
@@ -113,13 +133,17 @@ async function runDockerPayload(binary,args,env,payload) {
  * This is not a whole-agent attestation and cannot yield behavioral PASS.
  */
 export async function runSandboxedTool({
-  request,workspace,evidenceDir,imageId,readPaths=[],writePaths=[],
+  request,workspace,sourceRoot,evidenceDir,imageId,sourceSha,readPaths=[],writePaths=[],
 }={}) {
+  if (typeof sourceRoot !== 'string' || !sourceRoot) denied('pinned source checkout required');
   const root=await realpath(workspace);
+  const source=await realpath(sourceRoot);
   const evidence=await realpath(evidenceDir);
-  if (within(root,evidence)||within(evidence,root)) denied('evidence must be outside fixture');
+  if (within(root,evidence)||within(evidence,root)||within(root,source)||within(source,root)||
+      within(source,evidence)||within(evidence,source)) denied('source, fixture and evidence must be separate');
   const typed=validateRequest(request,root,readPaths,writePaths);
   if (typed.path) await inspectPath(root,typed.path,typed.tool==='artifact.write');
+  await assertSourceRevision(source,sourceSha);
   const docker=await (async()=>{
     for(const candidate of DOCKER_PATHS) { try {await access(candidate);return candidate;} catch {} }
     return null;
@@ -131,6 +155,7 @@ export async function runSandboxedTool({
   let outcome;
   try {
     const result=await runDockerPayload(docker,args,env,JSON.stringify(typed));
+    await assertSourceRevision(source,sourceSha);
     outcome=JSON.parse(String(result.stdout));
     if (!outcome || typeof outcome !== 'object' || Array.isArray(outcome)) denied('invalid container output');
     if (typed.tool.startsWith('git.')) {
@@ -156,7 +181,7 @@ export async function runSandboxedTool({
   }
   const receipt={
     schemaVersion:1,kind:'sandbox-tool-observation',tool:typed.tool,
-    observedAt:new Date().toISOString(),imageId,
+    observedAt:new Date().toISOString(),sourceSha,imageId,
     resultSha256:createHash('sha256').update(JSON.stringify(outcome)).digest('hex'),
     artifact:artifact ?? null,
     behavioralGrade:'NOT_EVALUATED',
