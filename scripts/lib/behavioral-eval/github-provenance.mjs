@@ -2,7 +2,9 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { createHash } from 'node:crypto';
 import { createReadStream } from 'node:fs';
-import { lstat, readFile } from 'node:fs/promises';
+import { lstat, readFile, mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
 
 export const REPOSITORY='caongocquy/showdar-skills';
 export const digest=bytes=>createHash('sha256').update(bytes).digest('hex');
@@ -64,16 +66,22 @@ export async function verifySignedFiles(files,binding,token,bundlePath) {
   const run=await githubJson(`/actions/runs/${runId}/attempts/${runAttempt}`,token);
   assertTrustedRun(run,binding);
   if (bundlePath) await readEvidence(bundlePath);
-  for (const {file,sha256} of files) {
-    if (!/^[a-f0-9]{64}$/.test(sha256 ?? '') || await fileDigest(file)!==sha256) throw new Error('Artifact integrity mismatch');
-    const result=await exec('gh',['attestation','verify',file,'--repo',REPOSITORY,
-      '--signer-workflow',`${REPOSITORY}/.github/workflows/${workflow}`,
-      '--source-ref','refs/heads/main','--source-digest',runnerRevision,'--signer-digest',runnerRevision,
-      '--deny-self-hosted-runners','--format','json',...(bundlePath?['--bundle',bundlePath]:[])],{
-      env:{PATH:process.env.PATH ?? '/usr/bin:/bin',GH_TOKEN:token},timeout:30000,maxBuffer:1024*1024,
-    });
-    assertSignedSubject(JSON.parse(result.stdout),sha256,binding);
-    if (await fileDigest(file)!==sha256) throw new Error('Artifact changed during verification');
-  }
+  // gh writes device state and trust caches; never let those writes dirty the pinned source checkout.
+  const verifierHome=await mkdtemp(path.join(tmpdir(),'showdar-gh-attestation-'));
+  try {
+    for (const {file,sha256} of files) {
+      if (!/^[a-f0-9]{64}$/.test(sha256 ?? '') || await fileDigest(file)!==sha256) throw new Error('Artifact integrity mismatch');
+      const result=await exec('gh',['attestation','verify',file,'--repo',REPOSITORY,
+        '--signer-workflow',`${REPOSITORY}/.github/workflows/${workflow}`,
+        '--source-ref','refs/heads/main','--source-digest',runnerRevision,'--signer-digest',runnerRevision,
+        '--deny-self-hosted-runners','--format','json',...(bundlePath?['--bundle',bundlePath]:[])],{
+        env:{PATH:process.env.PATH ?? '/usr/bin:/bin',GH_TOKEN:token,HOME:verifierHome,
+          GH_CONFIG_DIR:path.join(verifierHome,'config'),XDG_STATE_HOME:path.join(verifierHome,'state'),
+          XDG_CACHE_HOME:path.join(verifierHome,'cache')},timeout:30000,maxBuffer:1024*1024,
+      });
+      assertSignedSubject(JSON.parse(result.stdout),sha256,binding);
+      if (await fileDigest(file)!==sha256) throw new Error('Artifact changed during verification');
+    }
+  } finally {await rm(verifierHome,{recursive:true,force:true});}
   return run;
 }
