@@ -31,7 +31,7 @@ function dockerArgs({ imageDigest, workspace, name, probe }) {
     '--security-opt=no-new-privileges', '--pids-limit=64',
     '--memory=256m', '--cpus=1', '--user=65534:65534',
     '--workdir=/workspace', '--tmpfs=/tmp:rw,nosuid,nodev,noexec,size=16m',
-    '--mount', 'type=bind,src=' + workspace + ',dst=/workspace,rw',
+    '--mount', 'type=bind,src=' + workspace + ',dst=/workspace',
     '--entrypoint=node', imageDigest, '-e', GUEST_SCRIPT, probe,
   ];
 }
