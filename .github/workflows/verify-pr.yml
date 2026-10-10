@@ -39,3 +39,23 @@ jobs:
 
       - name: Verify whitespace
         run: git diff --check
+
+  sandbox-isolation:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Check out PR
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Confirm Docker daemon
+        run: docker version
+
+      - name: Provision explicit probe image
+        run: docker pull node:24-alpine
+
+      - name: Verify real container isolation (model-free)
+        run: node --test scripts/lib/behavioral-eval/container-sandbox.integration.mjs
