@@ -9,6 +9,18 @@ const sha = value => /^[a-f0-9]{40}$/.test(value ?? '');
 const positive = value => Number.isSafeInteger(Number(value)) && Number(value) > 0;
 const denied = () => { throw new Error('Untrusted or incomplete verify-pr workflow run'); };
 
+function assertRunBinding(current, pull, workflow, {id,attempt,sourceSha,pullRequest}) {
+  if (current.id !== id || current.run_attempt !== attempt || current.workflow_id !== workflow.id ||
+      workflow.path !== '.github/workflows/verify-pr.yml' || current.name !== 'Verify PR' ||
+      current.path?.split('@')[0] !== '.github/workflows/verify-pr.yml' ||
+      current.conclusion !== 'success' || current.event !== 'pull_request' || current.head_sha !== sourceSha ||
+      current.repository?.full_name !== REPOSITORY || current.head_repository?.full_name !== REPOSITORY ||
+      current.pull_requests?.length !== 1 || current.pull_requests[0].number !== pullRequest ||
+      current.pull_requests[0].head?.sha !== sourceSha || pull.number !== pullRequest || pull.state !== 'open' ||
+      pull.head?.sha !== sourceSha || pull.head?.repo?.full_name !== REPOSITORY ||
+      pull.base?.repo?.full_name !== REPOSITORY || pull.base?.ref !== 'main') denied();
+}
+
 export async function createCiEvidence(event, outputDir, {context = process.env, github = githubJson} = {}) {
   const run = event?.workflow_run;
   const pr = run?.pull_requests?.length === 1 ? run.pull_requests[0] : null;
@@ -27,14 +39,7 @@ export async function createCiEvidence(event, outputDir, {context = process.env,
     github(`pulls/${pr.number}`, context.GITHUB_TOKEN),
     github('actions/workflows/verify-pr.yml', context.GITHUB_TOKEN),
   ]);
-  if (current.id !== run.id || current.run_attempt !== run.run_attempt ||
-      current.workflow_id !== workflow.id || workflow.path !== '.github/workflows/verify-pr.yml' ||
-      current.conclusion !== 'success' || current.event !== 'pull_request' || current.head_sha !== run.head_sha ||
-      current.repository?.full_name !== REPOSITORY || current.head_repository?.full_name !== REPOSITORY ||
-      current.pull_requests?.length !== 1 || current.pull_requests[0].number !== pr.number ||
-      current.pull_requests[0].head?.sha !== run.head_sha || pull.number !== pr.number || pull.state !== 'open' ||
-      pull.head?.sha !== run.head_sha || pull.head?.repo?.full_name !== REPOSITORY ||
-      pull.base?.repo?.full_name !== REPOSITORY || pull.base?.ref !== 'main') denied();
+  assertRunBinding(current,pull,workflow,{id:run.id,attempt:run.run_attempt,sourceSha:run.head_sha,pullRequest:pr.number});
   const payload = {schemaVersion:1, scenarioId:'TASK-002-CI', sourceSha:run.head_sha,
     workflowRunId:String(run.id), workflowRunAttempt:run.run_attempt, pullRequest:pr.number,
     attesterRunId:String(context.GITHUB_RUN_ID), attesterRunAttempt:Number(context.GITHUB_RUN_ATTEMPT),
@@ -58,17 +63,28 @@ async function githubJson(resource, token) {
   return response.json();
 }
 
-export async function verifyCiEnvelope(outputDir, context = process.env) {
+export async function verifyCiEnvelope(outputDir, context = process.env, {github = githubJson} = {}) {
   const payloadBytes = await readFile(path.join(outputDir,'payload.json'));
   const payload = JSON.parse(payloadBytes);
   const evidence = JSON.parse(await readFile(path.join(outputDir,'evidence.json')));
   const {artifactSha256, ...boundPayload} = evidence;
-  if (hash(payloadBytes) !== artifactSha256 || JSON.stringify(payload) !== JSON.stringify(boundPayload) ||
+  if (context.GITHUB_REPOSITORY !== REPOSITORY || context.GITHUB_REF !== 'refs/heads/main' ||
+      context.GITHUB_EVENT_NAME !== 'workflow_run' || !sha(payload.sourceSha) || !positive(payload.pullRequest) ||
+      !positive(context.TRIGGER_RUN_ID) || !positive(context.TRIGGER_RUN_ATTEMPT) ||
+      hash(payloadBytes) !== artifactSha256 || JSON.stringify(payload) !== JSON.stringify(boundPayload) ||
       payload.behavioralStatus !== 'BLOCKED' || payload.scenarioId !== 'TASK-002-CI' ||
       payload.modelIdentity !== 'none (model-free CI)' || payload.attesterSourceSha !== context.GITHUB_SHA ||
       payload.attesterRunId !== context.GITHUB_RUN_ID || payload.attesterRunAttempt !== Number(context.GITHUB_RUN_ATTEMPT) ||
       payload.workflowRunId !== String(context.TRIGGER_RUN_ID) ||
       payload.workflowRunAttempt !== Number(context.TRIGGER_RUN_ATTEMPT)) denied();
+  const token = context.GH_TOKEN ?? context.GITHUB_TOKEN;
+  const [current,pull,workflow] = await Promise.all([
+    github(`actions/runs/${context.TRIGGER_RUN_ID}`,token),
+    github(`pulls/${payload.pullRequest}`,token),
+    github('actions/workflows/verify-pr.yml',token),
+  ]);
+  assertRunBinding(current,pull,workflow,{id:Number(context.TRIGGER_RUN_ID),attempt:Number(context.TRIGGER_RUN_ATTEMPT),
+    sourceSha:payload.sourceSha,pullRequest:payload.pullRequest});
   return {status:'VERIFIED_CI_ONLY',behavioralStatus:'BLOCKED'};
 }
 
