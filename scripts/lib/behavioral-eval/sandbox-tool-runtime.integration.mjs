@@ -21,6 +21,9 @@ async function withFixture(fn) {
   await mkdir(workspace,{mode:0o777});
   await chmod(workspace,0o777);
   await mkdir(evidenceDir,{mode:0o700});
+  // Fixture parent stays host-owned so CI can clean up files written by UID 65534.
+  await mkdir(path.join(workspace,'artifacts'),{mode:0o777});
+  await chmod(path.join(workspace,'artifacts'),0o777);
   await writeFile(path.join(workspace,'README.md'),'fixture content',{mode:0o644});
   git(workspace,['init','--quiet']);
   git(workspace,['add','README.md']);
@@ -75,7 +78,7 @@ test('real Docker runtime can back the offline Responses function-call loop with
     },
     timeoutMs:60_000,
   });
-  assert.equal(result.status,'NOT_RUN');
+  assert.equal(result.status,'NOT_RUN',JSON.stringify(result.reasons));
   assert.equal(result.execution.agentLaunched,false);
   assert.equal(result.grading.rubricStatus,'BLOCKED');
   assert.equal(result.grading.artifacts[0].integrity,'MATCH');
