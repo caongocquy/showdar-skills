@@ -81,6 +81,7 @@ test('real tool boundary denies traversal and symlink escapes, excludes credenti
     assert.doesNotMatch(JSON.stringify(read),new RegExp(sentinel));
     const written=await run({tool:'artifact.write',path:'artifacts/decision.json',content:'captured bytes'});
     const receipt=getSandboxObservation(written);
+    await rm(path.join(dirs.workspace,'artifacts/decision.json'));
     await writeFile(path.join(dirs.workspace,'artifacts/decision.json'),'agent-writable tamper');
     const snapshot=await readFile(receipt.artifact.snapshotFile);
     assert.equal(snapshot.toString(),'captured bytes');
