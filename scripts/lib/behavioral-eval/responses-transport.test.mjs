@@ -2,6 +2,18 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createOfflineResponsesTransport, createLiveResponsesTransport, getResponsesObservation } from './responses-transport.mjs';
 
+test('gpt-6-luna metadata retains the actual response model and rejects an identity mismatch',async()=>{
+  const request={model:'gpt-6-luna',input:[],tools:[],store:false,parallel_tool_calls:false,max_output_tokens:2048};
+  const transport=model=>createOfflineResponsesTransport({fakeFetch:async()=>new Response(JSON.stringify({
+    id:'resp_model_metadata',model,status:'completed',output:[],
+  }),{headers:{'x-request-id':'req_model_metadata'}})});
+  const response=await transport('gpt-6-luna')(request);
+  assert.equal(response.model,'gpt-6-luna');
+  assert.equal(getResponsesObservation(response).modelIdentity,'gpt-6-luna');
+  assert.equal(getResponsesObservation(response).origin,'simulated');
+  await assert.rejects(transport('different-model')(request),/denied/);
+});
+
 const request = {model:'fixture-model',input:[{role:'user',content:'fixture'}],tools:[],
   store:false,parallel_tool_calls:false,max_output_tokens:2048};
 test('live transport opt-in never substitutes for verified safety gates',async()=>{
