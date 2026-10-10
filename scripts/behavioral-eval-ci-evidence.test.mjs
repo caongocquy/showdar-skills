@@ -60,6 +60,10 @@ test('privileged workflow uses trusted SHA and never consumes PR code or artifac
   assert.doesNotMatch(workflow,/head_sha|head_branch|pull_request_target|npm |cache@|download-artifact@/);
   assert.equal((workflow.match(/id-token: write/g) ?? []).length,1);
   assert.ok(workflow.includes('gh run download "$ATTESTER_RUN_ID"'));
+  const upload=workflow.split('name: Preserve attested files')[1].split('\n  verify:')[0];
+  assert.match(upload,/include-hidden-files: true/);
+  assert.match(upload,/path: \|\n\s+\.behavioral-evidence\/payload\.json\n\s+\.behavioral-evidence\/evidence\.json/);
+  assert.doesNotMatch(upload,/\.behavioral-evidence\/\*|path: \./);
 });
 
 
