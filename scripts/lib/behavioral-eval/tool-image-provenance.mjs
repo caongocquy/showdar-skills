@@ -50,12 +50,12 @@ export function assertImageManifest(manifest,expected,recipeSha256) {
 }
 
 /** Verify both signed build manifest and exact archive before loading; callers must pin every approved digest. */
-export async function verifyImageBuild({manifestPath,archivePath,expected,token}) {
+export async function verifyImageBuild({manifestPath,archivePath,expected,token,bundlePath}) {
   const {bytes,value:manifest}=await readEvidence(manifestPath);
   if (digest(bytes)!==expected?.manifestSha256) throw new Error('Image manifest digest mismatch');
   assertImageManifest(manifest,expected,digest(await readFile(recipe)));
   const binding={workflow:'behavioral-tool-image.yml',runnerRevision:manifest.runnerRevision,runId:manifest.runId,runAttempt:manifest.runAttempt};
-  await verifySignedFiles([{file:manifestPath,sha256:expected.manifestSha256},{file:archivePath,sha256:manifest.archiveSha256}],binding,token);
+  await verifySignedFiles([{file:manifestPath,sha256:expected.manifestSha256},{file:archivePath,sha256:manifest.archiveSha256}],binding,token,bundlePath);
   return manifest;
 }
 

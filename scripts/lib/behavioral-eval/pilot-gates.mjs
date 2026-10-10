@@ -34,6 +34,8 @@ export function assertCaptureBundle(evidence,trace,artifacts,expected,scenario) 
       item.sha256!==digest(JSON.stringify(item.payload)))) throw new Error('Invalid interaction integrity or coverage');
   if (!Array.isArray(trace.receipts) || trace.receipts.some(item=>item.sha256!==digest(JSON.stringify(item.receipt)))) throw new Error('Receipt integrity mismatch');
   const receipts=new Map(trace.receipts.map(item=>[item.sha256,item.receipt]));
+  if (receipts.size!==trace.receipts.length || new Set(trace.responses.map(response=>response.id)).size!==trace.responses.length ||
+      trace.events.some((event,i)=>event.sequence!==i)) throw new Error('Receipt, response or event sequence replay');
   for (const [i,item] of trace.interactions.entries()) {
     if (item.channel!=='tool-arguments') continue;
     const output=trace.interactions[i+1];
@@ -42,7 +44,9 @@ export function assertCaptureBundle(evidence,trace,artifacts,expected,scenario) 
   }
   for (const response of trace.responses) {
     const receipt=receipts.get(response.transportReceiptSha256);
-    if (!receipt || response.outputSha256!==digest(JSON.stringify(response.output)) || receipt.responseId!==response.id ||
+    if (!receipt || receipt.kind!=='responses-transport-observation' ||
+        ![receipt.requestSha256,receipt.resultSha256].every(value=>/^[a-f0-9]{64}$/.test(value ?? '')) ||
+        response.outputSha256!==digest(JSON.stringify(response.output)) || receipt.responseId!==response.id ||
         receipt.requestId!==response.requestId || receipt.modelIdentity!==evidence.modelIdentity || receipt.origin!==response.origin) throw new Error('Response identity or receipt mismatch');
   }
   for (const event of trace.events) {
@@ -101,7 +105,7 @@ export function validateHumanRubric(review,{evidence,evidenceSha256,trace,scenar
 }
 
 /** Verify actual GitHub signatures and approved image build independently before considering any rubric. */
-export async function verifyPilotGates({evidencePath,tracePath,artifactPath,imageManifestPath,imageArchivePath,expected,token}) {
+export async function verifyPilotGates({evidencePath,tracePath,artifactPath,imageManifestPath,imageArchivePath,imageBundlePath,captureBundlePath,expected,token}) {
   try {
     const [{bytes:evidenceBytes,value:evidence},{bytes:traceBytes,value:trace},{bytes:artifactBytes,value:artifacts}]=await Promise.all([
       readEvidence(evidencePath),readEvidence(tracePath),readEvidence(artifactPath)]);
@@ -112,11 +116,11 @@ export async function verifyPilotGates({evidencePath,tracePath,artifactPath,imag
     if (!scenario || scenario.id!=='BRAIN-001') throw new Error('Unapproved pilot scenario');
     assertCaptureBundle(evidence,trace,artifacts,expected,scenario);
     if (!same(evidence.image,expected.image) || evidence.image.kind!=='github-attested-image') throw new Error('Unapproved image identity');
-    const image=await verifyImageBuild({manifestPath:imageManifestPath,archivePath:imageArchivePath,expected:expected.image,token});
+    const image=await verifyImageBuild({manifestPath:imageManifestPath,archivePath:imageArchivePath,expected:expected.image,token,bundlePath:imageBundlePath});
     if (!same(evidence.image,{kind:'github-attested-image',...image,manifestSha256:expected.image.manifestSha256})) throw new Error('Image build receipt mismatch');
     const captureRun=await verifySignedFiles([
       {file:evidencePath,sha256:expected.evidenceSha256},{file:tracePath,sha256:expected.traceSha256},{file:artifactPath,sha256:expected.artifactSha256}],
-      {workflow:'behavioral-live-capture.yml',runnerRevision:evidence.runnerRevision,runId:evidence.runId,runAttempt:evidence.runAttempt},token);
+      {workflow:'behavioral-live-capture.yml',runnerRevision:evidence.runnerRevision,runId:evidence.runId,runAttempt:evidence.runAttempt},token,captureBundlePath);
     const pull=await githubJson(`/pulls/${evidence.pullRequest}`,token);
     if (pull.state!=='open' || pull.base?.ref!=='main' || pull.base.repo?.full_name!=='caongocquy/showdar-skills' ||
         pull.head?.repo?.full_name!=='caongocquy/showdar-skills' || pull.head.sha!==evidence.sourceSha || !pull.user?.login) throw new Error('Forked or stale source evidence');

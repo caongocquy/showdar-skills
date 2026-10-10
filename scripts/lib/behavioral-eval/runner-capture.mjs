@@ -112,7 +112,7 @@ export function createRunnerCapture({directory,scenarioId,sourceSha,modelIdentit
       if (request.tool === 'artifact.write') events.push({kind:'file_written',attributes:{path:request.path},evidence,
         sequence:events.length,artifactSha256:receipt?.artifact?.sha256 ?? null});
       if (receipt && request.tool === 'git.diff-check') events.push({kind:'verification_observed',
-        attributes:{command:'git diff --check',exitCode:result.exitCode},evidence,sequence:events.length});
+        attributes:{command:'git diff --check',exitCode:result.exitCode},evidence,sequence:events.length,receiptSha256:hash(JSON.stringify(receipt))});
     },
     async finish(complete) {
       active();sealed=true;

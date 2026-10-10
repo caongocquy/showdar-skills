@@ -58,17 +58,18 @@ export function assertSignedSubject(attestations,sha256,{runId,runAttempt}) {
 }
 
 /** No injectable transport: only gh's cryptographic verification and authenticated GitHub metadata confer authority. */
-export async function verifySignedFiles(files,binding,token) {
+export async function verifySignedFiles(files,binding,token,bundlePath) {
   const {workflow,runnerRevision,runId,runAttempt}=binding;
   if (!['behavioral-tool-image.yml','behavioral-live-capture.yml'].includes(workflow)) throw new Error('Unapproved signer workflow');
   const run=await githubJson(`/actions/runs/${runId}/attempts/${runAttempt}`,token);
   assertTrustedRun(run,binding);
+  if (bundlePath) await readEvidence(bundlePath);
   for (const {file,sha256} of files) {
     if (!/^[a-f0-9]{64}$/.test(sha256 ?? '') || await fileDigest(file)!==sha256) throw new Error('Artifact integrity mismatch');
     const result=await exec('gh',['attestation','verify',file,'--repo',REPOSITORY,
       '--signer-workflow',`${REPOSITORY}/.github/workflows/${workflow}`,
       '--source-ref','refs/heads/main','--source-digest',runnerRevision,'--signer-digest',runnerRevision,
-      '--deny-self-hosted-runners','--format','json'],{
+      '--deny-self-hosted-runners','--format','json',...(bundlePath?['--bundle',bundlePath]:[])],{
       env:{PATH:process.env.PATH ?? '/usr/bin:/bin',GH_TOKEN:token},timeout:30000,maxBuffer:1024*1024,
     });
     assertSignedSubject(JSON.parse(result.stdout),sha256,binding);

@@ -7,8 +7,8 @@ import { digest, assertTrustedRun, assertSignedSubject } from './github-provenan
 import { requireToolImage, assertImageManifest } from './tool-image-provenance.mjs';
 import { SANDBOX_IMAGE } from './container-sandbox.mjs';
 import { createRunnerCapture } from './runner-capture.mjs';
-import { validateHumanRubric, verifyPilotGates } from './pilot-gates.mjs';
-import { assertPaidCaptureApproval, produceLiveCapture } from './live-producer.mjs';
+import { assertCaptureBundle, validateHumanRubric, verifyPilotGates } from './pilot-gates.mjs';
+import { assertPaidCaptureApproval, produceLiveCapture, INFRASTRUCTURE_CHECKS } from './live-producer.mjs';
 
 const revision='a'.repeat(40);
 test('image capabilities cannot be forged, cloned or substituted by immutable-looking IDs',()=>{
@@ -128,8 +128,33 @@ test('Phase B workflow privilege is limited to attesting same-run trusted artifa
     assert.match(execution,/persist-credentials: false/);
     assert.match(attester,/needs: (build|contract)/);
     assert.match(attester,/id-token: write/);
+    assert.match(attester,/steps\.provenance\.outputs\.bundle-path/);
     assert.doesNotMatch(attester,/checkout@|run:|run-id:|github-token:/);
     for (const action of workflow.matchAll(/uses: ([^\n]+)/g)) assert.match(action[1],/@[a-f0-9]{40} /);
     for (const block of workflow.split('run:').slice(1)) assert.doesNotMatch(block.split(/\n      - /)[0],/\$\{\{ inputs\./);
   }
+});
+
+test('a verification event must bind its real tool receipt; removing that binding cannot be repaired by trust flags',()=>{
+  // This is a structural policy fixture, never authenticated evidence or a behavioral execution.
+  const scenario={id:'BRAIN-001',oracle:{rubric:[{artifact:'artifacts/decision.json'}]}};
+  const image={kind:'model-free-image',imageId:'sha256:'+'b'.repeat(64),behavioralStatus:'BLOCKED'};
+  const transport={kind:'responses-transport-observation',requestSha256:'c'.repeat(64),resultSha256:'d'.repeat(64),
+    responseId:'resp_fixture',requestId:'req_fixture',modelIdentity:'fixture',origin:'simulated'};
+  const tool={kind:'sandbox-tool-observation',tool:'git.diff-check',sourceSha:revision,imageId:image.imageId,imageProvenance:image,
+    artifact:{path:'artifacts/decision.json',sha256:digest('fixture')}};
+  const receiptSha=digest(JSON.stringify(tool));
+  const trace={sourceSha:revision,scenarioId:'PRODUCER-CONTRACT',modelIdentity:'fixture',complete:true,
+    execution:{kind:'simulated',agentLaunched:false},coverage:{complete:true,channels:['assistant-text','reasoning-summary','tool-arguments','tool-results','artifact-bytes'],issues:[]},
+    interactions:[],receipts:[{sha256:receiptSha,receipt:tool},{sha256:digest(JSON.stringify(transport)),receipt:transport}],
+    responses:[{id:'resp_fixture',requestId:'req_fixture',origin:'simulated',output:[],outputSha256:digest('[]'),transportReceiptSha256:digest(JSON.stringify(transport))}],
+    events:[{kind:'verification_observed',attributes:{command:'git diff --check',exitCode:0},evidence:'host-tool-runtime',receiptSha256:receiptSha,sequence:0}]};
+  const artifacts=[{path:'artifacts/decision.json',content:'fixture',sha256:digest('fixture')}];
+  const evidence={schemaVersion:2,purpose:'infrastructure-contract',behavioralStatus:'BLOCKED',captureComplete:true,runnerRevision:revision,sourceSha:revision,
+    scenarioId:scenario.id,scenarioSha256:digest(JSON.stringify(scenario)),modelIdentity:'fixture',plannedModelIdentity:'not-authorized',runId:'123',runAttempt:1,pullRequest:23,
+    traceSha256:'c'.repeat(64),artifactSha256:'d'.repeat(64),coverageSha256:digest(JSON.stringify(trace.coverage)),interactionSha256:digest('[]'),
+    receiptSha256:digest(JSON.stringify(trace.receipts)),execution:trace.execution,responseIds:['resp_fixture'],captureScenarioId:'PRODUCER-CONTRACT',checks:[...INFRASTRUCTURE_CHECKS],image};
+  assertCaptureBundle(evidence,trace,artifacts,evidence,scenario);
+  delete trace.events[0].receiptSha256;
+  assert.throws(()=>assertCaptureBundle({...evidence,verified:true},trace,artifacts,evidence,scenario),/Tool event receipt/);
 });

@@ -11,7 +11,7 @@ import { runSandboxedTool, getSandboxObservation } from './sandbox-tool-runtime.
 import { runOfflineResponses } from './responses-runner.mjs';
 import { createOfflineResponsesTransport } from './responses-transport.mjs';
 import { createScenarioActions, getScenarioActionObservation } from './scenario-actions.mjs';
-import { approveModelFreeToolImage } from './tool-image-provenance.mjs';
+import { approveModelFreeToolImage, requireToolImage } from './tool-image-provenance.mjs';
 import { createRunnerCapture } from './runner-capture.mjs';
 import { createProducerRuntime, sealCapture } from './live-producer.mjs';
 import { assertCaptureBundle, verifyPilotGates } from './pilot-gates.mjs';
@@ -26,6 +26,7 @@ const scenario=suite.scenarios[0];
 const sourceRoot=fileURLToPath(new URL('../../../',import.meta.url));
 
 test('real image approval cannot be forged, cloned, used for another image or promoted to live authority',async()=>withFixture(async dirs=>{
+  assert.throws(()=>requireToolImage(imageApproval,image,{live:true}),/provenance/);
   const request={tool:'fixture.read',path:'README.md'};
   for (const approval of [undefined,{},structuredClone(imageApproval),{kind:'github-attested-image',imageId:image}]) {
     await assert.rejects(runSandboxedTool({...dirs,request,imageId:image,imageApproval:approval,readPaths:['README.md']}),/provenance/);
@@ -231,6 +232,7 @@ test('producer HTTP, semantic hooks, Docker and durable bundle verify end-to-end
   assertCaptureBundle(evidence,trace,artifacts,evidence,targetScenario);
   assert.ok(trace.events.some(event=>event.kind==='approval_requested'));
   assert.ok(trace.events.some(event=>event.kind==='scope_changed'));
+  assert.ok(trace.events.find(event=>event.kind==='verification_observed').receiptSha256);
   assert.equal(evidence.purpose,'infrastructure-contract');
   const expected={...evidence,evidenceSha256:digest(await readFile(path.join(directory,'evidence.json')))};
   const verdict=await verifyPilotGates({evidencePath:path.join(directory,'evidence.json'),tracePath:path.join(directory,'trace.json'),artifactPath:path.join(directory,'artifacts.json'),expected});
