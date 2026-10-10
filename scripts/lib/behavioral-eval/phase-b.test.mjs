@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 import { digest, assertTrustedRun, assertSignedSubject } from './github-provenance.mjs';
 import { requireToolImage, assertImageManifest } from './tool-image-provenance.mjs';
 import { SANDBOX_IMAGE } from './container-sandbox.mjs';
@@ -11,6 +13,15 @@ import { assertCaptureBundle, validateHumanRubric, verifyPilotGates } from './pi
 import { assertPaidCaptureApproval, produceLiveCapture, sealCapture, INFRASTRUCTURE_CHECKS } from './live-producer.mjs';
 
 const revision='a'.repeat(40);
+test('trusted producer CLI rejects live mode before parsing input or accessing authenticated services',()=>{
+  const cli=fileURLToPath(new URL('../../behavioral-eval-producer.mjs',import.meta.url));
+  const result=spawnSync(process.execPath,[cli,'--live'],{encoding:'utf8',timeout:5000,
+    env:{PATH:process.env.PATH,GITHUB_REPOSITORY:'caongocquy/showdar-skills',GITHUB_REF:'refs/heads/main',
+      GITHUB_EVENT_NAME:'workflow_dispatch',RUNNER_TEMP:tmpdir(),PRODUCER_INPUT:'not-json',GITHUB_TOKEN:'must-never-be-used'}});
+  assert.equal(result.error,undefined);assert.notEqual(result.status,0);
+  assert.match(result.stderr,/Live Responses disabled/);
+  assert.doesNotMatch(result.stderr,/Unexpected token|JSON.parse|fetch failed/);
+});
 test('image capabilities cannot be forged, cloned or substituted by immutable-looking IDs',()=>{
   for (const fake of [undefined,{}, {kind:'github-attested-image',imageId:'sha256:'+'b'.repeat(64)}]) {
     assert.throws(()=>requireToolImage(fake,'sha256:'+'b'.repeat(64)),/provenance/);

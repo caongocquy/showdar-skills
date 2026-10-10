@@ -6,6 +6,8 @@ import path from 'node:path';
 import { buildSandboxProbeArgs, SANDBOX_IMAGE } from './container-sandbox.mjs';
 import { BrokerPolicyError, prepareBrokerCommand } from './typed-command-broker.mjs';
 import { requireToolImage } from './tool-image-provenance.mjs';
+import { assertSourceRevision } from './source-revision.mjs';
+export { assertSourceRevision } from './source-revision.mjs';
 
 const exec = promisify(execFile);
 const observations = new WeakMap();
@@ -26,26 +28,7 @@ const TOOL_SCRIPT = "\n'use strict';\nconst fs = require('node:fs');\nconst path
 const within = (root, child) => child === root || child.startsWith(root + path.sep);
 
 function denied(reason) { throw new BrokerPolicyError('Sandbox tool denied: ' + reason); }
-export async function assertSourceRevision(sourceRoot, sourceSha) {
-  if (!/^[a-f0-9]{40}$/.test(sourceSha ?? '')) denied('full pinned source revision required');
-  let actual, dirty;
-  try {
-    const result=await exec('/usr/bin/git',['-C',sourceRoot,'rev-parse','--verify','HEAD^{commit}'],{
-      env:{PATH:'/usr/bin:/bin',HOME:'/tmp',GIT_CONFIG_NOSYSTEM:'1',GIT_CONFIG_GLOBAL:'/dev/null'},
-      timeout:3000,maxBuffer:4096,windowsHide:true,
-    });
-    actual=result.stdout.trim();
-    const status=await exec('/usr/bin/git',['-c','core.fsmonitor=false','-C',sourceRoot,'status','--porcelain','--untracked-files=all'],{
-      env:{PATH:'/usr/bin:/bin',HOME:'/tmp',GIT_CONFIG_NOSYSTEM:'1',GIT_CONFIG_GLOBAL:'/dev/null'},
-      timeout:3000,maxBuffer:4096,windowsHide:true,
-    });
-    dirty=Boolean(status.stdout.trim());
-  } catch {
-    denied('source checkout revision unavailable');
-  }
-  if (dirty) denied('source checkout has uncommitted changes');
-  if (actual!==sourceSha) denied('source checkout revision mismatch');
-}
+
 function validatedPath(value, allowed) {
   if (typeof value !== 'string' || !value || path.isAbsolute(value) ||
       value.includes('\\') || value.includes('\0') ||

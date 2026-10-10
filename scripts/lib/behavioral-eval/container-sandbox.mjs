@@ -6,7 +6,8 @@ import os from 'node:os';
 import path from 'node:path';
 
 const exec = promisify(execFile);
-export const SANDBOX_IMAGE = 'node@sha256:ebfe2f90462722a7a4de65e91990e97fe0d401c70e0e762c5b53302f905ec1c1';
+import { SANDBOX_IMAGE } from './tool-image-provenance.mjs';
+export { SANDBOX_IMAGE } from './tool-image-provenance.mjs';
 export const SANDBOX_PROBES = Object.freeze(['identity', 'network', 'root-write', 'outside-read', 'symlink']);
 const EXECUTABLES = Object.freeze(['/usr/bin/docker', '/usr/local/bin/docker', '/opt/homebrew/bin/docker']);
 const MAX_BUFFER = 16 * 1024;

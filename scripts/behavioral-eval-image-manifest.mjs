@@ -1,7 +1,7 @@
 import { writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { createToolImageManifest } from './lib/behavioral-eval/tool-image-provenance.mjs';
-import { assertSourceRevision } from './lib/behavioral-eval/sandbox-tool-runtime.mjs';
+import { assertSourceRevision } from './lib/behavioral-eval/source-revision.mjs';
 
 if (process.env.GITHUB_REPOSITORY!=='caongocquy/showdar-skills' || process.env.GITHUB_REF!=='refs/heads/main' ||
     process.env.GITHUB_EVENT_NAME!=='workflow_dispatch') throw new Error('Trusted main workflow required');

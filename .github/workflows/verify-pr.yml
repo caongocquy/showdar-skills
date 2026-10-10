@@ -65,3 +65,20 @@ jobs:
 
       - name: Exercise mediated tools in isolated containers
         run: node --test scripts/lib/behavioral-eval/sandbox-tool-runtime.integration.mjs
+
+  tool-image-contract:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+      - name: Build unsigned model-free image and verify its archive contract
+        run: |
+          docker build --pull=false -f evals/behavioral/Dockerfile.tool-runtime -t showdar-eval-tools:ci .
+          node --test scripts/lib/behavioral-eval/tool-image-provenance.integration.mjs
