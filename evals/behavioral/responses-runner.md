@@ -14,6 +14,25 @@ The loop follows the official [function calling guide](https://developers.openai
 
 These capabilities cover the first offline tool loop; they do **not** make any scenario fully executable. Skill/reference reads, source edits, test execution, guard responses and human interaction need separately mediated capabilities. They remain unsupported rather than being simulated as successful real actions.
 
+## Offline container-backed tool transport (model-free)
+
+The typed broker is now connected to `sandbox-tool-runtime.mjs` for **real tool subprocesses inside Docker**, but **not to a real model**. All requests are authorized again at the host boundary: exact `git.status` / `git.diff-check` argv, scenario-allowed fixture reads, or scenario-allowed rubric artifact writes. The fixed guest dispatcher runs under the hardened Docker profile already used by the isolation probes, with an immutable built-image ID, non-root UID, no network, read-only container root, dropped capabilities and a single writable fixture bind mount. No API key or other host environment is passed into Docker.
+
+The Docker tool image uses `evals/behavioral/Dockerfile.tool-runtime` (pinned Node base, Git installed at CI build time). Its resulting local image ID is checked before invocation; however the added Git package is **not yet reproducibly version-locked or signed**, and an arbitrary supplied image ID is not sufficient to establish release/supply-chain trust. The CI integration test builds this image, runs actual read-only Git commands, fixture reads and artifact writes, and drives the existing offline Responses function-call loop with a deterministic fake model. It also verifies that fake model transcripts remain `NOT_RUN`.
+
+Model-authored JSON flows through a **bounded stdin pipe**, not Docker CLI argv, and cannot specify executables, flags, environment or working directory. The container's artifact path is checked against the scenario's exact whitelist; symlink, traversal, overwrite and oversize attempts are denied. The host checks the resulting artifact bytes, makes an immutable-for-agent snapshot under the separate evidence directory (`0600` permissions), and records a host-owned SHA-256 receipt. Agent-writable artifacts are **not** by themselves grading evidence. The disposable fixture may contain host-readable artifact files so the host can capture them across the isolated container UID; evidence files remain host-only.
+
+To run the isolated integration check on a Docker-capable Ubuntu host (no model calls):
+
+```bash
+docker pull node@sha256:ebfe2f90462722a7a4de65e91990e97fe0d401c70e0e762c5b53302f905ec1c1
+docker build --pull=false -f evals/behavioral/Dockerfile.tool-runtime -t showdar-eval-tools:ci .
+node --test scripts/lib/behavioral-eval/container-sandbox.integration.mjs
+node --test scripts/lib/behavioral-eval/sandbox-tool-runtime.integration.mjs
+```
+
+This proves a bounded **tool runtime**, not the full agent trusted-runner contract. Source revision binding, authenticated agent-activity trace, permissions/user-approval observation, supported live Responses transport and **independent qualitative rubric grading** remain pending. The public live entry point still always returns `BLOCKED`; no user-defined trust flag or sandbox result can change that. Never treat a fake Responses turn or Docker tool receipt as behavioral PASS.
+
 ## Audit of the frozen 18 cases
 
 All original definitions, fixtures and independent oracles are unchanged. The machine-readable inventory is `auditCapabilities(suite)` in `scripts/lib/behavioral-eval/scenario-capabilities.mjs`. Each required event identity remains unsupported for real observation in this slice, even where a tool event has the same broad kind. A model declaration is a claim, not proof that a skill, approval, test, subagent or review actually ran.
