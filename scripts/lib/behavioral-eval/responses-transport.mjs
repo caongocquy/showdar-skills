@@ -9,6 +9,12 @@ const LIVE_EXECUTION_GATES_VERIFIED = false;
 const nativeFetch = globalThis.fetch.bind(globalThis);
 const observations = new WeakMap();
 const hash = value=>createHash('sha256').update(JSON.stringify(value)).digest('hex');
+function remainingBudget(timeoutMs,deadline) {
+  if (!Number.isInteger(timeoutMs) || timeoutMs<1 || timeoutMs>300000) throw new Error('Invalid Responses transport budget');
+  const remaining=deadline-Date.now();
+  if (remaining<=0) throw new Error('Responses transport budget exhausted');
+  return remaining;
+}
 
 /** Transport origin is minted here, never imported from response JSON or a caller trust flag. */
 export function getResponsesObservation(response) {
@@ -73,7 +79,8 @@ async function send(request, {fetchImpl, apiKey, timeoutMs, origin}) {
 /** A wire-contract fixture cannot mint live provenance, even when it returns API-shaped JSON. */
 export function createOfflineResponsesTransport({fakeFetch,apiKey='',timeoutMs=30000} = {}) {
   if (typeof fakeFetch !== 'function') throw new Error('Explicit fake HTTP transport required');
-  return request=>send(request,{fetchImpl:fakeFetch,apiKey,timeoutMs,origin:'simulated'});
+  const deadline=Date.now()+timeoutMs;
+  return async request=>send(request,{fetchImpl:fakeFetch,apiKey,timeoutMs:remainingBudget(timeoutMs,deadline),origin:'simulated'});
 }
 
 /** Opt-in is necessary; it cannot override the unverified deployment gates. */
@@ -83,9 +90,10 @@ export function assertLiveTransportEnabled(allowModel) {
 }
 
 export function createLiveResponsesTransport({allowModel=false,apiKey='',timeoutMs=30000} = {}) {
+  const deadline=Date.now()+timeoutMs;
   return async request=>{
     assertLiveTransportEnabled(allowModel);
     if (!apiKey) throw new Error('Live credential unavailable');
-    return send(request,{fetchImpl:nativeFetch,apiKey,timeoutMs,origin:'responses-live'});
+    return send(request,{fetchImpl:nativeFetch,apiKey,timeoutMs:remainingBudget(timeoutMs,deadline),origin:'responses-live'});
   };
 }

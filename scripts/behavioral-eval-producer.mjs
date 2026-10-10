@@ -7,13 +7,14 @@ import { verifyToolImage } from './lib/behavioral-eval/tool-image-provenance.mjs
 import { assertSourceRevision } from './lib/behavioral-eval/sandbox-tool-runtime.mjs';
 import { createScenarioActions } from './lib/behavioral-eval/scenario-actions.mjs';
 import { createProducerRuntime, createProducerFixture, sealCapture, produceLiveCapture } from './lib/behavioral-eval/live-producer.mjs';
-import { createOfflineResponsesTransport } from './lib/behavioral-eval/responses-transport.mjs';
+import { createOfflineResponsesTransport, assertLiveTransportEnabled } from './lib/behavioral-eval/responses-transport.mjs';
 import { runCapturedResponses } from './lib/behavioral-eval/responses-runner.mjs';
 
 const exec=promisify(execFile);
 const env=process.env;
 if (env.GITHUB_REPOSITORY!=='caongocquy/showdar-skills' || env.GITHUB_REF!=='refs/heads/main' ||
     env.GITHUB_EVENT_NAME!=='workflow_dispatch' || !path.isAbsolute(env.RUNNER_TEMP ?? '')) throw new Error('Trusted main producer required');
+if (process.argv[2]==='--live') assertLiveTransportEnabled(true);
 const input=JSON.parse(env.PRODUCER_INPUT ?? '{}');
 if (!/^[a-f0-9]{40}$/.test(input.sourceSha ?? '') || !Number.isSafeInteger(input.pullRequest) || input.pullRequest<1 ||
     typeof input.model!=='string' || !input.model.trim() || input.model.length>128 ||
@@ -42,10 +43,15 @@ if (process.argv[2]==='--prepare') {
   await assertSourceRevision(sourceRoot,input.sourceSha);
   const options={sourceRoot,sourceSha:input.sourceSha,runnerRoot:process.cwd(),runnerRevision:env.GITHUB_SHA,
     imageId:input.image.imageId,imageApproval,evidenceDir,directory,temporaryRoot:root,
-    runId:env.GITHUB_RUN_ID,runAttempt:Number(env.GITHUB_RUN_ATTEMPT),pullRequest:input.pullRequest,timeoutMs:120000};
+    runId:env.GITHUB_RUN_ID,runAttempt:Number(env.GITHUB_RUN_ATTEMPT),pullRequest:input.pullRequest,timeoutMs:120000,token:env.GITHUB_TOKEN};
   if (process.argv[2]==='--live') {
-    // No credential is read or configured while the private live deployment gate is disabled.
-    await produceLiveCapture({...options,scenarioId:'BRAIN-001',model:input.model,allowModel:true});
+    const prePilotDirectory=path.join(env.RUNNER_TEMP,'pre-pilot');
+    const expected=JSON.parse(await readFile(path.join(prePilotDirectory,'expected.json')));
+    // Reached only after the private deployment gate is separately approved; this workflow currently dispatches contract mode only.
+    await produceLiveCapture({...options,scenarioId:'BRAIN-001',model:input.model,allowModel:true,apiKey:env.OPENAI_API_KEY ?? '',
+      prePilotEvidence:{evidencePath:path.join(prePilotDirectory,'evidence.json'),tracePath:path.join(prePilotDirectory,'trace.json'),
+        artifactPath:path.join(prePilotDirectory,'artifacts.json'),imageManifestPath:path.join(imageDirectory,'image.json'),
+        imageArchivePath:path.join(imageDirectory,'tool-image.tar'),expected}});
   } else if (process.argv.length!==2) throw new Error('Unknown producer mode');
   else {
     const approval='Generic contract approval. This is not BRAIN-001 execution.';

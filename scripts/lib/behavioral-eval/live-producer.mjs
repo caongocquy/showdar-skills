@@ -20,6 +20,7 @@ function validateBinding({runnerRevision,sourceSha,runId,runAttempt,pullRequest,
 export async function produceLiveCapture(options) {
   validateBinding(options);
   assertLiveTransportEnabled(options.allowModel);
+  options={...options,timeoutMs:120000,maxTurns:8};
   requireToolImage(options.imageApproval,options.imageId,{live:true});
   const {verifyPilotGates}=await import('./pilot-gates.mjs');
   const readiness=await verifyPilotGates({...options.prePilotEvidence,token:options.token});
@@ -57,7 +58,7 @@ async function reservePaidCapture(options) {
   const binding={runnerRevision:options.runnerRevision,sourceSha:options.sourceSha,scenarioId:options.scenarioId,modelIdentity:options.model,
     runId:String(options.runId),runAttempt:options.runAttempt,pullRequest:options.pullRequest,
     image:requireToolImage(options.imageApproval,options.imageId,{live:true}),
-    prePilotEvidenceSha256:options.prePilotEvidence.expected.evidenceSha256};
+    prePilotEvidenceSha256:options.prePilotEvidence.expected.evidenceSha256,budget:{timeoutMs:120000,maxTurns:8,maxOutputTokens:2048}};
   if (options.prePilotEvidence.expected.sourceSha!==options.sourceSha || options.prePilotEvidence.expected.scenarioId!==options.scenarioId ||
       options.prePilotEvidence.expected.plannedModelIdentity!==options.model ||
       options.prePilotEvidence.expected.runnerRevision!==options.runnerRevision ||
@@ -109,7 +110,7 @@ export function createProducerRuntime(options) {
 /** Durable bytes for the trusted workflow to attest; this function itself grants no evidence authority. */
 export const INFRASTRUCTURE_CHECKS=Object.freeze(['isolation','tool-runtime','security','full-suite','coverage','producer-contract']);
 
-export async function sealCapture({result,scenario,targetScenario=scenario,plannedModelIdentity=model,runnerRevision,sourceSha,model,runId,runAttempt,pullRequest,imageId,imageApproval,directory}) {
+export async function sealCapture({result,scenario,targetScenario=scenario,runnerRevision,sourceSha,model,plannedModelIdentity=model,runId,runAttempt,pullRequest,imageId,imageApproval,directory}) {
   validateBinding({runnerRevision,sourceSha,model,runId,runAttempt,pullRequest});
   const image=requireToolImage(imageApproval,imageId);
   const traceBytes=await readFile(result.capturedTrace.tracePath);

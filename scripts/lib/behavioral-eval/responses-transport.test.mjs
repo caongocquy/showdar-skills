@@ -57,6 +57,17 @@ test('HTTP timeout aborts the transport and does not retry',async()=>{
   await assert.rejects(send(request),/failed/);
   assert.equal(calls,1);
 });
+test('multiple Responses turns share one deadline and an exhausted budget cannot start another HTTP request',async()=>{
+  let calls=0;
+  const send=createOfflineResponsesTransport({timeoutMs:1000,fakeFetch:async()=>{
+    calls++;
+    return new Response(JSON.stringify({id:'resp_fixture',status:'completed',model:request.model,output:[]}));
+  }});
+  await send(request);
+  await new Promise(resolve=>setTimeout(resolve,1001));
+  await assert.rejects(send(request),/budget exhausted/);
+  assert.equal(calls,1);
+});
 test('JSON-escaped credentials and credential-bearing request IDs never become transport observations',async()=>{
   for(const [body,requestId] of [
     [String.raw`{"id":"r","status":"completed","model":"fixture-model","output":[{"type":"message","content":"\u0074est-only-key"}]}`,'req'],

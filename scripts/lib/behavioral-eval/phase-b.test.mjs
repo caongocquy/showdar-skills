@@ -8,7 +8,7 @@ import { requireToolImage, assertImageManifest } from './tool-image-provenance.m
 import { SANDBOX_IMAGE } from './container-sandbox.mjs';
 import { createRunnerCapture } from './runner-capture.mjs';
 import { assertCaptureBundle, validateHumanRubric, verifyPilotGates } from './pilot-gates.mjs';
-import { assertPaidCaptureApproval, produceLiveCapture, INFRASTRUCTURE_CHECKS } from './live-producer.mjs';
+import { assertPaidCaptureApproval, produceLiveCapture, sealCapture, INFRASTRUCTURE_CHECKS } from './live-producer.mjs';
 
 const revision='a'.repeat(40);
 test('image capabilities cannot be forged, cloned or substituted by immutable-looking IDs',()=>{
@@ -54,6 +54,9 @@ test('single paid capture approval is exact-run/attempt and source bound; it can
     verified:true,securityGates:true}),/Live Responses disabled/);
   const verdict=await verifyPilotGates({expected:{verified:true,behavioralStatus:'PASS'}});
   assert.equal(verdict.prePilot,'NO-GO');assert.equal(verdict.behavioral,'BLOCKED');
+  // Guard the omitted planned-model fallback before provenance validation.
+  await assert.rejects(sealCapture({runnerRevision:revision,sourceSha:revision,model:'contract',runId:'123',runAttempt:1,pullRequest:23,
+    imageApproval:{},imageId:'sha256:'+'b'.repeat(64)}),/provenance/);
 });
 test('signed build policy rejects image substitution, recipe drift and run/attempt replay',()=>{
   const manifest={schemaVersion:1,purpose:'tool-image-build',baseImage:SANDBOX_IMAGE,
