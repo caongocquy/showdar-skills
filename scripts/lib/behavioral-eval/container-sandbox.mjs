@@ -1,17 +1,22 @@
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import { access, chmod, mkdtemp, mkdir, realpath, rm, writeFile } from 'node:fs/promises';
+import { access, chmod, mkdtemp, mkdir, realpath, rm, symlink, writeFile } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
 import os from 'node:os';
 import path from 'node:path';
 
 const exec = promisify(execFile);
-export const SANDBOX_IMAGE = 'node:24-alpine';
-export const SANDBOX_PROBES = Object.freeze(['identity', 'network', 'root-write', 'outside-read']);
+export const SANDBOX_IMAGE = 'node@sha256:ebfe2f90462722a7a4de65e91990e97fe0d401c70e0e762c5b53302f905ec1c1';
+export const SANDBOX_PROBES = Object.freeze(['identity', 'network', 'root-write', 'outside-read', 'symlink']);
 const EXECUTABLES = Object.freeze(['/usr/bin/docker', '/usr/local/bin/docker', '/opt/homebrew/bin/docker']);
 const MAX_BUFFER = 16 * 1024;
 const RUN_TIMEOUT_MS = 15_000;
-const GUEST_SCRIPT = "\nconst fs = require('node:fs');\nconst net = require('node:net');\nconst probe = process.argv[1];\nconst finish = data => { process.stdout.write(JSON.stringify(data)); };\nif (probe === 'identity') {\n  let capabilities = '', noNewPrivs = '';\n  try {\n    const status = fs.readFileSync('/proc/self/status', 'utf8');\n    capabilities = status.match(/^CapEff:\\s*(\\S+)/m)?.[1] ?? '';\n    noNewPrivs = status.match(/^NoNewPrivs:\\s*(\\S+)/m)?.[1] ?? '';\n  } catch {}\n  const fixtureRead = fs.readFileSync('/workspace/fixture.txt', 'utf8') === 'showdar-fixture';\n  fs.writeFileSync('/workspace/probe-written.txt', 'showdar-written');\n  finish({ probe, pass: process.getuid() !== 0 &&\n    /^0+$/.test(capabilities) && noNewPrivs === '1' &&\n    fixtureRead && fs.readFileSync('/workspace/probe-written.txt', 'utf8') === 'showdar-written' &&\n    !process.env.OPENAI_API_KEY && !process.env.CODEX_API_KEY &&\n    !fs.existsSync('/var/run/docker.sock') && !fs.existsSync('/workspace/evidence') });\n} else if (probe === 'root-write') {\n  let denied = false;\n  try { fs.writeFileSync('/showdar-must-not-write', 'unsafe'); }\n  catch (error) { denied = ['EROFS','EACCES','EPERM'].includes(error.code); }\n  finish({ probe, pass: denied });\n} else if (probe === 'outside-read') {\n  let denied = false;\n  try { fs.readFileSync('/workspace/../outside-secret.txt', 'utf8'); }\n  catch (error) { denied = ['ENOENT','EACCES','EPERM'].includes(error.code); }\n  finish({ probe, pass: denied });\n} else if (probe === 'network') {\n  const socket = net.connect({ host:'1.1.1.1', port:443 });\n  let done = false;\n  const complete = pass => {\n    if (done) return;\n    done = true;\n    socket.destroy();\n    finish({ probe, pass });\n  };\n  socket.once('connect', () => complete(false));\n  socket.once('error', error => complete(['ENETUNREACH','EHOSTUNREACH','EACCES','EPERM'].includes(error.code)));\n  socket.setTimeout(2500, () => complete(false));\n} else {\n  process.stderr.write('Unknown probe');\n  process.exitCode = 2;\n}\n";
+const GUEST_SCRIPT = "\nconst fs = require('node:fs');\nconst net = require('node:net');\nconst probe = process.argv[1];\nconst finish = data => { process.stdout.write(JSON.stringify(data)); };\nif (probe === 'identity') {\n  let capabilities = '', noNewPrivs = '';\n  try {\n    const status = fs.readFileSync('/proc/self/status', 'utf8');\n    capabilities = status.match(/^CapEff:\\s*(\\S+)/m)?.[1] ?? '';\n    noNewPrivs = status.match(/^NoNewPrivs:\\s*(\\S+)/m)?.[1] ?? '';\n  } catch {}\n  const fixtureRead = fs.readFileSync('/workspace/fixture.txt', 'utf8') === 'showdar-fixture';\n  fs.writeFileSync('/workspace/probe-written.txt', 'showdar-written');\n  finish({ probe, pass: process.getuid() !== 0 &&\n    /^0+$/.test(capabilities) && noNewPrivs === '1' &&\n    fixtureRead && fs.readFileSync('/workspace/probe-written.txt', 'utf8') === 'showdar-written' &&\n    !process.env.OPENAI_API_KEY && !process.env.CODEX_API_KEY &&\n    !fs.existsSync('/var/run/docker.sock') && !fs.existsSync('/workspace/evidence') });\n} else if (probe === 'root-write') {\n  let denied = false;\n  try { fs.writeFileSync('/showdar-must-not-write', 'unsafe'); }\n  catch (error) { denied = ['EROFS','EACCES','EPERM'].includes(error.code); }\n  finish({ probe, pass: denied });\n} else if (probe === 'outside-read') {\n  let denied = false;\n  try { fs.readFileSync('/workspace/../outside-secret.txt', 'utf8'); }\n  catch (error) { denied = ['ENOENT','EACCES','EPERM'].includes(error.code); }\n  finish({ probe, pass: denied });\n} else if (probe === 'symlink') {
+  let denied = false;
+  try { fs.readFileSync('/workspace/escape-link', 'utf8'); }
+  catch (error) { denied = ['ENOENT','EACCES','EPERM'].includes(error.code); }
+  finish({ probe, pass: denied && fs.lstatSync('/workspace/escape-link').isSymbolicLink() });
+} else if (probe === 'network') {\n  const socket = net.connect({ host:'1.1.1.1', port:443 });\n  let done = false;\n  const complete = pass => {\n    if (done) return;\n    done = true;\n    socket.destroy();\n    finish({ probe, pass });\n  };\n  socket.once('connect', () => complete(false));\n  socket.once('error', error => complete(['ENETUNREACH','EHOSTUNREACH','EACCES','EPERM'].includes(error.code)));\n  socket.setTimeout(2500, () => complete(false));\n} else {\n  process.stderr.write('Unknown probe');\n  process.exitCode = 2;\n}\n";
 
 function deny(reason, extras = {}) {
   return { available: false, verified: false, trustedRunnerSupported: false, reason, checks: [], ...extras };
@@ -72,7 +77,7 @@ export async function verifyDockerIsolation({
     // Deliberately do not pull images. The caller must provision a trusted image.
     const inspected = await command(['image', 'inspect', '--format', '{{json .RepoDigests}}', image], 5_000);
     const digests = JSON.parse(String(inspected.stdout).trim());
-    const digest = digests.find(value => /^node@sha256:[a-f0-9]{64}$/.test(value));
+    const digest = digests.find(value => value === SANDBOX_IMAGE);
     if (!digest) return deny('Locally provisioned image has no pinned RepoDigest', { available: true });
 
     root = await mkdtemp(path.join(os.tmpdir(), 'showdar-sandbox-preflight-'));
@@ -81,6 +86,8 @@ export async function verifyDockerIsolation({
     await chmod(workspace, 0o777); // Disposable fixture only; no secrets or evidence inside.
     await writeFile(path.join(workspace, 'fixture.txt'), 'showdar-fixture', { mode: 0o644, flag: 'wx' });
     await writeFile(path.join(root, 'outside-secret.txt'), randomUUID(), { mode: 0o600, flag: 'wx' });
+    await symlink('/outside-secret.txt', path.join(workspace, 'escape-link'));
+
 
     for (const probe of SANDBOX_PROBES) {
       const name = 'showdar-isolation-' + randomUUID();
