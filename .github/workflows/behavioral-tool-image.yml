@@ -1,0 +1,67 @@
+name: Build trusted behavioral tool image
+
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  build:
+    if: github.repository == 'caongocquy/showdar-skills' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+      - name: Build exact trusted recipe and preserve immutable image bytes
+        env:
+          IMAGE_DIRECTORY: ${{ runner.temp }}/image
+        run: |
+          mkdir "$IMAGE_DIRECTORY"
+          docker build --pull=false -f evals/behavioral/Dockerfile.tool-runtime -t showdar-eval-tools:trusted .
+          TOOL_IMAGE_ID=$(docker image inspect --format '{{.Id}}' showdar-eval-tools:trusted)
+          export TOOL_IMAGE_ID
+          docker save "$TOOL_IMAGE_ID" -o "$IMAGE_DIRECTORY/tool-image.tar"
+          node scripts/behavioral-eval-image-manifest.mjs
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: behavioral-tool-image-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/image/tool-image.tar
+            ${{ runner.temp }}/image/image.json
+          if-no-files-found: error
+          retention-days: 90
+
+  attest:
+    needs: build
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: behavioral-tool-image-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/image
+      - uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4
+        id: provenance
+        with:
+          subject-path: |
+            ${{ runner.temp }}/image/tool-image.tar
+            ${{ runner.temp }}/image/image.json
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: behavioral-tool-image-attestation-${{ github.run_attempt }}
+          path: ${{ steps.provenance.outputs.bundle-path }}
+          if-no-files-found: error
+          retention-days: 90
