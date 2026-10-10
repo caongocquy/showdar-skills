@@ -217,15 +217,15 @@ test('producer HTTP, semantic hooks, Docker and durable bundle verify end-to-end
     ['approval_request',{scope:'already-approved-spec',message:'Please approve the generic scope'}],
     ['scope_change',{decision:'new-requirements',message:'Propose generic additional requirements'}],['git_diff_check',{}]];
   let turn=0;
-  const fakeResponses=createOfflineResponsesTransport({fakeFetch:async()=>new Response(JSON.stringify({id:`resp_${turn}`,model:'contract',status:'completed',
+  const fakeResponses=createOfflineResponsesTransport({fakeFetch:async()=>new Response(JSON.stringify({id:`resp_${turn}`,model:'gpt-6-luna',status:'completed',
     output:turn<calls.length?[{type:'function_call',call_id:`call_${turn}`,name:calls[turn][0],arguments:JSON.stringify(calls[turn++][1])}]:
       [{type:'message',content:[{type:'output_text',text:'Please approve the new scope.'}]}]}),{headers:{'x-request-id':`req_${turn}`}})});
-  const result=await runOfflineResponses({...dirs,scenario:contract,suite:contractSuite,model:'contract',timeoutMs:60000,fakeResponses,
+  const result=await runOfflineResponses({...dirs,scenario:contract,suite:contractSuite,model:'gpt-6-luna',timeoutMs:60000,fakeResponses,
     fakeRuntime:createProducerRuntime({...dirs,scenario:contract,suite:contractSuite,actions,imageId:image,imageApproval})});
   assert.equal(result.status,'NOT_RUN',JSON.stringify(result.reasons));
   const directory=await mkdtemp(path.join(dirs.evidenceDir,'durable-'));
   const targetScenario=suite.scenarios.find(item=>item.id==='BRAIN-001');
-  const evidence=await sealCapture({...dirs,result,scenario:contract,targetScenario,runnerRevision:dirs.sourceSha,model:'contract',plannedModelIdentity:'explicit-model-not-authorized',
+  const evidence=await sealCapture({...dirs,result,scenario:contract,targetScenario,runnerRevision:dirs.sourceSha,model:'gpt-6-luna',plannedModelIdentity:'gpt-6-luna',
     runId:'123',runAttempt:1,pullRequest:23,imageId:image,imageApproval,directory});
   const trace=JSON.parse(await readFile(path.join(directory,'trace.json')));
   const artifacts=JSON.parse(await readFile(path.join(directory,'artifacts.json')));
@@ -234,6 +234,12 @@ test('producer HTTP, semantic hooks, Docker and durable bundle verify end-to-end
   assert.ok(trace.events.some(event=>event.kind==='scope_changed'));
   assert.ok(trace.events.find(event=>event.kind==='verification_observed').receiptSha256);
   assert.equal(evidence.purpose,'infrastructure-contract');
+  assert.equal(evidence.modelIdentity,'gpt-6-luna');
+  assert.equal(evidence.plannedModelIdentity,'gpt-6-luna');
+  assert.equal(trace.modelIdentity,'gpt-6-luna');
+  assert.ok(trace.responses.every(response=>response.origin==='simulated'));
+  assert.ok(trace.receipts.filter(item=>item.receipt.kind==='responses-transport-observation').every(item=>item.receipt.modelIdentity==='gpt-6-luna'));
+  assert.equal(evidence.behavioralStatus,'BLOCKED');
   const expected={...evidence,evidenceSha256:digest(await readFile(path.join(directory,'evidence.json')))};
   const verdict=await verifyPilotGates({evidencePath:path.join(directory,'evidence.json'),tracePath:path.join(directory,'trace.json'),artifactPath:path.join(directory,'artifacts.json'),expected});
   assert.equal(verdict.prePilot,'NO-GO');assert.equal(verdict.behavioral,'BLOCKED');
@@ -248,6 +254,6 @@ test('producer HTTP, semantic hooks, Docker and durable bundle verify end-to-end
   }
   const saved=JSON.parse(await readFile(result.evidencePath));
   await writeFile(saved.snapshots[0].file,'tampered');
-  await assert.rejects(sealCapture({...dirs,result,scenario:contract,runnerRevision:dirs.sourceSha,model:'contract',runId:'123',runAttempt:1,pullRequest:23,
+  await assert.rejects(sealCapture({...dirs,result,scenario:contract,runnerRevision:dirs.sourceSha,model:'gpt-6-luna',runId:'123',runAttempt:1,pullRequest:23,
     imageId:image,imageApproval,directory}),/Artifact changed/);
 }));

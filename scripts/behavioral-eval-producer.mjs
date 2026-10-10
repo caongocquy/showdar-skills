@@ -63,17 +63,17 @@ if (process.argv[2]==='--prepare') {
     const calls=[['skill_select',{skill:'showdar-build'}],['skip_refinement',{approvalPath:'APPROVAL.md',approvalSha256:digest(approval),rationale:'The generic contract approval defines the fixture scope.'}],
       ['approval_request',{scope:'already-approved-spec',message:'Contract test approval request'}],['scope_change',{decision:'new-requirements',message:'Contract test scope proposal'}],['git_diff_check',{}]];
     let turn=0;
-    const responses=createOfflineResponsesTransport({fakeFetch:async()=>new Response(JSON.stringify({id:`resp_contract_${turn}`,model:'model-free-contract',status:'completed',
+    const responses=createOfflineResponsesTransport({fakeFetch:async()=>new Response(JSON.stringify({id:`resp_contract_${turn}`,model:input.model,status:'completed',
       output:turn<calls.length?[{type:'function_call',call_id:`call_${turn}`,name:calls[turn][0],arguments:JSON.stringify(calls[turn++][1])}]:
         [{type:'message',content:[{type:'output_text',text:'Generic contract complete; never a behavioral result.'}]}]}),{headers:{'x-request-id':`req_contract_${turn}`}})});
-    const result=await runCapturedResponses({...options,workspace,scenario,suite,model:'model-free-contract',responses,
+    const result=await runCapturedResponses({...options,workspace,scenario,suite,model:input.model,responses,
       runtime:createProducerRuntime({...options,workspace,scenario,suite,actions})});
     if (result.status!=='NOT_RUN') throw new Error('Producer contract failed');
     const trace=JSON.parse(await readFile(result.capturedTrace.tracePath));
     if (!trace.coverage.complete || trace.execution.kind!=='simulated' ||
         !['skill_selected','decision_recorded','approval_requested','scope_changed','verification_observed'].every(kind=>trace.events.some(event=>event.kind===kind))) throw new Error('Producer contract lacks event coverage');
     const frozen=JSON.parse(await readFile(new URL('../evals/behavioral/scenarios.json',import.meta.url)));
-    await sealCapture({...options,result,scenario,targetScenario:frozen.scenarios.find(item=>item.id==='BRAIN-001'),model:'model-free-contract',plannedModelIdentity:input.model});
+    await sealCapture({...options,result,scenario,targetScenario:frozen.scenarios.find(item=>item.id==='BRAIN-001'),model:input.model,plannedModelIdentity:input.model});
     await assertSourceRevision(sourceRoot,input.sourceSha);
     await assertSourceRevision(process.cwd(),env.GITHUB_SHA);
     console.log('Model-free producer contract captured; behavioral grading BLOCKED');
