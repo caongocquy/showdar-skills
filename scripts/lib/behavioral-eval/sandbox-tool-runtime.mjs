@@ -67,7 +67,7 @@ export function buildSandboxToolArgs({workspace,imageId,name,request}={}) {
   if (boundary < 0) throw new Error('Sandbox policy arguments unavailable');
   if (Buffer.byteLength(JSON.stringify(request))>MAX_BYTES*2) denied('tool arguments exceed transport limit');
   // Tool payload stays on stdin, never in Docker argv or process listings.
-  return [...safety.slice(0,boundary), '--entrypoint=node', imageId, '-e', TOOL_SCRIPT];
+  return [safety[0], '-i', ...safety.slice(1,boundary), '--entrypoint=node', imageId, '-e', TOOL_SCRIPT];
 }
 
 async function runDockerPayload(binary,args,env,payload) {
