@@ -8,46 +8,67 @@ const capabilities=new WeakMap();
 const same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
 const sha=value=>/^[a-f0-9]{64}$/.test(value ?? '');
 
-export function createPaidCaptureBinding(options,environment) {
+export function createPaidCaptureBinding(options,environment,policies) {
   const {runnerRevision,sourceSha,scenarioId,model,runId,runAttempt,pullRequest,readiness,image}=options;
   if (![runnerRevision,sourceSha].every(value=>/^[a-f0-9]{40}$/.test(value ?? '')) ||
       !/^[1-9]\d*$/.test(String(runId)) || runAttempt!==1 || scenarioId!=='BRAIN-001' || model!=='gpt-6-luna' ||
       !Number.isSafeInteger(pullRequest) || pullRequest<1 || !Number.isSafeInteger(environment?.id) || environment.id<1 ||
-      environment.name!==PAID_ENVIRONMENT || image?.kind!=='github-attested-image' || !/^sha256:[a-f0-9]{64}$/.test(image.imageId ?? '') ||
+      environment.name!==PAID_ENVIRONMENT || !Number.isSafeInteger(policies?.branch_policies?.[0]?.id) || policies.branch_policies[0].id<1 ||
+      image?.kind!=='github-attested-image' || !/^sha256:[a-f0-9]{64}$/.test(image.imageId ?? '') ||
       ![image.archiveSha256,image.manifestSha256].every(sha)) throw new Error('Invalid paid capture identity; fresh run attempt 1 required');
   if (!readiness || readiness.runnerRevision!==runnerRevision || readiness.sourceSha!==sourceSha || readiness.scenarioId!==scenarioId ||
       readiness.plannedModelIdentity!==model || readiness.modelIdentity!==model || readiness.pullRequest!==pullRequest ||
       !same(readiness.image,image) || !/^[1-9]\d*$/.test(String(readiness.runId)) || String(readiness.runId)===String(runId) ||
       !Number.isSafeInteger(readiness.runAttempt) || readiness.runAttempt<1 ||
       ![readiness.evidenceSha256,readiness.traceSha256,readiness.artifactSha256,readiness.scenarioSha256].every(sha)) throw new Error('Readiness does not authorize this capture identity');
-  return {schemaVersion:2,environment:{id:environment.id,name:PAID_ENVIRONMENT},runnerRevision,sourceSha,scenarioId,
+  return {schemaVersion:2,environment:{id:environment.id,name:PAID_ENVIRONMENT,deploymentPolicyId:policies.branch_policies[0].id,
+    observedPolicyType:policies.branch_policies[0].type ?? null},runnerRevision,sourceSha,scenarioId,
     modelIdentity:model,runId:String(runId),runAttempt,pullRequest,image:structuredClone(image),readiness:structuredClone(readiness),budget:{...PAID_BUDGET}};
 }
 
-export function assertPaidEnvironment(environment,policies) {
+export function assertPaidEnvironment(environment,policies,tagRefs) {
   const rules=environment?.protection_rules?.filter(rule=>rule.type==='required_reviewers');
   const reviewer=rules?.[0]?.reviewers?.[0];
   if (environment?.name!==PAID_ENVIRONMENT || !Number.isSafeInteger(environment.id) || environment.id<1 ||
       environment.can_admins_bypass!==false || rules?.length!==1 || rules[0].prevent_self_review!==false ||
       rules[0].reviewers?.length!==1 || reviewer.type!=='User' || !same({login:reviewer.reviewer?.login,id:reviewer.reviewer?.id,type:reviewer.reviewer?.type},owner) ||
       environment.deployment_branch_policy?.protected_branches!==false || environment.deployment_branch_policy?.custom_branch_policies!==true ||
-      policies?.total_count!==1 || policies.branch_policies?.length!==1 || policies.branch_policies[0].name!=='main' || policies.branch_policies[0].type!=='branch') {
+      policies?.total_count!==1 || policies.branch_policies?.length!==1 || policies.branch_policies[0].name!=='main' ||
+      !Number.isSafeInteger(policies.branch_policies[0].id) || policies.branch_policies[0].id<1 ||
+      (policies.branch_policies[0].type!==undefined && policies.branch_policies[0].type!=='branch')) {
     throw new Error('Missing or weakened owner environment protection');
+  }
+  // REST may omit type. Never infer it: block a same-name tag and enforce native refs/heads/main separately.
+  if (policies.branch_policies[0].type===undefined && (!Array.isArray(tagRefs) ||
+      tagRefs.some(item=>typeof item?.ref!=='string' || !item.ref.startsWith('refs/tags/') || item.ref==='refs/tags/main'))) {
+    throw new Error('Unverifiable legacy branch policy or same-name tag');
   }
 }
 
-export function assertPaidCaptureApproval({environment,policies,run,approvals},binding,{completed=false}={}) {
-  assertPaidEnvironment(environment,policies);
+export async function readPaidEnvironment(token) {
+  const environment=await githubJson('/environments/'+PAID_ENVIRONMENT,token);
+  const policies=await githubJson('/environments/'+PAID_ENVIRONMENT+'/deployment-branch-policies',token);
+  const tagRefs=policies?.branch_policies?.[0]?.type===undefined?await githubJson('/git/matching-refs/tags/main',token):undefined;
+  assertPaidEnvironment(environment,policies,tagRefs);
+  return {environment,policies,tagRefs};
+}
+
+export function assertPaidCaptureApproval({environment,policies,tagRefs,run,approvals},binding,{completed=false}={}) {
+  assertPaidEnvironment(environment,policies,tagRefs);
   const canonical=createPaidCaptureBinding({runnerRevision:binding.runnerRevision,sourceSha:binding.sourceSha,scenarioId:binding.scenarioId,
-    model:binding.modelIdentity,runId:binding.runId,runAttempt:binding.runAttempt,pullRequest:binding.pullRequest,image:binding.image,readiness:binding.readiness},environment);
+    model:binding.modelIdentity,runId:binding.runId,runAttempt:binding.runAttempt,pullRequest:binding.pullRequest,image:binding.image,readiness:binding.readiness},environment,policies);
   if (!same(binding,canonical) || String(run?.id)!==binding.runId || run.run_attempt!==1 || run.head_sha!==binding.runnerRevision ||
       run.head_branch!=='main' || run.event!=='workflow_dispatch' || (completed?(run.status!=='completed' || run.conclusion!=='success'):run.status!=='in_progress') ||
       run.path?.split('@')[0]!=='.github/workflows/behavioral-live-capture.yml' || run.repository?.full_name!==REPOSITORY || run.head_repository?.full_name!==REPOSITORY) throw new Error('Untrusted active capture run or binding');
+  assertOwnerEnvironmentApproval(environment,approvals,'SHOWDAR-CAPTURE-AUTH/2\n'+digest(JSON.stringify(binding)));
+}
+
+export function assertOwnerEnvironmentApproval(environment,approvals,comment) {
   const records=Array.isArray(approvals)?approvals.filter(item=>item.environments?.some(env=>env.id===environment.id || env.name===PAID_ENVIRONMENT)):[];
   const review=records[0];
   if (records.length!==1 || review.state!=='approved' || !same({login:review.user?.login,id:review.user?.id,type:review.user?.type},owner) ||
       review.environments?.length!==1 || review.environments[0].id!==environment.id || review.environments[0].name!==PAID_ENVIRONMENT ||
-      review.comment!=='SHOWDAR-CAPTURE-AUTH/2\n'+digest(JSON.stringify(binding))) throw new Error('Missing, forged, stale or replayed owner environment approval');
+      review.comment!==comment) throw new Error('Missing, forged, stale or replayed owner environment approval');
 }
 
 function assertContext(options,context) {
@@ -58,20 +79,17 @@ function assertContext(options,context) {
 
 export async function preparePaidCaptureBinding(options,{context=process.env}={}) {
   assertContext(options,context);
-  const environment=await githubJson('/environments/'+PAID_ENVIRONMENT,options.token);
-  const policies=await githubJson('/environments/'+PAID_ENVIRONMENT+'/deployment-branch-policies',options.token);
-  assertPaidEnvironment(environment,policies);
-  return createPaidCaptureBinding(options,environment);
+  const {environment,policies}=await readPaidEnvironment(options.token);
+  return createPaidCaptureBinding(options,environment,policies);
 }
 
 /** GitHub authenticated records confer authority; caller-supplied review JSON never does. */
 export async function verifyPaidCaptureAuthorization(options,{context=process.env}={}) {
   const binding=await preparePaidCaptureBinding(options,{context});
   const run=await githubJson(`/actions/runs/${options.runId}/attempts/1`,options.token);
-  const environment=await githubJson('/environments/'+PAID_ENVIRONMENT,options.token);
-  const policies=await githubJson('/environments/'+PAID_ENVIRONMENT+'/deployment-branch-policies',options.token);
+  const metadata=await readPaidEnvironment(options.token);
   const approvals=await githubJson(`/actions/runs/${options.runId}/approvals`,options.token);
-  assertPaidCaptureApproval({environment,policies,run,approvals},binding);
+  assertPaidCaptureApproval({...metadata,run,approvals},binding);
   return {kind:'github-environment-owner-approval',binding,bindingSha256:digest(JSON.stringify(binding)),owner:{...owner}};
 }
 
@@ -104,8 +122,7 @@ export function consumePaidResponse(capability,request) {
 
 export async function verifyPaidCaptureEvidence(proof,run,token) {
   if (proof?.kind!=='github-environment-owner-approval' || proof.bindingSha256!==digest(JSON.stringify(proof.binding)) || !same(proof.owner,owner)) throw new Error('Invalid paid authorization evidence');
-  const environment=await githubJson('/environments/'+PAID_ENVIRONMENT,token);
-  const policies=await githubJson('/environments/'+PAID_ENVIRONMENT+'/deployment-branch-policies',token);
+  const metadata=await readPaidEnvironment(token);
   const approvals=await githubJson(`/actions/runs/${proof.binding.runId}/approvals`,token);
-  assertPaidCaptureApproval({environment,policies,run,approvals},proof.binding,{completed:true});
+  assertPaidCaptureApproval({...metadata,run,approvals},proof.binding,{completed:true});
 }

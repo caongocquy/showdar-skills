@@ -13,13 +13,13 @@ const request=()=>({model:'gpt-6-luna',max_output_tokens:2048,input:[{role:'deve
 const environment={id:42,name:'showdar-paid-capture',can_admins_bypass:false,
  protection_rules:[{type:'required_reviewers',prevent_self_review:false,reviewers:[{type:'User',reviewer:{login:'caongocquy',id:50620260,type:'User'}}]}],
  deployment_branch_policy:{protected_branches:false,custom_branch_policies:true}};
-const policies={total_count:1,branch_policies:[{name:'main',type:'branch'}]};
+const policies={total_count:1,branch_policies:[{id:17,name:'main',type:'branch'}]};
 const image={kind:'github-attested-image',imageId:'sha256:'+'c'.repeat(64),archiveSha256:'d'.repeat(64),manifestSha256:'e'.repeat(64),runnerRevision:revision,runId:'99',runAttempt:1};
 const readiness={runnerRevision:revision,sourceSha:source,scenarioId:'BRAIN-001',scenarioSha256:digest(JSON.stringify(scenario)),plannedModelIdentity:'gpt-6-luna',modelIdentity:'gpt-6-luna',runId:'98',runAttempt:1,pullRequest:23,image,
  evidenceSha256:'1'.repeat(64),traceSha256:'2'.repeat(64),artifactSha256:'3'.repeat(64)};
 const options={runnerRevision:revision,sourceSha:source,scenarioId:'BRAIN-001',model:'gpt-6-luna',runId:'123',runAttempt:1,pullRequest:23,readiness,image};
 const run={id:123,run_attempt:1,head_sha:revision,head_branch:'main',event:'workflow_dispatch',status:'in_progress',path:'.github/workflows/behavioral-live-capture.yml',repository:{full_name:'caongocquy/showdar-skills'},head_repository:{full_name:'caongocquy/showdar-skills'}};
-function binding(){return producer.createPaidCaptureBinding(options,environment);}
+function binding(){return producer.createPaidCaptureBinding(options,environment,policies);}
 function approval(b=binding()){return {state:'approved',user:{login:'caongocquy',id:50620260,type:'User'},environments:[{id:42,name:environment.name}],comment:'SHOWDAR-CAPTURE-AUTH/2\n'+digest(JSON.stringify(b))};}
 test('owner environment approval is feasible for the PR author and binds exact capture context',()=>{
  const b=binding();producer.assertPaidCaptureApproval({environment,policies,run,approvals:[approval(b)]},b);
@@ -114,4 +114,32 @@ test('signed live evidence rechecks authenticated environment approval; it never
 test('direct live transport never reads a credential getter before its safety and authorization gates',async()=>{
  let read=false;const send=createLiveResponsesTransport({allowModel:true,get apiKey(){read=true;throw new Error('credential accessed');}});
  assert.equal(read,false);await assert.rejects(send(request()),/Live Responses disabled/);assert.equal(read,false);
+});
+
+
+// REST's documented response may omit type; do not infer branch from the policy name.
+import * as authorization from './paid-authorization.mjs';
+test('legacy policy metadata requires authenticated absence of a same-name tag and stable policy identity',()=>{
+ const legacy={total_count:1,branch_policies:[{id:17,name:'main'}]};
+ assert.throws(()=>authorization.assertPaidEnvironment(environment,legacy));
+ authorization.assertPaidEnvironment(environment,legacy,[]);
+ for(const refs of [null,{},[{ref:'refs/tags/main'}],[{}]])assert.throws(()=>authorization.assertPaidEnvironment(environment,legacy,refs));
+ for(const policy of [{name:'main'},{id:17,name:'*'},{id:17,name:'main',type:'tag'},{id:17,name:'main',type:null}])
+  assert.throws(()=>authorization.assertPaidEnvironment(environment,{total_count:1,branch_policies:[policy]},[]));
+ const b=producer.createPaidCaptureBinding(options,environment,policies);
+ assert.throws(()=>producer.assertPaidCaptureApproval({environment,policies:{...policies,branch_policies:[{...policies.branch_policies[0],id:18}]},run,approvals:[approval(b)]},b));
+});
+test('native legacy lookup fails closed on omitted refs and rejects tag contexts before any GitHub lookup',async t=>{
+ const legacy={total_count:1,branch_policies:[{id:17,name:'main'}]};let refs=[];const calls=[];
+ const context={GITHUB_REPOSITORY:'caongocquy/showdar-skills',GITHUB_REF:'refs/heads/main',GITHUB_SHA:revision,GITHUB_EVENT_NAME:'workflow_dispatch',GITHUB_RUN_ID:'123',GITHUB_RUN_ATTEMPT:'1',RUNNER_TEMP:'/tmp'};
+ t.mock.method(globalThis,'fetch',async url=>{calls.push(url);return new Response(JSON.stringify(url.endsWith('/git/matching-refs/tags/main')?refs:url.endsWith('/deployment-branch-policies')?legacy:environment));});
+ const prepared=await authorization.preparePaidCaptureBinding({...options,token:'fixture-token'},{context});
+ assert.equal(prepared.environment.deploymentPolicyId,17);assert.equal(prepared.environment.observedPolicyType,null);
+ assert.ok(calls.some(url=>url.endsWith('/git/matching-refs/tags/main')));refs=[{ref:'refs/tags/main'}];
+ await assert.rejects(authorization.preparePaidCaptureBinding({...options,token:'fixture-token'},{context}));
+ refs={};await assert.rejects(authorization.preparePaidCaptureBinding({...options,token:'fixture-token'},{context}));
+ const count=calls.length;
+ for(const ref of ['refs/tags/main','refs/heads/unauthorized','refs/pull/23/merge'])
+  await assert.rejects(authorization.preparePaidCaptureBinding({...options,token:'fixture-token'},{context:{...context,GITHUB_REF:ref}}));
+ assert.equal(calls.length,count);
 });
