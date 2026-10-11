@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createOfflineResponsesTransport, createLiveResponsesTransport, getResponsesObservation } from './responses-transport.mjs';
+import { createOfflineResponsesTransport, createLiveResponsesTransport, getResponsesObservation, assertLiveTransportEnabled } from './responses-transport.mjs';
 
 test('gpt-6-luna metadata retains the actual response model and rejects an identity mismatch',async()=>{
   const request={model:'gpt-6-luna',input:[],tools:[],store:false,parallel_tool_calls:false,max_output_tokens:2048};
@@ -22,7 +22,7 @@ test('live transport opt-in never substitutes for verified safety gates',async()
   globalThis.fetch = async()=>{called=true;throw new Error('unexpected network');};
   try {
     for (const options of [{},{allowModel:true,apiKey:'test-only-key',verified:true,sandboxVerified:true}]) {
-      await assert.rejects(createLiveResponsesTransport(options)(request),/disabled|opt-in/);
+      await assert.rejects(createLiveResponsesTransport(options)(request),/disabled|opt-in|authorization/);
     }
     assert.equal(called,false);
   } finally {globalThis.fetch=previous;}
@@ -88,4 +88,25 @@ test('JSON-escaped credentials and credential-bearing request IDs never become t
     const send=createOfflineResponsesTransport({apiKey:'test-only-key',fakeFetch:async()=>new Response(body,{headers:{'x-request-id':requestId}})});
     await assert.rejects(send(request),error=>/denied/.test(error.message)&&!error.message.includes('test-only-key'));
   }
+});
+
+// Gate-only fixtures never mint an authorization, read a credential or call a model.
+test('activation accepts only native main attempt 1; forged capabilities cannot read credentials',async()=>{
+ const context={GITHUB_REPOSITORY:'caongocquy/showdar-skills',GITHUB_REF:'refs/heads/main',GITHUB_EVENT_NAME:'workflow_dispatch',
+  GITHUB_SHA:'a'.repeat(40),GITHUB_RUN_ID:'123',GITHUB_RUN_ATTEMPT:'1'};
+ const previous=Object.fromEntries(Object.keys(context).map(key=>[key,process.env[key]]));
+ try {
+  Object.assign(process.env,context);assert.doesNotThrow(()=>assertLiveTransportEnabled(true));
+  assert.throws(()=>assertLiveTransportEnabled(false),/opt-in/);
+  for(const [key,value] of [['GITHUB_REPOSITORY','attacker/fork'],['GITHUB_REF','refs/heads/feature'],
+   ['GITHUB_REF','refs/tags/main'],['GITHUB_EVENT_NAME','pull_request'],['GITHUB_SHA',''],['GITHUB_RUN_ID','0'],['GITHUB_RUN_ATTEMPT','2']]) {
+   Object.assign(process.env,context,{[key]:value});assert.throws(()=>assertLiveTransportEnabled(true),/Live Responses disabled/);
+  }
+  Object.assign(process.env,context);
+  for(const authorization of [undefined,{}, {approved:true,verified:true}]) {
+   let credentialRead=false;
+   const send=createLiveResponsesTransport({allowModel:true,authorization,get apiKey(){credentialRead=true;throw new Error('credential accessed');}});
+   await assert.rejects(send(request),/authorization/);assert.equal(credentialRead,false);
+  }
+ } finally {for(const [key,value] of Object.entries(previous)){if(value===undefined)delete process.env[key];else process.env[key]=value;}}
 });
