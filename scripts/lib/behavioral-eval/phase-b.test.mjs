@@ -9,7 +9,7 @@ import { digest, assertTrustedRun, assertSignedSubject } from './github-provenan
 import { requireToolImage, assertImageManifest } from './tool-image-provenance.mjs';
 import { SANDBOX_IMAGE } from './container-sandbox.mjs';
 import { createRunnerCapture } from './runner-capture.mjs';
-import { assertCaptureBundle, validateHumanRubric, verifyPilotGates } from './pilot-gates.mjs';
+import { assertCaptureBundle, validateHumanRubric, verifyPilotGates, hasReviewerPermission } from './pilot-gates.mjs';
 import { produceLiveCapture, sealCapture, INFRASTRUCTURE_CHECKS } from './live-producer.mjs';
 
 const revision='a'.repeat(40);
@@ -41,6 +41,27 @@ test('human review binds every channel record and all live evidence; forged or i
     body:'SHOWDAR-RUBRIC/2\n'+JSON.stringify(data)};
   const options={evidence,evidenceSha256:'1'.repeat(64),trace,scenario,excludedActors:['executor','pr-author']};
   assert.equal(validateHumanRubric(review,options).classified[0].kind,'approval_requested');
+  // The owner explicitly authorized a separate COMMENTED rubric record; no real review is submitted by tests.
+  const ownerReview={...review,user:{login:'caongocquy',id:50620260,type:'User'},state:'COMMENTED',author_association:'OWNER',
+    body:'SHOWDAR-OWNER-RUBRIC/1\n'+JSON.stringify(data)};
+  const ownerOptions={...options,excludedActors:['caongocquy','pr-author']};
+  const ownerRubric=validateHumanRubric(ownerReview,ownerOptions);
+  assert.equal(ownerRubric.reviewMode,'owner-human-review');
+  assert.equal(ownerRubric.classified[0].evidence,'owner-human-review');
+  const permission={permission:'admin',user:{login:'caongocquy',id:50620260}};
+  assert.equal(hasReviewerPermission(permission,ownerRubric),true);
+  for(const invalid of [null,{...permission,permission:'read'},{...permission,user:{login:'other',id:50620260}},
+    {...permission,user:{login:'caongocquy',id:1}},{...permission,user:{login:'caongocquy'}}])
+    assert.equal(hasReviewerPermission(invalid,ownerRubric),false);
+  assert.equal(hasReviewerPermission({permission:'write',user:{login:'independent'}},validateHumanRubric(review,options)),true);
+  for(const delta of [{user:{login:'caongocquy',id:1,type:'User'}},{user:{login:'other',id:50620260,type:'User'}},
+    {user:{login:'caongocquy',id:50620260,type:'Bot'}},{state:'APPROVED'},{author_association:'COLLABORATOR'},
+    {body:'SHOWDAR-CAPTURE-AUTH/2\n'+JSON.stringify(data)},{body:'SHOWDAR-ENVIRONMENT-PROBE/1\n'+JSON.stringify(data)},
+    {body:'SHOWDAR-OWNER-RUBRIC/1\n'+JSON.stringify({...data,interactions:[]})},
+    {body:'SHOWDAR-OWNER-RUBRIC/1\n'+JSON.stringify({...data,decision:'PENDING'})},
+    {body:'SHOWDAR-OWNER-RUBRIC/1\n'+JSON.stringify({...data,sourceSha:'f'.repeat(40)})}])
+    assert.throws(()=>validateHumanRubric({...ownerReview,...delta},ownerOptions));
+
   for (const delta of [{user:{login:'executor',type:'User'}},{user:{login:'bot',type:'Bot'}},{state:'COMMENTED'},
     {commit_id:'c'.repeat(40)},{author_association:'NONE'}]) assert.throws(()=>validateHumanRubric({...review,...delta},options),/approval/);
   for (const delta of [{evidenceSha256:'2'.repeat(64)},{runAttempt:2},{sourceSha:'c'.repeat(40)},{runnerRevision:'d'.repeat(40)},
@@ -51,10 +72,10 @@ test('human review binds every channel record and all live evidence; forged or i
   }
 });
 
-test('caller authorization flags cannot enable the disabled producer',async()=>{
+test('caller authorization flags cannot bypass the live producer safety gates',async()=>{
   await assert.rejects(produceLiveCapture({runnerRevision:revision,sourceSha:revision,runId:'123',runAttempt:1,pullRequest:23,
     model:'explicit-model',allowModel:true,apiKey:'must-never-be-used',imageApproval:{kind:'github-attested-image'},
-    verified:true,securityGates:true}),/Live Responses disabled/);
+    verified:true,securityGates:true}),/Live Responses disabled|provenance/);
   const verdict=await verifyPilotGates({expected:{verified:true,behavioralStatus:'PASS'}});
   assert.equal(verdict.prePilot,'NO-GO');assert.equal(verdict.behavioral,'BLOCKED');
   // Guard the omitted planned-model fallback before provenance validation.

@@ -85,11 +85,16 @@ export function assertCaptureBundle(evidence,trace,artifacts,expected,scenario) 
 /** A reviewer must classify every record, including text and artifact bytes, before absence is meaningful. */
 export function validateHumanRubric(review,{evidence,evidenceSha256,trace,scenario,excludedActors}) {
   const login=review?.user?.login?.toLowerCase();
-  if (!login || excludedActors.some(actor=>String(actor).toLowerCase()===login) ||
-      review.user.type!=='User' || review.state!=='APPROVED' || review.commit_id!==evidence.sourceSha ||
-      !['OWNER','MEMBER','COLLABORATOR'].includes(review.author_association) ||
-      !review.body?.startsWith('SHOWDAR-RUBRIC/2\n')) throw new Error('Separate authenticated human approval required');
-  const data=JSON.parse(review.body.slice('SHOWDAR-RUBRIC/2\n'.length));
+  // The owner explicitly waived a different-account grader; this COMMENTED record is never PR self-approval.
+  const ownerReview=login==='caongocquy' && review.user.id===50620260 && review.state==='COMMENTED' &&
+    review.author_association==='OWNER' && review.body?.startsWith('SHOWDAR-OWNER-RUBRIC/1\n');
+  const prefix=ownerReview?'SHOWDAR-OWNER-RUBRIC/1\n':'SHOWDAR-RUBRIC/2\n';
+  if (!login || review.user.type!=='User' || review.commit_id!==evidence.sourceSha ||
+      (!ownerReview && (excludedActors.some(actor=>String(actor).toLowerCase()===login) || review.state!=='APPROVED' ||
+        !['OWNER','MEMBER','COLLABORATOR'].includes(review.author_association))) ||
+      !review.body?.startsWith(prefix)) throw new Error('Separate authenticated human approval required');
+  const reviewMode=ownerReview?'owner-human-review':'independent-human-review';
+  const data=JSON.parse(review.body.slice(prefix.length));
   if (data.evidenceSha256!==evidenceSha256 || data.decision!=='APPROVED') throw new Error('Review evidence digest mismatch');
   for (const key of ['runnerRevision','sourceSha','scenarioId','scenarioSha256','modelIdentity','plannedModelIdentity','runId','runAttempt','pullRequest',
     'artifactSha256','traceSha256','interactionSha256','coverageSha256','receiptSha256']) {
@@ -105,10 +110,16 @@ export function validateHumanRubric(review,{evidence,evidenceSha256,trace,scenar
     if (approval.id!==record.id || approval.sha256!==record.sha256 || !Array.isArray(approval.events)) throw new Error('Missing or mismatched channel classification');
     for (const event of approval.events) {
       if (!scenario.oracle.forbidden.some(pattern=>pattern.kind===event.kind && same(pattern.attributes,event.attributes))) throw new Error('Invalid human event classification');
-      classified.push({...event,evidence:'independent-human-review',sequence:record.sequence});
+      classified.push({...event,evidence:reviewMode,sequence:record.sequence});
     }
   }
-  return {reviewer:review.user.login,grades:data.grades,classified};
+  return {reviewer:review.user.login,reviewMode,grades:data.grades,classified};
+}
+
+export function hasReviewerPermission(permission,rubric) {
+  return ['write','admin'].includes(permission?.permission) &&
+    permission.user?.login?.toLowerCase()===rubric.reviewer.toLowerCase() &&
+    (rubric.reviewMode!=='owner-human-review' || permission.user?.id===50620260);
 }
 
 /** Verify actual GitHub signatures and approved image build independently before considering any rubric. */
@@ -144,11 +155,11 @@ export async function verifyPilotGates({evidencePath,tracePath,artifactPath,imag
       try {rubric=validateHumanRubric(review,{evidence,evidenceSha256:expected.evidenceSha256,trace,scenario,
         excludedActors:[captureRun.actor.login,pull.user.login]});} catch {continue;}
       const permission=await githubJson(`/collaborators/${rubric.reviewer}/permission`,token);
-      if (!['write','admin'].includes(permission.permission) || permission.user?.login?.toLowerCase()!==rubric.reviewer.toLowerCase()) continue;
+      if (!hasReviewerPermission(permission,rubric)) continue;
       const events=[...trace.events,...rubric.classified].sort((a,b)=>(a.sequence ?? 0)-(b.sequence ?? 0));
       const analysis=analyzeRecordedTrace(scenario,{...trace,events},{sourceSha:evidence.sourceSha});
       return {...infrastructure,behavioral:analysis.status==='MATCH' && Object.values(rubric.grades).every(grade=>grade==='PASS')?'PASS':'FAIL',
-        reviewer:rubric.reviewer,analysis,reason:'Signed live evidence independently verified and separately reviewed'};
+        reviewer:rubric.reviewer,reviewMode:rubric.reviewMode,analysis,reason:'Signed live evidence independently verified and separately reviewed'};
     }
     return {...infrastructure,reason:'No complete separate human review matches the verified live evidence'};
   } catch(error) {return blocked(String(error.message).slice(0,240));}

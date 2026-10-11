@@ -9,7 +9,7 @@ on:
         type: string
 
       paid_capture:
-        description: 'Explicit paid opt-in; deployment jobs and private live gate remain disabled'
+        description: 'Explicit paid opt-in; fresh signed readiness and owner Environment approval required'
         required: false
         default: false
         type: boolean
@@ -105,9 +105,9 @@ jobs:
           if-no-files-found: error
           retention-days: 90
 
-  # Deployment proposal only: enabling these jobs requires a separate reviewed revision and fresh PRE-PILOT acceptance.
+  # Paid opt-in never substitutes for fresh signed readiness and exact owner Environment approval.
   prepare-paid-capture:
-    if: ${{ false && inputs.paid_capture && github.repository == 'caongocquy/showdar-skills' && github.ref == 'refs/heads/main' }}
+    if: ${{ inputs.paid_capture && github.repository == 'caongocquy/showdar-skills' && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-22.04
     timeout-minutes: 10
     permissions:
@@ -136,7 +136,7 @@ jobs:
         run: node scripts/behavioral-eval-producer.mjs --prepare-paid
 
   paid-capture:
-    if: ${{ false && inputs.paid_capture && github.repository == 'caongocquy/showdar-skills' && github.ref == 'refs/heads/main' }}
+    if: ${{ inputs.paid_capture && github.repository == 'caongocquy/showdar-skills' && github.ref == 'refs/heads/main' }}
     needs: prepare-paid-capture
     environment:
       name: showdar-paid-capture
@@ -187,7 +187,7 @@ jobs:
           retention-days: 90
 
   attest-paid-capture:
-    if: ${{ false && inputs.paid_capture && github.repository == 'caongocquy/showdar-skills' && github.ref == 'refs/heads/main' }}
+    if: ${{ inputs.paid_capture && github.repository == 'caongocquy/showdar-skills' && github.ref == 'refs/heads/main' }}
     needs: paid-capture
     runs-on: ubuntu-22.04
     timeout-minutes: 5

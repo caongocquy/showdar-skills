@@ -18,7 +18,7 @@ function validateBinding({runnerRevision,sourceSha,runId,runAttempt,pullRequest,
       !Number.isSafeInteger(pullRequest) || pullRequest<1 || typeof model!=='string' || !model.trim() || model.length>128) throw new Error('Invalid producer identity');
 }
 
-/** Fixed native transport and sandbox composition. The transport's private deployment gate stays disabled. */
+/** Fixed native transport and sandbox composition; fresh signed readiness and owner authorization are required. */
 export async function produceLiveCapture(options) {
   validateBinding(options);
   assertLiveTransportEnabled(options.allowModel);
