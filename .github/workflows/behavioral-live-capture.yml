@@ -8,6 +8,17 @@ on:
         required: true
         type: string
 
+      paid_capture:
+        description: 'Explicit paid opt-in; deployment jobs and private live gate remain disabled'
+        required: false
+        default: false
+        type: boolean
+      pre_pilot_input:
+        description: 'Exact independently verified readiness expected.json; unused by the model-free contract'
+        required: false
+        default: ''
+        type: string
+
 permissions: {}
 
 jobs:
@@ -90,6 +101,116 @@ jobs:
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: behavioral-producer-attestation-${{ github.run_attempt }}
+          path: ${{ steps.provenance.outputs.bundle-path }}
+          if-no-files-found: error
+          retention-days: 90
+
+  # Deployment proposal only: enabling these jobs requires a separate reviewed revision and fresh PRE-PILOT acceptance.
+  prepare-paid-capture:
+    if: ${{ false && inputs.paid_capture && github.repository == 'caongocquy/showdar-skills' && github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+      attestations: read
+      pull-requests: read
+    env:
+      PRODUCER_INPUT: ${{ inputs.producer_input }}
+      PRE_PILOT_INPUT: ${{ inputs.pre_pilot_input }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+      - name: Download only validated readiness and image runs, including original bundles
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/behavioral-eval-producer.mjs --download-readiness
+      - name: Verify readiness and publish the exact owner authorization binding
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/behavioral-eval-producer.mjs --prepare-paid
+
+  paid-capture:
+    if: ${{ false && inputs.paid_capture && github.repository == 'caongocquy/showdar-skills' && github.ref == 'refs/heads/main' }}
+    needs: prepare-paid-capture
+    environment:
+      name: showdar-paid-capture
+      url: https://github.com/caongocquy/showdar-skills/actions/runs/${{ github.run_id }}
+    concurrency:
+      group: showdar-paid-capture
+      cancel-in-progress: false
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+      attestations: read
+      pull-requests: read
+    env:
+      PRODUCER_INPUT: ${{ inputs.producer_input }}
+      PRE_PILOT_INPUT: ${{ inputs.pre_pilot_input }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+      - name: Download only validated readiness and image runs, including original bundles
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/behavioral-eval-producer.mjs --download-readiness
+      - name: Independently verify owner authorization before referencing the model credential
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/behavioral-eval-producer.mjs --verify-paid
+      - name: Consume one authorization and capture within its exact budget
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          # Environment secret only; never configure this name at repository or organization scope.
+          OPENAI_API_KEY: ${{ secrets.SHOWDAR_PAID_CAPTURE_KEY }}
+        run: node scripts/behavioral-eval-producer.mjs --live
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: behavioral-producer-live-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/capture/evidence.json
+            ${{ runner.temp }}/capture/trace.json
+            ${{ runner.temp }}/capture/artifacts.json
+          if-no-files-found: error
+          retention-days: 90
+
+  attest-paid-capture:
+    if: ${{ false && inputs.paid_capture && github.repository == 'caongocquy/showdar-skills' && github.ref == 'refs/heads/main' }}
+    needs: paid-capture
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: behavioral-producer-live-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/capture
+      - uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4
+        id: provenance
+        with:
+          subject-path: |
+            ${{ runner.temp }}/capture/evidence.json
+            ${{ runner.temp }}/capture/trace.json
+            ${{ runner.temp }}/capture/artifacts.json
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: behavioral-producer-live-attestation-${{ github.run_attempt }}
           path: ${{ steps.provenance.outputs.bundle-path }}
           if-no-files-found: error
           retention-days: 90

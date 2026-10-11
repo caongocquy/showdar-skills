@@ -4,6 +4,7 @@ import { verifyImageBuild } from './tool-image-provenance.mjs';
 import { INTERACTION_CHANNELS } from './runner-capture.mjs';
 import { analyzeRecordedTrace } from './trace-grader.mjs';
 import { INFRASTRUCTURE_CHECKS } from './live-producer.mjs';
+import {verifyPaidCaptureEvidence} from './paid-authorization.mjs';
 
 const blocked=reason=>({prePilot:'NO-GO',behavioral:'BLOCKED',reason});
 const same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
@@ -71,6 +72,12 @@ export function assertCaptureBundle(evidence,trace,artifacts,expected,scenario) 
       !same(receipt.imageProvenance,evidence.image))) throw new Error('Tool image provenance mismatch');
   if (evidence.purpose==='behavioral-live-capture' && (evidence.execution.kind!=='responses-live' || evidence.execution.agentLaunched!==true ||
       evidence.captureScenarioId!==scenario.id || trace.responses.some(response=>response.origin!=='responses-live' || !response.id || !response.requestId))) throw new Error('Simulated model origin cannot produce behavioral evidence');
+  if (evidence.purpose==='behavioral-live-capture') {
+    const proof=evidence.paidAuthorization,binding=proof?.binding;
+    if (!binding || evidence.authorizationSha256!==digest(JSON.stringify(proof)) || proof.bindingSha256!==digest(JSON.stringify(binding)) ||
+        ['runnerRevision','sourceSha','scenarioId','modelIdentity','runId','runAttempt','pullRequest'].some(key=>String(binding[key])!==String(evidence[key])) ||
+        binding.readiness?.scenarioSha256!==evidence.scenarioSha256 || !same(binding.image,evidence.image)) throw new Error('Missing or mismatched paid authorization evidence');
+  }
   if (evidence.purpose==='infrastructure-contract' && (evidence.captureScenarioId!=='PRODUCER-CONTRACT' ||
       evidence.execution.kind!=='simulated' || !same(evidence.checks,INFRASTRUCTURE_CHECKS))) throw new Error('Incomplete infrastructure acceptance');
 }
@@ -127,6 +134,7 @@ export async function verifyPilotGates({evidencePath,tracePath,artifactPath,imag
     // An infrastructure contract must be signed by the fixed trusted producer after all its required jobs pass.
     const infrastructure={prePilot:'GO',behavioral:'BLOCKED',reason:'Infrastructure verified; one paid capture still requires separate explicit authorization'};
     if (evidence.purpose!=='behavioral-live-capture') return infrastructure;
+    await verifyPaidCaptureEvidence(evidence.paidAuthorization,captureRun,token);
     const reviews=await githubJson(`/pulls/${evidence.pullRequest}/reviews?per_page=100`,token);
     if (!Array.isArray(reviews)) throw new Error('Human review unavailable');
     const latest=new Map();
