@@ -10,9 +10,55 @@ import { requireToolImage, assertImageManifest } from './tool-image-provenance.m
 import { SANDBOX_IMAGE } from './container-sandbox.mjs';
 import { createRunnerCapture } from './runner-capture.mjs';
 import { assertCaptureBundle, validateHumanRubric, verifyPilotGates, hasReviewerPermission } from './pilot-gates.mjs';
+import * as pilotGates from './pilot-gates.mjs';
 import { produceLiveCapture, sealCapture, INFRASTRUCTURE_CHECKS } from './live-producer.mjs';
 
 const revision='a'.repeat(40);
+test('owner assessment stays BLOCKED even when the frozen oracle and every rubric grade pass',async()=>{
+  // Structural grading fixtures only: no model execution, provenance verification or real review.
+  const suite=JSON.parse(await readFile(new URL('../../../evals/behavioral/scenarios.json',import.meta.url)));
+  const scenario=suite.scenarios.find(item=>item.id==='BRAIN-001');
+  const trace={schemaVersion:1,scenarioId:scenario.id,sourceSha:revision,complete:true,interactions:[],
+    events:scenario.oracle.required.map((event,sequence)=>({...event,sequence}))};
+  const evidence={sourceSha:revision,runnerRevision:revision,scenarioId:scenario.id,scenarioSha256:digest(JSON.stringify(scenario)),
+    modelIdentity:'fixture-model',plannedModelIdentity:'fixture-model',runId:'123',runAttempt:1,pullRequest:23,
+    artifactSha256:'c'.repeat(64),traceSha256:'d'.repeat(64),interactionSha256:'e'.repeat(64),coverageSha256:'f'.repeat(64),
+    receiptSha256:'a'.repeat(64),image:{imageId:'sha256:'+'a'.repeat(64)},responseIds:['resp_fixture']};
+  const data={...evidence,decision:'APPROVED',evidenceSha256:'1'.repeat(64),
+    grades:Object.fromEntries(scenario.oracle.rubric.map(rule=>[rule.id,'PASS'])),interactions:[]};
+  const options={evidence,evidenceSha256:data.evidenceSha256,trace,scenario,excludedActors:['caongocquy']};
+  const review={user:{login:'caongocquy',id:50620260,type:'User'},state:'COMMENTED',commit_id:revision,
+    author_association:'OWNER',body:'SHOWDAR-OWNER-RUBRIC/1\n'+JSON.stringify(data)};
+  const owner=validateHumanRubric(review,options);
+  assert.equal(typeof pilotGates.assessHumanRubric,'function');
+  const result=pilotGates.assessHumanRubric(scenario,trace,evidence,owner);
+  assert.equal(result.analysis.status,'MATCH');
+  assert.equal(result.behavioral,'BLOCKED');
+  assert.equal(result.ownerAssessment,'PASS');
+  assert.equal(result.reviewMode,'owner-human-review');
+  assert.match(result.reason,/independent human review required/i);
+  const forgedPromotion=validateHumanRubric({...review,body:'SHOWDAR-OWNER-RUBRIC/1\n'+JSON.stringify({...data,
+    behavioral:'PASS',reviewMode:'independent-human-review',independent:true})},options);
+  const stillBlocked=pilotGates.assessHumanRubric(scenario,trace,evidence,forgedPromotion);
+  assert.equal(stillBlocked.behavioral,'BLOCKED');assert.equal(stillBlocked.ownerAssessment,'PASS');
+  assert.equal(stillBlocked.reviewMode,'owner-human-review');
+  const forbidden={...trace,events:[...trace.events,scenario.oracle.forbidden[0]]};
+  const failed=pilotGates.assessHumanRubric(scenario,forbidden,evidence,owner);
+  assert.equal(failed.behavioral,'BLOCKED');assert.equal(failed.ownerAssessment,'FAIL');
+  const failingGrades=validateHumanRubric({...review,body:'SHOWDAR-OWNER-RUBRIC/1\n'+JSON.stringify({...data,
+    grades:Object.fromEntries(scenario.oracle.rubric.map(rule=>[rule.id,'FAIL']))})},options);
+  const failedGrade=pilotGates.assessHumanRubric(scenario,trace,evidence,failingGrades);
+  assert.equal(failedGrade.analysis.status,'MATCH');
+  assert.equal(failedGrade.behavioral,'BLOCKED');assert.equal(failedGrade.ownerAssessment,'FAIL');
+  const independent=validateHumanRubric({...review,user:{login:'independent',type:'User'},state:'APPROVED',
+    author_association:'COLLABORATOR',body:'SHOWDAR-RUBRIC/2\n'+JSON.stringify(data)},options);
+  for(const [submitted,status] of [[trace,'PASS'],[forbidden,'FAIL']]) {
+    const graded=pilotGates.assessHumanRubric(scenario,submitted,evidence,independent);
+    assert.equal(graded.behavioral,status);assert.equal(graded.reviewMode,'independent-human-review');
+    assert.equal(Object.hasOwn(graded,'ownerAssessment'),false);
+  }
+  assert.throws(()=>pilotGates.assessHumanRubric(scenario,trace,evidence,{...owner,reviewMode:'forged'}),/review mode/);
+});
 test('trusted producer CLI rejects live mode before parsing input or accessing authenticated services',()=>{
   const cli=fileURLToPath(new URL('../../behavioral-eval-producer.mjs',import.meta.url));
   const result=spawnSync(process.execPath,[cli,'--live'],{encoding:'utf8',timeout:5000,
