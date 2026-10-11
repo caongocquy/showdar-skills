@@ -74,9 +74,9 @@ test('native authorization authenticates GitHub records and atomically rejects s
   await assert.rejects(producer.verifyPaidCaptureAuthorization({...options,token:'fixture-token'},{context:{...context,GITHUB_RUN_ATTEMPT:'2'}}));
  }finally{for(const [k,v] of Object.entries(previous)){if(v===undefined)delete process.env[k];else process.env[k]=v;}await rm(directory,{recursive:true,force:true});}
 });
-test('caller approval flags, missing metadata and credential getters cannot bypass the disabled live gate',async()=>{
+test('caller approval flags, missing metadata and credential getters cannot bypass the live safety gates',async()=>{
  let accessed=false;const args={...options,model:options.model,allowModel:true,verified:true,authorization:{approved:true},get apiKey(){accessed=true;throw new Error('credential read');}};
- await assert.rejects(producer.produceLiveCapture(args),/Live Responses disabled/);assert.equal(accessed,false);
+ await assert.rejects(producer.produceLiveCapture(args),/Live Responses disabled|provenance/);assert.equal(accessed,false);
 });
 
 test('authorization metadata outage or missing environment cannot mint a reservation',async t=>{
@@ -86,16 +86,20 @@ test('authorization metadata outage or missing environment cannot mint a reserva
  try{await assert.rejects(producer.verifyPaidCaptureAuthorization({...options,token:'fixture-token'},{context}),/lookup unavailable/);}finally{await rm(directory,{recursive:true,force:true});}
 });
 
-test('deployment proposal stays disabled and releases the credential only after native authorization verification',async()=>{
+test('paid workflow requires explicit main opt-in and releases the credential only after native authorization verification',async()=>{
  const workflow=await readFile(new URL('../../../.github/workflows/behavioral-live-capture.yml',import.meta.url),'utf8');
  const paid=workflow.slice(workflow.indexOf('  paid-capture:'),workflow.indexOf('  attest-paid-capture:'));
- assert.match(paid,/if: \$\{\{ false &&/);assert.match(paid,/environment:\n\s+name: showdar-paid-capture/);
+ assert.match(paid,/if: \$\{\{ inputs\.paid_capture &&/);assert.match(paid,/environment:\n\s+name: showdar-paid-capture/);
  const verify=paid.indexOf('node scripts/behavioral-eval-producer.mjs --verify-paid');
  const credential=paid.indexOf('OPENAI_API_KEY:');assert.ok(verify>=0 && credential>verify);
  assert.match(paid,/ref: \$\{\{ github.sha \}\}/);assert.match(paid,/persist-credentials: false/);
  assert.doesNotMatch(paid,/id-token: write/);
- assert.match(workflow,/paid_capture:[\s\S]+default: false[\s\S]+type: boolean/);assert.match(paid,/false && inputs.paid_capture &&/);
- assert.match(workflow,/prepare-paid-capture:[\s\S]+if: \$\{\{ false &&/);
+ assert.match(workflow,/paid_capture:[\s\S]+default: false[\s\S]+type: boolean/);assert.match(paid,/inputs.paid_capture &&/);
+ for(const job of ['prepare-paid-capture','paid-capture','attest-paid-capture']) {
+  const block=workflow.slice(workflow.indexOf('  '+job+':')).split(/\n  [a-z][a-z-]+:/)[0];
+  assert.ok(block.includes("if: ${{ inputs.paid_capture && github.repository == 'caongocquy/showdar-skills' && github.ref == 'refs/heads/main' }}"));
+ }
+ assert.doesNotMatch(workflow,/pull_request_target:|workflow_run:|schedule:/);
 });
 test('completed capture provenance verifies owner authorization independently before rubric review',()=>{
  const b=binding();producer.assertPaidCaptureApproval({environment,policies,run:{...run,status:'completed',conclusion:'success'},approvals:[approval()]},b,{completed:true});
@@ -113,7 +117,7 @@ test('signed live evidence rechecks authenticated environment approval; it never
 
 test('direct live transport never reads a credential getter before its safety and authorization gates',async()=>{
  let read=false;const send=createLiveResponsesTransport({allowModel:true,get apiKey(){read=true;throw new Error('credential accessed');}});
- assert.equal(read,false);await assert.rejects(send(request()),/Live Responses disabled/);assert.equal(read,false);
+ assert.equal(read,false);await assert.rejects(send(request()),/Live Responses disabled|authorization/);assert.equal(read,false);
 });
 
 
