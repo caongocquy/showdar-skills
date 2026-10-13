@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { collectWizardAnswers } from '../src/wizard.js';
+import { ALL_SKILLS, resolveProfile } from '../src/catalog.js';
 
 function createPrompts({ singles = [], extras = [], workflows = [], approvals = [true], cancelled = null } = {}) {
   const calls = [];
@@ -63,7 +64,7 @@ test('Clack wizard uses arrows/selection prompts with searchable multi-select an
   assert.ok(promptTypes.includes('search-multiselect'));
   assert.ok(promptTypes.includes('multiselect'));
   assert.ok(promptTypes.includes('note'));
-  const preview = ui.calls.find(x => x.type === 'note');
+  const preview = ui.calls.find(x => x.type === 'note' && x.label === 'Installation preview');
   assert.match(preview.message, /Additive \(no removal\)/);
   assert.match(preview.message, /Unique skills to install:/);
   const search = ui.calls.find(x => x.type === 'search-multiselect').options;
@@ -72,6 +73,43 @@ test('Clack wizard uses arrows/selection prompts with searchable multi-select an
   assert.ok(search.options.every(o => o.value !== 'showdar-build'));
   const approval = ui.calls.find(x => x.type === 'confirm');
   assert.equal(approval.options.initialValue, false);
+});
+
+test('wizard lists all primitives and companions for manual selection without a nine-skill cap', async () => {
+  const extras = ['showdar-brainstorm', 'showdar-tdd', 'showdar-domain-model', 'showdar-setup'];
+  const ui = createPrompts({
+    singles: ['add', 'cursor', 'project', 'none'],
+    extras,
+    workflows: [],
+  });
+  const result = await collectWizardAnswers({}, ui);
+  assert.equal(result.cancelled, false);
+  const search = ui.calls.find(call => call.type === 'search-multiselect').options;
+  const expected = ALL_SKILLS.filter(skill => ['primitive', 'companion'].includes(skill.kind));
+  assert.deepEqual(new Set(search.options.map(option => option.value)), new Set(expected.map(skill => skill.id)));
+  assert.equal(Object.hasOwn(search, 'maxItems'), false);
+  assert.deepEqual(result.plan.skills, extras);
+  for (const id of extras) assert.ok(result.plan.skills.includes(id), id);
+});
+
+test('wizard shows included companion skills and excludes already selected profile skills from extras', async () => {
+  const ui = createPrompts({
+    singles: ['add', 'cursor', 'project', 'developer'],
+    extras: ['showdar-insurance-domain'],
+    workflows: [],
+  });
+  const result = await collectWizardAnswers({}, ui);
+  const included = ui.calls.find(call => call.type === 'note' && call.label === 'Included by profile');
+  assert.ok(included);
+  for (const id of ['showdar-brainstorm', 'showdar-tdd', 'showdar-setup', 'showdar-domain-model']) {
+    assert.match(included.message, new RegExp(id));
+  }
+  const search = ui.calls.find(call => call.type === 'search-multiselect').options;
+  const selectable = new Set(search.options.map(option => option.value));
+  for (const id of resolveProfile('developer')) assert.equal(selectable.has(id), false, id);
+  assert.ok(selectable.has('showdar-insurance-domain'));
+  assert.deepEqual(new Set(result.plan.skills), new Set([...resolveProfile('developer'), 'showdar-insurance-domain']));
+  assert.equal(ui.calls.filter(call => call.label === 'Installation preview').length, 1);
 });
 
 test('Clack wizard cancel and confirmation decline do not authorize changes', async () => {
