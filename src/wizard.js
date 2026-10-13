@@ -122,17 +122,19 @@ export async function collectWizardAnswers(defaults = {}, promptApi = null) {
   if (profileName === null) return stop();
 
   const baseIds = new Set(profileName === 'none' ? [] : resolveProfile(profileName));
+  if (baseIds.size) {
+    note([...baseIds].map((id) => '  • ' + id).join('\n'), 'Included by profile');
+  }
   const explicit = await list({
-    message: 'Additional skills · type to search, Space to select, Enter to continue',
+    message: 'Additional skills (not in profile) · type to search, Space to select, Enter to continue',
     options: ALL_SKILLS
-      .filter((skill) => skill.kind === 'primitive' && !baseIds.has(skill.id))
+      .filter((skill) => ['primitive', 'companion'].includes(skill.kind) && !baseIds.has(skill.id))
       .map((skill) => ({
         value: skill.id,
         label: skill.id.replace(/^showdar-/, ''),
         hint: skill.domain,
       })),
     required: false,
-    maxItems: 9,
     placeholder: 'Search skills...',
   }, true);
   if (explicit === null) return stop();
