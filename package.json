@@ -1,6 +1,6 @@
 {
   "name": "showdar-skills",
-  "version": "0.17.0",
+  "version": "0.18.0",
   "description": "Production-grade software engineering lifecycle skills for coding agents.",
   "type": "module",
   "bin": {
@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "node --test",
-    "validate": "node bin/showdar.js validate",
+    "validate": "node bin/showdar.js validate --source",
     "sync:runtime": "node scripts/sync-runtime.mjs",
     "eval": "npm run eval:retrieval && npm run eval:workflows",
     "eval:retrieval": "node scripts/retrieval-eval.mjs",

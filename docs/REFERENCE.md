@@ -1,4 +1,4 @@
-> **Current CLI reference (v0.17.0 source):** `showdar setup` is the interactive skill-selection installer; invoking the installed `showdar-setup` agent skill audits repository context after approval. Read the [README](../README.md) for quick start and the [source-repository workflow guide](https://github.com/caongocquy/showdar-skills/blob/main/docs/WORKFLOWS.md) for Brainstorm → Plan → Build/TDD → Test/Review. Older release design/history below remains background rather than overriding current CLI help.
+> **Current CLI reference (v0.18.0 source):** `showdar setup` is the interactive skill-selection installer; invoking the installed `showdar-setup` agent skill audits repository context after approval. Read the [README](../README.md) for quick start and the [source-repository workflow guide](https://github.com/caongocquy/showdar-skills/blob/main/docs/WORKFLOWS.md) for Brainstorm → Plan → Build/TDD → Test/Review. Older release design/history below remains background rather than overriding current CLI help.
 
 # Showdar Skills
 
@@ -401,6 +401,8 @@ These portable instruction contracts retain 26 installable skills and existing w
 | Task/source/spec/plan revisions, actual executor, contracts, proof/gaps and next owner | [Workflow handoff](../skills/showdar-feature/references/task-handoff.md) |
 
 Review verdicts are PASS, FAIL, BLOCKED or NOT_APPLICABLE per gate with reasons and evidence boundaries. Task receipts supplement existing checkpoints; they do not add schema fields or grant Git, remote or deployment authority. Legacy plan IDs and historical receipts are preserved, while stale proof must be reverified. See the [source-repository workflow guide](https://github.com/caongocquy/showdar-skills/blob/main/docs/WORKFLOWS.md) for end-to-end examples; npm packages include the reference guide and skill playbooks, while the workflow guide remains a source-repository document.
+
+`showdar validate` checks distributed skills, assets, catalog and runtime policy. `showdar validate --source` additionally requires the source-only workflow benchmark corpus; `npm run validate` uses this full source mode. Benchmark/evaluator tooling remains outside npm packages.
 
 ## Skill catalog
 

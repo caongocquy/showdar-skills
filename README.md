@@ -65,7 +65,9 @@ These are instruction contracts, not measured agent-quality gains. The experimen
 
 For complex work, approved specs and implementation plans default to `docs/showdar/specs/` and `docs/showdar/plans/`. Small tasks may stay in chat. These are agent-guidance conventions, not automatic CLI-generated documents or a mandatory runtime state machine; repository-owned canonical paths take precedence.
 
-See the [source-repository workflow guide](./docs/WORKFLOWS.md) for examples, TDD exemptions, persisted plan/resume, and installation behavior. Packaged skill references contain the detailed playbooks.
+See the [source-repository workflow guide](https://github.com/caongocquy/showdar-skills/blob/main/docs/WORKFLOWS.md) for examples, TDD exemptions, persisted plan/resume, and installation behavior. Packaged skill references contain the detailed playbooks.
+
+`showdar setup` lists all primitives and companions when selecting manually. A profile's included skills are shown separately and omitted from Additional skills; workflows remain a separate optional step. Selection is not capped at nine skills.
 
 ## Version and updates
 
@@ -96,11 +98,11 @@ Before local source/config/docs changes, follow the project's Git policy and run
 
 ## Documentation
 
-- [Feature workflow guide (source repository)](./docs/WORKFLOWS.md)
+- [Feature workflow guide (source repository)](https://github.com/caongocquy/showdar-skills/blob/main/docs/WORKFLOWS.md)
 - [CLI, profiles, adapters, routing, and policies](./docs/REFERENCE.md)
 - [Migration notes](./MIGRATION.md)
 - [Changelog](./CHANGELOG.md)
-- [Releasing](./RELEASING.md)
+- [Releasing](https://github.com/caongocquy/showdar-skills/blob/main/RELEASING.md)
 
 ## License
 

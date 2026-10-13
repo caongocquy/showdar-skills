@@ -76,7 +76,7 @@ test('Clack wizard uses arrows/selection prompts with searchable multi-select an
 });
 
 test('wizard lists all primitives and companions for manual selection without a nine-skill cap', async () => {
-  const extras = ['showdar-brainstorm', 'showdar-tdd', 'showdar-domain-model', 'showdar-setup'];
+  const extras = ALL_SKILLS.filter(skill => ['primitive', 'companion'].includes(skill.kind)).map(skill => skill.id);
   const ui = createPrompts({
     singles: ['add', 'cursor', 'project', 'none'],
     extras,
@@ -89,6 +89,7 @@ test('wizard lists all primitives and companions for manual selection without a 
   assert.deepEqual(new Set(search.options.map(option => option.value)), new Set(expected.map(skill => skill.id)));
   assert.equal(Object.hasOwn(search, 'maxItems'), false);
   assert.deepEqual(result.plan.skills, extras);
+  assert.equal(result.plan.skills.length, 22);
   for (const id of extras) assert.ok(result.plan.skills.includes(id), id);
 });
 

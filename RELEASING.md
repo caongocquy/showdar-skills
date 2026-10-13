@@ -1,87 +1,39 @@
 # Releasing Showdar Skills
 
-This is maintainer documentation. The package is currently prepared for its
-first npm release and is not published yet.
+Release preparation and publication are separate approvals. v0.18.0 is a candidate until its Draft PR is reviewed, merged and separately approved for tagging/publication. Do not publish from a preparation branch.
 
-## First npm release
+## Preparation checklist
 
-Run these checks from a clean release checkout:
+- Audit the diff from the preceding tag and verify the exact main baseline.
+- Use a dedicated release branch; bump package.json and any existing lock/version references together. This repository currently has no tracked package lock.
+- Verify the 18 primitive / four companion / four workflow catalog, setup visibility, ownership protections and upgrade from the previous package.
+- Run `npm test`, `npm run validate`, `npm run check`, `npm run smoke`, `npm run eval`, `npm pack --dry-run` and `npm run release:check -- v0.18.0` on the final source.
+- Inspect actual packaged SKILL.md files and referenced assets; prove fresh setup and previous-version additive upgrade with isolated projects/prefixes. Protect modified and user-owned files.
+- Record exact source SHA, command results, tarball digest and platform coverage. Open a Draft PR into main; no merge, tag, npm publish, Homebrew update or GitHub Release at this stage.
 
-```bash
-npm test
-npm run validate
-npm run check
-npm run smoke
-npm run eval
-npm pack --dry-run
-npm pack
-```
+`npm run validate` uses `showdar validate --source` so source-only workflow coverage remains mandatory during release verification. Installed CLI `showdar validate` checks all shipped skill/catalog/runtime assets without requiring unshipped benchmark tooling.
 
-Install the generated tarball in an isolated prefix/HOME and smoke-test the
-CLI before publishing. Confirm the package name and account, then publish the
-exact tarball after `npm login`/`npm whoami` succeeds:
+Experimental TASK-002 inputs, runtimes, trusted runner and signed evidence are outside the stable package/release diff. Keep their accepted pins and behavioral verdicts separate; do not introduce new behavioral gates into this checklist. Existing repository security CI remains unchanged.
 
-```bash
-npm view showdar-skills version
-npm login
-npm whoami
-npm publish ./showdar-skills-0.2.0.tgz
-npm view showdar-skills version
-```
+## Publication after separate approval
 
-Remove the generated tarball after verification. After the registry confirms
-`0.2.0`, configure the npm Trusted Publisher, then create and push the release
-tag. The tagged workflow will verify the matching version, see that `0.2.0`
-already exists, and skip `npm publish` successfully:
+The tag must equal package.json version. `.github/workflows/publish.yml` runs only for v* tags, checks Node/npm compatibility, matching version, package tests/smoke and deterministic retrieval/workflow evaluation. It uses npm OIDC provenance when the exact version is absent; genuine registry E404 means absent, while network/auth/other failures stop publication. Its release job creates a GitHub Release only after npm publication succeeds (or the version is already present).
 
-```bash
-git tag v0.2.0
-git push origin v0.2.0
-```
+Trusted publisher configuration must point to caongocquy/showdar-skills and publish.yml. Node >=22.14.0 and npm >=11.5.1 are checked by the existing workflow. Preparation does not configure credentials or prove external publisher settings; verify the current relationship before authorizing a tag. Do not manually publish a competing tarball or move an existing tag.
 
-## Trusted Publisher setup
+`.github/workflows/release-artifacts.yml` builds portable runtime assets at the exact tag:
 
-Trusted Publishing is **not configured yet**. The package must exist on npm
-before its first GitHub Actions trusted publisher can be added.
+| Runner | Artifact |
+| --- | --- |
+| macos-15 / arm64 | showdar-skills-darwin-arm64.tar.gz |
+| macos-15-intel / x64 | showdar-skills-darwin-x64.tar.gz |
+| ubuntu-22.04 / x64 | showdar-skills-linux-x64.tar.gz |
+| windows-2022 / x64 | showdar-skills-windows-x64.zip |
 
-In the npm package settings, add a GitHub Actions trusted publisher with:
+Each bundle includes the matching package, Node runtime and launcher, and receives a SHA-256 sidecar. The asset workflow waits for the GitHub Release then uploads archives/checksums. Local macOS proof is not Linux/Windows execution proof; confirm all tagged matrix jobs and artifact identities before announcing cross-platform release availability.
 
-```text
-Provider: GitHub Actions
-Organization or user: caongocquy
-Repository: showdar-skills
-Workflow filename: publish.yml
-```
+Homebrew publication belongs to the separate tap and is not performed by these workflows. After approved publication, update only the verified platform URLs/checksums/version in that tap, then test installation. Do not update Homebrew during Draft PR preparation.
 
-The workflow is `.github/workflows/publish.yml`. It runs only for `v*` tags,
-uses Node 24, checks npm/Node versions, verifies that the tag matches
-`package.json`, checks whether the exact package version already exists, runs
-the release checks, and publishes with OIDC provenance only when the version
-is absent. A real registry E404 means "absent"; network, auth, and other
-registry failures stop the workflow. It has `id-token: write` and contains no
-npm token. npm Trusted Publishing requires npm >=11.5.1 and Node >=22.14.0.
+## Rollback and verification
 
-Do not claim this relationship is active until it has been configured and a
-tagged workflow has completed successfully.
-
-## Subsequent releases
-
-For a subsequent version, bump the package version, verify it, commit the
-release, then create and push a matching tag:
-
-```bash
-npm test
-npm run validate
-npm run check
-npm run smoke
-npm run eval
-npm run release:check -- vX.Y.Z
-git commit -m "release: vX.Y.Z"
-git tag vX.Y.Z
-git push origin vX.Y.Z
-```
-
-The tagged workflow verifies the tag/package version, confirms that
-`showdar-skills@X.Y.Z` is absent from npm, and runs `npm publish --provenance`
-through the configured npm Trusted Publisher. It does not bump versions,
-create tags, push code, or create GitHub releases.
+Preserve immutable tags and published versions. Check npm version/provenance, GitHub Release asset checksums and supported-platform installation after publication. A broken published version needs a separately approved follow-up version; do not republish or silently replace acceptance evidence.
