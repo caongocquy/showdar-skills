@@ -36,6 +36,18 @@ Never commit:
 
 Do not rewrite unrelated user changes.
 
+<!-- code-atlas:start -->
+## CodeAtlas — Code Intelligence
+
+Use CodeAtlas for structural and relationship analysis when useful. Exact text, UI literals, and small isolated changes can use grep and direct source reads.
+
+After changing indexed source or configuration:
+- finish implementation and run validation
+- sync once against the final tree, then run final structural verification
+- avoid repeated syncs during intermediate edits
+- do not knowingly finish with stale indexed evidence
+<!-- code-atlas:end -->
+
 <!-- showdar-skills:start -->
 ## Showdar Skills routing
 
@@ -56,15 +68,19 @@ Use the smallest Showdar skill that fully matches the current task. Do not load 
 - plan QA scenarios, risk coverage, regression, compatibility, or bug evidence -> `showdar-quality`
 - assess threats, attack surface, trust boundaries, auth, secrets, exposure, or exploitability -> `showdar-security`
 - inspect or change CI/CD, containers, environments, deployment, observability, rollback, or runtime operations -> `showdar-ops`
-- implement a complete feature end-to-end across multiple lifecycle stages -> `showdar-feature`
-- resolve an observed defect end-to-end -> `showdar-bugfix`
-- prepare, validate, or execute a release lifecycle -> `showdar-release`
+- Use when brainstorming feature ideas, challenging assumptions, comparing alternatives, and approving a complete spec before implementation. -> `showdar-brainstorm`
+- Use when clarifying shared domain terminology, maintaining an evidence-backed glossary, or documenting confirmed architectural decisions as ADRs. -> `showdar-domain-model`
+- Use when Vietnamese insurer work involves insurance terminology, product taxonomy, coverage concepts, VI/EN glossary, or insurer/product-specific vocabulary. -> `showdar-insurance-domain`
+- Use when reviewing insurer UI labels, business models, API/schema mappings, validation, edge cases or Dev/QA scenarios for insurance terminology and business correctness. -> `showdar-insurance-review`
+- Use when insurer features involve product configuration, underwriting, rating, quotes, issuance, collection, endorsements, renewals, cancellation or claims business flows and validation rules. -> `showdar-insurance-workflows`
+- Use when onboarding a repository, auditing project context, or proposing grounded glossary and agent documentation improvements. -> `showdar-setup`
+- Use when implementing a testable behavior change or regression through a verified RED, GREEN, and REFACTOR cycle with executable evidence. -> `showdar-tdd`
 
 Automatic Showdar selection: route the current request through `showdar route --stdin --json` when the Showdar CLI is available. Supply the prompt as literal stdin data, never as interpolated shell syntax. Honor the canonical lifecycle primary; do not substitute another installed skill when it is missing. Report missing skills and suggest `showdar add <name>`; never auto-install. Include installed domain matches only as specialized context overlays; load returned advisors only when installed. Domain discovery does not grant authority or replace the lifecycle route.
 Explicit named-skill requests may load that installed skill directly without automatic routing. Workflow skills remain native discoverable choices; the router does not select workflows. If the CLI is unavailable, use native skill discovery/static descriptions below. Do not fetch a CLI through npx or install dependencies automatically.
 Routing does not authorize mutation. Inspect the returned mutation class and current task authority before work. For local-write tasks, before the first task-owned source edit inspect Git state. On develop, development, dev, main, master or the repository default/integration branch, DO NOT begin source edits yet: prepare one branch per coherent task first. Follow repository instructions/documented convention, explicit current user instruction, clearly detected convention, then the Showdar safe default. Explicit trunk/direct-work policy wins.
 Before ANY task-owned source/config/test/docs write, execute Git preflight even if the router selected build directly. On integration/default branches inspect repository policy and EXECUTE `showdar git-start --type <type> --name <task>` (not just --dry-run), or equivalent repository-safe branch preparation. Then EXECUTE `showdar guard --mutation local-write --json` and require ok=true AND data.allowed=true BEFORE invoking any file-writing tool. If blocked, STOP before editing. On a matching task branch run guard without creating a new branch. Recheck before each later mutating stage. Do not infer permission from `showdar route`. If the CLI is unavailable, manually inspect Git and confirm the appropriate task branch or documented direct-work policy; never silently write on develop/main. Dirty ownership/branch collisions require inspection; never infer stash/reset/restore/clean. Guard and git-start do not authorize source edits, commit, merge or push. Completion means verify and report.
-Shared project context: before project work, read the relevant existing files under docs/agents/ (project.md, issue-tracker.md, verification.md, domain.md) when present. These are project-specific conventions, not mutation authority. Use the canonical glossary and ADRs when present; do not invent them. If project context is missing or stale, read repository evidence and suggest agent-led /showdar-setup when useful; do not run a CLI setup generator.
+Companions are portable and do not compete for canonical lifecycle primary: showdar-setup onboards a project, showdar-brainstorm is a conditional pre-implementation decision gate requiring explicit approval of the whole spec when triggered, and showdar-domain-model maintains accepted glossary/ADR knowledge only after approved changes, and showdar-tdd is an optional RED → GREEN → REFACTOR companion within showdar-build for testable behavior tasks (not a lifecycle stage). If a companion is not installed, never imply it ran. Shared project context: before project work, read the relevant existing files under docs/agents/ (project.md, issue-tracker.md, verification.md, domain.md) when present. These are project-specific conventions, not mutation authority. Use the canonical glossary and ADRs when present; do not invent them. If project context is missing or stale, read repository evidence and suggest invoking installed showdar-setup when useful; showdar setup in the CLI is only an interactive skill installer.
 
 For debugging, gather evidence before modifying code. For shipping or destructive operations, require explicit user approval and fresh verification. Never print or commit secrets.
 <!-- showdar-skills:end -->
