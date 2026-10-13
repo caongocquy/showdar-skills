@@ -221,7 +221,7 @@ async function validateCsvFiles(skillDir, errors) {
   }
 }
 
-export async function validateWorkflowStatePolicy(packageRoot) {
+export async function validateWorkflowStatePolicy(packageRoot, { includeDevelopmentScenarios = true } = {}) {
   const errors = [];
   const primitives = new Set(SKILLS.map((skill) => skill.id));
   let policy;
@@ -266,7 +266,10 @@ export async function validateWorkflowStatePolicy(packageRoot) {
   for (const storage of ['.showdar/state', '~/.showdar', 'sqlite', 'telemetry']) {
     if (moduleText.toLowerCase().includes(storage.toLowerCase())) errors.push(`workflow-state: no storage layer reference ${storage}`);
   }
-  for (const error of (await validateWorkflowScenarioCoverage(packageRoot, policy)).errors) errors.push(error);
+  // The benchmark corpus is source-only; installed packages still validate runtime policy.
+  if (includeDevelopmentScenarios) {
+    for (const error of (await validateWorkflowScenarioCoverage(packageRoot, policy)).errors) errors.push(error);
+  }
   return { ok: errors.length === 0, errors };
 }
 
@@ -327,7 +330,7 @@ export async function validateWorkflowScenarioCoverage(packageRoot, policy = nul
   return { ok: errors.length === 0, errors };
 }
 
-export async function validateRepository(packageRoot) {
+export async function validateRepository(packageRoot, { includeDevelopmentScenarios = true } = {}) {
   const errors = [];
   const warnings = [];
   const known = new Set(ALL_SKILLS.map((skill) => skill.id));
@@ -361,7 +364,7 @@ export async function validateRepository(packageRoot) {
     if (new Set(workflow.stages).size !== workflow.stages.length) errors.push(`${workflow.id}: candidate stages contain duplicates`);
   }
 
-  for (const error of (await validateWorkflowStatePolicy(packageRoot)).errors) errors.push(error);
+  for (const error of (await validateWorkflowStatePolicy(packageRoot, { includeDevelopmentScenarios })).errors) errors.push(error);
 
   let canonicalRuntime;
   try {

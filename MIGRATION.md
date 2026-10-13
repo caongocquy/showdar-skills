@@ -1,4 +1,14 @@
-# Further v0.17.0 changes (pre-release)
+# Upgrade from v0.17.0 to v0.18.0
+
+No manifest, workflow-state or profile migration is required. The catalog remains 18 primitives, four companions and four workflows. Setup now exposes companions and shows profile-included skills separately; installed selections are not automatically changed.
+
+Update the CLI with `showdar update` (or your existing package manager). Refresh an unchanged CLI-managed profile additively with `showdar add profile developer --ai cursor`, using your actual profile and target; or run `showdar setup` in Add mode. Additive operations preserve other installed and user-owned skills. Replace mode is explicit and changes the managed selection. Modified managed skills are protected by ownership hashes: inspect/reconcile the conflict rather than deleting them to force an upgrade. Global installations use `--scope global`.
+
+Plan/task IDs, canonical document locations, prior receipts and approval boundaries are retained. Read revised skill references after refreshing; source instructions and static tests do not establish measured agent-quality gains. TASK-002 remains experimental and is not required to upgrade stable skills.
+
+---
+
+# v0.17.0 companion and documentation changes
 
 `showdar-tdd` is a new optional companion installable with `showdar add tdd --ai cursor`; developer/backend/qa/full profiles include it. Existing installations retain their selection until explicitly updated. Canonical default plan and approved-spec documents now live under `docs/showdar/plans/` and `docs/showdar/specs/`. Existing project documentation conventions are never migrated or overwritten automatically. TDD is evidence-based RED → GREEN → REFACTOR where runnable tests exist, not a source of implicit Git or deployment authority.
 

@@ -37,14 +37,16 @@ try {
   const installed = path.join(prefix, 'node_modules', 'showdar-skills');
   const cli = path.join(installed, 'bin', 'showdar.js');
   await mustExist(cli);
+  const validation = run(process.execPath, [cli, 'validate']);
+  if (!/validation OK/.test(validation)) throw new Error(`unexpected packaged validation: ${validation}`);
 
   await writeFile(path.join(project, 'AGENTS.md'), '# User rules\n\nKeep this.\n');
   const userSkill = path.join(project, '.agents', 'skills', 'user-skill');
   await mkdir(userSkill, { recursive: true });
   await writeFile(path.join(userSkill, 'SKILL.md'), 'user-owned\n');
 
-  const init = run(process.execPath, [cli, 'init', '--ai', 'all', '--profile', 'full'], { cwd: project });
-  if (!/Skills: 22/.test(init)) throw new Error(`unexpected init output: ${init}`);
+  const setup = JSON.parse(run(process.execPath, [cli, 'setup', '--yes', '--json', '--ai', 'all', '--profile', 'full'], { cwd: project }));
+  if (!setup.ok || setup.data.plan.skills.length !== 22) throw new Error(`unexpected setup output: ${JSON.stringify(setup)}`);
 
   const roots = ['.agents/skills', '.opencode/skills', '.claude/skills'];
   const skillIds = ['showdar-understand','showdar-plan','showdar-design','showdar-build','showdar-debug','showdar-test','showdar-review','showdar-upgrade','showdar-ship','showdar-recover','showdar-git','showdar-requirements','showdar-quality','showdar-security','showdar-ops','showdar-insurance-domain','showdar-insurance-workflows','showdar-insurance-review','showdar-setup','showdar-brainstorm','showdar-domain-model','showdar-tdd'];
@@ -113,7 +115,7 @@ try {
   if (agents.trim() !== '# User rules\n\nKeep this.') throw new Error(`AGENTS.md user content changed after remove:\n${agents}`);
 
   console.log(`Package smoke OK: ${filename}`);
-  console.log('Lifecycle: pack -> isolated install -> init all/full -> installed skill scripts -> doctor -> status -> remove');
+  console.log('Lifecycle: pack -> isolated install -> setup all/full -> installed skill scripts -> doctor -> status -> remove');
 } finally {
   await rm(sandbox, { recursive: true, force: true });
 }

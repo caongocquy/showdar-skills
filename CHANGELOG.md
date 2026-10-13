@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Experimental / readiness
+
+- Added source-only 18-case behavioral scenarios and offline-tested Codex JSONL adapter engineering. Static contracts, deterministic benchmarks and fake processes are distinct from real-agent evidence.
+- Live execution remains disabled and fails closed because preventive command mediation is unsupported; OS sandbox/credential isolation must remain enforced. Imported traces now receive deterministic event analysis only and always remain behavioral BLOCKED; submitted provenance, artifact proofs and rubric PASS cannot establish trusted execution.
+- Behavioral baseline/after-change and final behavioral readiness remain BLOCKED: **18 NOT_RUN, 0 PASS**. No measurable agent-quality improvement, release, or live model run is claimed.
+
+## [0.18.0] - 2026-10-13
+
 ### Changed
 
 - Made planning executable with vertical slices, Consumes/Produces, verified dependencies, negative cases and compatibility-aware expand → migrate → contract staging.
@@ -14,15 +22,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Aligned Feature/Bugfix/Recover/Test receipts while preserving legacy plan IDs, approval/Git guard semantics, the 26-skill catalog and existing workflow stages.
 - Updated public workflow guidance and packaged reference pointers; detailed playbooks remain lazy-loaded skill assets.
 
-### Experimental / readiness
+### Fixed
 
-- Added source-only 18-case behavioral scenarios and offline-tested Codex JSONL adapter engineering. Static contracts, deterministic benchmarks and fake processes are distinct from real-agent evidence.
-- Live execution remains disabled and fails closed because preventive command mediation is unsupported; OS sandbox/credential isolation must remain enforced. Imported traces now receive deterministic event analysis only and always remain behavioral BLOCKED; submitted provenance, artifact proofs and rubric PASS cannot establish trusted execution.
-- Behavioral baseline/after-change and final behavioral readiness remain BLOCKED: **18 NOT_RUN, 0 PASS**. No measurable agent-quality improvement, release, or live model run is claimed.
+- Setup now exposes all 18 primitives and four native companions for manual selection, shows profile-included skills separately, and keeps four workflows in their own step without a nine-item selection limit.
+- Fixed packaged `showdar validate` requiring an unshipped development corpus; `npm run validate` retains source coverage via `--source`.
+- Corrected packaged README links and release/upgrade documentation; existing installations retain their selection and owned-file safety checks.
+
+### Compatibility
+
+- The 26-entry catalog, workflow stages, installation manifest and approval/Git authority boundaries remain unchanged. These are instruction and installer improvements, not measured real-agent quality gains.
+- Experimental TASK-002 datasets, local runtimes and evaluator tooling are excluded from the npm package and are not stable-release behavioral acceptance gates.
 
 ## [0.17.0]
 
-### Additional unpublished changes
+### Changed
 
 - Added portable native `showdar-tdd` companion with evidence-based RED → GREEN → REFACTOR; integrated into Build/Plan/Test/Feature/Recover without adding a workflow stage.
 - Canonical default plan and spec documents now live under `docs/showdar/plans/` and `docs/showdar/specs/`; existing repository locations still win.

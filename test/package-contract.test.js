@@ -54,6 +54,11 @@ test('package contract includes only public reference docs and is reproducible',
     assert.equal(installed.status, 0, installed.stderr);
     const cli = path.join(prefix, 'node_modules', 'showdar-skills', 'bin', 'showdar.js');
     await access(cli);
+    const validate = spawnSync(process.execPath, [cli, 'validate'], { cwd: freshRoot, encoding: 'utf8' });
+    assert.equal(validate.status, 0, validate.stdout + validate.stderr);
+    const sourceValidate = spawnSync(process.execPath, [cli, 'validate', '--source'], { cwd: freshRoot, encoding: 'utf8' });
+    assert.equal(sourceValidate.status, 1, 'source-only checks must still reject missing development corpus');
+    assert.match(sourceValidate.stdout, /benchmark\/scenarios\/workflows missing/);
     const insuranceProject = path.join(sandbox, 'insurance-project');
     await mkdir(insuranceProject);
     const add = spawnSync(process.execPath, [cli, 'add', 'insurance-review', '--ai', 'codex'], {
