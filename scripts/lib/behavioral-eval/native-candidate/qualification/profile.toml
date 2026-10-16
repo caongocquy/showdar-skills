@@ -1,0 +1,13 @@
+default_permissions="qualification"
+approval_policy="never"
+[shell_environment_policy]
+inherit="none"
+experimental_use_profile=false
+[permissions.qualification.filesystem]
+":root"="deny"
+":minimal"="read"
+":workspace_roots"="read"
+":tmpdir"="deny"
+":slash_tmp"="deny"
+[permissions.qualification.network]
+enabled=false
