@@ -37,3 +37,19 @@ On interruption reconcile current diff, artifacts and receipts before retrying. 
 
 ## HANDOFF
 Return task ID/state, approved spec/plan path and revision or in-chat brief, executor actually used, Consumes/Produces, diff/artifact pointers, exact proof with source identity, gaps, rulings and next dependency-ready task/owner. Test owns coverage/integration/E2E strategy; Review owns the separate final review. Completion grants no commit, merge, push, publish or deployment authority.
+
+## Proof applicability
+
+Before ledger completion or handoff, reconcile requirement/acceptance and approved decision revisions → task/dependencies → test invariant/expectations → actual receipt against current implementation source/diff. Retain requirement and decision links even for chat-only tasks. A checked task with missing or mismatched proof is `implemented-unverified`; retain its implementation and historical receipts rather than redo code by default. A deferred task cannot be `verified-complete`.
+
+| Observed change/state | Proof disposition and next action |
+| --- | --- |
+| Implementation changes after a receipt and affects its invariant | Revalidate the impacted proof on the current source/diff before completion. |
+| Requirement/spec revision changes acceptance or task assumptions | Return affected decisions/tasks to Requirements/Plan; revalidate their proof against the accepted revision. |
+| Test expectations or relevant harness/environment change | Revalidate the affected invariant; retain the old expectation revision with its historical result. |
+| Dependency contract changes | Follow Consumes/Produces to affected consumer tasks and revalidate their proof; a producer PASS does not verify its consumers. |
+| Unrelated source change with established dependency mapping | Preserve applicable evidence after inspecting the actual diff, invariant, test and dependency scope; record why it still applies. No new command execution is implied. |
+| Missing/unexecuted test, unknown receipt provenance, or unknown impact | Keep `NOT_RUN` for unexecuted checks and unknown provenance/impact unqualified; inspect the smallest relevant boundary and obtain actual verification. |
+| Review finds a blocking requirement gap | Reopen affected tasks/dependents, retain both review verdicts and obtain the missing acceptance/proof before completion. |
+
+Invalidate only affected proof when dependency evidence establishes that boundary; uncertainty cannot justify preserving a PASS. A checkbox, old PASS, document hash or agent assertion alone is never fresh verification. Applicable historical evidence retains its observed source/expectation identity and result, alongside the current applicability rationale. Stale evidence needs revalidation; missing evidence stays missing. Record the actual new invariant/command/result/source revision only after execution, without fabricating provenance or authority.

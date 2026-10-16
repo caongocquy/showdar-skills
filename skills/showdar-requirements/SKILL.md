@@ -15,7 +15,7 @@ Before any task-owned source/config/test/docs write, apply `showdar-git` branch 
 - Convert tickets, briefs, conversations, API notes, and observed repository behavior into implementation-ready requirements.
 - Make behavior, actors, states, rules, constraints, and acceptance evidence explicit without fabricating stakeholder intent.
 - Produce a useful review, story, acceptance-criteria, or requirements-matrix artifact for product, BA, QA, and engineering.
-- Use `data/requirements-patterns.csv` as a searchable prompt and read `references/analysis-guide.md` for deeper analysis structure.
+- Use `data/requirements-patterns.csv` as a searchable prompt and read `references/analysis-guide.md` for flow analysis and requirement/task/proof disposition at handoff.
 
 ## When to use
 

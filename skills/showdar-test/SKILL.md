@@ -60,6 +60,8 @@ Before any task-owned source/config/test/docs write, apply `showdar-git` branch 
 
 ## Task-plan verification handoff
 
+- Read `references/regression.md` when recording or reconciling requirement/task/test receipts, including small chat-only handoffs.
+
 - When a task plan exists, derive relevant proof cases from its task IDs, acceptance notes and linked approved spec. Carry spec/plan revisions, source revision and actual executor, Consumes/Produces contracts and changed artifacts; report unknown values honestly.
 - Send concrete command/scenario and pass/fail evidence back to `showdar-build` for progress ledger updates; Test alone does not mark plan tasks completed.
 - Never treat a checked box as a test result, and never certify skipped, stale or blocked proof.
