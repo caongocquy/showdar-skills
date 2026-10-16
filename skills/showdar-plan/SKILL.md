@@ -59,6 +59,13 @@ Before any task-owned source/config/test/docs write, apply `showdar-git` branch 
 - Use `showdar-domain-model` only to propose a meaningful new shared concept or approved high-impact architecture record.
 - Approval of a design never grants write, Git, release, or production authority.
 
+## Conditional analysis handoff
+
+- When existing source/spec/decision/plan/test artifacts reveal material conflicts or coverage gaps, conditionally request Analyze within `showdar-requirements`; use Converge there or in available Brainstorm for unresolved decisions. These are modes, not extra stages. Report missing skills; never imply they ran.
+- Carry source references/revisions, requirement/acceptance/decision IDs, approved versus proposed choices, approval evidence, analysis findings and unresolved blockers. Reconcile identities before using them; preserve both conflicting revisions and mark affected proof stale.
+- `NEEDS_DECISION` or `BLOCKED` keeps affected tasks/dependents out of the execution-ready frontier. Never turn unresolved blockers into implementation assumptions. A missing future plan is not a defect before planning; analyze its coverage once tasks exist.
+- Fully specified small tasks retain the short in-chat path without Analyze, Converge or new files; planning/readiness grants no mutation authority.
+
 ## Adaptive Plan Persistence and handoff
 
 - Read `references/plan-persistence.md` when a durable plan or cross-session handoff is needed; `examples/persisted-plan.md` illustrates the shape, not a mandatory template.

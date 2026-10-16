@@ -42,7 +42,7 @@ description: Use when brainstorming a feature, challenging assumptions, comparin
 - Do not fabricate product decisions or source evidence.
 - Use native skill discovery in skills-only installations without assuming router, manifest or CLI.
 
-Read `references/questioning.md` and `references/approval-handoff.md` only when that depth of detail is needed; these references are packaged inside this skill for skills-only installers.
+Read `references/questioning.md` when material blockers need Converge (deduplication, priority, revision and approval handling). Read `references/approval-handoff.md` when choosing refinement depth; both references are packaged inside this skill for skills-only installers.
 
 ## Plan handoff
 
