@@ -85,7 +85,7 @@ test('TASK-010: workflow consumers preserve scoped receipts and block missing pr
     /missing.*companion/i, /schema/i, /BLOCKED/, /NOT_RUN/]);
 });
 
-const changedSkills = ['showdar-plan', 'showdar-build', 'showdar-review', 'showdar-tdd',
+const changedSkills = ['showdar-requirements', 'showdar-plan', 'showdar-build', 'showdar-review', 'showdar-tdd',
   'showdar-debug', 'showdar-brainstorm', 'showdar-feature', 'showdar-bugfix', 'showdar-recover', 'showdar-test'];
 
 test('new lazy references are installed byte-for-byte without creating project specs/plans', async () => {
@@ -146,3 +146,76 @@ test('TASK-012: public local document links resolve without linking ignored inte
     }
   }
 });
+
+
+// Q-02 fixtures check the shipped instruction contract only. They do not execute
+// Analyze/Converge or demonstrate real-agent compliance with these scenarios.
+const q02Cases = [
+  {
+    id: 'Q02-01', scenario: 'AC-1 fully specifies a one-line validation fix with an existing test',
+    contracts: [['showdar-requirements', 'SKILL.md', [/skip Analyze.*small.*fully defined.*verif/i]],
+      ['showdar-feature', 'SKILL.md', [/skip refinement with a concrete evidence reason/i]]],
+  },
+  {
+    id: 'Q02-02', scenario: 'TICKET-41@v3 REQ-1 permits an editor; DEC-2@r2 restricts the same action to an owner',
+    contracts: [['showdar-requirements', 'references/analyze-converge.md',
+      [/contradict.*(?:requirement|decision)/i, /terminology.*roles.*permissions/i,
+        /affected.*IDs/i, /exact.*(?:source|artifact).*revision.*(?:line|section)/i, /severity.*impact/i, /implementation blocked/i]]],
+  },
+  {
+    id: 'Q02-03', scenario: 'DEC-2@r2 and complete Brief@r4 are approved; no contradictory evidence exists',
+    contracts: [['showdar-brainstorm', 'references/questioning.md',
+      [/reuse.*approved.*(?:decision|answer)/i, /preserve.*IDs.*revisions/i]],
+      ['showdar-requirements', 'SKILL.md', [/do not restart an interview for accepted decisions/i]]],
+  },
+  {
+    id: 'Q02-04', scenario: 'An unresolved permission rule blocks TASK-1 and TASK-2; a copy choice blocks neither',
+    contracts: [['showdar-brainstorm', 'references/questioning.md',
+      [/rank.*downstream impact.*dependenc/i, /single highest-impact.*necessary question/i,
+        /facts.*observations.*assumptions.*unresolved decisions/i]]],
+  },
+  {
+    id: 'Q02-05', scenario: 'User answers DEC-1 only; DEC-2 and whole Brief@r5 are still unapproved',
+    contracts: [['showdar-brainstorm', 'references/questioning.md',
+      [/partial.*(?:answer|approval).*whole.*(?:Brief|revision)/i, /stop implementation.*(?:behavior|permissions).*architecture.*data integrity/i]],
+      ['showdar-feature', 'SKILL.md', [/whole.*proposed spec revision.*showdar-build/i]]],
+  },
+  {
+    id: 'Q02-06', scenario: 'TICKET-41@v3 conflicts with SPEC@r2; a passing receipt only covers SPEC@r1',
+    contracts: [['showdar-requirements', 'references/analyze-converge.md',
+      [/stale.*mismatched.*revisions/i, /preserve both.*revision/i, /historical.*(?:receipt|proof)/i,
+        /NOT_RUN/, /NOT_AVAILABLE/]],
+      ['showdar-plan', 'SKILL.md', [/source.*revision.*decision.*IDs.*blockers/i]]],
+  },
+  {
+    id: 'Q02-07', scenario: 'REQ-3 has no acceptance criterion or task; TASK-4 has no requirement or enabling purpose',
+    contracts: [['showdar-requirements', 'references/analyze-converge.md',
+      [/missing acceptance criteria/i, /requirement.*(?:task|coverage).*deferral/i,
+        /orphan.*task.*(?:enabling|infrastructure)/i]]],
+  },
+  {
+    id: 'Q02-08', scenario: 'TASK-2 consumes missing TASK-9; TASK-3 has no verification plan',
+    contracts: [['showdar-requirements', 'references/analyze-converge.md',
+      [/missing producers.*unknown dependency IDs.*cycles/i, /Consumes.*Produces/,
+        /missing.*verification plan/i, /acceptance boundary/i, /ANALYSIS_READY.*NEEDS_DECISION.*BLOCKED/]]],
+  },
+  {
+    id: 'Q02-09', scenario: 'Analyze finds a permission blocker; Plan must not convert it to an assumption',
+    contracts: [['showdar-plan', 'SKILL.md', [/conditionally.*Analyze.*showdar-requirements/i,
+      /unresolved blockers.*assumptions/i]],
+      ['showdar-feature', 'SKILL.md', [/Analyze.*Converge.*not.*(?:stage|gate)/i,
+        /source.*revision.*decision.*IDs.*blockers/i]]],
+  },
+  {
+    id: 'Q02-10', scenario: 'New API evidence contradicts DEC-2 only; approved DEC-1 remains unchanged',
+    contracts: [['showdar-brainstorm', 'references/questioning.md',
+      [/reopen only affected decisions/i, /RESOLVED.*NEEDS_INPUT.*BLOCKED/]],
+      ['showdar-requirements', 'references/analyze-converge.md', [/read-only/i, /(?:no|never).*approval.*mutation authority/i]]],
+  },
+];
+
+for (const { id, scenario, contracts } of q02Cases) {
+  test(`${id} instruction fixture: ${scenario}`, async () => {
+    for (const [skill, file, patterns] of contracts) requires(await doc(skill, file), patterns);
+  });
+}

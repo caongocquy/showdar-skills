@@ -87,6 +87,10 @@ Before any task-owned source/config/test/docs write, apply `showdar-git` branch 
 
 ### Phase 3 — check consistency and readiness
 
+- Conditionally use **Analyze** for an explicit consistency request or meaningful cross-artifact conflicts/coverage gaps across spec, decisions, plan or verification. Read `references/analyze-converge.md` for checks, finding evidence and handoff.
+- Skip Analyze for small, fully defined tasks with sufficient verification and no material cross-artifact gap; state the evidence reason in chat without creating artifacts.
+- Use **Converge** only for material unresolved decisions: reuse approved answers, rank blockers by downstream impact, ask the highest-impact necessary question, and preserve IDs/revisions. The same reference defines the loop; it adds no approval gate to already specified work.
+
 - Compare statements for contradictions in terminology, roles, states, timing, data shape, priority, and acceptance evidence.
 - Trace each important requirement to its source, actor, affected surface, and acceptance evidence.
 - Mark unresolved decisions with owner/context when known; do not silently choose between competing interpretations.

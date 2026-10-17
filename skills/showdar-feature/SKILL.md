@@ -58,6 +58,13 @@ Before any task-owned source/config/test/docs write, apply `showdar-git` branch 
 - Refer to installed `showdar-domain-model` for meaningful shared terminology or accepted architectural decisions, not as a required lifecycle stage.
 - This decision gate is portable guidance, not a new router, workflow-state stage, checkpoint authority, or implicit permission to mutate files.
 
+## Conditional Analyze/Converge handoff
+
+- Within the existing Requirements stage, request Analyze only for explicit consistency analysis or meaningful cross-artifact conflicts/coverage gaps. Converge addresses only material unresolved decisions; Analyze and Converge are not new stages or approval gates.
+- Pass canonical source references/revisions, requirement/acceptance/decision IDs, approval evidence, analysis findings and unresolved blockers to Plan/Build. Receiving stages reconcile the current artifact identities; missing/stale sources or material blockers prevent affected implementation, never become silent assumptions.
+- Reuse approved decisions and the existing whole-Brief revision approval boundary. Report unavailable skills without claiming invocation; a blocker remains unresolved until the needed evidence/decision exists.
+- Fully defined, sufficiently verified local tasks skip both modes with an evidence reason and keep the existing Understand → Build → Test → Review path; no mandatory documents or extra interview.
+
 ## Adaptive TDD companion
 
 - `showdar-tdd` is an optional companion for the `showdar-build` implementation loop, not a new candidate stage or workflow-state schema field.
