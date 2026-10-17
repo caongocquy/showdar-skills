@@ -53,6 +53,9 @@ const CANONICAL_TO_PHASE = Object.freeze({
 // routable capability set, so normalize here. Canonical mapping below is the
 // fallback when the semantic table misses.
 const SEMANTIC_TO_CAPABILITY = Object.freeze({
+  requirements: 'requirements',
+  assessment: 'quality',
+  delivery: 'ship',
   testing: 'test',
   verification: 'review',
   deployment: 'ops',

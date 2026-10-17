@@ -233,10 +233,10 @@
       "caseId": "quality-qa-matrix",
       "expectedPhase": "verification",
       "expectedAction": "assess",
-      "expectedPrimaryCapability": "build",
-      "expectedPrimarySkill": "showdar-build",
+      "expectedPrimaryCapability": "quality",
+      "expectedPrimarySkill": "showdar-quality",
       "auditStatus": "EXPECTATION_CORRECTED",
-      "rationale": "Creating a QA regression matrix with explicit 'do not write automated tests' is quality assessment, not test execution; fixture action=test encodes legacy keyword mapping."
+      "rationale": "Creating a QA regression matrix with explicit 'do not write automated tests' is quality assessment, not test execution; fixture action=test encodes legacy keyword mapping. Q-01 independently confirms Quality ownership and corrects the contradictory Build primary label; historical intent-field expectations are outside this primary-only audit."
     },
     {
       "caseId": "audit-security-no-patch",
