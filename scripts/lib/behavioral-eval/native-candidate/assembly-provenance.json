@@ -1,0 +1,21 @@
+{
+  "sourcePin": "99fc3f98e01c1a6d6f2549cc36b21af6f5eede04",
+  "authority": "AUTH-01/02 only; amendment NOT EFFECTIVE",
+  "originalComponentHashes": {
+    "docs/TASK-002-phase4b5-local/adapter.mjs": "2ec18f13d93cea47f28b8f7acb37e3d60c1f00e35a65e0d1c1cd309fc30e9d29",
+    "docs/TASK-002-phase4b5-local/runtime.mjs": "ef3a380838261789305156c160a6901d2219f7105f2608fb29ca40b871005fdc",
+    "docs/TASK-002-phase4b5-local/sandbox-tool-runtime.mjs": "916872bb305e2707cd6aa68a37cf623d64e39b7ecc6aaafec608fba79fb12acd",
+    "docs/TASK-002-phase4b5-local/receipt-integrity.mjs": "742de6898646c63b7a8b31a142eb28a5fa63c05e91b034e25bf5da2b956b73b7",
+    "docs/TASK-002-phase4b5-local/commit-fence.mjs": "468842be3a5e318f826f2140daad73de740785521b6a4f12040bc7596777e35f",
+    "docs/TASK-002-phase4b5-local/invocation.mjs": "51dcc584b87b8897ee1c784392b9f471da47e47a005b5265c8c74c1fb55125ba",
+    "docs/TASK-002-phase3b-local-20261012/adapter.mjs": "49233c7c02dd3bb6a8aaabef4f671d85307b229d7dd97202228432db7c0d6c04",
+    "docs/TASK-002-phase3b-local-20261012/source-binding.mjs": "c0d13db7bda87113e8296b392858a944ed5e87fd0714855838e896f55cfad362",
+    "docs/TASK-002-phase3-local/brain-actions.mjs": "0d21268019ecc3554f8c9d3100780e2c293c043107df3282d563ac28bf27a76d",
+    "docs/TASK-002-behavioral-dataset-v2-adopted-20261013/scenarios.json": "2fef414af08c69191048a99001b05c02af727ce41fbd7610afe3812904302560",
+    "docs/TASK-002-behavioral-dataset-v2-adopted-20261013/dataset-manifest.json": "92a73a09f10a01ea3190c57a9caf63ca839e5a744faeb090d92c24bfe65aa47f",
+    "docs/TASK-002-behavioral-dataset-v2-adopted-20261013/runner-event-contracts.json": "58b0ca7e47f4df0701acd6adc9eb060de56747de16523ccda6a66cbc545a5c04"
+  },
+  "changes": "Candidate corrections include supervisor ownership, commit fencing, persisted receipt integrity, quarantine recovery, invocation budgets and E01 scoped receipt fencing/portability; original component hashes above remain historical provenance.",
+  "behavioralStatus": "BLOCKED",
+  "E01Packaging": "qualification/ contains reviewed existing diagnostic entrypoints with relative executable imports; external pinned macOS/image provenance prerequisites remain required and are not CI PASS."
+}
