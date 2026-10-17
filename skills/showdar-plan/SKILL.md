@@ -68,7 +68,7 @@ Before any task-owned source/config/test/docs write, apply `showdar-git` branch 
 
 ## Adaptive Plan Persistence and handoff
 
-- Read `references/plan-persistence.md` when a durable plan or cross-session handoff is needed; `examples/persisted-plan.md` illustrates the shape, not a mandatory template.
+- Read `references/plan-persistence.md` for requirement/task/proof disposition, deferrals, or a durable/cross-session handoff; `examples/persisted-plan.md` illustrates the shape, not a mandatory template.
 - Locate the repository's canonical ticket/plan first. Reuse a matching existing artifact; never create a duplicate solely because its path differs from `docs/showdar/plans/`.
 - For bounded work contained in one session, a short in-chat plan is sufficient. For complex, staged, multi-agent or cross-session work, propose a Markdown plan at the canonical location, defaulting to `docs/showdar/plans/<feature>.md` only if no convention exists.
 - Before creating or modifying a plan file, obtain authorization for that write and pass Git preflight; if blocked, provide the proposed plan in chat without claiming it was persisted.

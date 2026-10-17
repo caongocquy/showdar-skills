@@ -219,3 +219,79 @@ for (const { id, scenario, contracts } of q02Cases) {
     for (const [skill, file, patterns] of contracts) requires(await doc(skill, file), patterns);
   });
 }
+
+
+// Q-03 cases assert local instruction sections, not a semantic analyzer or agent
+// response. RED/GREEN proves the distributed contract changed, not live behavior.
+const q03Cases = [
+  { id: 'Q03-01', scenario: 'REQ-7 has no task in an existing plan or justified deferral',
+    contracts: [['showdar-requirements', 'references/analysis-guide.md', '## Requirement disposition',
+      [/every material requirement/i, /existing plan.*no task.*gap/i, /before planning.*needs planning/i]]] },
+  { id: 'Q03-02', scenario: 'TASK-4 is checked but no observed proof matches its acceptance',
+    contracts: [['showdar-build', 'references/plan-execution.md', '## Proof applicability',
+      [/checked.*task.*missing.*proof.*implemented-unverified/i, /checkbox.*old PASS.*document hash.*agent assertion/i]]] },
+  { id: 'Q03-03', scenario: 'REQ-7 AC-7b DEC-2 TASK-4 TEST-9 and an observed receipt form a qualified chain',
+    contracts: [['showdar-feature', 'references/task-handoff.md', '## Traceability handoff',
+      [/Requirement.*Approved Decision.*Task.*Test.*Evidence/, /invariant.*command.*result.*source.*revision/i,
+        /decision.*none.*no material decision/i]]] },
+  { id: 'Q03-04', scenario: 'A post-test implementation change affects the receipt invariant',
+    contracts: [['showdar-build', 'references/plan-execution.md', '## Proof applicability',
+      [/implementation.*after.*receipt.*revalid/i, /historical.*receipt/i]]] },
+  { id: 'Q03-05', scenario: 'An unrelated source change does not affect a mapped proof boundary',
+    contracts: [['showdar-build', 'references/plan-execution.md', '## Proof applicability',
+      [/unrelated.*change.*preserve.*applicable/i, /dependency.*(?:mapping|evidence)/i,
+        /unknown.*impact.*unqualified/i]],
+      ['showdar-recover', 'SKILL.md', '## Decision points',
+      [/proof.*dependency boundary.*impact.*unknown/i, /otherwise preserve.*applicability rationale/i]]] },
+  { id: 'Q03-06', scenario: 'SPEC r3 changes REQ-7 while TASK-4 still assumes r2',
+    contracts: [['showdar-plan', 'references/plan-persistence.md', '## Traceability and deferrals',
+      [/spec.*revision.*affected.*assumptions.*revalid/i, /unchanged.*IDs.*revisions/i]]] },
+  { id: 'Q03-07', scenario: 'TASK-6 is deferred and cannot be called verified-complete',
+    contracts: [['showdar-plan', 'references/plan-persistence.md', '## Traceability and deferrals',
+      [/deferred.*not.*verified-complete/i, /reason.*owner.*revisit.*dependenc/i,
+        /no.*fabricat.*approval/i]]] },
+  { id: 'Q03-08', scenario: 'TEST-9 does not exist or its command has never run',
+    contracts: [['showdar-test', 'references/regression.md', '## Traceable verification receipts',
+      [/missing.*test.*NOT_RUN/i, /planned.*command.*not.*PASS/i, /invariant.*requirement.*task/i]]] },
+  { id: 'Q03-09', scenario: 'Recover sees checked TASK-4 with a receipt for an older source',
+    contracts: [['showdar-recover', 'references/partial-implementation.md', '## Reconcile the proof chain',
+      [/source.*task.*proof.*before resuming/i, /stale.*completion.*implemented-unverified/i,
+        /preserve.*historical/i]]] },
+  { id: 'Q03-10', scenario: 'Review finds REQ-7 uncovered by TASK-4 and TEST-9',
+    contracts: [['showdar-review', 'references/dual-gate-review.md', '## Traceable findings',
+      [/requirement.*task.*test.*(?:receipt|evidence)/i, /blocking requirement gap.*Spec Compliance/i,
+        /invalidate only.*affected/i]]] },
+  { id: 'Q03-11', scenario: 'A fully specified one-session fix uses an in-chat receipt',
+    contracts: [['showdar-feature', 'references/task-handoff.md', '## Traceability handoff',
+      [/small.*single-session/i, /chat receipt/i, /no.*mandatory.*(?:format|file|artifact)/i,
+        /canonical.*(?:ticket|spec|plan)/i]]] },
+  { id: 'Q03-12', scenario: 'Approved DEC-2 remains accepted with no contradictory evidence',
+    contracts: [['showdar-requirements', 'references/analysis-guide.md', '## Requirement disposition',
+      [/reuse.*approved.*decisions/i, /reopen only.*affected.*conflict/i,
+        /whole.*Brief.*approval/i]]] },
+  { id: 'Q03-13', scenario: 'TEST-9 expectations change after an old passing receipt',
+    contracts: [['showdar-test', 'references/regression.md', '## Traceable verification receipts',
+      [/test expectations.*chang.*revalid/i, /expectation.*revision/i]]] },
+  { id: 'Q03-14', scenario: 'A producer contract changes and only its consumers need proof rerun',
+    contracts: [['showdar-build', 'references/plan-execution.md', '## Proof applicability',
+      [/dependency contract.*consumer.*revalid/i, /Consumes.*Produces/]]] },
+  { id: 'Q03-15', scenario: 'An old PASS has unknown executor or source provenance',
+    contracts: [['showdar-test', 'references/regression.md', '## Traceable verification receipts',
+      [/unknown.*provenance.*unqualified/i, /executor.*command.*exit.*result/i]],
+      ['showdar-recover', 'references/partial-implementation.md', '## Reconcile the proof chain',
+      [/unknown.*provenance.*unqualified/i]]] },
+  { id: 'Q03-16', scenario: 'A deferred consumer becomes dependency-ready after its producer passes',
+    contracts: [['showdar-recover', 'references/partial-implementation.md', '## Reconcile the proof chain',
+      [/deferred.*dependency-ready.*(?:not|never).*complete/i, /revisit.*deferral.*scope.*approval/i, /scope is already authorized.*no new approval/i]]] },
+];
+
+for (const { id, scenario, contracts } of q03Cases) {
+  test(`${id} instruction fixture: ${scenario}`, async () => {
+    for (const [skill, file, heading, patterns] of contracts) {
+      const text = await doc(skill, file);
+      assert.ok(text.includes(`${heading}\n`), `${skill}/${file} needs ${heading}`);
+      const section = text.split(`${heading}\n`)[1].split('\n## ')[0];
+      requires(section, patterns);
+    }
+  });
+}

@@ -107,7 +107,7 @@ Before any task-owned source/config/test/docs write, apply `showdar-git` branch 
 
 - Dirty file belongs to user/unrelated task? Preserve it and exclude from recovered change surface.
 - Partial interface consumed elsewhere? Verify/finish producer before consumer edits.
-- Previous test output says pass but code changed since? Treat as stale and rerun.
+- Previous proof says pass but code changed? Revalidate when the change intersects the proof/dependency boundary or impact is unknown; otherwise preserve evidence with an applicability rationale.
 - Conflict markers present? Resolve merge semantics before continuing task.
 - No git repository? Use filesystem timestamps/task artifacts cautiously and state lower confidence.
 - Original goal ambiguous? Ask user rather than reconstructing from broad history.

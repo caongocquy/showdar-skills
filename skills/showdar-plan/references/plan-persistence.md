@@ -25,3 +25,13 @@
 
 ## Handoff
 Report plan path/revision (or chat-only), what was proven, blocked/unverified task IDs, exact proof and next dependency-ready task. Never silently persist if the user only asked for a read-only plan.
+
+## Traceability and deferrals
+
+Reuse canonical artifacts and stable requirement/acceptance/decision/task/test IDs, source/spec/plan references and revisions. Each material requirement needs a task and invariant/proof plan, an explicit blocker or a justified deferral. Tasks retain requirement and approved decision links; enabling work states its supporting requirement/purpose rather than inventing product scope. For a small single-session change, these links fit in chat; no mandatory file or format migration.
+
+The ledger distinguishes planned checks (`NOT_RUN`) from actual receipts: verified invariant, requirement/task/test links, actual executor, command/check, exit/result and log/observation reference, environment, implementation source/diff identity, test-expectation and dependency-contract revisions where relevant. Unknown provenance stays unqualified. IDs/hashes locate evidence; they do not prove execution or applicability.
+
+A spec/requirement revision change puts affected task assumptions and proof into revalidation; retain unchanged IDs and revisions for unaffected decisions/tasks. Compare changed acceptance and Consumes/Produces edges before selecting the frontier. Keep the historical receipt; do not rewrite an old PASS as a new execution. If affected scope cannot be established, report uncertainty and request relevant verification instead of claiming unaffected proof.
+
+A deferred task is not verified-complete. Record reason, owner if known, revisit condition and dependencies, remaining acceptance/proof and any supplied scope approval; no fabricated approval. An unmet in-scope requirement still prevents scope completion unless an authoritative scope change excludes it. When its producer becomes ready, revisit the deferral and current scope/approval before scheduling; readiness alone never completes or authorizes it. Keep this disposition in the existing task ledger, separate from workflow checkpoint states.

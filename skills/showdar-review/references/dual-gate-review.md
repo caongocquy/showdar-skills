@@ -30,3 +30,9 @@ Missing evidence blocks only the affected gate. Substantial fixes require scoped
 ## HANDOFF
 
 Send Build both verdicts, source/spec/plan revisions, task-mapped findings, executed checks, gaps and next action. Preserve failed/stale receipts. Approval and Git guard remain separate from review outcomes.
+
+## Traceable findings
+
+Map each material requirement/acceptance criterion through approved decisions, task IDs and test invariants to actual receipt evidence at the reviewed source/spec/test revisions. Preserve existing IDs/revisions and reference exact paths/sections/commands/results; unknown IDs/provenance stay explicit gaps. Each finding names the affected requirement/task/test/receipt links when available, the reachable unmet invariant and next owner/action. A missing task or proof is not satisfied by an old green suite, a checked box or a deferred item.
+
+A blocking requirement gap prevents Spec Compliance PASS; use FAIL for an evidenced violation and BLOCKED when authoritative criteria or necessary proof are missing. Code Quality remains an independent verdict. Reopen affected tasks and invalidate only their affected completion/proof claims and known dependents; preserve historical receipts and unrelated applicable evidence with its scope rationale. If dependencies cannot be established, report the uncertain boundary and require investigation/verification rather than assert an unaffected PASS. Justified deferral remains incomplete for in-scope acceptance unless an authoritative scope change exists; neither verdict grants that approval. Carry requirement/task-mapped findings, actual evidence and both verdicts to Build/Recover.
