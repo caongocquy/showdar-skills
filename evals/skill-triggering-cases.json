@@ -1,0 +1,302 @@
+{
+  "schemaVersion": 1,
+  "description": "Q-01 independent documented-intent oracle, frozen before resolver outputs. Canonical lifecycle only; companions/workflows are not lifecycle primaries. No authority grant.",
+  "cases": [
+    {
+      "id": "Q01-01",
+      "group": "requirements",
+      "prompt": "Turn this product brief into observable acceptance criteria, including denied, retry, and boundary cases.",
+      "expectedPrimarySkill": "showdar-requirements",
+      "regressionScope": "diagnostic-parser-limitation",
+      "baselineMutation": "read-only"
+    },
+    {
+      "id": "Q01-02",
+      "group": "requirements",
+      "prompt": "The spec and acceptance criteria are approved. Map them into a concise requirement matrix; don’t reopen decisions.",
+      "expectedPrimarySkill": "showdar-requirements",
+      "regressionScope": "diagnostic-parser-limitation",
+      "baselineMutation": "local-write"
+    },
+    {
+      "id": "Q01-03",
+      "group": "requirements",
+      "prompt": "Compare the ticket, approved spec, and plan; report contradictory acceptance rules and missing coverage.",
+      "expectedPrimarySkill": "showdar-requirements",
+      "regressionScope": "diagnostic-parser-limitation",
+      "baselineMutation": "read-only"
+    },
+    {
+      "id": "Q01-04",
+      "group": "requirements",
+      "prompt": "We chose SSO already. Write acceptance criteria for the login states and error handling.",
+      "expectedPrimarySkill": "showdar-requirements",
+      "regressionScope": "diagnostic-parser-limitation",
+      "baselineMutation": "read-only"
+    },
+    {
+      "id": "Q01-05",
+      "group": "requirements",
+      "prompt": "Translate Decision Brief DB-4 revision 2 into implementation-ready requirements, preserving its approved choices.",
+      "expectedPrimarySkill": "showdar-requirements",
+      "regressionScope": "diagnostic-parser-limitation",
+      "baselineMutation": "read-only"
+    },
+    {
+      "id": "Q01-06",
+      "group": "quality-test",
+      "prompt": "List manual scenarios for offline recovery across app restart, network loss, and account changes.",
+      "expectedPrimarySkill": "showdar-quality",
+      "regressionScope": "diagnostic-parser-limitation",
+      "baselineMutation": "read-only"
+    },
+    {
+      "id": "Q01-07",
+      "group": "quality-test",
+      "prompt": "Choose the right automated test levels for checkout and identify the contracts each level should prove.",
+      "expectedPrimarySkill": "showdar-test",
+      "regressionScope": "diagnostic-parser-limitation",
+      "baselineMutation": "read-only"
+    },
+    {
+      "id": "Q01-08",
+      "group": "quality-test",
+      "prompt": "Add a regression test for the confirmed duplicate-charge bug.",
+      "expectedPrimarySkill": "showdar-test",
+      "regressionScope": "ownership-and-controls",
+      "baselineMutation": "local-write"
+    },
+    {
+      "id": "Q01-09",
+      "group": "quality-test",
+      "prompt": "A retry test flakes intermittently; determine the cause before changing the test or production code.",
+      "expectedPrimarySkill": "showdar-debug",
+      "regressionScope": "ownership-and-controls",
+      "baselineMutation": "read-only"
+    },
+    {
+      "id": "Q01-10",
+      "group": "quality-test",
+      "prompt": "Implement the known parser fix test-first: show a behavioral failure, fix it, then refactor.",
+      "expectedPrimarySkill": "showdar-build",
+      "regressionScope": "ownership-and-controls",
+      "baselineMutation": "local-write"
+    },
+    {
+      "id": "Q01-11",
+      "group": "quality-test",
+      "prompt": "The implementation is complete. Independently check whether the automated tests prove the changed API behavior.",
+      "expectedPrimarySkill": "showdar-test",
+      "regressionScope": "diagnostic-parser-limitation",
+      "baselineMutation": "read-only"
+    },
+    {
+      "id": "Q01-12",
+      "group": "quality-test",
+      "prompt": "Create a risk-based manual coverage matrix for permissions, localization, and interrupted uploads.",
+      "expectedPrimarySkill": "showdar-quality",
+      "regressionScope": "ownership-and-controls",
+      "baselineMutation": "local-write"
+    },
+    {
+      "id": "Q01-13",
+      "group": "quality-test",
+      "prompt": "Review these acceptance scenarios for missing negative and boundary cases; do not write tests.",
+      "expectedPrimarySkill": "showdar-quality",
+      "regressionScope": "ownership-and-controls",
+      "baselineMutation": "read-only"
+    },
+    {
+      "id": "Q01-14",
+      "group": "quality-test",
+      "prompt": "Add an XCTest for the already implemented date formatter contract.",
+      "expectedPrimarySkill": "showdar-test",
+      "regressionScope": "ownership-and-controls",
+      "baselineMutation": "local-write"
+    },
+    {
+      "id": "Q01-15",
+      "group": "quality-test",
+      "prompt": "Build this bounded state transition with a runnable test boundary; use RED/GREEN and retain the receipts.",
+      "expectedPrimarySkill": "showdar-build",
+      "regressionScope": "ownership-and-controls",
+      "baselineMutation": "local-write"
+    },
+    {
+      "id": "Q01-16",
+      "group": "release-ops",
+      "prompt": "Check whether this completed change is ready for merge from fresh tests and package checks.",
+      "expectedPrimarySkill": "showdar-ship",
+      "regressionScope": "ownership-and-controls",
+      "baselineMutation": "read-only"
+    },
+    {
+      "id": "Q01-17",
+      "group": "release-ops",
+      "prompt": "The GitHub Actions cache key is wrong; fix the existing CI workflow.",
+      "expectedPrimarySkill": "showdar-ops",
+      "regressionScope": "ownership-and-controls",
+      "baselineMutation": "local-write"
+    },
+    {
+      "id": "Q01-18",
+      "group": "release-ops",
+      "prompt": "Inspect canary health signals and rollback readiness for staging; report only, no changes.",
+      "expectedPrimarySkill": "showdar-ops",
+      "regressionScope": "ownership-and-controls",
+      "baselineMutation": "remote-write"
+    },
+    {
+      "id": "Q01-19",
+      "group": "release-ops",
+      "prompt": "Deploy the current artifact to staging now.",
+      "expectedPrimarySkill": "showdar-ops",
+      "regressionScope": "ownership-and-controls",
+      "baselineMutation": "remote-write"
+    },
+    {
+      "id": "Q01-20",
+      "group": "control",
+      "prompt": "Review this PR diff for correctness and reachable defects.",
+      "expectedPrimarySkill": "showdar-review",
+      "regressionScope": "ownership-and-controls",
+      "baselineMutation": "read-only"
+    },
+    {
+      "id": "Q01-21",
+      "group": "control",
+      "prompt": "Implement the approved button behavior in the existing screen.",
+      "expectedPrimarySkill": "showdar-build",
+      "regressionScope": "ownership-and-controls",
+      "baselineMutation": "local-write"
+    },
+    {
+      "id": "Q01-22",
+      "group": "control",
+      "prompt": "Break this cross-platform feature into ordered tasks and name dependencies.",
+      "expectedPrimarySkill": "showdar-plan",
+      "regressionScope": "diagnostic-parser-limitation",
+      "baselineMutation": "read-only"
+    },
+    {
+      "id": "Q01-23",
+      "group": "control",
+      "prompt": "Explain how this repository’s authentication flow works.",
+      "expectedPrimarySkill": "showdar-understand",
+      "regressionScope": "ownership-and-controls",
+      "baselineMutation": "read-only"
+    },
+    {
+      "id": "Q01-24",
+      "group": "control",
+      "prompt": "The app crashes on launch; inspect the stack trace and find the first cause.",
+      "expectedPrimarySkill": "showdar-debug",
+      "regressionScope": "diagnostic-parser-limitation",
+      "baselineMutation": "read-only"
+    },
+    {
+      "id": "Q01-25",
+      "group": "control",
+      "prompt": "Check whether the Android release artifact is ready for handoff.",
+      "expectedPrimarySkill": "showdar-ship",
+      "regressionScope": "ownership-and-controls",
+      "baselineMutation": "read-only"
+    },
+    {
+      "id": "Q01-26",
+      "group": "ownership-pair",
+      "prompt": "Write acceptance criteria for account lockout.",
+      "expectedPrimarySkill": "showdar-requirements",
+      "regressionScope": "ownership-and-controls",
+      "baselineMutation": "local-write"
+    },
+    {
+      "id": "Q01-27",
+      "group": "ownership-pair",
+      "prompt": "Implement the approved account-lockout behavior.",
+      "expectedPrimarySkill": "showdar-build",
+      "regressionScope": "ownership-and-controls",
+      "baselineMutation": "local-write"
+    },
+    {
+      "id": "Q01-28",
+      "group": "ownership-pair",
+      "prompt": "Create a requirement matrix from the approved account spec.",
+      "expectedPrimarySkill": "showdar-requirements",
+      "regressionScope": "ownership-and-controls",
+      "baselineMutation": "local-write"
+    },
+    {
+      "id": "Q01-29",
+      "group": "ownership-pair",
+      "prompt": "Implement the approved account spec in the application.",
+      "expectedPrimarySkill": "showdar-build",
+      "regressionScope": "ownership-and-controls",
+      "baselineMutation": "local-write"
+    },
+    {
+      "id": "Q01-30",
+      "group": "ownership-pair",
+      "prompt": "Analyze contradictions between the ticket and approved spec.",
+      "expectedPrimarySkill": "showdar-requirements",
+      "regressionScope": "ownership-and-controls",
+      "baselineMutation": "read-only"
+    },
+    {
+      "id": "Q01-31",
+      "group": "ownership-pair",
+      "prompt": "Fix the application behavior that contradicts the approved spec.",
+      "expectedPrimarySkill": "showdar-build",
+      "regressionScope": "ownership-and-controls",
+      "baselineMutation": "local-write"
+    },
+    {
+      "id": "Q01-32",
+      "group": "ownership-pair",
+      "prompt": "Write manual QA scenarios for offline sign-in.",
+      "expectedPrimarySkill": "showdar-quality",
+      "regressionScope": "ownership-and-controls",
+      "baselineMutation": "local-write"
+    },
+    {
+      "id": "Q01-33",
+      "group": "ownership-pair",
+      "prompt": "Write XCTest cases for offline sign-in.",
+      "expectedPrimarySkill": "showdar-test",
+      "regressionScope": "ownership-and-controls",
+      "baselineMutation": "local-write"
+    },
+    {
+      "id": "Q01-34",
+      "group": "ownership-pair",
+      "prompt": "Create a device-compatibility checklist for the Android release.",
+      "expectedPrimarySkill": "showdar-quality",
+      "regressionScope": "ownership-and-controls",
+      "baselineMutation": "local-write"
+    },
+    {
+      "id": "Q01-35",
+      "group": "ownership-pair",
+      "prompt": "Add Playwright regression coverage for the checkout flow.",
+      "expectedPrimarySkill": "showdar-test",
+      "regressionScope": "ownership-and-controls",
+      "baselineMutation": "local-write"
+    },
+    {
+      "id": "Q01-36",
+      "group": "ownership-pair",
+      "prompt": "Inspect the existing GitHub Actions workflow for its failing cache key.",
+      "expectedPrimarySkill": "showdar-ops",
+      "regressionScope": "ownership-and-controls",
+      "baselineMutation": "read-only"
+    },
+    {
+      "id": "Q01-37",
+      "group": "ownership-pair",
+      "prompt": "Verify whether the completed package is ready for handoff.",
+      "expectedPrimarySkill": "showdar-ship",
+      "regressionScope": "ownership-and-controls",
+      "baselineMutation": "read-only"
+    }
+  ]
+}

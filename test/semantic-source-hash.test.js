@@ -100,14 +100,16 @@ test('semantic-source hash fails when a listed file is missing', () => {
 // T17 final: contract-primary regression fixes + orphaned frame/shadow.js
 // deletion (zero importers, imported deleted 6F projectors). Final SHA below.
 // The structural router's unused scoring chain was removed without changing route behavior.
-const INTERMEDIATE_SEMANTIC_SOURCE_SHA256 = 'b89ce031bab1e60a48ec12c05aa0eb93aa8fa0c6682eea70475cc742dd3f562b';
+// Q-01 ownership freeze cycle: reviewed candidate/taxonomy changes replace the
+// prior b89ce031 pin. Hash protocol and historical TASK-002 evidence stay unchanged.
+const Q01_SEMANTIC_SOURCE_SHA256 = 'c52b97c882d30dc2b23341254db73642212b02f58fa0e0c86e5869f3dbddec8b';
 
-test('semantic-source hash is deterministic and matches the T13 intermediate freeze', () => {
+test('semantic-source hash is deterministic and matches the Q01 ownership freeze', () => {
   const first = hashSemanticSource(repoRoot);
   const second = hashSemanticSource(repoRoot);
   const expectedCount = 4 + 12 + EXPECTED_FRAME_FILES.length + EXPECTED_AUTHORITY_FILES.length + EXPECTED_PROJECTOR_FILES.length;
   assert.equal(first.files.length, expectedCount);
   assert.deepEqual(first, second);
   for (const entry of first.files) assert.match(entry.sha256, /^[0-9a-f]{64}$/);
-  assert.equal(first.combined, INTERMEDIATE_SEMANTIC_SOURCE_SHA256);
+  assert.equal(first.combined, Q01_SEMANTIC_SOURCE_SHA256);
 });

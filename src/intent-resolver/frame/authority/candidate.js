@@ -187,6 +187,29 @@ function testAuthorshipCapability(clauseText, surface, capability) {
   return 'testing';
 }
 
+// Scope an already recognized operation by its direct artifact, before purpose
+// adjuncts. This changes ownership only; adjudication and mutation stay separate.
+function artifactCapability(clauseText, surface) {
+  const first = String(surface).split('-')[0];
+  const text = clauseText.trim().toLowerCase();
+  if ((text.match(/^[a-z]+/) ?? [])[0] !== first) return null;
+  const object = text.slice(first.length).split(/\b(?:for|from|using|with|that|which|into)\b/)[0].trim().replace(/[.!?,;]+$/, '');
+  const authoring = TEST_AUTHORSHIP_VERBS.has(first);
+  if (authoring && /\b(?:requirements?|acceptance[\s-]+criteria)(?:\s+matrix)?$/.test(object)) return 'requirements';
+  if (['analyze', 'compare'].includes(first) && /\b(?:contradictions?|inconsistencies?)\b/.test(object)
+      && /\b(?:ticket|spec|requirements?|decisions?)\b/.test(object)) return 'requirements';
+  if (authoring && /\b(?:xctests?(?:\s+cases)?|(?:playwright|automated|unit|integration|regression|e2e|contract)\s+(?:regression\s+)?coverage)$/.test(object)) return 'testing';
+  if ([...TEST_AUTHORSHIP_VERBS, 'review'].includes(first)
+      && /\b(?:scenarios?|matrix|checklist)$/.test(object)
+      && /\b(?:qa|manual|acceptance|regression|risk|coverage|compatibility)\b/.test(object)) return 'assessment';
+  if (['fix', 'repair', 'update', 'modify', 'create', 'inspect', 'review', 'check'].includes(first)
+      && /\b(?:(?:ci|github\s+actions)\s+(?:workflow|pipeline)|canary\s+health\s+signals)$/.test(object)) return 'operations';
+  if (['check', 'verify', 'assess', 'confirm'].includes(first)
+      && /^(?:whether\s+)?(?:(?:this|the|completed)\s+)*(?:package|artifact|change|release|build)\b.*\bready$/.test(object)
+      && /\bready\s+(?:for|to)\s+(?:merge|handoff|release|publish|ship)\b/.test(text)) return 'delivery';
+  return null;
+}
+
 export function extractCandidates(clauses) {
   const candidates = [];
 
@@ -203,9 +226,10 @@ export function extractCandidates(clauses) {
       surface = surfaceMatch.result.surfaceVerb;
     }
 
-    const authorshipCapability = testAuthorshipCapability(clause.text, surface, capability);
-    if (authorshipCapability) {
-      capability = authorshipCapability;
+    const ownedCapability = artifactCapability(clause.text, surface)
+      ?? testAuthorshipCapability(clause.text, surface, capability);
+    if (ownedCapability) {
+      capability = ownedCapability;
     }
 
     const target = extractTarget(clause.text);
