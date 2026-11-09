@@ -2,6 +2,7 @@ import path from 'node:path';
 import { readFile, stat } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { ALL_SKILLS, SKILLS } from './catalog.js';
+import { globalSkillRootFor, resolveTargets } from './adapters.js';
 import { resolveIntentFromPrompt } from './intent-resolver/index.js';
 import { assertSafeManagedPath } from './path-safety.js';
 
@@ -60,13 +61,22 @@ export async function routeRequest({ prompt, cwd, packageRoot, home = homedir() 
         if (typeof entry.path === 'string' && path.basename(entry.path) === id && await skillPresent(cwd, entry.path)) installed.add(id);
       }
     }
-    if (manifest.satisfiedByGlobal?.length) {
+    if (manifest.satisfiedByGlobal?.length || manifest.skills.length) {
       const globalPath = path.join(home, '.showdar/global.json');
       await assertSafeManagedPath(home, globalPath);
       const global = await readJson(globalPath);
       const owned = new Set((global?.files ?? []).map(e => e.path));
-      for (const entry of manifest.satisfiedByGlobal) {
+      for (const entry of manifest.satisfiedByGlobal ?? []) {
         if (manifest.skills.includes(entry.skill) && typeof entry.path === 'string' && path.basename(entry.path) === entry.skill && owned.has(entry.path) && await skillPresent(home, entry.path)) installed.add(entry.skill);
+      }
+      const targets = manifest.targets?.length ? manifest.targets : manifest.ai ? resolveTargets(manifest.ai) : [];
+      for (const target of targets) {
+        const root = globalSkillRootFor(target, { homeRoot: home });
+        for (const id of manifest.skills) {
+          if (!ALL_SKILLS.some(skill => skill.id === id)) continue;
+          const relative = path.relative(home, path.join(root, id)).replaceAll(path.sep, '/');
+          if (owned.has(relative) && await skillPresent(home, relative)) installed.add(id);
+        }
       }
     }
   }

@@ -146,3 +146,43 @@ test('availability checks recorded global satisfaction, missing advisors and wor
     assert.deepEqual(data.availability.missingDomainMatches, ['showdar-insurance-workflows']);
   } finally { await rm(cwd, { recursive: true, force: true }); }
 });
+
+test('availability discovers globally owned requested skills without cached project satisfaction', async () => {
+  const cwd = await mkdtemp(path.join(tmpdir(), 'route-global-discovery-'));
+  const home = path.join(cwd, 'home');
+  try {
+    const relative = '.agents/skills/showdar-build';
+    await mkdir(path.join(home, relative), { recursive: true });
+    await writeFile(path.join(home, relative, 'SKILL.md'), 'fixture');
+    await mkdir(path.join(home, '.showdar'));
+    await writeFile(path.join(home, '.showdar/global.json'), JSON.stringify({
+      version: 2,
+      skills: ['showdar-build'],
+      files: [{ path: relative }],
+    }));
+    await writeFile(path.join(cwd, '.showdar.json'), JSON.stringify({
+      version: 2,
+      ai: 'codex',
+      skills: ['showdar-build'],
+      files: [],
+      satisfiedByGlobal: [],
+    }));
+
+    const data = await routeRequest({
+      prompt: 'Implement the approved feature', cwd, home, packageRoot: root,
+    });
+    assert.deepEqual(data.availability.installed, ['showdar-build']);
+    assert.equal(data.availability.missingLifecyclePrimary, false);
+
+    await writeFile(path.join(home, '.showdar/global.json'), JSON.stringify({
+      version: 2,
+      skills: ['showdar-build'],
+      files: [],
+    }));
+    const unowned = await routeRequest({
+      prompt: 'Implement the approved feature', cwd, home, packageRoot: root,
+    });
+    assert.deepEqual(unowned.availability.installed, []);
+    assert.equal(unowned.availability.missingLifecyclePrimary, true);
+  } finally { await rm(cwd, { recursive: true, force: true }); }
+});
