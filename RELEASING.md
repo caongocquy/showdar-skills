@@ -1,13 +1,13 @@
 # Releasing Showdar Skills
 
-Release preparation and publication are separate approvals. v0.18.0 is a candidate until its Draft PR is reviewed, merged and separately approved for tagging/publication. Do not publish from a preparation branch.
+Release preparation and publication are separate approvals. v0.18.1 is a candidate until its Draft PR is reviewed, merged and separately approved for tagging/publication. Do not publish from a preparation branch.
 
 ## Preparation checklist
 
 - Audit the diff from the preceding tag and verify the exact main baseline.
 - Use a dedicated release branch; bump package.json and any existing lock/version references together. This repository currently has no tracked package lock.
 - Verify the 18 primitive / four companion / four workflow catalog, setup visibility, ownership protections and upgrade from the previous package.
-- Run `npm test`, `npm run validate`, `npm run check`, `npm run smoke`, `npm run eval`, `npm pack --dry-run` and `npm run release:check -- v0.18.0` on the final source.
+- Run `npm test`, `npm run validate`, `npm run check`, `npm run smoke`, `npm run eval`, `npm pack --dry-run` and `npm run release:check -- v0.18.1` on the final source.
 - Inspect actual packaged SKILL.md files and referenced assets; prove fresh setup and previous-version additive upgrade with isolated projects/prefixes. Protect modified and user-owned files.
 - Record exact source SHA, command results, tarball digest and platform coverage. Open a Draft PR into main; no merge, tag, npm publish, Homebrew update or GitHub Release at this stage.
 

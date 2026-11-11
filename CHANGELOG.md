@@ -12,6 +12,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Live execution remains disabled and fails closed because preventive command mediation is unsupported; OS sandbox/credential isolation must remain enforced. Imported traces now receive deterministic event analysis only and always remain behavioral BLOCKED; submitted provenance, artifact proofs and rubric PASS cannot establish trusted execution.
 - Behavioral baseline/after-change and final behavioral readiness remain BLOCKED: **18 NOT_RUN, 0 PASS**. No measurable agent-quality improvement, release, or live model run is claimed.
 
+## [0.18.1] - 2026-11-10
+
+### Fixed
+
+- Router availability now recognizes globally installed skills recorded in the owned global manifest, while continuing to reject unowned paths.
+
 ## [0.18.0] - 2026-10-13
 
 ### Changed
